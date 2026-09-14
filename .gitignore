@@ -1,0 +1,24 @@
+# 构建产物
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.o
+*.d
+*.a
+
+# 编辑器/工具本地配置
+.vscode/
+.trae/
+.settings/
+
+# CubeIDE 元数据(工程文件 .project/.cproject 保留)
+.mxproject
+*.launch
+
+# Windows
+Thumbs.db
+desktop.ini

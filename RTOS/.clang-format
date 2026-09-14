@@ -1,0 +1,79 @@
+# .clang-format —— 对应《C 语言代码规范（通用）》(c-code-style SKILL.md)
+#
+# 规范条目 → 配置映射:
+#   2. 4 空格缩进禁止 Tab / 行宽 100     → IndentWidth/UseTab/ColumnLimit
+#   2. 函数定义开大括号换行               → BraceWrapping.AfterFunction: true
+#   2. if/else/for/while 开大括号同行     → AfterControlStatement: Never
+#   2. else 与上一 } 同行                 → BraceWrapping.BeforeElse: false
+#   3.1 if (x) 关键字后有空格             → SpaceBeforeParens: ControlStatements
+#   3.1 单语句不省略大括号                → InsertBraces: true
+#   3.2 case 比 switch 多缩进一级         → IndentCaseLabels: true
+#   3.5 指针星号靠右                      → PointerAlignment: Right
+#   3.10 逻辑运算符前断行、对齐首参       → BreakBeforeBinaryOperators: None + AlignAfterOpenBracket: Align
+#   6.  注释不重排(保留手写中文注释)      → ReflowComments: false
+#   4.  不重排 include 顺序               → SortIncludes: Never
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+IndentPPDirectives: None
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeElse: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesInParens: Never
+SpacesInSquareBrackets: false
+SpacesInCStyleCastParentheses: false
+SpacesInConditionalStatement: false
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+
+InsertBraces: true
+
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignConsecutiveMacros: false
+AlignTrailingComments: false
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakStringLiterals: false
+BinPackArguments: true
+BinPackParameters: true
+
+ReflowComments: false
+SortIncludes: Never
+IncludeBlocks: Preserve
+MaxEmptyLinesToKeep: 1
+InsertNewlineAtEOF: true
