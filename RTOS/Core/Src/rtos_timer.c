@@ -322,18 +322,22 @@ void rtos_timer_service_task(void *arg)
     timer_cmd_t cmd;
 
     for (;;) {
-        /* 1. 临界区内: 收集到期定时器并计算阻塞超时 */
+        /* 1. 临界区内: 收集到期定时器 */
         RTOS_PORT_ENTER_CRITICAL();
         rtos_timer_t *expired = timer_collect_expired();
-        rtos_tick_t timeout = timer_get_next_remain();
         RTOS_PORT_EXIT_CRITICAL();
 
         /* 2. 临界区外: 执行回调(可安全调用阻塞 API) */
         timer_run_callbacks(expired);
 
-        /* 3. 临界区内: 重插周期定时器 */
+        /* 3. 临界区内: 重插周期定时器, 之后再计算阻塞超时。
+         *    [bug fix] 原实现在重插之前计算 timeout: 单一周期定时器触发时
+         *    被摘出链表, 此刻链表为空 → timeout=WAIT_FOREVER → recv 永久
+         *    等待命令, 周期定时器从此不再触发(实测: 100ms 周期只 fire 1 次)。
+         *    将 timeout 计算移到重插之后即可拿到新 expire 时刻。 */
         RTOS_PORT_ENTER_CRITICAL();
         timer_reinsert_periodic(expired);
+        rtos_tick_t timeout = timer_get_next_remain();
         RTOS_PORT_EXIT_CRITICAL();
 
         /* 4. 阻塞等待命令或超时(到期) */

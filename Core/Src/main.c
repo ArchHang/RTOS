@@ -94,7 +94,7 @@ static void task_0(void *arg)
     (void)arg;
 
     while (1) {
-        // printf("task 0 running\r\n");
+        printf("task 0 running\r\n");
         // cnt = asm_increment(cnt);
         // cnt = asm_pass_args(cnt, 1, 2, 3, 4);
         // printf("cnt = %d\r\n", cnt);
@@ -110,7 +110,7 @@ static void task_1(void *arg)
 {
     (void)arg;
     while (1) {
-        // printf("task 1 running\r\n");
+        printf("task 1 running\r\n");
         rtos_task_delay(500);
     }
 }
@@ -130,14 +130,14 @@ static void task_uart(void *arg)
         /* 队列空则阻塞等待(WAIT_FOREVER), 收到一个字节 */
         if (rtos_queue_recv(&uart2_rx_queue, &byte, RTOS_WAIT_FOREVER) == RTOS_OK) {
             /* HardFault 测试调度: 数字命令通知对应测试任务, 不进音频缓冲 */
-            if (ft_dispatch(byte)) {
-                continue;
-            }
-            audio_buf[audio_cnt++] = byte;
-            if (audio_cnt >= 2048) {
-                audio_cnt = 0U;
-                rtos_event_set(&algo_task_event, 0x01U);
-            }
+            // if (ft_dispatch(byte)) {
+            //     continue;
+            // }
+//            audio_buf[audio_cnt++] = byte;
+//            if (audio_cnt >= 2048) {
+//                audio_cnt = 0U;
+//                rtos_event_set(&algo_task_event, 0x01U);
+//            }
         }
     }
 }
@@ -650,9 +650,9 @@ int main(void)
 
   /* USB 应用任务: CDC 回显 + MSC 状态监视 + HID 报告收发
    * (优先级 8, 低于 USB 协议栈线程 16) */
-  rtos_task_create(&usb_cdc_tcb, 256, task_usb_cdc, NULL, 8, "usb_cdc");
-  rtos_task_create(&usb_msc_tcb, 256, task_usb_msc, NULL, 8, "usb_msc");
-  rtos_task_create(&usb_hid_tcb, 256, task_usb_hid, NULL, 8, "usb_hid");
+//   rtos_task_create(&usb_cdc_tcb, 256, task_usb_cdc, NULL, 8, "usb_cdc");
+//   rtos_task_create(&usb_msc_tcb, 256, task_usb_msc, NULL, 8, "usb_msc");
+//   rtos_task_create(&usb_hid_tcb, 256, task_usb_hid, NULL, 8, "usb_hid");
 
   rtos_start();
 
