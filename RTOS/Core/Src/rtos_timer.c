@@ -58,6 +58,14 @@ static rtos_timer_t *s_active_head = NULL;
 
 /* ============================== 内部函数 ============================== */
 
+/* [bug fix BUG-1] expire_tick 全部改带符号差值比较(回绕安全, 与 rtos_sched.c 同源):
+ * 原无符号比较下, period=0xFFFFFFFF 的周期定时器 expire 回绕成 now-1 → 每个 tick
+ * 都"到期" → 回调 1kHz 风暴; 回绕点附近 start 的正常定时器可被延迟最长 24 天。 */
+static inline int32_t timer_tick_diff(rtos_tick_t a, rtos_tick_t b)
+{
+    return (int32_t)(a - b);
+}
+
 /**
  * @brief 将定时器按 expire_tick 升序插入活跃链表。
  */
@@ -66,7 +74,7 @@ static void timer_active_insert(rtos_timer_t *timer)
     rtos_timer_t *cur = s_active_head;
     rtos_timer_t *prev = NULL;
 
-    while ((cur != NULL) && (cur->expire_tick <= timer->expire_tick)) {
+    while ((cur != NULL) && (timer_tick_diff(cur->expire_tick, timer->expire_tick) <= 0)) {
         prev = cur;
         cur = cur->next;
     }
@@ -112,7 +120,7 @@ static rtos_timer_t *timer_collect_expired(void)
     rtos_tick_t now = rtos_kernel.tick_count;
     rtos_timer_t *expired_head = NULL;
 
-    while ((s_active_head != NULL) && (s_active_head->expire_tick <= now)) {
+    while ((s_active_head != NULL) && (timer_tick_diff(s_active_head->expire_tick, now) <= 0)) {
         rtos_timer_t *t = s_active_head;
         timer_active_remove(t);
         t->next = expired_head; /* 复用 next 串成临时链 */
@@ -178,9 +186,18 @@ static rtos_tick_t timer_get_next_remain(void)
         return RTOS_WAIT_FOREVER;
     }
     rtos_tick_t now = rtos_kernel.tick_count;
-    rtos_tick_t remain = s_active_head->expire_tick - now;
-    return (remain == 0U) ? 1U : remain;
+    /* 带符号差值: 链首已"过期"(差 <= 0, 含回绕场景)时返回 1 立即到期处理,
+     * 避免无符号减法在回绕点附近算出巨大 remain 导致服务任务长眠。 */
+    int32_t remain = timer_tick_diff(s_active_head->expire_tick, now);
+    if (remain <= 0) {
+        return 1U;
+    }
+    return (rtos_tick_t)remain;
 }
+
+/* ============================== 服务任务 ============================== */
+
+static void timer_handle_cmd(timer_cmd_t *cmd); /* 前向声明(timer_send_cmd 就地执行用) */
 
 /**
  * @brief 发送命令到服务任务队列。
@@ -192,6 +209,17 @@ static rtos_status_t timer_send_cmd(timer_cmd_type_t type, rtos_timer_t *timer,
     cmd.type = type;
     cmd.timer = timer;
     cmd.new_period = new_period;
+
+    /* [bug fix G-6] 服务任务在自己的回调里调用 timer API 时(文档允许), 不能经
+     * 命令队列阻塞等待——唯一能腾出队列的 drain 循环正是它自己, 会自死锁 100ms
+     * 且命令静默丢失。检测到调用方就是服务任务时, 直接在临界区内就地执行命令
+     * (服务任务本身就是链表的唯一操作者, 就地执行与 drain 处理完全等价)。 */
+    if (rtos_kernel.current_tcb == &s_timer_tcb) {
+        RTOS_PORT_ENTER_CRITICAL();
+        timer_handle_cmd(&cmd);
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_OK;
+    }
 
     /* 中断中不阻塞 */
     rtos_tick_t timeout = RTOS_PORT_IN_ISR() ? RTOS_NO_WAIT : 100U;
@@ -220,6 +248,11 @@ rtos_status_t rtos_timer_create(rtos_timer_t *timer, const char *name, rtos_time
                                 void *arg, rtos_tick_t period, rtos_timer_mode_t mode)
 {
     if ((timer == NULL) || (callback == NULL) || (period == 0U)) {
+        return RTOS_ERR_PARAM;
+    }
+    /* [bug fix BUG-1] 周期必须落在带符号差值可表示域内(2^31), 否则 expire_tick
+     * 回绕后到期判断/排序错乱(周期定时器以 1kHz 风暴执行)。 */
+    if (period >= 0x80000000U) {
         return RTOS_ERR_PARAM;
     }
     memset(timer, 0, sizeof(*timer));
@@ -267,8 +300,49 @@ rtos_status_t rtos_timer_delete(rtos_timer_t *timer)
 
 /* ============================== 服务任务 ============================== */
 
+void rtos_timer_service_task(void *arg)
+{
+    (void)arg;
+    timer_cmd_t cmd;
+
+    for (;;) {
+        /* 1. 临界区内: 收集到期定时器 */
+        RTOS_PORT_ENTER_CRITICAL();
+        rtos_timer_t *expired = timer_collect_expired();
+        RTOS_PORT_EXIT_CRITICAL();
+
+        /* 2. 临界区外: 执行回调(可安全调用阻塞 API) */
+        timer_run_callbacks(expired);
+
+        /* 3. 临界区内: 重插周期定时器, 之后再计算阻塞超时。
+         *    [bug fix] 原实现在重插之前计算 timeout: 单一周期定时器触发时
+         *    被摘出链表, 此刻链表为空 → timeout=WAIT_FOREVER → recv 永久
+         *    等待命令, 周期定时器从此不再触发(实测: 100ms 周期只 fire 1 次)。
+         *    将 timeout 计算移到重插之后即可拿到新 expire 时刻。 */
+        RTOS_PORT_ENTER_CRITICAL();
+        timer_reinsert_periodic(expired);
+        rtos_tick_t timeout = timer_get_next_remain();
+        RTOS_PORT_EXIT_CRITICAL();
+
+        /* 4. 阻塞等待命令或超时(到期) */
+        rtos_status_t st = rtos_queue_recv(&s_cmd_queue, &cmd, timeout);
+
+        if (st == RTOS_OK) {
+            /* 处理命令(可能多个，循环取空队列) */
+            RTOS_PORT_ENTER_CRITICAL();
+            timer_handle_cmd(&cmd);
+            /* 继续非阻塞取剩余命令 */
+            while (rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_NO_WAIT) == RTOS_OK) {
+                timer_handle_cmd(&cmd);
+            }
+            RTOS_PORT_EXIT_CRITICAL();
+        }
+        /* 超时(st == RTOS_ERR_TIMEOUT): 下一轮循环处理到期定时器 */
+    }
+}
+
 /**
- * @brief 处理一条命令。
+ * @brief 处理一条命令(临界区内执行)。
  */
 static void timer_handle_cmd(timer_cmd_t *cmd)
 {
@@ -313,46 +387,5 @@ static void timer_handle_cmd(timer_cmd_t *cmd)
 
         default:
             break;
-    }
-}
-
-void rtos_timer_service_task(void *arg)
-{
-    (void)arg;
-    timer_cmd_t cmd;
-
-    for (;;) {
-        /* 1. 临界区内: 收集到期定时器 */
-        RTOS_PORT_ENTER_CRITICAL();
-        rtos_timer_t *expired = timer_collect_expired();
-        RTOS_PORT_EXIT_CRITICAL();
-
-        /* 2. 临界区外: 执行回调(可安全调用阻塞 API) */
-        timer_run_callbacks(expired);
-
-        /* 3. 临界区内: 重插周期定时器, 之后再计算阻塞超时。
-         *    [bug fix] 原实现在重插之前计算 timeout: 单一周期定时器触发时
-         *    被摘出链表, 此刻链表为空 → timeout=WAIT_FOREVER → recv 永久
-         *    等待命令, 周期定时器从此不再触发(实测: 100ms 周期只 fire 1 次)。
-         *    将 timeout 计算移到重插之后即可拿到新 expire 时刻。 */
-        RTOS_PORT_ENTER_CRITICAL();
-        timer_reinsert_periodic(expired);
-        rtos_tick_t timeout = timer_get_next_remain();
-        RTOS_PORT_EXIT_CRITICAL();
-
-        /* 4. 阻塞等待命令或超时(到期) */
-        rtos_status_t st = rtos_queue_recv(&s_cmd_queue, &cmd, timeout);
-
-        if (st == RTOS_OK) {
-            /* 处理命令(可能多个，循环取空队列) */
-            RTOS_PORT_ENTER_CRITICAL();
-            timer_handle_cmd(&cmd);
-            /* 继续非阻塞取剩余命令 */
-            while (rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_NO_WAIT) == RTOS_OK) {
-                timer_handle_cmd(&cmd);
-            }
-            RTOS_PORT_EXIT_CRITICAL();
-        }
-        /* 超时(st == RTOS_ERR_TIMEOUT): 下一轮循环处理到期定时器 */
     }
 }

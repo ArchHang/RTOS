@@ -28,7 +28,6 @@ struct rtos_mutex {
     uint8_t in_use;
     rtos_tcb_t *owner; /**< 当前持有者(NULL=未持有)。 */
     uint32_t recursion_count; /**< 递归获取计数。 */
-    rtos_prio_t owner_orig_priority; /**< 持有者原始优先级(继承后恢复)。 */
     rtos_wait_node_t *wait_head; /**< 等待链表头(按优先级排序)。 */
 };
 

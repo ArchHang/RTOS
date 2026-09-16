@@ -581,6 +581,19 @@ rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats)
     return RTOS_OK;
 }
 
+uint32_t rtos_perf_task_registry_count(void)
+{
+    return s_task_count;
+}
+
+rtos_tcb_t *rtos_perf_task_at(uint32_t index)
+{
+    if (index >= s_task_count) {
+        return NULL;
+    }
+    return s_task_registry[index];
+}
+
 rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t max_count,
                                       uint32_t *actual_count)
 {

@@ -72,6 +72,15 @@ void rtos_internal_mutex_release_all(rtos_tcb_t *owner);
 void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter);
 
 /**
+ * @brief 优先级变化后重挂任务所在的对象等待链(按新优先级)。
+ * @details 等待链按优先级排序插入; set_priority 或互斥锁优先级继承的
+ *          提升/恢复改变任务优先级后, 若该任务正阻塞在某对象等待链上,
+ *          必须重排, 否则 wake_highest 按旧优先级取链首 → 唤醒顺序倒置。
+ * @note  由 rtos_task.c 实现; 调用方需在临界区内。
+ */
+void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb);
+
+/**
  * @brief 计算任务的有效优先级(考虑优先级继承)。
  * @details 遍历任务持有的所有互斥锁, 取等待者中最高优先级(数值最小)与
  *          base_priority 的较小值, 作为有效优先级。

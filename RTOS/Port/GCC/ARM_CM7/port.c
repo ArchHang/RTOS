@@ -149,56 +149,14 @@ typedef struct {
 
 /* ============================== 内部变量 ============================== */
 
-/** @brief 临界区嵌套计数(每核一份)。
+/** @brief [perf P-1] 临界区嵌套计数(全局唯一, rtos_port.h 内联函数访问)。
  *         初始 0 表示未在临界区。enter 时先屏蔽中断再自增，exit 时自减，
  *         归零时解除屏蔽。BASEPRI 寄存器实际控制屏蔽，计数只跟踪嵌套深度。 */
-static volatile uint32_t s_critical_nesting = 0U;
+volatile uint32_t rtos_port_crit_nest = 0U;
 
 /* ============================== 临界区实现 ============================== */
-
-void rtos_port_enter_critical(void)
-{
-    /* 屏蔽系统调用级中断(BASEPRI)，保留高优先级中断响应。
-     * 屏障说明: msr basepri 是系统寄存器写入, 仅需 isb 刷新流水线,
-     * 保证后续指令在新的中断屏蔽状态下执行; 不需要 dsb(其等待所有
-     * 内存访问完成, 对寄存器写入无意义, 徒增 ~10+ 周期)。
-     * 本函数是全内核最高频路径之一(每个 API 至少一对), 屏障开销
-     * 直接影响系统整体性能。 */
-#if RTOS_CONFIG_USE_BASEPRI
-    __asm volatile(" msr basepri, %0 \n" /* 设置 BASEPRI 屏蔽阈值 */
-                   " isb             \n" ::"r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
-                   : "memory");
-#else
-    __asm volatile(" cpsid i \n" ::: "memory");
-#endif
-
-    /* 嵌套计数(原子操作，因中断已屏蔽) */
-    s_critical_nesting++;
-}
-
-void rtos_port_exit_critical(void)
-{
-    RTOS_ASSERT(s_critical_nesting > 0U);
-    s_critical_nesting--;
-    if (s_critical_nesting == 0U) {
-#if RTOS_CONFIG_USE_BASEPRI
-        /* 同 enter_critical: msr basepri 后仅需 isb, 不需 dsb */
-        __asm volatile(" msr basepri, %0 \n" /* 清除 BASEPRI(0=不屏蔽) */
-                       " isb             \n" ::"r"(0U)
-                       : "memory");
-#else
-        __asm volatile(" cpsie i \n" ::: "memory");
-#endif
-    }
-}
-
-rtos_bool_t rtos_port_in_isr(void)
-{
-    /* 通过 IPSR 读取当前异常号; 0=线程模式, 非0=中断 */
-    uint32_t ipsr;
-    __asm volatile(" mrs %0, ipsr \n" : "=r"(ipsr)::"memory");
-    return (ipsr != 0U) ? RTOS_TRUE : RTOS_FALSE;
-}
+/* [perf P-1] enter/exit/in_isr 已移至 rtos_port.h 的 static inline,
+ * 消除每对临界区 ~10 周期的函数调用开销; exit 侧去掉 isb。 */
 
 void rtos_port_disable_interrupts(void)
 {
@@ -224,17 +182,36 @@ void rtos_port_set_interrupt_mask(uint32_t mask)
 
 uint32_t rtos_port_get_critical_nesting(void)
 {
-    return s_critical_nesting;
+    return rtos_port_crit_nest;
+}
+
+uint32_t rtos_port_isr_priority(void)
+{
+    /* [guard G-3] 读取当前激活中断的 NVIC 优先级(高 4 位有效, 与
+     * BASEPRI 数值直接可比)。线程模式返回 0。 */
+    uint32_t ipsr;
+    __asm volatile(" mrs %0, ipsr \n" : "=r"(ipsr) :: "memory");
+    if (ipsr == 0U) {
+        return 0U; /* 线程模式 */
+    }
+    if (ipsr >= 16U) {
+        /* 外设 IRQ: NVIC->IP[] 已是移位后的值(优先级 << (8-__NVIC_PRIO_BITS)) */
+        return NVIC->IP[ipsr - 16U];
+    }
+    /* 系统异常(PendSV/SysTick/SVC 等): SCB->SHP[(编号&0xF)-4] */
+    return SCB->SHP[(ipsr & 0xFU) - 4U];
 }
 
 /* ============================== 触发上下文切换 ============================== */
 
 void rtos_port_context_switch(void)
 {
+#if RTOS_CONFIG_PERF_HOTPATH_STATS
     /* 性能监视器: 记录 PendSV 挂起时刻, 供调度延迟统计。
      * 必须在置 PENDSVSET 之前调用, 以精确测量"请求切换→实际切换"的派发延迟。
      * 开销: 1 次 DWT_CYCCNT 读取 + 1 次内存写, 约 3 周期。 */
     rtos_perf_on_pend_switch();
+#endif
 
     /* 设置 PendSV 挂起位; PendSV 优先级最低，会在退出所有中断后执行 */
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
@@ -320,70 +297,71 @@ rtos_stack_t *rtos_port_init_stack(rtos_stack_t *stack_top, uint32_t stack_size,
     return sp; /* 指向 R3 填充(最低地址)，与 PendSV 恢复顺序一致 */
 }
 
-/* ============================== C 辅助: 保存并切换 ============================== */
-
-/**
- * @brief PendSV 的 C 辅助函数: 保存当前 PSP，切换 TCB，返回新 PSP。
- * @param cur_psp 当前任务 PSP(已保存 R4-R11 等)。
- * @return 新任务的 PSP。
- *
- * @details 由 PendSV 汇编入口调用。在 MSP 上运行，可自由使用 C。
- *          不应被其他代码调用。
- */
-rtos_stack_t *rtos_port_save_and_switch(rtos_stack_t *cur_psp)
-{
-    /* 保存当前任务栈顶到其 TCB(top_of_stack 位于 TCB 偏移 0) */
-    rtos_kernel.current_tcb->top_of_stack = cur_psp;
-
-    /* 执行调度层切换: current_tcb = next_tcb，更新任务状态 */
-    rtos_sched_context_switch();
-
-    /* 返回新任务的栈顶 */
-    return rtos_kernel.current_tcb->top_of_stack;
-}
-
 /* ============================== PendSV 中断(上下文切换) ============================== */
+
+/* [perf P-2] rtos_kernel.current_tcb 的字节偏移(PendSV 汇编直接寻址用)。
+ * 编译期断言防止结构体布局变化后汇编悄悄寻址错误字段。 */
+#define PORT_CUR_TCB_OFF ((int)__builtin_offsetof(rtos_kernel_t, current_tcb))
+#define PORT_TOP_STACK_OFF ((int)__builtin_offsetof(rtos_tcb_t, top_of_stack))
+_Static_assert(PORT_TOP_STACK_OFF == 0, "top_of_stack must be first field of TCB");
 
 /**
  * @brief PendSV 中断处理: 执行上下文切换。
  * @details naked 函数，无 prologue/epilogue，纯汇编。
  *
+ * [perf P-2] 扁平化: 原实现经 ldr+blx 间接调用 rtos_port_save_and_switch
+ * (C 函数: 保存 top_of_stack → 调 rtos_sched_context_switch → 返回新 PSP),
+ * 共两层调用。现改为: 汇编内直接保存 top_of_stack(经偏移寻址)后直接
+ * bl rtos_sched_context_switch, 从新 current_tcb 读回 PSP。
+ * 消除一层调用序言/尾声 + 间接寻址, 每次切换节省 ~10-20 周期。
+ *
  * 流程:
  *   1. 读 PSP(当前任务栈)。
  *   2. 测试 LR(EXC_RETURN).bit4: 0=扩展帧(含 FPU)，保存 S16-S31。
- *   3. 保存 R4-R11。
- *   4. 保存 EXC_RETURN 与 R3(对齐填充)。
- *   5. 调用 rtos_port_save_and_switch(PSP) 切换 TCB，返回新 PSP。
- *   6. 恢复 R3/EXC_RETURN、R4-R11，按 bit4 决定是否恢复 S16-S31。
- *   7. 设置 PSP，BX LR 异常返回。
+ *   3. 保存 R4-R11 + EXC_RETURN。
+ *   4. 保存栈顶到 current_tcb->top_of_stack(汇编直存)。
+ *   5. 调用 rtos_sched_context_switch 更新 current_tcb = next_tcb。
+ *   6. 从新 current_tcb->top_of_stack 读回 PSP, 恢复上下文, 异常返回。
  *
- * @note  使用 R3 作为对齐填充寄存器(其值在硬件帧中，可丢弃)。
+ * @note  bl 覆盖 LR: EXC_RETURN 已保存到旧任务栈, 恢复时从新任务栈
+ *        ldmia 取回新任务的 EXC_RETURN, 与原实现一致。
+ * @note  PendSV 为最低优先级, 不会被 syscall 级中断打断, C 调用无需
+ *        BASEPRI 保护(与原 save_and_switch 同判)。
  */
 void rtos_port_pend_sv_handler(void)
 {
-    __asm volatile(" mrs r0, psp                  \n" /* r0 = 当前 PSP */
-                   " isb                          \n"
-                   "                              \n"
-                   " tst lr, #0x10                \n" /* 测试 EXC_RETURN.bit4 */
-                   " it eq                        \n" /* 若 bit4=0(扩展帧) */
-                   " vstmdbeq r0!, {s16-s31}      \n" /*   保存 S16-S31 */
-                   "                              \n"
-                   " stmdb r0!, {r4-r11}          \n" /* 保存 R4-R11 */
-                   " stmdb r0!, {r3, lr}          \n" /* 保存 R3(对齐) + LR(EXC_RETURN) */
-                   "                              \n"
-                   " ldr r1, =rtos_port_save_and_switch \n"
-                   " blx r1                       \n" /* r0 = 新 PSP */
-                   "                              \n"
-                   " ldmia r0!, {r3, lr}          \n" /* 恢复 R3 + 新任务 EXC_RETURN */
-                   " ldmia r0!, {r4-r11}          \n" /* 恢复 R4-R11 */
-                   " tst lr, #0x10                \n" /* 测试新任务帧类型 */
-                   " it eq                        \n"
-                   " vldmiaeq r0!, {s16-s31}      \n" /* 恢复 S16-S31(若扩展帧) */
-                   "                              \n"
-                   " msr psp, r0                  \n" /* 设置新 PSP */
-                   " isb                          \n"
-                   " bx lr                        \n" /* 异常返回到新任务 */
-                   " .ltorg                       \n");
+    __asm volatile(
+        " mrs  r0, psp                        \n" /* r0 = 当前 PSP */
+        " isb                                 \n"
+        "                                     \n"
+        " tst  lr, #0x10                      \n" /* 测试 EXC_RETURN.bit4 */
+        " it   eq                             \n" /* 若 bit4=0(扩展帧) */
+        " vstmdbeq r0!, {s16-s31}             \n" /*   保存 S16-S31 */
+        "                                     \n"
+        " stmdb r0!, {r4-r11}                 \n" /* 保存 R4-R11 */
+        " stmdb r0!, {r3, lr}                 \n" /* 保存 R3(对齐) + LR(EXC_RETURN) */
+        "                                     \n"
+        " ldr  r1, =rtos_kernel               \n"
+        " ldr  r1, [r1, %[cur]]               \n" /* r1 = current_tcb (GCC "i" 约束自带 # 前缀) */
+        " str  r0, [r1, %[top]]               \n" /* 保存栈顶到 TCB */
+        "                                     \n"
+        " bl   rtos_sched_context_switch      \n" /* current_tcb = next(单层调用) */
+        "                                     \n"
+        " ldr  r1, =rtos_kernel               \n"
+        " ldr  r1, [r1, %[cur]]               \n" /* r1 = 新 current_tcb */
+        " ldr  r0, [r1, %[top]]               \n" /* r0 = 新任务栈顶 */
+        "                                     \n"
+        " ldmia r0!, {r3, lr}                 \n" /* 恢复 R3 + 新任务 EXC_RETURN */
+        " ldmia r0!, {r4-r11}                 \n" /* 恢复 R4-R11 */
+        " tst  lr, #0x10                      \n" /* 测试新任务帧类型 */
+        " it   eq                             \n"
+        " vldmiaeq r0!, {s16-s31}             \n" /* 恢复 S16-S31(若扩展帧) */
+        "                                     \n"
+        " msr  psp, r0                        \n" /* 设置新 PSP */
+        " isb                                 \n"
+        " bx   lr                             \n" /* 异常返回到新任务 */
+        " .ltorg                              \n"
+        : : [cur] "i" (PORT_CUR_TCB_OFF), [top] "i" (PORT_TOP_STACK_OFF));
 }
 
 /* ============================== 启动首个任务 ============================== */
@@ -461,8 +439,9 @@ void rtos_port_start_first_task(void)
     __asm volatile(
         " msr basepri, %0              \n" /* 屏蔽 SysTick/PendSV, 不屏蔽 SVC */
         " cpsie i                      \n" /* 开中断, SVC(优先级0)立即响应 */
-        " dsb                          \n"
-        " isb                          \n"
+        " isb                          \n" /* [perf S-9] PRIMASK 写入仅需 isb 刷新
+                                              * 取指流, dsb 徒增 ~10 周期(一次性
+                                              * 路径, 纯卫生修正) */
         " svc 0                        \n" /* 触发 SVC,进入 Handler 模式 */
         " .ltorg                       \n" ::"r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
         : "memory");
@@ -507,7 +486,7 @@ void rtos_port_start_scheduler(void)
     FPU->FPCCR |= FPU_FPCCR_ASPEN_Msk | FPU_FPCCR_LSPEN_Msk;
 
     /* 2. 初始化临界区嵌套计数(启动后第一次进临界区会自增) */
-    s_critical_nesting = 0U;
+    rtos_port_crit_nest = 0U;
 
     /* 3. 配置 SysTick 产生 RTOS_CONFIG_TICK_RATE_HZ 的周期中断。
      *    SystemCoreClock 由用户工程提供(必须 > 0)，移植层据此计算重载值。

@@ -135,6 +135,30 @@
  *         0=不填充(仅测量当前栈指针位置, 开销更小)。 */
 #define RTOS_CONFIG_PERF_STACK_WATERMARK (1)
 
+/** @brief [perf P-3] 上下文切换热路径统计开关。
+ *         1 = 全量统计(任务运行周期/CPU 占比/切换频率/调度延迟分布):
+ *             每次切换额外付出 ~25 周期(DWT 读 + prev 累计 + 3 项延迟 RMW),
+ *             每次切换请求 +4 周期(pend 时刻记录)。
+ *         0 = 零开销: 切换路径无任何统计指令, rtos_perf_get_system 的
+ *             cpu_usage/调度延迟、get_task 的 run_time_us 返回 0;
+ *             uptime/任务数/内存/栈水位等非热路径统计不受影响。
+ *         默认 0(性能优先)。 */
+#define RTOS_CONFIG_PERF_HOTPATH_STATS (0)
+
+/** @brief [guard G-3] ISR-API 优先级违约断言。
+ *         优先级数值 < MAX_SYSCALL(0x50, 即 NVIC 优先级 0-4)的中断调用
+ *         内核 API 时, BASEPRI 屏蔽失效, 内核数据结构会被静默破坏
+ *         (随机 HardFault, 无从排查)。FreeRTOS 以 vPortValidateInterruptPriority
+ *         在每次 FromISR 调用时捕获。本断言仅在 RTOS_CONFIG_ASSERT_ENABLED
+ *         时生效(发布版零开销), 在允许 ISR 调用的 API 入口检查。 */
+#if RTOS_CONFIG_ASSERT_ENABLED
+#define RTOS_ASSERT_ISR_OK()                                                                          \
+    RTOS_ASSERT((RTOS_PORT_IN_ISR() == RTOS_FALSE) ||                                                 \
+                (rtos_port_isr_priority() >= RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY))
+#else
+#define RTOS_ASSERT_ISR_OK() ((void)0)
+#endif
+
 /* ============================== USB 子系统 ============================== */
 
 /** @brief 是否启用 USB 子系统(1=启用, 0=关闭)。

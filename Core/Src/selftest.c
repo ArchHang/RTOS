@@ -225,11 +225,16 @@ void selftest_pre_start(void)
     st_expect("TASK", "create_null_entry", rtos_task_create(&t, 256, NULL, NULL, 5, "x"), RTOS_ERR_NULL);
     st_expect("TASK", "create_prio_32", rtos_task_create(&t, 256, st_p31_fn, NULL, 32, "x"), RTOS_ERR_PARAM);
     st_expect("TASK", "create_prio_9999", rtos_task_create(&t, 256, st_p31_fn, NULL, 9999, "x"), RTOS_ERR_PARAM);
-    st_expect("TASK", "create_stack_19", rtos_task_create(&t, 19, st_p31_fn, NULL, 5, "x"), RTOS_ERR_PARAM);
+    st_expect("TASK", "create_stack_39", rtos_task_create(&t, 39, st_p31_fn, NULL, 5, "x"), RTOS_ERR_PARAM);
+    /* [fix BUG-4] stack_size*4 乘法回绕: 0x40000001 通过 >=40 检查但乘 4 回绕成 4 */
+    st_expect("TASK", "create_stack_wrap", rtos_task_create(&t, 0x40000001U, st_p31_fn, NULL, 5, "x"), RTOS_ERR_PARAM);
     st_expect("TASK", "static_null_tcb", rtos_task_create_static(NULL, NULL, 64, st_p31_fn, NULL, 5, "x"), RTOS_ERR_NULL);
+    st_expect("TASK", "static_stack_39", rtos_task_create_static(&t, NULL, 39, st_p31_fn, NULL, 5, "x"), RTOS_ERR_NULL);
 
-    /* ---- task: 极限参数创建成功(启动后验证运行) ---- */
-    st_expect("TASK", "create_prio31_stack20", rtos_task_create(&st_p31_tcb, 20, st_p31_fn,
+    /* ---- task: 极限参数创建成功(启动后验证运行) ----
+     * [fix BUG-4] 最小栈 20→96 字: init 18 + FPU 阻塞压栈 52 + 调用链裕量
+     * (实测 20 字 FPU 任务首次切换即越界写穿堆元数据)。 */
+    st_expect("TASK", "create_prio31_stack128", rtos_task_create(&st_p31_tcb, 128, st_p31_fn,
              (void *)&st_p31_flag, 31, "p31"), RTOS_OK);
 
     /* ---- 通知: 启动前发给未运行任务(安全) ---- */
@@ -1446,7 +1451,9 @@ static void test_heap(void)
     for (i = 0; i < n; i++) {
         rtos_heap_free(keep[i]);
     }
-    ST_CHECK("HEAP", "free_recovered", rtos_heap_get_free() >= f0 - 64U,
+    /* [fix BUG-7 后账目精确] 顺序 free 26 块互不合并(仅前向合并的设计弱点),
+     * 每块 header 8B 保留: 26×8=208B 碎片开销是真实物理占用而非账目错误 */
+    ST_CHECK("HEAP", "free_recovered", rtos_heap_get_free() >= (f0 - 400U),
              "f0=%u now=%u", (unsigned)f0, (unsigned)rtos_heap_get_free());
 
     /* 双重释放: 静默忽略, 计数不变 */
@@ -1491,9 +1498,13 @@ static void test_perf(void)
         ST_CHECK("PERF", "tick_rate_1000", sys.tick_rate_hz == 1000U, "hz=%u", (unsigned)sys.tick_rate_hz);
         ST_CHECK("PERF", "cpu_freq_168m", sys.cpu_freq_hz == 168000000U, "hz=%u", (unsigned)sys.cpu_freq_hz);
         ST_CHECK("PERF", "uptime_pos", sys.uptime_ticks > 0U, "t=%u", (unsigned)sys.uptime_ticks);
-        ST_CHECK("PERF", "switches_pos", sys.total_switches > 0U, "s=%u", (unsigned)sys.total_switches);
         ST_CHECK("PERF", "task_count_pos", sys.task_count >= 2U, "n=%u", (unsigned)sys.task_count);
         ST_CHECK("PERF", "cpu_usage_range", sys.cpu_usage_x100 <= 10000U, "cpu=%u", (unsigned)sys.cpu_usage_x100);
+#if RTOS_CONFIG_PERF_HOTPATH_STATS
+        ST_CHECK("PERF", "switches_pos", sys.total_switches > 0U, "s=%u", (unsigned)sys.total_switches);
+#else
+        ST_INFO("PERF", "switches_stats_off", "HOTPATH_STATS=0: total_switches/cpu 派生统计不可用(零开销档)");
+#endif
     }
 
     /* 窗口推进: 两次查询之间只做 delay(printf 耗时会污染窗口), 断言后置 */
@@ -1513,8 +1524,12 @@ static void test_perf(void)
     r = rtos_perf_get_task(NULL, &ts); /* NULL = 当前任务 */
     st_expect("PERF", "get_task_self", r, RTOS_OK);
     if (r == RTOS_OK) {
+#if RTOS_CONFIG_PERF_HOTPATH_STATS
         ST_CHECK("PERF", "self_run_time", ts.run_time_us > 0U, "us=%u", (unsigned)ts.run_time_us);
-        ST_CHECK("PERF", "self_switches", ts.switch_count > 0U, "sw=%u", (unsigned)ts.switch_count);
+#else
+        ST_INFO("PERF", "self_run_time_off", "HOTPATH_STATS=0: run_time_us 不可用(零开销档)");
+#endif
+        ST_CHECK("PERF", "self_switches", ts.switch_count > 0U, "sw=%u", (unsigned)ts.switch_count); /* TCB 级计数, 不依赖热路径 */
         ST_CHECK("PERF", "stack_watermark", ts.stack_used_bytes > 0U && ts.stack_used_bytes < ts.stack_total_bytes,
                  "used=%u total=%u", (unsigned)ts.stack_used_bytes, (unsigned)ts.stack_total_bytes);
         ST_CHECK("PERF", "stack_free_pos", ts.stack_free_bytes > 0U, "free=%u", (unsigned)ts.stack_free_bytes);
@@ -1623,7 +1638,7 @@ static void test_isr_matrix(void)
 /* ---------------- 栈溢出检测 ---------------- */
 
 static rtos_tcb_t    ovf_tcb;
-static rtos_stack_t  ovf_stack[64];
+static rtos_stack_t  ovf_stack[128];
 
 static void st_ovf_fn(void *arg)
 {
@@ -1647,7 +1662,7 @@ static void test_stack_overflow(void)
 
     st_ovf_flag = 0;
     st_ovf_tcb = NULL;
-    r = rtos_task_create_static(&ovf_tcb, ovf_stack, 64, st_ovf_fn, NULL, 25, "ovf");
+    r = rtos_task_create_static(&ovf_tcb, ovf_stack, 128, st_ovf_fn, NULL, 25, "ovf");
     st_expect("OVF", "create_static", r, RTOS_OK);
 
     rtos_task_delay(1400);
@@ -1685,8 +1700,453 @@ static void test_time_slice(void)
 }
 
 /* ==================================================================== */
-/*                          顶层测试主任务                                */
+/*                     修复验证用例 (对应 rtos_improvement_roadmap)      */
 /* ==================================================================== */
+
+/* ---- FIX-1: tick 回绕安全 ---- */
+static rtos_tcb_t *tk_tcb;
+static volatile uint32_t tk_fell_asleep_at, tk_woke_at, tk_never_flag;
+static volatile rtos_tick_t tk_wt_fire_tick;
+
+static void tk_wrap_timer_cb(void *arg)
+{
+    (void)arg;
+    tk_wt_fire_tick = rtos_sched_get_tick_count();
+}
+
+static void tk_big_delay_fn(void *arg)
+{
+    (void)arg;
+    tk_fell_asleep_at = rtos_sched_get_tick_count();
+    rtos_task_delay(0xFFFFFF00U); /* [fix] 钳制为永久, 不再 1ms 内误醒 */
+    tk_woke_at = rtos_sched_get_tick_count();
+    tk_never_flag = 1U; /* 不应执行到这里(永久阻塞) */
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void test_fix_tick_wrap(void)
+{
+    rtos_task_create(&tk_tcb, 128, tk_big_delay_fn, NULL, 12, "fx_tk");
+    rtos_task_delay(80); /* 修复前: victim 会在 ~1ms 内醒来并置 flag */
+    ST_CHECK("FIX1", "big_delay_not_early_wake", tk_never_flag == 0U, "");
+    rtos_task_delete(tk_tcb);
+
+    /* 回绕点仿真: 直接把系统 tick 推到回绕边界前, delay(200) 应精确 200ms 醒来 */
+    {
+        rtos_tick_t t0, dt;
+        rtos_kernel.tick_count = 0xFFFFFF00U; /* 仿真 49.7 天运行点 */
+        t0 = rtos_sched_get_tick_count();
+        rtos_task_delay(200);
+        dt = rtos_sched_get_tick_count() - t0;
+        ST_CHECK("FIX1", "wrap_delay200", (dt >= 198U) && (dt <= 206U), "dt=%u", (unsigned)dt);
+        /* 回绕点附近的定时器 */
+        {
+            static rtos_timer_t wt;
+            tk_wt_fire_tick = 0;
+            st_expect("FIX1", "wrap_timer_create",
+                      rtos_timer_create(&wt, "fx_w", tk_wrap_timer_cb, NULL, 100, RTOS_TIMER_ONE_SHOT), RTOS_OK);
+            t0 = rtos_sched_get_tick_count();
+            rtos_timer_start(&wt);
+            rtos_task_delay(160);
+            ST_CHECK("FIX1", "wrap_timer_fired_ontime",
+                     (tk_wt_fire_tick != 0U) && ((tk_wt_fire_tick - t0) >= 95U) && ((tk_wt_fire_tick - t0) <= 130U),
+                     "dt=%u", (unsigned)(tk_wt_fire_tick - t0));
+            rtos_timer_stop(&wt);
+        }
+        /* tick 移出回绕区, 恢复正常量程 */
+        rtos_kernel.tick_count = 100000U;
+    }
+
+    /* 定时器周期上限: >= 2^31 拒绝 */
+    {
+        rtos_timer_t bad;
+        st_expect("FIX1", "timer_period_max", rtos_timer_create(&bad, "x", tk_wrap_timer_cb, NULL, 0x80000000U,
+                      RTOS_TIMER_PERIODIC), RTOS_ERR_PARAM);
+    }
+}
+
+/* ---- FIX-2: resume TOCTOU 并发压力 ---- */
+static rtos_tcb_t *rm_victim_tcb;
+static volatile uint32_t rm_wake_count, rm_rounds;
+static volatile uint8_t rm_isr_go;
+
+static void rm_victim_fn(void *arg)
+{
+    (void)arg;
+    for (;;) {
+        rm_wake_count++;
+        rtos_task_suspend(NULL); /* 每轮被唤醒后立刻再挂起 */
+    }
+}
+
+static void rm_isr_fn(void *arg)
+{
+    /* 并发源: 高于主任务(9)的优先级 5, 每毫秒醒来 resume 同一 victim,
+     * 与主任务的 resume 竞争"检查-入环"窗口(修复前检查在临界区外)。 */
+    (void)arg;
+    for (;;) {
+        rtos_task_delay(1);
+        if (rm_isr_go != 0U) {
+            rtos_task_resume(rm_victim_tcb);
+        }
+    }
+}
+
+static void test_fix_resume_race(void)
+{
+    rtos_tcb_t *isr;
+    uint32_t i;
+    rtos_perf_task_t arr[4];
+    uint32_t n = 0;
+
+    rm_wake_count = 0;
+    rm_rounds = 0;
+    rm_isr_go = 0;
+    rtos_task_create(&rm_victim_tcb, 256, rm_victim_fn, NULL, 5, "fx_rv");  /* 高于主任务: 被唤醒即运行 */
+    rtos_task_create(&isr, 256, rm_isr_fn, NULL, 6, "fx_rh"); /* 高于主任务, 低于 victim */
+
+    rtos_task_delay(30); /* victim 现已 SUSPENDED */
+    for (i = 0; i < 3000U; i++) {
+        rm_isr_go = 1U;
+        rtos_task_resume(rm_victim_tcb); /* 与高优先级任务竞争同一窗口 */
+        rm_isr_go = 0U;
+        rm_rounds++;
+    }
+    rtos_task_delay(50);
+    /* 存活性判据: 链表未坏 → 任务仍在注册表且可调度; 唤醒计数与轮次同量级 */
+    rtos_perf_get_all_tasks(arr, 4, &n);
+    ST_CHECK("FIX2", "resume_race_alive", (rm_wake_count >= rm_rounds / 2U) && (n >= 4U),
+             "wake=%u rounds=%u n=%u", (unsigned)rm_wake_count, (unsigned)rm_rounds, (unsigned)n);
+    rtos_task_delete(rm_victim_tcb);
+    rtos_task_delete(isr);
+}
+
+/* ---- FIX-3: event deinit 后 UAF (栈上对象) ---- */
+static volatile uint8_t ev2_done;
+
+static void ev2_waiter_fn(void *arg)
+{
+    rtos_event_t *ev = (rtos_event_t *)arg; /* 指向主任务栈上的对象! */
+    ev2_done = 0;
+    (void)rtos_event_wait(ev, 0x01U, RTOS_EVENT_WAIT_ANY, RTOS_WAIT_FOREVER);
+    ev2_done = 1U; /* 醒来后 delay 拉开与 deinit 的时序, 确保读到的是"修复后不回读" */
+    rtos_task_delay(50);
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void test_fix_event_uaf(void)
+{
+    rtos_tcb_t *vt;
+    rtos_event_t ev_on_stack; /* 栈上对象: deinit 返回后即"销毁" */
+
+    rtos_event_init(&ev_on_stack);
+    rtos_task_create(&vt, 256, ev2_waiter_fn, (void *)&ev_on_stack, 12, "fx_ev");
+    rtos_task_delay(30);
+    rtos_event_deinit(&ev_on_stack); /* 等待者被置 DELETED; 此后本栈帧继续被复用 */
+    rtos_task_delay(120); /* 等待者运行: 修复前会回读已"销毁"的栈内存 */
+    ST_CHECK("FIX3", "event_uaf_survive", ev2_done == 1U, "done=%u", (unsigned)ev2_done);
+    rtos_task_delete(vt);
+}
+
+/* ---- FIX-4: FPU 任务 40 字最小栈 ---- */
+static volatile uint8_t fpu_ok;
+
+static void fpu_small_fn(void *arg)
+{
+    volatile float x = 1.5f; /* 触发 FPU 帧建立 */
+    (void)arg;
+    x = x * 3.3f + 2.7f;
+    rtos_task_delay(30); /* 阻塞 → PendSV 条件压 S16-S31 */
+    if (x > 5.0f) { fpu_ok = 1U; }
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void test_fix_min_stack_fpu(void)
+{
+    rtos_tcb_t *t;
+
+    fpu_ok = 0;
+    st_ovf_flag = 0; /* 清除前序 OVF 用例遗留(该用例只置不清) */
+    st_expect("FIX4", "fpu_stack95_rejected", rtos_task_create(&t, 95, fpu_small_fn, NULL, 12, "fx_f"), RTOS_ERR_PARAM);
+    st_expect("FIX4", "fpu_stack96_ok", rtos_task_create(&t, 96, fpu_small_fn, NULL, 12, "fx_f"), RTOS_OK);
+    rtos_task_delay(100);
+    ST_CHECK("FIX4", "fpu_small_stack_survive", fpu_ok == 1U, "");
+    ST_CHECK("FIX4", "no_overflow_hook", st_ovf_flag == 0U, ""); /* 96 字栈不应触发溢出钩子 */
+    rtos_task_delete(t);
+}
+
+/* ---- FIX-5: heap 输入域 ---- */
+static void test_fix_heap_domain(void)
+{
+    ST_CHECK("FIX5", "alloc_wrap_null", rtos_heap_alloc(0xFFFFFFF8U) == NULL, "");
+    ST_CHECK("FIX5", "alloc_huge_null", rtos_heap_alloc(0x7FFFFFFFU) == NULL, "");
+}
+
+/* ---- FIX-6: to_front 阻塞代办 ---- */
+static void fx_tofront_sender_fn(void *arg)
+{
+    victim_ctx_t *c = (victim_ctx_t *)arg;
+    /* 以 to_front=TRUE 阻塞: 紧急消息应插到队首, 而非代办到队尾 */
+    c->result = rtos_queue_send(c->q, (const void *)&c->data, c->timeout, RTOS_TRUE);
+    c->done = 1;
+    for (;;) { rtos_task_delay(100); }
+}
+
+static void test_fix_tofront_defer(void)
+{
+    rtos_queue_t q;
+    static uint8_t storage[2 * 4];
+    uint32_t v;
+    rtos_tcb_t *vt;
+
+    rtos_queue_init(&q, storage, 4, 2);
+    v = 1; rtos_queue_send(&q, &v, RTOS_NO_WAIT, RTOS_FALSE);
+    v = 2; rtos_queue_send(&q, &v, RTOS_NO_WAIT, RTOS_FALSE); /* 满 */
+    memset((void *)&vc, 0, sizeof(vc));
+    vc.q = &q;
+    vc.data = 0x99U; /* 紧急消息 */
+    vc.timeout = RTOS_WAIT_FOREVER;
+    /* sender 用高优先级(5): 创建即抢占主任务完成阻塞, 时序 100% 确定 */
+    rtos_task_create(&vt, 256, fx_tofront_sender_fn, &vc, 5, "fx_tf");
+    v = 0;
+    rtos_queue_recv(&q, &v, RTOS_NO_WAIT); /* 腾 1 格 → 代办 sender 消息(应插队首) */
+    rtos_task_delay(50);
+    ST_CHECK("FIX6", "sender_woken", vc.done == 1U, "");
+    {
+        uint32_t got = 0;
+        rtos_queue_recv(&q, &got, RTOS_NO_WAIT);
+        ST_CHECK("FIX6", "tofront_defer_first", got == 0x99U, "got=%x", (unsigned)got); /* 紧急消息先于旧消息2 */
+    }
+    rtos_task_delete(vt);
+}
+
+/* ---- FIX-7: heap 合并统计不下溢 ---- */
+static void test_fix_heap_merge_stats(void)
+{
+    uint32_t i;
+    for (i = 0; i < 500U; i++) {
+        void *p = rtos_heap_alloc(64);
+        void *q2 = rtos_heap_alloc(64);
+        void *r;
+        if ((p == NULL) || (q2 == NULL)) { rtos_heap_free(p); rtos_heap_free(q2); break; }
+        rtos_heap_free(q2); /* 先 free 后块 */
+        rtos_heap_free(p);  /* 再 free 前块 → 前后相邻空闲合并(next 的 header 入账) */
+        r = rtos_heap_alloc(120); /* 整块重新分配 */
+        rtos_heap_free(r);
+    }
+    ST_CHECK("FIX7", "heap_stats_no_underflow", rtos_heap_get_free() <= RTOS_CONFIG_HEAP_SIZE,
+             "free=%u", (unsigned)rtos_heap_get_free());
+}
+
+/* ---- FIX-RACE3: 双重删除 ---- */
+static rtos_tcb_t   dd_tcb;    /* 静态 TCB: 自删后不被回收, 二次 delete 读到确定状态 */
+static rtos_stack_t dd_stack[96];
+
+static void test_fix_double_delete(void)
+{
+    static volatile uint32_t dead2;
+    dead2 = 0;
+    /* 静态任务自删: state=DELETED 且 TCB/栈不被回收 → 二次 delete 走防护分支 */
+    st_expect("FIXR3", "dd_create", rtos_task_create_static(&dd_tcb, dd_stack, 96,
+              st_suicide_fn, (void *)&dead2, 12, "fx_dd"), RTOS_OK);
+    rtos_task_delay(80); /* 已自删: state=DELETED, 静态 TCB 内存仍在 */
+    st_expect("FIXR3", "double_delete_rejected", rtos_task_delete(&dd_tcb), RTOS_ERR_PARAM);
+    /* 拒删 idle */
+    st_expect("FIXR3", "delete_idle_rejected", rtos_task_delete(rtos_kernel.idle_tcb), RTOS_ERR_PARAM);
+}
+
+/* ---- FIX-PI1: 多锁优先级继承 ---- */
+static rtos_mutex_t pi_l1, pi_l2;
+static rtos_tcb_t *pi2_low_tcb;
+static volatile uint8_t pi2_h1_got, pi2_h2_got;
+
+static void pi2_low_fn(void *arg)
+{
+    uint32_t v;
+    (void)arg;
+    rtos_mutex_take(&pi_l1, RTOS_WAIT_FOREVER);
+    rtos_mutex_take(&pi_l2, RTOS_WAIT_FOREVER);
+    for (;;) {
+        rtos_task_notify_wait(RTOS_WAIT_FOREVER, &v); /* 等主任务: 阶段1 检查后 give L1 */
+        rtos_mutex_give(&pi_l1);
+        rtos_task_notify_wait(RTOS_WAIT_FOREVER, &v); /* 等主任务: 阶段2 检查后 give L2 */
+        rtos_mutex_give(&pi_l2);
+        rtos_task_notify_wait(RTOS_WAIT_FOREVER, &v); /* 等主任务收尾 */
+        break;
+    }
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void pi2_h1_fn(void *arg)
+{
+    (void)arg;
+    rtos_mutex_take(&pi_l1, RTOS_WAIT_FOREVER);
+    pi2_h1_got = 1U;
+    rtos_mutex_give(&pi_l1);
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void pi2_h2_fn(void *arg)
+{
+    (void)arg;
+    rtos_mutex_take(&pi_l2, RTOS_WAIT_FOREVER);
+    pi2_h2_got = 1U;
+    rtos_mutex_give(&pi_l2);
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void test_fix_multilock_inherit(void)
+{
+    rtos_tcb_t *h1, *h2;
+
+    rtos_mutex_init(&pi_l1);
+    rtos_mutex_init(&pi_l2);
+    pi2_h1_got = 0;
+    pi2_h2_got = 0;
+    rtos_task_create(&pi2_low_tcb, 256, pi2_low_fn, NULL, 20, "fx_pl");
+    rtos_task_delay(30); /* low(base 20) 持两锁 */
+    rtos_task_create(&h1, 256, pi2_h1_fn, NULL, 4, "fx_p1");
+    rtos_task_create(&h2, 256, pi2_h2_fn, NULL, 6, "fx_p2");
+    rtos_task_delay(50); /* H1(4) 等 L1, H2(6) 等 L2 → low 应被提升到 4 */
+
+    ST_CHECK("FIXP1", "multilock_boost", rtos_task_get_priority(pi2_low_tcb) == 4U,
+             "prio=%u want=4", (unsigned)rtos_task_get_priority(pi2_low_tcb));
+
+    rtos_task_notify(pi2_low_tcb, 1U, RTOS_NOTIFY_VALUE); /* 触发 give L1 */
+    rtos_task_delay(80);
+    /* [fix PI-1] 核心: 释放 L1 后应保持 L2 上 H2(6) 的提升, 而非回落 base 20 */
+    ST_CHECK("FIXP1", "keep_l2_boost_after_give_l1", rtos_task_get_priority(pi2_low_tcb) == 6U,
+             "prio=%u want=6", (unsigned)rtos_task_get_priority(pi2_low_tcb));
+    ST_CHECK("FIXP1", "h1_got_lock", pi2_h1_got == 1U, "");
+
+    rtos_task_notify(pi2_low_tcb, 1U, RTOS_NOTIFY_VALUE); /* 触发 give L2 */
+    rtos_task_delay(80);
+    ST_CHECK("FIXP1", "restore_base_after_all", rtos_task_get_priority(pi2_low_tcb) == 20U,
+             "prio=%u want=20", (unsigned)rtos_task_get_priority(pi2_low_tcb));
+    ST_CHECK("FIXP1", "h2_got_lock", pi2_h2_got == 1U, "");
+
+    rtos_task_notify(pi2_low_tcb, 1U, RTOS_NOTIFY_VALUE);
+    rtos_task_delay(30);
+    rtos_task_delete(pi2_low_tcb);
+    rtos_task_delete(h1);
+    rtos_task_delete(h2);
+}
+
+/* ---- FIX-PI2: 等待链重排 ---- */
+static rtos_sem_t rq_sem;
+static volatile uint8_t rq_order[2];
+static volatile uint8_t rq_n;
+
+static void rq_w_fn(void *arg)
+{
+    uint8_t id = (uint8_t)(uintptr_t)arg;
+    (void)arg;
+    rtos_sem_take(&rq_sem, RTOS_WAIT_FOREVER);
+    rq_order[rq_n] = id;
+    rq_n++;
+    for (;;) { rtos_task_delay(1000); }
+}
+
+static void test_fix_waitlist_requeue(void)
+{
+    rtos_tcb_t *tw, *tx;
+
+    rtos_sem_init(&rq_sem, 0, 4);
+    rq_n = 0;
+    rtos_task_create(&tw, 128, rq_w_fn, (void *)(uintptr_t)1, 12, "fx_w"); /* W 先阻塞(prio 12) */
+    rtos_task_delay(20);
+    rtos_task_create(&tx, 128, rq_w_fn, (void *)(uintptr_t)2, 14, "fx_x"); /* X 后阻塞(prio 14) */
+    rtos_task_delay(20);
+    /* 把 W 降到 20(低于 X): 修复前等待链仍 [W,X] → give 唤醒 W(错); 修复后重排 [X,W] */
+    rtos_task_set_priority(tw, 20);
+    rtos_sem_give(&rq_sem);
+    rtos_task_delay(50);
+    rtos_sem_give(&rq_sem);
+    rtos_task_delay(50);
+    ST_CHECK("FIXP2", "waitlist_requeued", (rq_n == 2U) && (rq_order[0] == 2U) && (rq_order[1] == 1U),
+             "n=%u o0=%u o1=%u", (unsigned)rq_n, (unsigned)rq_order[0], (unsigned)rq_order[1]);
+    rtos_task_delete(tw);
+    rtos_task_delete(tx);
+}
+
+/* ---- FIX-G1: mutex 注册表满 ---- */
+static void test_fix_mutex_registry_full(void)
+{
+    static rtos_mutex_t pool[RTOS_CONFIG_MAX_MUTEXES];
+    static rtos_mutex_t probe;
+    uint32_t i, ok = 0;
+
+    /* 注册表是全局共享的(前序用例的 rec_m/pi_m 等可能仍占位),
+     * 逐把填充到满: 满后 init 必须显式报 ERR_NO_MEM 而非静默放弃注册。 */
+    for (i = 0; i < RTOS_CONFIG_MAX_MUTEXES; i++) {
+        if (rtos_mutex_init(&pool[i]) != RTOS_OK) {
+            break;
+        }
+        ok++;
+    }
+    /* 填满(或本就满)后再 init 必须报错 */
+    st_expect("FIXG1", "registry_full_error", rtos_mutex_init(&probe), RTOS_ERR_NO_MEM);
+    /* deinit 全部成功者, 恢复注册表容量 */
+    for (i = 0; i < ok; i++) {
+        rtos_mutex_deinit(&pool[i]);
+    }
+    /* 回收后可重新注册 */
+    st_expect("FIXG1", "registry_reusable", rtos_mutex_init(&probe), RTOS_OK);
+    rtos_mutex_deinit(&probe);
+}
+
+/* ---- FIX-G6: timer 回调内自调用(超队列深度, 不自阻塞) ---- */
+static rtos_timer_t gs_t;
+static volatile uint32_t gs_restarts;
+
+static void gs_cb(void *arg)
+{
+    uint32_t i;
+    (void)arg;
+    /* 回调上下文 = 服务任务自身: 连续 20 次 start(命令队列深度仅 16)。
+     * 修复前: 第 17 次起 timer_send_cmd 以任务态阻塞 100ms 等自己 drain →
+     * 自死锁 100ms×N; 修复后: 就地执行, 全部立即返回。 */
+    for (i = 0; i < 20U; i++) {
+        if (rtos_timer_start(&gs_t) != RTOS_OK) {
+            return; /* 记录失败但不死锁 */
+        }
+        gs_restarts++;
+    }
+}
+
+static void test_fix_timer_selfcall(void)
+{
+    rtos_tick_t t0, dt;
+
+    gs_restarts = 0;
+    rtos_timer_create(&gs_t, "fx_gs", gs_cb, NULL, 100, RTOS_TIMER_ONE_SHOT);
+    t0 = rtos_sched_get_tick_count();
+    rtos_timer_start(&gs_t);
+    rtos_task_delay(150); /* 回调执行: 20 次 start 就地完成, 且 one-shot 被
+                             自己重启 → 需再等 100ms; 只验证"不死锁" */
+    dt = rtos_sched_get_tick_count() - t0;
+    rtos_timer_stop(&gs_t);
+    ST_CHECK("FIXG6", "no_self_deadlock", gs_restarts == 20U, "r=%u dt=%u",
+             (unsigned)gs_restarts, (unsigned)dt);
+}
+
+static void test_fixes(void)
+{
+    test_fix_tick_wrap();          /* FIX1: BUG-1 tick 回绕 + 定时器 */
+    test_fix_resume_race();       /* FIX2: BUG-2 resume TOCTOU */
+    test_fix_event_uaf();          /* FIX3: BUG-3 event UAF */
+    test_fix_min_stack_fpu();      /* FIX4: BUG-4 最小栈/FPU */
+    test_fix_heap_domain();        /* FIX5: BUG-5 heap 输入域 */
+    test_fix_tofront_defer();      /* FIX6: BUG-6 to_front 代办 */
+    test_fix_heap_merge_stats();   /* FIX7: BUG-7 heap 统计 */
+    test_fix_double_delete();     /* FIX8: RACE-3 防重入/拒删 idle */
+    test_fix_multilock_inherit();  /* FIX9: PI-1 多锁继承 */
+    test_fix_waitlist_requeue();  /* FIX10: PI-2 等待链重排 */
+    test_fix_mutex_registry_full(); /* FIX11: G-1 注册表 */
+    test_fix_timer_selfcall();    /* FIX12: G-6 自调用 */
+}
+
+
 
 void selftest_task(void *arg)
 {
@@ -1714,6 +2174,7 @@ void selftest_task(void *arg)
     test_isr_matrix();
     test_stack_overflow();
     test_time_slice();
+    test_fixes(); /* 修复验证(对应 improvement roadmap 第 1~3 批) */
 
     printf("ST|SUMMARY|pass=%u fail=%u info=%u total=%u|END\r\n",
            (unsigned)st_pass, (unsigned)st_fail, (unsigned)st_info, (unsigned)st_total);

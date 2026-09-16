@@ -138,6 +138,7 @@ typedef struct rtos_wait_node {
     struct rtos_wait_node *prev; /**< 链表前驱。 */
     void *transfer_buf; /**< 零拷贝缓冲: 发送方=待发消息; 接收方=接收缓冲。 */
     uint32_t transfer_size; /**< 零拷贝字节数(队列场景= item_size)。 */
+    uint8_t to_front; /**< [queue] 阻塞发送的插队意图(代办入队时按此选写入位置)。 */
     struct rtos_wait_node **list_head; /**< 所在等待链表头地址(超时清理用; NULL=不在链表)。 */
 } rtos_wait_node_t;
 

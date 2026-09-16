@@ -131,6 +131,16 @@ static void ready_list_rotate(rtos_prio_t prio)
     }
 }
 
+/* ============================== Tick 回绕安全比较 ============================== */
+/* tick 为 32 位无符号, 1kHz 下约 49.7 天回绕。全部到期/排序比较必须用带符号差值
+ * (模 2^32 减法取半平面), 约定单次延时/超时/周期 < 2^31 tick。
+ * [bug fix] 原实现用无符号比较: 跨回绕的延时会被排到链首并在下一个 tick 立即
+ * "到期"(如 delay(0xFFFFFF00)); 无符号排序在回绕点附近彻底错乱。 */
+static inline int32_t sched_tick_after(rtos_tick_t a, rtos_tick_t b)
+{
+    return (int32_t)(a - b);
+}
+
 /**
  * @brief 将任务按 wake_tick 升序插入延时链表。
  * @details 延时链表为简单单向链表，复用 TCB 的 next_ready 字段串接
@@ -145,43 +155,50 @@ static void delay_list_insert(rtos_tcb_t *tcb)
     rtos_tcb_t *prev = NULL;
     rtos_tcb_t *cur = rtos_kernel.delay_head;
 
-    /* 找到首个 wake_tick > tcb->wake_tick 的节点，tcb 插在其前 */
-    while ((cur != NULL) && (cur->wake_tick <= tcb->wake_tick)) {
+    /* 找到首个 wake_tick > tcb->wake_tick 的节点，tcb 插在其前(带符号差值, 回绕安全) */
+    while ((cur != NULL) && (sched_tick_after(cur->wake_tick, tcb->wake_tick) <= 0)) {
         prev = cur;
         cur = cur->next_ready;
     }
 
+    /* [perf P-5] 双向链表(复用 prev_ready 字段, 延时态与就绪态互斥):
+     * 摘除从 O(n) 降为 O(1) —— give 唤醒带超时等待者(unblock 路径)不再
+     * 需要线性搜索延时表前驱, 长延时链 + 高频 IPC 场景下唤醒路径恒定。 */
+    tcb->next_ready = cur;
+    tcb->prev_ready = prev;
     if (prev == NULL) {
         /* 插入表头(含原链表为空的情况: cur==NULL 时 tcb->next_ready 设为 NULL) */
-        tcb->next_ready = rtos_kernel.delay_head;
         rtos_kernel.delay_head = tcb;
     } else {
-        tcb->next_ready = prev->next_ready;
         prev->next_ready = tcb;
+    }
+    if (cur != NULL) {
+        cur->prev_ready = tcb;
     }
 }
 
 /**
  * @brief 从延时链表移除任务。
+ * @details [perf P-5] 双向链表 O(1) 摘除(原单向线性搜索 O(n))。
+ *          不在链上时为安全空操作(防御)。
  */
 static void delay_list_remove(rtos_tcb_t *tcb)
 {
-    rtos_tcb_t *prev = NULL;
-    rtos_tcb_t *cur = rtos_kernel.delay_head;
+    rtos_tcb_t *prev = tcb->prev_ready;
+    rtos_tcb_t *next = tcb->next_ready;
 
-    while (cur != NULL) {
-        if (cur == tcb) {
-            if (prev == NULL) {
-                rtos_kernel.delay_head = cur->next_ready;
-            } else {
-                prev->next_ready = cur->next_ready;
-            }
-            cur->next_ready = NULL;
-            return;
-        }
-        prev = cur;
-        cur = cur->next_ready;
+    if (prev != NULL) {
+        prev->next_ready = next;
+    } else if (rtos_kernel.delay_head == tcb) {
+        rtos_kernel.delay_head = next;
+    } else {
+        return; /* 不在链上(防御, 调用方应保证状态一致) */
     }
+    if (next != NULL) {
+        next->prev_ready = prev;
+    }
+    tcb->next_ready = NULL;
+    tcb->prev_ready = NULL;
 }
 
 /**
@@ -197,13 +214,17 @@ static void process_delayed_tasks(void)
 
     while (rtos_kernel.delay_head != NULL) {
         rtos_tcb_t *tcb = rtos_kernel.delay_head;
-        if (tcb->wake_tick > now) {
-            break; /* 链首未到期，后续更晚 */
+        if (sched_tick_after(tcb->wake_tick, now) > 0) {
+            break; /* 链首未到期，后续更晚(带符号差值, 回绕安全) */
         }
 
-        /* 从延时表移除 */
+        /* 从延时表移除([perf P-5] 双向链: 同步清新链首的 prev) */
         rtos_kernel.delay_head = tcb->next_ready;
+        if (rtos_kernel.delay_head != NULL) {
+            rtos_kernel.delay_head->prev_ready = NULL;
+        }
         tcb->next_ready = NULL;
+        tcb->prev_ready = NULL;
 
         /* 对象等待超时: 从对象等待链表移除，防止悬空节点 */
         if (tcb->blocked_on != NULL) {
@@ -246,6 +267,16 @@ rtos_status_t rtos_sched_init(void)
 rtos_status_t rtos_sched_start(void)
 {
     RTOS_ASSERT(rtos_kernel.sched_state == RTOS_SCHED_NOT_STARTED);
+
+    /* [bug fix RACE-2] 先屏蔽 syscall 级中断再置 RUNNING: 原实现置位后、SVC 加载
+     * PSP 前存在 ~0.5µs 裸奔窗口, 若 HAL 时代的 SysTick 恰在此窗口到期, PendSV 会
+     * 用未初始化的 PSP 保存上下文(启动即崩, 概率 ~0.05%)。BASEPRI=0x50 屏蔽
+     * SysTick/PendSV(优先级 15), SVC(优先级 0)不受影响; SVC handler 末尾已有
+     * 清 BASEPRI 逻辑, 首任务仍以全中断运行。 */
+    {
+        uint32_t mask = (uint32_t)RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY;
+        __asm volatile("msr basepri, %0" : : "r"(mask) : "memory");
+    }
 
     rtos_kernel.sched_state = RTOS_SCHED_RUNNING;
 
@@ -321,9 +352,18 @@ void rtos_sched_block(rtos_tcb_t *tcb, rtos_tick_t ticks)
         tcb->wake_tick = 0xFFFFFFFFU;
         tcb->state = RTOS_TASK_BLOCKED;
     } else {
-        tcb->wake_tick = rtos_kernel.tick_count + ticks;
-        tcb->state = RTOS_TASK_DELAYED;
-        delay_list_insert(tcb);
+        /* [bug fix BUG-1] 超过带符号差值可表示域(2^31)的延时统一钳制为
+         * 永久阻塞: 否则 wake_tick 回绕后带符号差为负, 任务下一个 tick 立即
+         * "到期" —— delay(0xFFFFFF00) 本意睡 49.7 天, 实际 1ms 就醒。 */
+        if (ticks > 0x7FFFFFFEU) {
+            ticks = RTOS_WAIT_FOREVER;
+            tcb->wake_tick = 0xFFFFFFFFU;
+            tcb->state = RTOS_TASK_BLOCKED;
+        } else {
+            tcb->wake_tick = rtos_kernel.tick_count + ticks;
+            tcb->state = RTOS_TASK_DELAYED;
+            delay_list_insert(tcb);
+        }
     }
 }
 
@@ -437,6 +477,11 @@ void rtos_sched_context_switch(void)
          * 使用过期的 next_tcb 值造成二次切换。 */
         rtos_kernel.next_tcb = NULL;
 
+        /* [bug fix RACE-1 第二层防御] next 必然来自就绪表(或就是 prev)。
+         * 若断言命中, 说明存在把非就绪任务选为 next 的路径(已删/已挂起),
+         * 会造成"RUNNING 但不在就绪链"的脏状态与后续链表损坏。 */
+        RTOS_ASSERT((next->state == RTOS_TASK_READY) || (next == prev));
+
         if (prev != NULL && prev->state == RTOS_TASK_RUNNING) {
             prev->state = RTOS_TASK_READY;
         }
@@ -444,11 +489,12 @@ void rtos_sched_context_switch(void)
         next->switch_count++;
         rtos_kernel.current_tcb = next;
 
+#if RTOS_CONFIG_PERF_HOTPATH_STATS
         /* 性能监视器钩子: 累加 prev 运行周期, 计算调度延迟, 统计切换次数。
-         * 必须在 current_tcb 更新后调用(on_context_switch 内部读 current_tcb
-         * 判断 prev 是否为 idle, 但本函数传入了 prev/next, 不依赖 current)。
-         * PendSV 最低优先级, 不会被系统调用中断打断, 等价临界区。 */
+         * [perf P-3] 编译期开关(默认关): 全量统计每次切换 ~25 周期,
+         * 关闭时切换路径零统计开销(CPU 占比/运行时长/延迟分布不可用)。 */
         rtos_perf_on_context_switch(prev, next);
+#endif
     }
 }
 

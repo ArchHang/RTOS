@@ -56,6 +56,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
     if ((queue == NULL) || (item == NULL)) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
     if (queue->is_initialized == 0U) {
         return RTOS_ERR_PARAM;
     }
@@ -113,6 +114,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->wait_node.transfer_buf = (void *)item; /* 存发送缓冲指针 */
     cur->wait_node.transfer_size = queue->item_size;
+    cur->wait_node.to_front = (uint8_t)to_front; /* [bug fix BUG-6] 记录插队意图 */
     rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout);
     RTOS_PORT_EXIT_CRITICAL();
 
@@ -153,6 +155,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         cur = rtos_kernel.current_tcb;
         cur->wait_node.transfer_buf = (void *)item;
         cur->wait_node.transfer_size = queue->item_size;
+        cur->wait_node.to_front = (uint8_t)to_front;
         rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout);
         RTOS_PORT_EXIT_CRITICAL();
 
@@ -171,6 +174,7 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
     if ((queue == NULL) || (item == NULL)) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
     if (queue->is_initialized == 0U) {
         return RTOS_ERR_PARAM;
     }
@@ -190,13 +194,24 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         queue->count--;
 
         /* 出队后腾出空位: 若有发送等待者，直接把其消息拷入环形缓冲(代入队)，
-         * 唤醒发送者(其 transfer_buf 置 NULL 表示已代办，无需重试)。 */
+         * 唤醒发送者(其 transfer_buf 置 NULL 表示已代办，无需重试)。
+         * [bug fix BUG-6] 代办写入位置按发送者阻塞时记录的 to_front 意图:
+         * 原实现无条件写 tail, to_front=TRUE 的紧急消息被排到全部旧消息
+         * 之后, 插队语义在阻塞路径丢失。 */
         if (queue->send_wait_head != NULL) {
             rtos_wait_node_t *node = queue->send_wait_head;
             rtos_internal_wait_remove(&queue->send_wait_head, node);
-            uint8_t *dst = queue->storage + queue->tail * queue->item_size;
-            memcpy(dst, node->transfer_buf, queue->item_size);
-            queue->tail = queue_next_index(queue->tail, queue->capacity);
+            if (node->to_front != 0U) {
+                uint32_t new_head =
+                    (queue->head == 0U) ? (queue->capacity - 1U) : (queue->head - 1U);
+                uint8_t *dst = queue->storage + new_head * queue->item_size;
+                memcpy(dst, node->transfer_buf, queue->item_size);
+                queue->head = new_head;
+            } else {
+                uint8_t *dst = queue->storage + queue->tail * queue->item_size;
+                memcpy(dst, node->transfer_buf, queue->item_size);
+                queue->tail = queue_next_index(queue->tail, queue->capacity);
+            }
             queue->count++; /* 空位被重新填入 */
             node->transfer_buf = NULL; /* 标记已代办入队 */
             node->list_head = NULL;
@@ -243,13 +258,21 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
             queue->head = queue_next_index(queue->head, queue->capacity);
             queue->count--;
 
-            /* 唤醒发送等待者(代办入队) */
+            /* 唤醒发送等待者(代办入队, [bug fix BUG-6] 按 to_front 意图选位置) */
             if (queue->send_wait_head != NULL) {
                 rtos_wait_node_t *node = queue->send_wait_head;
                 rtos_internal_wait_remove(&queue->send_wait_head, node);
-                uint8_t *dst = queue->storage + queue->tail * queue->item_size;
-                memcpy(dst, node->transfer_buf, queue->item_size);
-                queue->tail = queue_next_index(queue->tail, queue->capacity);
+                if (node->to_front != 0U) {
+                    uint32_t new_head =
+                        (queue->head == 0U) ? (queue->capacity - 1U) : (queue->head - 1U);
+                    uint8_t *dst = queue->storage + new_head * queue->item_size;
+                    memcpy(dst, node->transfer_buf, queue->item_size);
+                    queue->head = new_head;
+                } else {
+                    uint8_t *dst = queue->storage + queue->tail * queue->item_size;
+                    memcpy(dst, node->transfer_buf, queue->item_size);
+                    queue->tail = queue_next_index(queue->tail, queue->capacity);
+                }
                 queue->count++;
                 node->transfer_buf = NULL;
                 node->list_head = NULL;

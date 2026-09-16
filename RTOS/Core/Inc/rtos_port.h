@@ -40,20 +40,66 @@ extern uint32_t SystemCoreClock;
 
 /* ============================== 临界区宏 ============================== */
 
+/* [perf P-1] 临界区嵌套计数(全局唯一, port.c 定义)。
+ * 原实现为 port.c 的 static 变量 + out-of-line 函数: 每次 enter/exit 付出
+ * 函数调用序言/尾声, 且 exit 侧带 isb。改为头文件内联 + exit 去 isb
+ * (FreeRTOS vPortSetBASEPRI 同判: 裸 msr 即可), 每对节省 ~10 周期。 */
+extern volatile uint32_t rtos_port_crit_nest;
+
 /**
- * @brief 进入临界区: 屏蔽 RTOS 系统调用级中断。
+ * @brief 进入临界区: 屏蔽 RTOS 系统调用级中断(内联, 支持嵌套)。
  * @details 使用 BASEPRI 寄存器屏蔽优先级数值 >= MAX_SYSCALL_INTERRUPT_PRIORITY
  *          的中断。这样高优先级中断(如硬实时控制环)仍可抢占内核临界区，
- *          保证实时性。支持嵌套(内部计数)。
+ *          保证实时性。
+ *          isb 必须: 屏蔽需立即生效, 否则临界区头部指令仍可能被抢占。
  */
-#define RTOS_PORT_ENTER_CRITICAL() rtos_port_enter_critical()
+static inline void rtos_port_enter_critical(void)
+{
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm volatile(" msr basepri, %0 \n"
+                   " isb             \n" :: "r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
+                   : "memory");
+#else
+    __asm volatile(" cpsid i \n" ::: "memory");
+#endif
+    rtos_port_crit_nest++;
+}
 
 /**
- * @brief 退出临界区: 当嵌套计数归零时恢复 BASEPRI。
+ * @brief 退出临界区: 当嵌套计数归零时恢复 BASEPRI(内联)。
+ * @details [perf P-1] 解除屏蔽的 msr basepri,0 后不需要 isb:
+ *          FreeRTOS vPortExitCritical 同判 —— 寄存器写入对后续取指
+ *          自然生效, 已 pending 的中断晚几条指令被识别, 无正确性影响。
  */
+static inline void rtos_port_exit_critical(void)
+{
+    rtos_port_crit_nest--;
+    if (rtos_port_crit_nest == 0U) {
+#if RTOS_CONFIG_USE_BASEPRI
+        __asm volatile(" msr basepri, %0 \n" :: "r"(0U) : "memory");
+#else
+        __asm volatile(" cpsie i \n" ::: "memory");
+#endif
+    }
+}
+
+/**
+ * @brief 在中断处理函数中是否处于中断上下文([perf P-4] 内联, 消除函数调用)。
+ */
+static inline rtos_bool_t rtos_port_in_isr(void)
+{
+    uint32_t ipsr;
+    __asm volatile(" mrs %0, ipsr \n" : "=r"(ipsr) :: "memory");
+    return (ipsr != 0U) ? RTOS_TRUE : RTOS_FALSE;
+}
+
+/** @brief 进入临界区(宏形式, 兼容既有调用)。 */
+#define RTOS_PORT_ENTER_CRITICAL() rtos_port_enter_critical()
+
+/** @brief 退出临界区(宏形式, 兼容既有调用)。 */
 #define RTOS_PORT_EXIT_CRITICAL() rtos_port_exit_critical()
 
-/** @brief 在中断处理函数中是否处于中断上下文。 */
+/** @brief 中断上下文判断(宏形式, 兼容既有调用)。 */
 #define RTOS_PORT_IN_ISR() rtos_port_in_isr()
 
 /** @brief 禁用全局中断(最高级别保护，尽量少用)。 */
@@ -137,20 +183,20 @@ void rtos_port_pend_sv_handler(void) __attribute__((naked));
  */
 void rtos_port_svc_handler(void) __attribute__((naked));
 
-/** @brief 进入临界区(支持嵌套)。 */
-void rtos_port_enter_critical(void);
-
-/** @brief 退出临界区(支持嵌套)。 */
-void rtos_port_exit_critical(void);
-
-/** @brief 判断当前是否在中断上下文。 */
-rtos_bool_t rtos_port_in_isr(void);
-
 /** @brief 关闭全局中断。 */
 void rtos_port_disable_interrupts(void);
 
 /** @brief 开启全局中断。 */
 void rtos_port_enable_interrupts(void);
+
+/**
+ * @brief [guard G-3] 返回当前激活中断的 NVIC 优先级(已移位到高 4 位)。
+ * @details 线程模式返回 0。用于 ISR-API 入口断言: 优先级数值高于
+ *          MAX_SYSCALL(即数值 < 0x50)的中断违规调用内核 API 时,
+ *          BASEPRI 屏蔽失效, 会静默破坏内核数据结构(FreeRTOS 的
+ *          vPortValidateInterruptPriority 等价物)。
+ */
+uint32_t rtos_port_isr_priority(void);
 
 /**
  * @brief 获取当前中断优先级屏蔽后的允许状态(用于 ISR 内核调用保护)。

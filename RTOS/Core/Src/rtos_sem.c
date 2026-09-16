@@ -78,6 +78,7 @@ rtos_status_t rtos_sem_give(rtos_sem_t *sem)
     if (sem == NULL) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
     if (sem->is_initialized == 0U) {
         return RTOS_ERR_PARAM;
     }

@@ -60,6 +60,7 @@ rtos_event_bits_t rtos_event_set(rtos_event_t *event, rtos_event_bits_t bits)
     if ((event == NULL) || (event->is_initialized == 0U)) {
         return 0U;
     }
+    RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
 
     RTOS_PORT_ENTER_CRITICAL();
     event->bits |= bits;
@@ -172,12 +173,16 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
     /* 被唤醒: 从 wait_node.transfer_buf 读取 event_set 回传的标志位 */
     cur = rtos_kernel.current_tcb;
     rtos_event_bits_t result = (rtos_event_bits_t)(uintptr_t)cur->wait_node.transfer_buf;
-    if (cur->wait_result != RTOS_OK) {
-        /* 超时: 返回当前位(未满足) */
+    if (cur->wait_result == RTOS_ERR_TIMEOUT) {
+        /* 超时: 返回当前位(未满足)。仅超时路径回读 event —— 对象必然存活。 */
         RTOS_PORT_ENTER_CRITICAL();
         result = event->bits;
         RTOS_PORT_EXIT_CRITICAL();
     }
+    /* [bug fix BUG-3] DELETED 路径(result 已是 0)不再回读 event:
+     * deinit 唤醒等待者后调用者可立即释放对象(栈/堆), 等待者可能数毫秒后才
+     * 运行, 回读 event->bits 是 use-after-free —— event 是四个 IPC 模块中
+     * 唯一唤醒后仍解引用等待对象的。返回 0 表示对象已销毁。 */
     return result;
 }
 

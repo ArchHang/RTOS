@@ -156,6 +156,17 @@ rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats);
  * @return RTOS_OK / RTOS_ERR_NULL / RTOS_ERR_PARAM(max_count=0)。
  * @note  遍历任务注册表, 每个任务在临界区内快照。
  */
+/**
+ * @brief 任务注册表当前条目数([guard G-5] idle 栈巡检用, 任意上下文)。
+ */
+uint32_t rtos_perf_task_registry_count(void);
+
+/**
+ * @brief 按索引取注册表中的 TCB([guard G-5] idle 栈巡检用)。
+ * @return 越界返回 NULL。
+ */
+rtos_tcb_t *rtos_perf_task_at(uint32_t index);
+
 rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t max_count,
                                       uint32_t *actual_count);
 
@@ -223,6 +234,9 @@ void rtos_perf_on_scheduler_start(void);
     ((void)(a), (void)(m), (void)(c), (rtos_status_t)RTOS_ERR_PARAM)
 #define rtos_perf_get_cpu_usage() (0U)
 #define rtos_perf_get_switch_rate() (0U)
+/* [guard G-5] 巡检接口退化(注册表不存在) */
+#define rtos_perf_task_registry_count() (0U)
+#define rtos_perf_task_at(i) ((rtos_tcb_t *)NULL)
 /* 内部钩子也编译为空 */
 #define rtos_perf_get_cycles() (0U)
 #define rtos_perf_init_cycles() ((void)0)

@@ -32,6 +32,8 @@
 #include "rtos_usb.h"
 #include "asm_test.h"
 #include "ai_app.h"
+#include "selftest.h"
+#include "benchmark.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +54,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+static rtos_tcb_t *selftest_tcb;
+static rtos_tcb_t *bench_tcb;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -447,6 +450,12 @@ static uint8_t ft_dispatch(uint8_t byte)
 uint8_t g_uart2_rx;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+    /* RTOS 自测试: 消费触发字节 'X' 并在真实 ISR 上下文执行 API 矩阵 */
+    if (selftest_uart_isr_hook(g_uart2_rx)) {
+        HAL_UART_Receive_IT(&huart2, (uint8_t *)&g_uart2_rx, 1);
+        return;
+    }
+
     /* HardFault 测试9: 命令 '9' 布防后, 在本回调(USART2 中断上下文)内
      * 触发总线故障。用于验证 Handler 模式故障路径:
      * EXC_RETURN bit3=0(帧压在 MSP)、dump 提示"错误发生在 ISR 内"、
@@ -625,9 +634,9 @@ int main(void)
 
 
   rtos_init();
-  /* USB 子系统: 初始化对象池/USB 堆, 再初始化 USB 设备(OTG_FS)。
-   * RTOS_CONFIG_USB_USE_MSC=1 时为复合设备: 虚拟串口 + U盘(RAM 盘)。
-   * 需在 rtos_start() 之前调用。 */
+
+  /* 恢复日常固件形态: 应用任务 + USB(内核已含全部修复与性能优化,
+   * selftest/benchmark 固件按需启用, 见 Core/Src/selftest.c 与 benchmark.c) */
   rtos_usb_init();
   rtos_usb_cdc_init(0, (uintptr_t)USB_OTG_FS);
 
@@ -646,13 +655,16 @@ int main(void)
   rtos_task_create(&ft7_tcb, 256, ftask_imprecise, NULL, 7, "ft7_impr");
   /* 测试8 用静态小栈(512B)+献祭缓冲, 不能用动态大栈 */
   rtos_task_create_static(&ft8_tcb, ft8_stack, 128, ftask_overflow, NULL, 7, "ft8_ovf");
-  /* 测试9 无需任务: 命令布防后在 USART2 ISR 内直接触发 */
 
   /* USB 应用任务: CDC 回显 + MSC 状态监视 + HID 报告收发
    * (优先级 8, 低于 USB 协议栈线程 16) */
 //   rtos_task_create(&usb_cdc_tcb, 256, task_usb_cdc, NULL, 8, "usb_cdc");
 //   rtos_task_create(&usb_msc_tcb, 256, task_usb_msc, NULL, 8, "usb_msc");
 //   rtos_task_create(&usb_hid_tcb, 256, task_usb_hid, NULL, 8, "usb_hid");
+
+  /* 日常固件: 应用任务如上; selftest/benchmark 按需启用(切换两行注释即可) */
+  // rtos_task_create(&selftest_tcb, 1024, selftest_task, NULL, 9, "selftest");
+  // rtos_task_create(&bench_tcb, 1024, bench_task, NULL, 9, "bench");
 
   rtos_start();
 

@@ -140,6 +140,11 @@ static void block_split(header_t *hdr, uint32_t need)
         new_blk->size = total - need;
         block_set_free(new_blk, RTOS_TRUE);
         hdr->size = need; /* 已分配块不带 FREE 位 */
+        /* [bug fix BUG-7] 分裂产生了一个新 header, 空闲字节账目必须同步扣减:
+         * 原空闲块 1 个 header, split 后变 2 个, 新 header 的 8 字节从用户
+         * 可用空间变为元数据。原实现不扣账 → 每次 split 账面虚增 8 字节,
+         * 长期运行 s_heap_free 持续膨胀超堆大小(实测 500 轮后 40216 > 32768)。 */
+        s_heap_free -= sizeof(header_t);
     }
     /* 否则不分裂, 整块分配(略浪费, 但避免产生过小碎片) */
 }
@@ -158,6 +163,11 @@ static void block_merge_next(header_t *hdr)
         block_set_free(hdr, RTOS_TRUE);
         /* 清除下一块魔数(防止误用, 防御性) */
         next->magic = 0;
+        /* [bug fix BUG-7] 合并回收了 next 的 header 字节, 必须入账:
+         * 原实现不调 s_heap_free, 每轮 free+merge→alloc 整块后账面净减
+         * 8 字节, 长期运行 s_heap_free 下溢回绕成 ~4GB 荒谬值,
+         * 监控/准入逻辑全错。 */
+        s_heap_free += sizeof(header_t);
     }
 }
 
@@ -191,6 +201,13 @@ rtos_status_t rtos_heap_init(void)
 void *rtos_heap_alloc(uint32_t size)
 {
     if (!s_inited || (size == 0U)) {
+        return NULL;
+    }
+
+    /* [bug fix BUG-5] 输入域上限校验: size 接近 2^32 时 align_up 的加法回绕,
+     * 原实现会把 ~4GB 请求"成功"缩成 16 字节小块, 调用方按请求尺寸 memcpy
+     * 即静默堆溢出。任何 > 堆大小的请求本就必失败, 直接拒绝。 */
+    if (size > (0xFFFFFFF0U - sizeof(header_t) - RTOS_HEAP_ALIGN)) {
         return NULL;
     }
 
