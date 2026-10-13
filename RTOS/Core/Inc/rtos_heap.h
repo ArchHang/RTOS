@@ -61,6 +61,26 @@ void rtos_heap_free(void *ptr);
  */
 uint32_t rtos_heap_get_free(void);
 
+/**
+ * @brief 查询当前**单次可分配的最大字节数**。
+ *
+ * @return 当前**最大单块连续空闲块**可供用户使用的字节数(已扣除该块的块头,
+ *         并向下对齐到 8 字节); 堆未初始化时返回 0。
+ *
+ * @details 与 rtos_heap_get_free 的区别: 后者是空闲字节总和, 直接用它会高估 ——
+ *          分配器是 first-fit, 只会在**一个连续块**内满足请求, 碎片化时空闲
+ *          总和远大于任何单块。本函数返回的是"在堆状态不变的前提下, 一次
+ *          rtos_heap_alloc(size) 当且仅当 size <= 本返回值时可能成功"。
+ *
+ *          用途: 调用方(如 rtos_task_create)需要在校验阶段判断"某尺寸是否
+ *          可能满足", 用本函数可避免给出实际不可达的假上界
+ *          (见 rtos_task_create 的边界修复说明)。
+ *
+ * @note 本函数在临界区内遍历块链, 复杂度 O(空闲块数), 与 rtos_heap_alloc
+ *       同级; 仅供创建/校验等非热路径使用。
+ */
+uint32_t rtos_heap_get_max_alloc(void);
+
 /** @brief 查询累计分配次数(调试用)。 */
 uint32_t rtos_heap_get_alloc_count(void);
 

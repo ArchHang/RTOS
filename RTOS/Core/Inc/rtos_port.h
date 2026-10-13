@@ -40,45 +40,54 @@ extern uint32_t SystemCoreClock;
 
 /* ============================== 临界区宏 ============================== */
 
-/* [perf P-1] 临界区嵌套计数(全局唯一, port.c 定义)。
- * 原实现为 port.c 的 static 变量 + out-of-line 函数: 每次 enter/exit 付出
- * 函数调用序言/尾声, 且 exit 侧带 isb。改为头文件内联 + exit 去 isb
- * (FreeRTOS vPortSetBASEPRI 同判: 裸 msr 即可), 每对节省 ~10 周期。 */
+/* 全局临界区嵌套计数与最外层进入前的屏蔽状态，由 port.c 定义。 */
 extern volatile uint32_t rtos_port_crit_nest;
+extern volatile uint32_t rtos_port_saved_mask;
 
 /**
  * @brief 进入临界区: 屏蔽 RTOS 系统调用级中断(内联, 支持嵌套)。
- * @details 使用 BASEPRI 寄存器屏蔽优先级数值 >= MAX_SYSCALL_INTERRUPT_PRIORITY
+ * @details 使用 BASEPRI_MAX 屏蔽优先级数值 >= MAX_SYSCALL_INTERRUPT_PRIORITY
  *          的中断。这样高优先级中断(如硬实时控制环)仍可抢占内核临界区，
  *          保证实时性。
- *          isb 必须: 屏蔽需立即生效, 否则临界区头部指令仍可能被抢占。
+ *          保留调用方更严格的屏蔽状态；最外层退出时恢复原值。
+ *          PRIMASK 配置同样保存并恢复进入前的全局中断状态。
  */
 static inline void rtos_port_enter_critical(void)
 {
+    uint32_t previous_mask;
 #if RTOS_CONFIG_USE_BASEPRI
-    __asm volatile(" msr basepri, %0 \n"
-                   " isb             \n" :: "r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
+    /* BASEPRI_MAX can only strengthen masking. Preserve the caller's mask
+     * at the outermost entry, including masks stricter than the RTOS limit. */
+    __asm volatile(" mrs %0, basepri     \n"
+                   " msr basepri_max, %1 \n"
+                   " isb                 \n" : "=&r"(previous_mask)
+                   : "r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
                    : "memory");
 #else
-    __asm volatile(" cpsid i \n" ::: "memory");
+    __asm volatile(" mrs %0, primask \n"
+                   " cpsid i        \n" : "=r"(previous_mask) :: "memory");
 #endif
-    rtos_port_crit_nest++;
+    /* Legal RTOS callers are masked before accessing the shared counter.
+     * Read its volatile value once; repeated reads cannot add protection. */
+    uint32_t nesting = rtos_port_crit_nest;
+    if (nesting == 0U) {
+        rtos_port_saved_mask = previous_mask;
+    }
+    rtos_port_crit_nest = nesting + 1U;
 }
 
 /**
- * @brief 退出临界区: 当嵌套计数归零时恢复 BASEPRI(内联)。
- * @details [perf P-1] 解除屏蔽的 msr basepri,0 后不需要 isb:
- *          FreeRTOS vPortExitCritical 同判 —— 寄存器写入对后续取指
- *          自然生效, 已 pending 的中断晚几条指令被识别, 无正确性影响。
+ * @brief 退出临界区: 当嵌套计数归零时恢复进入前的 BASEPRI 或 PRIMASK。
  */
 static inline void rtos_port_exit_critical(void)
 {
-    rtos_port_crit_nest--;
-    if (rtos_port_crit_nest == 0U) {
+    uint32_t nesting = rtos_port_crit_nest - 1U;
+    rtos_port_crit_nest = nesting;
+    if (nesting == 0U) {
 #if RTOS_CONFIG_USE_BASEPRI
-        __asm volatile(" msr basepri, %0 \n" :: "r"(0U) : "memory");
+        __asm volatile(" msr basepri, %0 \n" :: "r"(rtos_port_saved_mask) : "memory");
 #else
-        __asm volatile(" cpsie i \n" ::: "memory");
+        __asm volatile(" msr primask, %0 \n" :: "r"(rtos_port_saved_mask) : "memory");
 #endif
     }
 }
@@ -116,10 +125,11 @@ typedef uint32_t rtos_stack_t;
 /** @brief 栈对齐掩码(8 字节对齐)。 */
 #define RTOS_PORT_STACK_ALIGN_MASK ((rtos_stack_t)(RTOS_CONFIG_STACK_ALIGNMENT - 1U))
 
-/** @brief EXC_RETURN 值: 返回线程模式 + 使用 PSP + 基本 FPU 帧。
- *         bit4=0(基本帧 0x20 字), bit2=1(PSP), bit3=1(线程模式), bit4=0(有 FPU)。
- *         0xFFFFFFFD = 无 FPU 上下文返回线程模式 PSP。
- *         0xFFFFFFED = 带 FPU 上下文返回线程模式 PSP。 */
+/** @brief EXC_RETURN: bit2=1 使用 PSP，bit3=1 返回线程模式。
+ *         bit4=1 / 0xFFFFFFFD: 基本硬件帧，8 字(R0-R3/R12/LR/PC/xPSR)。
+ *         bit4=0 / 0xFFFFFFED: 扩展硬件帧，26 字(18 字 FP + 8 字核心寄存器)。
+ *         S16-S31 不在硬件帧内，由 PendSV 另行软件保存和恢复。
+ *         硬件可能另加一个字以维持异常栈的 8 字节对齐。 */
 #define RTOS_PORT_EXC_RETURN_NO_FPU (0xFFFFFFFDUL)
 #define RTOS_PORT_EXC_RETURN_WITH_FPU (0xFFFFFFEDUL)
 

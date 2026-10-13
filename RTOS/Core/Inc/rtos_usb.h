@@ -107,6 +107,17 @@ extern "C" {
 #include "rtos_timer.h"
 #include "rtos_task.h"
 
+/* OSAL durations are milliseconds. Use wide arithmetic and round up; finite
+ * waits must stay within the kernel's signed tick comparison domain. */
+static inline rtos_tick_t rtos_usb_timeout_ticks(uint32_t ms)
+{
+    if (ms == RTOS_WAIT_FOREVER) {
+        return RTOS_WAIT_FOREVER;
+    }
+    uint64_t ticks = ((uint64_t)ms * RTOS_CONFIG_TICK_RATE_HZ + 999U) / 1000U;
+    return ticks > 0x7FFFFFFFU ? 0x7FFFFFFFU : (rtos_tick_t)ticks;
+}
+
 /* ============================== OSAL 内部对象(句柄式封装静态 RTOS 对象) ============================== */
 
 /**
@@ -143,7 +154,7 @@ typedef struct rtos_usb_thread {
     rtos_tcb_t tcb; /**< 任务控制块。 */
     rtos_stack_t stack[RTOS_CONFIG_USB_THREAD_STACK_SIZE]
         __attribute__((aligned(RTOS_CONFIG_STACK_ALIGNMENT))); /**< 内嵌栈。 */
-    uint8_t in_use;
+    uint8_t in_use; /**< 0=空闲，1=线程句柄，2=创建/删除期间保留。 */
 } rtos_usb_thread_t;
 
 /** @brief OSAL 定时器句柄对象(内部使用, usb_osal_timer_create 返回的 struct
@@ -220,6 +231,8 @@ rtos_usb_timer_t *rtos_usb_timer_create(const char *name, uint32_t ms, rtos_time
                                         void *arg, bool is_periodic);
 /** @brief 删除定时器。 */
 void rtos_usb_timer_delete(rtos_usb_timer_t *timer);
+/** @brief Delete and report failure; a rejected command retains the pool slot. */
+rtos_status_t rtos_usb_timer_delete_checked(rtos_usb_timer_t *timer);
 /** @brief 启动定时器。 */
 void rtos_usb_timer_start(rtos_usb_timer_t *timer);
 /** @brief 停止定时器。 */

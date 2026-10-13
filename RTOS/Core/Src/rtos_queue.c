@@ -15,7 +15,8 @@
  *            - 对称: 发送者阻塞时存发送缓冲指针，接收者到达直接拷贝并唤醒发送者。
  *
  *          支持插队发送(to_front=TRUE)，用于紧急消息(写入 head 前一格)。
- *          注意: 零拷贝直传仅在 to_front=FALSE 时启用(插队消息须入队保序)。
+ *          接收者阻塞时队列必为空, to_front 对该条消息的顺序没有影响,
+ *          两种发送模式均可直传。
  *
  *          ISR 中调用必须 timeout=RTOS_NO_WAIT。
  */
@@ -28,8 +29,15 @@
 rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_size,
                               uint32_t capacity)
 {
-    if ((queue == NULL) || (storage == NULL) || (item_size == 0U) || (capacity == 0U)) {
+    if ((queue == NULL) || (storage == NULL) || (item_size == 0U) || (capacity == 0U) ||
+        (capacity > UINT32_MAX / item_size)) {
         return RTOS_ERR_PARAM;
+    }
+    RTOS_ASSERT_ISR_OK();
+    RTOS_PORT_ENTER_CRITICAL();
+    if (rtos_internal_object_has_waiters((void *)queue)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_ALREADY;
     }
     memset(queue, 0, sizeof(*queue));
     queue->storage = (uint8_t *)storage;
@@ -41,6 +49,7 @@ rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_
     queue->send_wait_head = NULL;
     queue->recv_wait_head = NULL;
     queue->is_initialized = 1U;
+    RTOS_PORT_EXIT_CRITICAL();
     return RTOS_OK;
 }
 
@@ -48,6 +57,84 @@ rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_
 static inline uint32_t queue_next_index(uint32_t idx, uint32_t capacity)
 {
     return (idx + 1U) >= capacity ? 0U : (idx + 1U);
+}
+
+/** @brief 队首插入位置(head 前一格, 环形回绕)。 */
+static inline uint32_t queue_prev_index(uint32_t head, uint32_t capacity)
+{
+    return (head == 0U) ? (capacity - 1U) : (head - 1U);
+}
+
+/**
+ * @brief 把一条消息写入环形缓冲(队尾追加, 或按 to_front 插到队首)。
+ * @param queue    队列(调用方需保证有空位)。
+ * @param item     源数据。
+ * @param to_front 非 0 表示插队首。
+ * @note  仅在临界区内调用; 调用方负责 count 的增减。
+ */
+static void queue_storage_push(rtos_queue_t *queue, const void *item, uint8_t to_front)
+{
+    if (to_front == 0U) {
+        memcpy(queue->storage + queue->tail * queue->item_size, item, queue->item_size);
+        queue->tail = queue_next_index(queue->tail, queue->capacity);
+    } else {
+        const uint32_t new_head = queue_prev_index(queue->head, queue->capacity);
+        memcpy(queue->storage + new_head * queue->item_size, item, queue->item_size);
+        queue->head = new_head;
+    }
+}
+
+/**
+ * @brief 从环形缓冲取走一条消息(队首)。
+ * @param queue 队列(调用方需保证 count > 0)。
+ * @param item  接收缓冲。
+ * @note  仅在临界区内调用; 调用方负责 count 的增减。
+ */
+static void queue_storage_pop(rtos_queue_t *queue, void *item)
+{
+    memcpy(item, queue->storage + queue->head * queue->item_size, queue->item_size);
+    queue->head = queue_next_index(queue->head, queue->capacity);
+}
+
+/* A mismatched buffer is not safe to copy. Abort that wait and leave the
+ * message/slot available for a valid waiter. Normal callers never hit this:
+ * item_size stays fixed while tasks wait, and every block records that size. */
+static void queue_reject_waiter(rtos_wait_node_t **head, rtos_wait_node_t *node)
+{
+    rtos_internal_wait_remove(head, node);
+    node->transfer_buf = NULL;
+    node->list_head = NULL;
+    node->tcb->blocked_on = NULL;
+    node->tcb->wait_result = RTOS_ERR_PARAM;
+    rtos_sched_unblock(node->tcb);
+}
+
+/**
+ * @brief 出队腾出空位后, 唤醒一个阻塞发送者并代其入队。
+ * @param queue 队列(调用方刚完成一次出队, 必有空位)。
+ * @note  仅在临界区内调用。
+ * @note  代办写入位置按发送者阻塞时记录的 to_front 意图: 若无条件写队尾,
+ *        to_front 的紧急消息会被排到全部旧消息之后, 插队语义在阻塞路径丢失。
+ *        发送者的 transfer_buf 置 NULL 表示"已代办, 无需重试"。
+ */
+static void queue_wake_sender_on_free_slot(rtos_queue_t *queue)
+{
+    while (queue->send_wait_head != NULL) {
+        rtos_wait_node_t *node = queue->send_wait_head;
+        if ((node->transfer_buf == NULL) || (node->transfer_size != queue->item_size)) {
+            queue_reject_waiter(&queue->send_wait_head, node);
+            continue;
+        }
+        rtos_internal_wait_remove(&queue->send_wait_head, node);
+        queue_storage_push(queue, node->transfer_buf, node->to_front);
+        queue->count++; /* 刚腾出的空位被重新填入 */
+        node->transfer_buf = NULL;
+        node->list_head = NULL;
+        node->tcb->blocked_on = NULL;
+        node->tcb->wait_result = RTOS_OK;
+        rtos_sched_unblock(node->tcb);
+        return;
+    }
 }
 
 rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t timeout,
@@ -71,8 +158,12 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
     /* 情况1: 队列有接收等待者 -> 零拷贝直传(跳过入队，仅 1 次拷贝)
      * 接收者仅在队列空时阻塞，故 recv_wait_head!=NULL 必有 count==0，
      * to_front 在空队列无意义，统一走直传(修复 to_front+等待者死锁)。 */
-    if (queue->recv_wait_head != NULL) {
+    while (queue->recv_wait_head != NULL) {
         rtos_wait_node_t *node = queue->recv_wait_head;
+        if ((node->transfer_buf == NULL) || (node->transfer_size != queue->item_size)) {
+            queue_reject_waiter(&queue->recv_wait_head, node);
+            continue;
+        }
         rtos_internal_wait_remove(&queue->recv_wait_head, node);
         void *recv_buf = node->transfer_buf; /* 接收者阻塞前存入的接收缓冲 */
         node->transfer_buf = NULL; /* 标记已被直传取走 */
@@ -88,17 +179,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
 
     /* 情况2: 队列未满 -> 直接入队 */
     if (queue->count < queue->capacity) {
-        if (to_front == RTOS_FALSE) {
-            uint8_t *dst = queue->storage + queue->tail * queue->item_size;
-            memcpy(dst, item, queue->item_size);
-            queue->tail = queue_next_index(queue->tail, queue->capacity);
-        } else {
-            /* 插队首: 写入 head 前一格 */
-            uint32_t new_head = (queue->head == 0U) ? (queue->capacity - 1U) : (queue->head - 1U);
-            uint8_t *dst = queue->storage + new_head * queue->item_size;
-            memcpy(dst, item, queue->item_size);
-            queue->head = new_head;
-        }
+        queue_storage_push(queue, item, (uint8_t)to_front);
         queue->count++;
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_OK;
@@ -110,12 +191,22 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         return RTOS_ERR_TIMEOUT;
     }
 
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞(详见 rtos_internal.h 的守卫说明) */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED;
+    }
+
     /* 情况4: 队列满 -> 阻塞发送者(记录发送缓冲以供零拷贝直传) */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->wait_node.transfer_buf = (void *)item; /* 存发送缓冲指针 */
     cur->wait_node.transfer_size = queue->item_size;
     cur->wait_node.to_front = (uint8_t)to_front; /* [bug fix BUG-6] 记录插队意图 */
-    rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout);
+    if (rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout) !=
+        RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
+    }
     RTOS_PORT_EXIT_CRITICAL();
 
     /* 被唤醒: 检查结果
@@ -136,27 +227,20 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
     for (;;) {
         RTOS_PORT_ENTER_CRITICAL();
         if (queue->count < queue->capacity) {
-            if (to_front == RTOS_FALSE) {
-                uint8_t *dst = queue->storage + queue->tail * queue->item_size;
-                memcpy(dst, item, queue->item_size);
-                queue->tail = queue_next_index(queue->tail, queue->capacity);
-            } else {
-                uint32_t new_head =
-                    (queue->head == 0U) ? (queue->capacity - 1U) : (queue->head - 1U);
-                uint8_t *dst = queue->storage + new_head * queue->item_size;
-                memcpy(dst, item, queue->item_size);
-                queue->head = new_head;
-            }
+            queue_storage_push(queue, item, (uint8_t)to_front);
             queue->count++;
             RTOS_PORT_EXIT_CRITICAL();
             return RTOS_OK;
         }
-        /* 槽位被偷: 重新阻塞等待 */
         cur = rtos_kernel.current_tcb;
         cur->wait_node.transfer_buf = (void *)item;
         cur->wait_node.transfer_size = queue->item_size;
         cur->wait_node.to_front = (uint8_t)to_front;
-        rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout);
+        if (rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout) !=
+            RTOS_OK) {
+            RTOS_PORT_EXIT_CRITICAL();
+            return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
+        }
         RTOS_PORT_EXIT_CRITICAL();
 
         cur = rtos_kernel.current_tcb;
@@ -188,38 +272,11 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
 
     /* 情况1: 队列有消息 -> 直接出队 */
     if (queue->count > 0U) {
-        uint8_t *src = queue->storage + queue->head * queue->item_size;
-        memcpy(item, src, queue->item_size);
-        queue->head = queue_next_index(queue->head, queue->capacity);
+        queue_storage_pop(queue, item);
         queue->count--;
-
-        /* 出队后腾出空位: 若有发送等待者，直接把其消息拷入环形缓冲(代入队)，
-         * 唤醒发送者(其 transfer_buf 置 NULL 表示已代办，无需重试)。
-         * [bug fix BUG-6] 代办写入位置按发送者阻塞时记录的 to_front 意图:
-         * 原实现无条件写 tail, to_front=TRUE 的紧急消息被排到全部旧消息
-         * 之后, 插队语义在阻塞路径丢失。 */
-        if (queue->send_wait_head != NULL) {
-            rtos_wait_node_t *node = queue->send_wait_head;
-            rtos_internal_wait_remove(&queue->send_wait_head, node);
-            if (node->to_front != 0U) {
-                uint32_t new_head =
-                    (queue->head == 0U) ? (queue->capacity - 1U) : (queue->head - 1U);
-                uint8_t *dst = queue->storage + new_head * queue->item_size;
-                memcpy(dst, node->transfer_buf, queue->item_size);
-                queue->head = new_head;
-            } else {
-                uint8_t *dst = queue->storage + queue->tail * queue->item_size;
-                memcpy(dst, node->transfer_buf, queue->item_size);
-                queue->tail = queue_next_index(queue->tail, queue->capacity);
-            }
-            queue->count++; /* 空位被重新填入 */
-            node->transfer_buf = NULL; /* 标记已代办入队 */
-            node->list_head = NULL;
-            node->tcb->blocked_on = NULL;
-            node->tcb->wait_result = RTOS_OK;
-            rtos_sched_unblock(node->tcb);
-        }
-
+        /* 出队后腾出空位: 若有发送等待者, 直接把其消息拷入环形缓冲(代入队),
+         * 唤醒发送者(其 transfer_buf 置 NULL 表示已代办, 无需重试)。 */
+        queue_wake_sender_on_free_slot(queue);
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_OK;
     }
@@ -230,11 +287,21 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         return RTOS_ERR_TIMEOUT;
     }
 
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞(详见 rtos_internal.h 的守卫说明) */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED;
+    }
+
     /* 情况3: 队列空 -> 阻塞接收者(记录接收缓冲以供零拷贝直传) */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->wait_node.transfer_buf = item; /* 存接收缓冲指针 */
     cur->wait_node.transfer_size = queue->item_size;
-    rtos_internal_block_current_on((void *)queue, &queue->recv_wait_head, timeout);
+    if (rtos_internal_block_current_on((void *)queue, &queue->recv_wait_head, timeout) !=
+        RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
+    }
     RTOS_PORT_EXIT_CRITICAL();
 
     /* 被唤醒:
@@ -253,42 +320,21 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
     for (;;) {
         RTOS_PORT_ENTER_CRITICAL();
         if (queue->count > 0U) {
-            uint8_t *src = queue->storage + queue->head * queue->item_size;
-            memcpy(item, src, queue->item_size);
-            queue->head = queue_next_index(queue->head, queue->capacity);
+            queue_storage_pop(queue, item);
             queue->count--;
-
-            /* 唤醒发送等待者(代办入队, [bug fix BUG-6] 按 to_front 意图选位置) */
-            if (queue->send_wait_head != NULL) {
-                rtos_wait_node_t *node = queue->send_wait_head;
-                rtos_internal_wait_remove(&queue->send_wait_head, node);
-                if (node->to_front != 0U) {
-                    uint32_t new_head =
-                        (queue->head == 0U) ? (queue->capacity - 1U) : (queue->head - 1U);
-                    uint8_t *dst = queue->storage + new_head * queue->item_size;
-                    memcpy(dst, node->transfer_buf, queue->item_size);
-                    queue->head = new_head;
-                } else {
-                    uint8_t *dst = queue->storage + queue->tail * queue->item_size;
-                    memcpy(dst, node->transfer_buf, queue->item_size);
-                    queue->tail = queue_next_index(queue->tail, queue->capacity);
-                }
-                queue->count++;
-                node->transfer_buf = NULL;
-                node->list_head = NULL;
-                node->tcb->blocked_on = NULL;
-                node->tcb->wait_result = RTOS_OK;
-                rtos_sched_unblock(node->tcb);
-            }
-
+            /* 出队腾出的空位交给阻塞中的发送者(按 to_front 意图代办入队) */
+            queue_wake_sender_on_free_slot(queue);
             RTOS_PORT_EXIT_CRITICAL();
             return RTOS_OK;
         }
-        /* 消息被偷: 重新阻塞等待 */
         cur = rtos_kernel.current_tcb;
         cur->wait_node.transfer_buf = item;
         cur->wait_node.transfer_size = queue->item_size;
-        rtos_internal_block_current_on((void *)queue, &queue->recv_wait_head, timeout);
+        if (rtos_internal_block_current_on((void *)queue, &queue->recv_wait_head, timeout) !=
+            RTOS_OK) {
+            RTOS_PORT_EXIT_CRITICAL();
+            return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
+        }
         RTOS_PORT_EXIT_CRITICAL();
 
         cur = rtos_kernel.current_tcb;
@@ -319,6 +365,7 @@ rtos_status_t rtos_queue_deinit(rtos_queue_t *queue)
     if (queue == NULL) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     rtos_internal_wake_all(&queue->send_wait_head, RTOS_ERR_DELETED);
     rtos_internal_wake_all(&queue->recv_wait_head, RTOS_ERR_DELETED);

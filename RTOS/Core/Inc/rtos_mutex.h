@@ -25,7 +25,6 @@ extern "C" {
  */
 struct rtos_mutex {
     uint8_t is_initialized;
-    uint8_t in_use;
     rtos_tcb_t *owner; /**< 当前持有者(NULL=未持有)。 */
     uint32_t recursion_count; /**< 递归获取计数。 */
     rtos_wait_node_t *wait_head; /**< 等待链表头(按优先级排序)。 */
@@ -33,6 +32,8 @@ struct rtos_mutex {
 
 /**
  * @brief 初始化互斥锁。
+ * @return 空闲对象重复初始化返回 RTOS_OK，不重复注册。仍持有或有等待者时
+ *         返回 RTOS_ERR_ALREADY 并保留原状态；首次调用可传入未初始化的存储。
  */
 rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex);
 

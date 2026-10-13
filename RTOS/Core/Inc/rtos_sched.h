@@ -3,12 +3,14 @@
  * @brief   调度器与内核全局状态接口
  *
  * @details 实现基于优先级位图的抢占式调度器。内核维护:
- *            - 就绪位图: 每个优先级对应一位，置位表示该优先级有就绪任务。
- *            - 就绪链表数组: 每个优先级一条双向链表，同优先级任务 FIFO。
- *            - 延时链表: 按唤醒时刻排序，每个 Tick 处理一次。
- *          调度时通过 CLZ(前导零计数)指令在 1 个周期内找到最高优先级位。
+ *            - 就绪位图: 每个优先级对应一位, 置位表示该优先级有就绪任务。
+ *            - 就绪链表数组: 每个优先级一条双向链表, 同优先级任务 FIFO。
+ *            - 延时链表: 按唤醒时刻排序, 每个 Tick 处理一次。
+ *          优先级约定为"数值越小优先级越高", 恰好对应位图的低位, 因此
+ *          "取最高优先级就绪任务"即取位图的最低置位位: `__builtin_ctz`
+ *          (Cortex-M3/M4/M7 编译为 RBIT+CLZ 两条指令, O(1))。
  *
- *          Cortex-M3/M4/M7 支持 CLZ 硬件指令，调度算法 O(1)。
+ *          切勿改用 `31 - __builtin_clz`: 那取的是最高置位位(=最低优先级)。
  */
 #ifndef RTOS_SCHED_H_
 #define RTOS_SCHED_H_
@@ -39,7 +41,6 @@ typedef enum {
 typedef struct rtos_kernel {
     volatile rtos_sched_state_t sched_state; /**< 调度器状态。 */
     volatile rtos_tick_t tick_count; /**< 全局 Tick 计数。 */
-    volatile uint32_t schedule_pending; /**< 待调度标志(临界区退出时检查)。 */
 
     /* 就绪表: 位图 + 每优先级链表头 */
     volatile uint32_t ready_bitmap; /**< 就绪位图(32 位)。 */
@@ -58,12 +59,12 @@ typedef struct rtos_kernel {
     /* 统计 */
 #if RTOS_CONFIG_GENERATE_RUN_TIME_STATS
     volatile uint32_t idle_run_count; /**< 空闲累计运行计数。 */
-    volatile uint32_t total_run_count; /**< 总运行计数。 */
 #endif
     volatile uint32_t switch_count; /**< 上下文切换计数。 */
 
     /* 临界区嵌套计数 */
     volatile uint32_t critical_nesting;
+    uint32_t suspend_depth; /**< Balanced scheduler suspension nesting. */
 
 #if RTOS_CONFIG_USE_PERF_MONITOR
     /* ---- 性能监视器字段(条件编译, 关闭时零开销) ---- */
@@ -102,10 +103,13 @@ extern rtos_kernel_t rtos_kernel;
 rtos_status_t rtos_sched_init(void);
 
 /**
- * @brief 启动调度器(不再返回)。
+ * @brief 启动调度器。
  * @details 创建空闲任务 -> 配置 SysTick/PendSV -> 启动首个任务。
+ *          成功后不再返回(首任务经 SVC 异常返回进入)。
+ * @note  未使用 noreturn 属性: 就绪集为空时返回 RTOS_ERR_SCHED(加固路径)。
+ * @return 正常情况不返回; 仅加固路径返回 RTOS_ERR_SCHED。
  */
-rtos_status_t rtos_sched_start(void) __attribute__((noreturn));
+rtos_status_t rtos_sched_start(void);
 
 /**
  * @brief 调度器主逻辑: 从就绪表中选取最高优先级任务，必要时触发切换。
@@ -149,12 +153,30 @@ void rtos_sched_remove_delayed(rtos_tcb_t *tcb);
 void rtos_sched_tick(void);
 
 /**
- * @brief 挂起调度器(暂停 Tick 与抢占，仍响应中断)。
- *        用于 ISR 内或临界长流程中防止任务切换。
+ * @brief 挂起调度器: 停止 Tick 推进并暂停调度决策(中断仍照常响应)。
+ *
+ * @details 用途: 包住一段"不能被任务切换打断"的流程, 期间只做**非阻塞**工作。
+ *
+ * @warning **挂起期间禁止任何会阻塞的 API。** 挂起后 `rtos_sched_tick()` 直接返回,
+ *          `tick_count` 不再推进、到期处理不再运行, 因此挂起期间被阻塞的任务
+ *          **既不会被唤醒也没有超时**, 会永久挂死(真机实测: 挂起后调用
+ *          `rtos_task_delay(60)` 永不返回)。
+ *          为此内核加了一道守卫(`rtos_internal_block_permitted`), 挂起期间:
+ *          - `rtos_task_delay` / `rtos_task_delay_until` —— 不阻塞, 立即返回(void 无法报错);
+ *          - `rtos_task_notify_wait` / `rtos_sem_take` / `rtos_mutex_take` /
+ *            `rtos_queue_send` / `rtos_queue_recv` —— 立即返回 **`RTOS_ERR_SCHED`**;
+ *          - `rtos_event_wait` —— 立即返回 **0**(该接口返回位掩码, 无法报错误码)。
+ *          非阻塞路径(如 `RTOS_NO_WAIT`、计数充足时的 `sem_take`)不受影响。
+ *
+ * @note  与 `RTOS_PORT_ENTER_CRITICAL()` 的分工: 临界区屏蔽的是中断, 挂起影响的是
+ *        调度与 tick。需要"长时间不被打断"时应改用临界区, 而不是挂起调度器。
  */
 void rtos_sched_suspend(void);
 
-/** @brief 恢复调度器。 */
+/**
+ * @brief 恢复调度器(重新允许 Tick 推进与调度决策)。
+ * @details 恢复时会调用一次 `rtos_sched_schedule()`, 以处理挂起期间积累的就绪态变化。
+ */
 void rtos_sched_resume(void);
 
 /** @brief 获取自启动以来的 Tick 数。 */
@@ -165,9 +187,6 @@ rtos_sched_state_t rtos_sched_get_state(void);
 
 /** @brief 顶层上下文切换入口(由 PendSV 调用)。 */
 void rtos_sched_context_switch(void);
-
-/** @brief 启动后选定第一个任务运行。 */
-void rtos_sched_start_first_task(void);
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,12 @@
+# Recorded HIL digests refer to exact bytes, including original line endings.
+hil/**/*.txt -text -whitespace
+hil/**/*.json -text -whitespace
+hil/**/*.log -text -whitespace
+hil/**/*.csv -text -whitespace
+
+# Preserve CubeIDE-generated templates and historical snapshots as recorded.
+hil/templates/** -whitespace
+hil/archive_tests/** -whitespace
+
+# Keep published Markdown consistent across Windows and Unix checkouts.
+*.md text eol=lf

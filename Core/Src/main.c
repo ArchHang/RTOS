@@ -34,6 +34,25 @@
 #include "ai_app.h"
 #include "selftest.h"
 #include "benchmark.h"
+#if FIRMWARE_AUDIT
+#include "audit_regressions.h"
+#endif
+/* boundary_test.h 只在 HIL 夹具目录(hil\fw\Inc)存在, 而该目录仅由
+ * hil\build_fw.ps1 -Variant boundary 加入头文件搜索路径。用 __has_include
+ * 兜住: 日常/CubeIDE 构建不会因为缺少这个可选夹具头而编译失败。 */
+#if defined(__has_include)
+#if __has_include("boundary_test.h")
+#include "boundary_test.h"
+#endif
+#else
+#include "boundary_test.h"
+#endif
+#if FIRMWARE_SCENARIO
+#include "test_scenarios.h"
+#endif
+#if FIRMWARE_PRODUCTION_STRESS
+#include "production_stress.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,6 +62,39 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+/* ======================================================================
+ * 固件形态选择(HIL 测试编排开关)
+ *
+ * 默认(不传任何 -D)= 日常演示固件: 应用任务 + HardFault 测试任务 + USB。
+ * 测试固件由 hil\build_fw.ps1 传入 -DFIRMWARE_xxx=1 选择, 每一种都只
+ * 启用被测任务, 以保证测量期间没有其它任务竞争 CPU(测量口径要求)。
+ * 命令行定义优先于这里的默认值(#ifndef 保护)。
+ * ====================================================================== */
+#ifndef FIRMWARE_USB_APP
+#define FIRMWARE_USB_APP        1   /* USB 协议栈 + CDC/MSC/HID 应用任务 */
+#endif
+#ifndef FIRMWARE_FAULT_TASKS
+#define FIRMWARE_FAULT_TASKS    1   /* 1~9 级 HardFault 测试任务 */
+#endif
+#ifndef FIRMWARE_APP_TASKS
+#define FIRMWARE_APP_TASKS      1   /* task0/1/uart/algo 演示任务 */
+#endif
+#ifndef FIRMWARE_SELFTEST
+#define FIRMWARE_SELFTEST       0   /* Core/Src/selftest.c 全量功能回归 */
+#endif
+#ifndef FIRMWARE_BENCH
+#define FIRMWARE_BENCH          0   /* Core/Src/benchmark.c 性能微基准 */
+#endif
+#ifndef FIRMWARE_BOUNDARY
+#define FIRMWARE_BOUNDARY       0   /* hil/fw/boundary_test.c 边界夹具 */
+#endif
+#ifndef FIRMWARE_SCENARIO
+#define FIRMWARE_SCENARIO       0   /* 系统级场景对比夹具(0 表示不启用) */
+#endif
+#ifndef FIRMWARE_PRODUCTION_STRESS
+#define FIRMWARE_PRODUCTION_STRESS 0
+#endif
 
 /* USER CODE END PD */
 
@@ -54,8 +106,21 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+#if FIRMWARE_SELFTEST
 static rtos_tcb_t *selftest_tcb;
+#endif
+#if FIRMWARE_BENCH
 static rtos_tcb_t *bench_tcb;
+#endif
+#if FIRMWARE_BOUNDARY
+static rtos_tcb_t *boundary_tcb;
+#endif
+#if FIRMWARE_SCENARIO
+static rtos_tcb_t *scenario_tcb;
+#endif
+#if FIRMWARE_PRODUCTION_STRESS
+static rtos_tcb_t *production_stress_tcb;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -634,17 +699,32 @@ int main(void)
 
 
   rtos_init();
+#if FIRMWARE_AUDIT
+  audit_pre_start();
+#endif
+
+#if FIRMWARE_SELFTEST
+  /* 阶段1 必须在调度器启动前由 main 上下文执行(见 selftest.h 契约)。
+   * 漏掉这一句会导致 phase2 首句 rtos_task_delete(NULL) 变成自删, 测试卡死
+   * (踩坑记录: .trae/scenario_test/HANDOFF.md 第 1 节)。 */
+  selftest_pre_start();
+#endif
 
   /* 恢复日常固件形态: 应用任务 + USB(内核已含全部修复与性能优化,
    * selftest/benchmark 固件按需启用, 见 Core/Src/selftest.c 与 benchmark.c) */
+#if FIRMWARE_USB_APP
   rtos_usb_init();
   rtos_usb_cdc_init(0, (uintptr_t)USB_OTG_FS);
+#endif
 
+  /* 系统级场景对比测试期间: 应用任务全部停用, 保证测量期间只有被测任务在跑。 */
+#if FIRMWARE_APP_TASKS
   rtos_task_create(&task_tcb, 256, task_0, NULL, 6, "task0");
   rtos_task_create(&task1_tcb, 256, task_1, NULL, 5, "task1");
   rtos_task_create(&task_uart_tcb, 256, task_uart, NULL, 1, "uart");
   rtos_task_create(&algo_task_tcb, 256, algo_task, NULL, 10, "algo");
-
+#endif
+#if FIRMWARE_FAULT_TASKS
   /* HardFault 诊断验证任务: 阻塞等待 UART 数字命令后触发对应故障 */
   rtos_task_create(&ft1_tcb, 256, ftask_bus,       NULL, 7, "ft1_bus");
   rtos_task_create(&ft2_tcb, 256, ftask_invstate,  NULL, 7, "ft2_invst");
@@ -655,16 +735,41 @@ int main(void)
   rtos_task_create(&ft7_tcb, 256, ftask_imprecise, NULL, 7, "ft7_impr");
   /* 测试8 用静态小栈(512B)+献祭缓冲, 不能用动态大栈 */
   rtos_task_create_static(&ft8_tcb, ft8_stack, 128, ftask_overflow, NULL, 7, "ft8_ovf");
+#endif
 
   /* USB 应用任务: CDC 回显 + MSC 状态监视 + HID 报告收发
    * (优先级 8, 低于 USB 协议栈线程 16) */
-//   rtos_task_create(&usb_cdc_tcb, 256, task_usb_cdc, NULL, 8, "usb_cdc");
-//   rtos_task_create(&usb_msc_tcb, 256, task_usb_msc, NULL, 8, "usb_msc");
-//   rtos_task_create(&usb_hid_tcb, 256, task_usb_hid, NULL, 8, "usb_hid");
+#if FIRMWARE_USB_APP
+  rtos_task_create(&usb_cdc_tcb, 256, task_usb_cdc, NULL, 8, "usb_cdc");
+  rtos_task_create(&usb_msc_tcb, 256, task_usb_msc, NULL, 8, "usb_msc");
+  rtos_task_create(&usb_hid_tcb, 256, task_usb_hid, NULL, 8, "usb_hid");
+#endif
 
-  /* 日常固件: 应用任务如上; selftest/benchmark 按需启用(切换两行注释即可) */
-  // rtos_task_create(&selftest_tcb, 1024, selftest_task, NULL, 9, "selftest");
-  // rtos_task_create(&bench_tcb, 1024, bench_task, NULL, 9, "bench");
+  /* 测试固件: 每轮只启用一种(HIL 脚本保证互斥) */
+#if FIRMWARE_AUDIT
+  rtos_tcb_t *audit_tcb;
+  rtos_task_create(&audit_tcb, 1024, audit_regressions_task, NULL, 9, "audit");
+#endif
+#if FIRMWARE_SELFTEST
+  rtos_task_create(&selftest_tcb, 1024, selftest_task, NULL, 9, "selftest");
+#endif
+#if FIRMWARE_BENCH
+  rtos_task_create(&bench_tcb, 1024, bench_task, NULL, 9, "bench");
+#endif
+#if FIRMWARE_BOUNDARY
+  rtos_task_create(&boundary_tcb, 1024, boundary_test_task, NULL, 9, "boundary");
+#endif
+#if FIRMWARE_SCENARIO
+  rtos_task_create(&scenario_tcb, 1024, test_scenario_task, NULL, 9, "scenario");
+#endif
+#if FIRMWARE_PRODUCTION_STRESS
+    rtos_status_t stress_status = rtos_task_create(&production_stress_tcb, 1024U,
+        production_stress_task, NULL, 4U, "production-stress");
+    if (stress_status != RTOS_OK) {
+        printf("STRESS|FAIL|controller_create|status=%ld\r\n", (long)stress_status);
+        printf("STRESS|DONE|status=%ld\r\n", (long)stress_status);
+    }
+#endif
 
   rtos_start();
 

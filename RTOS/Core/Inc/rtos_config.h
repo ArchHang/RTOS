@@ -152,10 +152,15 @@
  *         在每次 FromISR 调用时捕获。本断言仅在 RTOS_CONFIG_ASSERT_ENABLED
  *         时生效(发布版零开销), 在允许 ISR 调用的 API 入口检查。 */
 #if RTOS_CONFIG_ASSERT_ENABLED
-#define RTOS_ASSERT_ISR_OK()                                                                          \
-    RTOS_ASSERT((RTOS_PORT_IN_ISR() == RTOS_FALSE) ||                                                 \
+/** @brief 使用入口处已读取的 ISR 状态，保留完整的系统调用优先级检查。
+ *  @param in_isr 当前执行上下文是否为 ISR；调用者必须传入已求值的状态。
+ */
+#define RTOS_ASSERT_ISR_STATE_OK(in_isr)                                                  \
+    RTOS_ASSERT(((in_isr) == RTOS_FALSE) ||                                              \
                 (rtos_port_isr_priority() >= RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY))
+#define RTOS_ASSERT_ISR_OK() RTOS_ASSERT_ISR_STATE_OK(RTOS_PORT_IN_ISR())
 #else
+#define RTOS_ASSERT_ISR_STATE_OK(in_isr) ((void)0)
 #define RTOS_ASSERT_ISR_OK() ((void)0)
 #endif
 

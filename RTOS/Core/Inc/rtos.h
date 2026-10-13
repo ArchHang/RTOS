@@ -22,8 +22,8 @@
  *          数据流(典型任务切换):
  *            1. SysTick 触发 -> rtos_port_sys_tick_handler()
  *            2. 调度器更新 tick_count, 检查延时表
- *            3. 若更高优先级任务就绪 -> 置 schedule_pending
- *            4. 退出中断时 PendSV 触发上下文切换
+ *            3. 若更高优先级任务就绪 -> 置 next_tcb 并挂起 PendSV
+ *            4. 退出中断/临界区时 PendSV 执行上下文切换
  *            5. PendSV 保存当前任务 R4-R11/S16-S31, 加载下一任务
  */
 #ifndef RTOS_H_
@@ -65,10 +65,12 @@ const char *rtos_get_version(void);
 rtos_status_t rtos_init(void);
 
 /**
- * @brief 启动 RTOS 调度器(不返回)。
- * @details 内部调用 rtos_sched_start()，启动后空闲任务首先运行。
+ * @brief 启动 RTOS 调度器。
+ * @details 内部调用 rtos_sched_start(): 配置 SysTick/PendSV 后经 SVC 异常返回进入
+ *          首个任务。成功后不再返回。
+ * @return 正常情况不返回; 仅就绪集异常为空的加固路径返回 RTOS_ERR_SCHED。
  */
-rtos_status_t rtos_start(void) __attribute__((noreturn));
+rtos_status_t rtos_start(void);
 
 #ifdef __cplusplus
 }

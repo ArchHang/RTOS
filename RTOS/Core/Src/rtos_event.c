@@ -43,15 +43,30 @@ static rtos_bool_t event_check(rtos_event_bits_t current_bits, rtos_event_bits_t
     }
 }
 
+/* Called by the timeout path while the node is still on the event's wait
+ * list. Deinit cannot release this object until that critical section ends. */
+static void event_capture_timeout(rtos_wait_node_t *node)
+{
+    rtos_event_t *event = (rtos_event_t *)node->wait_obj;
+    node->transfer_buf = (void *)(uintptr_t)event->bits;
+}
+
 rtos_status_t rtos_event_init(rtos_event_t *event)
 {
     if (event == NULL) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK();
+    RTOS_PORT_ENTER_CRITICAL();
+    if (rtos_internal_object_has_waiters((void *)event)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_ALREADY;
+    }
     memset(event, 0, sizeof(*event));
     event->bits = 0U;
     event->wait_head = NULL;
     event->is_initialized = 1U;
+    RTOS_PORT_EXIT_CRITICAL();
     return RTOS_OK;
 }
 
@@ -106,6 +121,7 @@ rtos_event_bits_t rtos_event_clear(rtos_event_t *event, rtos_event_bits_t bits)
     if ((event == NULL) || (event->is_initialized == 0U)) {
         return 0U;
     }
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     event->bits &= ~bits;
     rtos_event_bits_t result = event->bits;
@@ -119,6 +135,7 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
     if ((event == NULL) || (event->is_initialized == 0U) || (wait_bits == 0U)) {
         return 0U;
     }
+    RTOS_ASSERT_ISR_OK();
     if ((mode & ~0x1U & ~RTOS_EVENT_CLEAR_ON_EXIT) != 0U) {
         return 0U; /* 非法模式位 */
     }
@@ -149,6 +166,16 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
         return result;
     }
 
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞: 此时 tick 停走, 阻塞下去既不会被
+     * rtos_event_set 之外的任何路径唤醒, 也没有超时来源 ⇒ 永久挂死。
+     * 本接口返回的是**位掩码**而非状态码, 无法上报 RTOS_ERR_SCHED ——
+     * 按本模块既有约定(见文件头与 deinit 路径)返回 0 表示"未满足/不可用",
+     * 与"当前位恰好为 0"不可区分(限制 R8, 已在头文件注明)。 */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return 0U;
+    }
+
     /* 阻塞等待: 等待位存于 wait_node.transfer_size, 模式存于 wake_tick。
      * 不复用 tcb->notify_value —— 否则与 rtos_task_notify 跨模块冲突
      * (阻塞期间 notify 会覆盖 notify_value, 唤醒后读回的是通知值而非标志位)。 */
@@ -163,6 +190,18 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
     cur->wait_node.transfer_buf = NULL; /* 唤醒时由 event_set 写入结果 */
     cur->wait_node.wake_tick = mode; /* 复用字段存模式 */
     cur->wait_node.list_head = &event->wait_head; /* 供超时清理 */
+    /* [缺陷修复 EH-1] 必须显式清除队列侧字段: 事件组用的是"按优先级有序链",
+     * 不是位图索引链。若沿用上一次阻塞(如信号量超时)遗留的 queue_bitmap,
+     * 本节点会被 rtos_internal_requeue_wait_lists 误判为位图链成员:
+     *   1. 去 read-modify-write **上一次那个信号量**的 wait_bitmap
+     *      (该对象可能已 deinit/存储已释放 → 对任意内存的读改写);
+     *   2. 并被错误地"尾插回原位序", 而不是按优先级插入事件等待链。
+     * 真机实测(D4 场景): queue_bitmap 非 NULL、旧信号量位图被写入 bit11。
+     * 对照实现: rtos_internal_block_current_on 与 rtos_task_notify_wait
+     * 都已显式置 NULL, 此处属于遗漏。 */
+    cur->wait_node.queue_bitmap = NULL;
+    cur->wait_node.queued_priority = cur->priority;
+    cur->wait_node.on_timeout = event_capture_timeout;
     cur->wait_result = RTOS_OK;
 
     rtos_internal_wait_insert_by_prio(&event->wait_head, &cur->wait_node);
@@ -173,16 +212,10 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
     /* 被唤醒: 从 wait_node.transfer_buf 读取 event_set 回传的标志位 */
     cur = rtos_kernel.current_tcb;
     rtos_event_bits_t result = (rtos_event_bits_t)(uintptr_t)cur->wait_node.transfer_buf;
-    if (cur->wait_result == RTOS_ERR_TIMEOUT) {
-        /* 超时: 返回当前位(未满足)。仅超时路径回读 event —— 对象必然存活。 */
-        RTOS_PORT_ENTER_CRITICAL();
-        result = event->bits;
-        RTOS_PORT_EXIT_CRITICAL();
-    }
-    /* [bug fix BUG-3] DELETED 路径(result 已是 0)不再回读 event:
-     * deinit 唤醒等待者后调用者可立即释放对象(栈/堆), 等待者可能数毫秒后才
-     * 运行, 回读 event->bits 是 use-after-free —— event 是四个 IPC 模块中
-     * 唯一唤醒后仍解引用等待对象的。返回 0 表示对象已销毁。 */
+    /* Success and timeout both carry a snapshot in the TCB. After timeout the
+     * task has left the event list, so the object may have been deinitialized
+     * and reused before this task resumes. Never dereference event here.
+     * Deinit/suspend keep transfer_buf at NULL and therefore return zero. */
     return result;
 }
 
@@ -199,6 +232,7 @@ rtos_status_t rtos_event_deinit(rtos_event_t *event)
     if (event == NULL) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     rtos_internal_wake_all(&event->wait_head, RTOS_ERR_DELETED);
     event->is_initialized = 0U;

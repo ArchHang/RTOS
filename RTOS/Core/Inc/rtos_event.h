@@ -36,13 +36,14 @@ typedef uint32_t rtos_event_bits_t;
  */
 struct rtos_event {
     uint8_t is_initialized;
-    uint8_t in_use;
     volatile rtos_event_bits_t bits; /**< 当前标志位。 */
-    rtos_wait_node_t *wait_head; /**< 等待链表。 */
+    rtos_wait_node_t *wait_head; /**< 等待链(按优先级有序, 一次 set 可唤醒多个等待者)。 */
 };
 
 /**
  * @brief 初始化事件标志组。
+ * @return 有任务正在等待本对象时返回 RTOS_ERR_ALREADY 并保留原状态;
+ *         无等待者时允许重新初始化。首次调用可传入未初始化的存储。
  */
 rtos_status_t rtos_event_init(rtos_event_t *event);
 
@@ -65,7 +66,8 @@ rtos_event_bits_t rtos_event_clear(rtos_event_t *event, rtos_event_bits_t bits);
  * @param bits    等待的位掩码。
  * @param mode    RTOS_EVENT_WAIT_ANY / RTOS_EVENT_WAIT_ALL，可 | RTOS_EVENT_CLEAR_ON_EXIT。
  * @param timeout 超时。
- * @return 满足条件时的当前标志位；超时返回当前位(未满足)。
+ * @return 满足条件时的标志位快照; 超时返回超时发生时的位快照(未满足)。
+ *         被 deinit/挂起中止时返回 0。阻塞返回后不再访问事件对象存储。
  */
 rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t bits, uint32_t mode,
                                   rtos_tick_t timeout);

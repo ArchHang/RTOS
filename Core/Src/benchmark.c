@@ -14,6 +14,15 @@
 #include "rtos.h"
 #include "main.h"
 #include <stdio.h>
+#if FIRMWARE_PERF
+#include "perf_probes.h"
+#endif
+#if FIRMWARE_LOWLEVEL_CHECKS
+#include "lowlevel_checks.h"
+#endif
+#if FIRMWARE_FLASH_DIAG
+#include "flash_diag.h"
+#endif
 
 /* ============================== 计时与统计 ============================== */
 
@@ -179,6 +188,72 @@ static void bm_sem_pingpong(void)
     rtos_task_delete(ta);
     rtos_task_delete(tb);
 }
+
+#if FIRMWARE_FLASH_DIAG
+/**
+ * @brief 为同镜像缓存诊断运行原乒乓任务，使用静态存储保持堆快照不变。
+ * @details 创建和删除在 pp_start/pp_stop 测量之外；注册与任务执行仍走真实内核。
+ */
+static void bm_flash_pingpong(void)
+{
+    static rtos_tcb_t tasks[2];
+    static rtos_stack_t stacks[2][256] __attribute__((aligned(8)));
+    static const rtos_task_func_t entries[2] = {bm_pp_a, bm_pp_b};
+    rtos_sem_t *semaphores[2] = {&pp_s1, &pp_s2};
+    uint32_t initialized = 0U;
+    uint32_t created = 0U;
+    rtos_status_t status = RTOS_OK;
+
+    pp_done_a = 0U;
+    pp_done_b = 0U;
+    for (uint32_t index = 0U; index < 2U; index++) {
+        status = rtos_sem_init(semaphores[index], 0U, 1U);
+        if (status != RTOS_OK) {
+            goto cleanup;
+        }
+        initialized++;
+    }
+    for (uint32_t index = 0U; index < 2U; index++) {
+        status = rtos_task_create_static(&tasks[index], stacks[index], 256U,
+                                        entries[index], NULL, 14U, "flash-pp");
+        if (status != RTOS_OK) {
+            goto cleanup;
+        }
+        created++;
+    }
+    status = rtos_sem_give(&pp_s1);
+    if (status != RTOS_OK) {
+        goto cleanup;
+    }
+    for (uint32_t tick = 0U; tick < 1000U; tick++) {
+        if ((pp_done_a != 0U) && (pp_done_b != 0U)) {
+            break;
+        }
+        rtos_task_delay(1U);
+    }
+    if ((pp_done_a == 0U) || (pp_done_b == 0U)) {
+        status = RTOS_ERR_TIMEOUT;
+        goto cleanup;
+    }
+    bm_report1("2", "sem_roundtrip", (pp_stop - pp_start) / (BM_N_ROUND / 2U));
+
+cleanup:
+    /* 唯一向下清理出口：也回收只创建成功的前一个任务，防止下轮重用活动 TCB。 */
+    for (uint32_t index = 0U; index < created; index++) {
+        if (rtos_task_delete(&tasks[index]) != RTOS_OK) {
+            status = RTOS_ERR_PARAM;
+        }
+    }
+    for (uint32_t index = 0U; index < initialized; index++) {
+        if (rtos_sem_deinit(semaphores[index]) != RTOS_OK) {
+            status = RTOS_ERR_PARAM;
+        }
+    }
+    if (status != RTOS_OK) {
+        printf("FD|FAIL|static pingpong callback status=%ld\r\n", (long)status);
+    }
+}
+#endif
 
 /* ============================== BM3 sem 抢占唤醒延迟 ============================== */
 
@@ -389,6 +464,18 @@ void bench_task(void *arg)
     bm_task_create_delete(); /* BM5 */
     bm_delay1();           /* BM6 */
     bm_isr_wake();         /* BM7 */
+
+#if FIRMWARE_LOWLEVEL_CHECKS
+    lowlevel_checks_run();
+#endif
+#if FIRMWARE_FLASH_DIAG
+    if (flash_diag_run(bm_flash_pingpong) != RTOS_OK) {
+        printf("FD|FAIL|benchmark diagnostic did not complete\r\n");
+    }
+#endif
+#if FIRMWARE_PERF
+    perf_probes_run();
+#endif
 
     printf("BM|DONE|benchmark complete\r\n");
     for (;;) {

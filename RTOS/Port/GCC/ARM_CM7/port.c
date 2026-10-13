@@ -153,6 +153,7 @@ typedef struct {
  *         初始 0 表示未在临界区。enter 时先屏蔽中断再自增，exit 时自减，
  *         归零时解除屏蔽。BASEPRI 寄存器实际控制屏蔽，计数只跟踪嵌套深度。 */
 volatile uint32_t rtos_port_crit_nest = 0U;
+volatile uint32_t rtos_port_saved_mask = 0U;
 
 /* ============================== 临界区实现 ============================== */
 /* [perf P-1] enter/exit/in_isr 已移至 rtos_port.h 的 static inline,
@@ -170,14 +171,23 @@ void rtos_port_enable_interrupts(void)
 
 uint32_t rtos_port_get_interrupt_mask(void)
 {
-    uint32_t basepri;
-    __asm volatile(" mrs %0, basepri \n" : "=r"(basepri)::"memory");
-    return basepri;
+    uint32_t mask;
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm volatile(" mrs %0, basepri \n" : "=r"(mask)::"memory");
+#else
+    __asm volatile(" mrs %0, primask \n" : "=r"(mask)::"memory");
+#endif
+    return mask;
 }
 
 void rtos_port_set_interrupt_mask(uint32_t mask)
 {
+#if RTOS_CONFIG_USE_BASEPRI
     __asm volatile(" msr basepri, %0 \n" ::"r"(mask) : "memory");
+#else
+    __asm volatile(" msr primask, %0 \n" ::"r"(mask) : "memory");
+#endif
+    __asm volatile(" isb \n" ::: "memory");
 }
 
 uint32_t rtos_port_get_critical_nesting(void)
@@ -191,8 +201,10 @@ uint32_t rtos_port_isr_priority(void)
      * BASEPRI 数值直接可比)。线程模式返回 0。 */
     uint32_t ipsr;
     __asm volatile(" mrs %0, ipsr \n" : "=r"(ipsr) :: "memory");
-    if (ipsr == 0U) {
-        return 0U; /* 线程模式 */
+    if (ipsr < 4U) {
+        /* Thread mode has no active priority; NMI/HardFault have fixed
+         * priorities and no SHP entry. Returning 0 rejects RTOS calls. */
+        return 0U;
     }
     if (ipsr >= 16U) {
         /* 外设 IRQ: NVIC->IP[] 已是移位后的值(优先级 << (8-__NVIC_PRIO_BITS)) */
@@ -225,6 +237,11 @@ rtos_stack_t *rtos_port_init_stack(rtos_stack_t *stack_top, uint32_t stack_size,
                                    rtos_task_func_t entry, void *arg)
 {
     rtos_stack_t *sp;
+
+    /* stack_size 是本移植层 ABI 的一部分(见 rtos_port.h): 本实现按压栈顺序写入
+     * 固定 18 字初始帧, 不需要它来裁剪栈; 其它架构若要预留对齐填充或校验帧是否
+     * 放得下, 才会用到该参数。此处显式声明未用, 避免 -Wunused-parameter。 */
+    (void)stack_size;
     uint32_t aligned;
 
     /* 任务退出处理函数声明(定义于 rtos_task.c) */
@@ -305,34 +322,37 @@ rtos_stack_t *rtos_port_init_stack(rtos_stack_t *stack_top, uint32_t stack_size,
 #define PORT_TOP_STACK_OFF ((int)__builtin_offsetof(rtos_tcb_t, top_of_stack))
 _Static_assert(PORT_TOP_STACK_OFF == 0, "top_of_stack must be first field of TCB");
 
+/* ===== PendSV 汇编入口参数 =====
+ * 偏移量经命名操作数("i" 约束)传给汇编, 因此可用编译期断言保护结构体布局:
+ * 布局一旦变化, 构建即失败, 而不是让汇编悄悄寻址错字段。 */
+#define PORT_PEND_SV_ASM_INPUTS                                                                \
+    [cur] "i"(PORT_CUR_TCB_OFF), [top] "i"(PORT_TOP_STACK_OFF),                                    \
+    [mask] "i"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
+
 /**
- * @brief PendSV 中断处理: 执行上下文切换。
- * @details naked 函数，无 prologue/epilogue，纯汇编。
- *
- * [perf P-2] 扁平化: 原实现经 ldr+blx 间接调用 rtos_port_save_and_switch
- * (C 函数: 保存 top_of_stack → 调 rtos_sched_context_switch → 返回新 PSP),
- * 共两层调用。现改为: 汇编内直接保存 top_of_stack(经偏移寻址)后直接
- * bl rtos_sched_context_switch, 从新 current_tcb 读回 PSP。
- * 消除一层调用序言/尾声 + 间接寻址, 每次切换节省 ~10-20 周期。
+ * @brief PendSV 中断处理: 执行上下文切换(naked, 返回即异常返回)。
+ * @details 无 prologue/epilogue, 纯汇编; 末尾 `bx lr` 就是异常返回本身。
  *
  * 流程:
  *   1. 读 PSP(当前任务栈)。
- *   2. 测试 LR(EXC_RETURN).bit4: 0=扩展帧(含 FPU)，保存 S16-S31。
+ *   2. 测试 LR(EXC_RETURN).bit4: 0=扩展帧(含 FPU), 保存 S16-S31。
  *   3. 保存 R4-R11 + EXC_RETURN。
- *   4. 保存栈顶到 current_tcb->top_of_stack(汇编直存)。
- *   5. 调用 rtos_sched_context_switch 更新 current_tcb = next_tcb。
- *   6. 从新 current_tcb->top_of_stack 读回 PSP, 恢复上下文, 异常返回。
+ *   4. 保存栈顶到 current_tcb->top_of_stack(汇编经偏移直存)。
+ *   5. C 提交函数更新 current_tcb，以 AAPCS 的 r0 返回实际运行的 TCB。
+ *   6. 从返回 TCB 的 top_of_stack 读回 PSP，恢复上下文并异常返回。
  *
- * @note  bl 覆盖 LR: EXC_RETURN 已保存到旧任务栈, 恢复时从新任务栈
- *        ldmia 取回新任务的 EXC_RETURN, 与原实现一致。
- * @note  PendSV 为最低优先级, 不会被 syscall 级中断打断, C 调用无需
- *        BASEPRI 保护(与原 save_and_switch 同判)。
+ * @note  bl 覆盖 LR: EXC_RETURN 已保存到旧任务栈, 恢复时从新任务栈 ldmia 取回。
+ * @note  PendSV 优先级最低，会被 syscall 级中断抢占。更新 current/next 以及
+ *        恢复 PSP 期间必须屏蔽这些 ISR，直到新任务的上下文已安装。
+ * @note  为什么必须是 naked 单层: 若在体外再包一层 C 函数去记录耗时, 包装函数会把
+ *        live 值分配进 r4-r11, 而本体的 stmdb/ldmia {r4-r11} 会把它替换成新任务的
+ *        值, 导致包装函数尾部用脏寄存器访存(实测 BusFault IMPRECISERR)。需要切换
+ *        耗时应在 C 提交函数内部测量，不要包在这个 naked 入口之外。
  */
-void rtos_port_pend_sv_handler(void)
+__attribute__((naked)) void rtos_port_pend_sv_handler(void)
 {
-    __asm volatile(
+    __asm__ __volatile__(
         " mrs  r0, psp                        \n" /* r0 = 当前 PSP */
-        " isb                                 \n"
         "                                     \n"
         " tst  lr, #0x10                      \n" /* 测试 EXC_RETURN.bit4 */
         " it   eq                             \n" /* 若 bit4=0(扩展帧) */
@@ -341,27 +361,41 @@ void rtos_port_pend_sv_handler(void)
         " stmdb r0!, {r4-r11}                 \n" /* 保存 R4-R11 */
         " stmdb r0!, {r3, lr}                 \n" /* 保存 R3(对齐) + LR(EXC_RETURN) */
         "                                     \n"
-        " ldr  r1, =rtos_kernel               \n"
-        " ldr  r1, [r1, %[cur]]               \n" /* r1 = current_tcb (GCC "i" 约束自带 # 前缀) */
+#if RTOS_CONFIG_USE_BASEPRI
+        " mrs  r2, basepri                    \n" /* r2 = 进入前的屏蔽值 */
+        " movs r3, %[mask]                    \n" /* r3 = 内核中断阈值 */
+        " msr  basepri_max, r3                \n" /* 保留已有的更强屏蔽 */
+        " isb                                 \n" /* 同步屏蔽后的取指状态 */
+#else
+        " mrs  r2, primask                    \n" /* r2 = 进入前的全局屏蔽 */
+        " cpsid i                             \n" /* 屏蔽可配置优先级异常 */
+#endif
+        " push {r2, r3}                       \n" /* 保存旧屏蔽，保持 MSP 8 字节对齐 */
+        " ldr  r1, =rtos_kernel               \n" /* r1 = 内核结构地址 */
+        " ldr  r1, [r1, %[cur]]               \n" /* r1 = current_tcb */
         " str  r0, [r1, %[top]]               \n" /* 保存栈顶到 TCB */
         "                                     \n"
-        " bl   rtos_sched_context_switch      \n" /* current_tcb = next(单层调用) */
+        " bl   rtos_sched_commit_context_switch \n" /* r0 = 实际运行 TCB */
         "                                     \n"
-        " ldr  r1, =rtos_kernel               \n"
-        " ldr  r1, [r1, %[cur]]               \n" /* r1 = 新 current_tcb */
-        " ldr  r0, [r1, %[top]]               \n" /* r0 = 新任务栈顶 */
+        " ldr  r0, [r0, %[top]]               \n" /* r0 = 返回任务的栈顶 */
         "                                     \n"
         " ldmia r0!, {r3, lr}                 \n" /* 恢复 R3 + 新任务 EXC_RETURN */
         " ldmia r0!, {r4-r11}                 \n" /* 恢复 R4-R11 */
         " tst  lr, #0x10                      \n" /* 测试新任务帧类型 */
-        " it   eq                             \n"
+        " it   eq                             \n" /* 扩展帧才恢复浮点寄存器 */
         " vldmiaeq r0!, {s16-s31}             \n" /* 恢复 S16-S31(若扩展帧) */
         "                                     \n"
         " msr  psp, r0                        \n" /* 设置新 PSP */
-        " isb                                 \n"
-        " bx   lr                             \n" /* 异常返回到新任务 */
+        " pop  {r2, r3}                       \n" /* r2 = MSP 上保存的旧屏蔽 */
+#if RTOS_CONFIG_USE_BASEPRI
+        " msr  basepri, r2                    \n" /* 恢复调用者 BASEPRI */
+#else
+        " msr  primask, r2                    \n" /* 恢复调用者 PRIMASK */
+#endif
+        " bx   lr                             \n" /* 异常返回: bx 自身即上下文同步点 */
         " .ltorg                              \n"
-        : : [cur] "i" (PORT_CUR_TCB_OFF), [top] "i" (PORT_TOP_STACK_OFF));
+        : : PORT_PEND_SV_ASM_INPUTS
+        : "r0", "r1", "r2", "r3", "r12", "cc", "memory");
 }
 
 /* ============================== 启动首个任务 ============================== */
@@ -487,6 +521,7 @@ void rtos_port_start_scheduler(void)
 
     /* 2. 初始化临界区嵌套计数(启动后第一次进临界区会自增) */
     rtos_port_crit_nest = 0U;
+    rtos_port_saved_mask = 0U;
 
     /* 3. 配置 SysTick 产生 RTOS_CONFIG_TICK_RATE_HZ 的周期中断。
      *    SystemCoreClock 由用户工程提供(必须 > 0)，移植层据此计算重载值。

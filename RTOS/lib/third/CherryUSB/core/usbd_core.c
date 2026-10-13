@@ -342,36 +342,50 @@ static bool usbd_set_configuration(uint8_t busid, uint8_t config_index, uint8_t 
 
     p = g_usbd_core[busid].descriptors->config_descriptor_callback(g_usbd_core[busid].speed);
 
+    if ((p == NULL) || (p[DESC_bLength] < 9U) ||
+        (p[DESC_bDescriptorType] != USB_DESCRIPTOR_TYPE_CONFIGURATION)) {
+        return false;
+    }
+    desc_len = p[CONF_DESC_wTotalLength] | (p[CONF_DESC_wTotalLength + 1] << 8);
+    if ((desc_len < p[DESC_bLength]) ||
+        (p[CONF_DESC_bConfigurationValue] != config_index)) {
+        return false;
+    }
+
     /* configure endpoints for this configuration/altsetting */
-    while (p[DESC_bLength] != 0U) {
+    while (current_desc_len < desc_len) {
+        if ((desc_len - current_desc_len < 2U) || (p[DESC_bLength] < 2U) ||
+            (p[DESC_bLength] > desc_len - current_desc_len)) {
+            return false;
+        }
         switch (p[DESC_bDescriptorType]) {
             case USB_DESCRIPTOR_TYPE_CONFIGURATION:
+                if ((current_desc_len != 0U) || (p[DESC_bLength] < 9U)) return false;
                 /* remember current configuration index */
                 cur_config = p[CONF_DESC_bConfigurationValue];
 
                 if (cur_config == config_index) {
                     found = true;
-
-                    current_desc_len = 0;
-                    desc_len = (p[CONF_DESC_wTotalLength]) |
-                               (p[CONF_DESC_wTotalLength + 1] << 8);
                 }
 
                 break;
 
             case USB_DESCRIPTOR_TYPE_INTERFACE:
+                if (p[DESC_bLength] < 9U) return false;
                 /* remember current alternate setting */
                 cur_alt_setting =
                     p[INTF_DESC_bAlternateSetting];
                 break;
 
             case USB_DESCRIPTOR_TYPE_ENDPOINT:
+                if (p[DESC_bLength] < 7U) return false;
                 if ((cur_config != config_index) ||
                     (cur_alt_setting != alt_setting)) {
                     break;
                 }
 
                 found = usbd_set_endpoint(busid, (struct usb_endpoint_descriptor *)p);
+                if (!found) return false;
                 break;
 
             default:
@@ -389,6 +403,34 @@ static bool usbd_set_configuration(uint8_t busid, uint8_t config_index, uint8_t 
     return found;
 }
 
+static bool usbd_interface_endpoints(uint8_t busid, const uint8_t *configuration,
+                                       uint32_t descriptor_length, uint8_t iface,
+                                       uint8_t alt_setting, bool enable)
+{
+    uint8_t current_iface = 0xFFU;
+    uint8_t current_alt = 0xFFU;
+    uint32_t offset = 0U;
+    while (offset < descriptor_length) {
+        const uint8_t *p = configuration + offset;
+        if ((descriptor_length - offset < 2U) || (p[DESC_bLength] < 2U) ||
+            (p[DESC_bLength] > descriptor_length - offset)) return false;
+        if (p[DESC_bDescriptorType] == USB_DESCRIPTOR_TYPE_INTERFACE) {
+            if (p[DESC_bLength] < 9U) return false;
+            current_iface = p[INTF_DESC_bInterfaceNumber];
+            current_alt = p[INTF_DESC_bAlternateSetting];
+        } else if (p[DESC_bDescriptorType] == USB_DESCRIPTOR_TYPE_ENDPOINT) {
+            if (p[DESC_bLength] < 7U) return false;
+            if ((current_iface == iface) && (current_alt == alt_setting)) {
+                const struct usb_endpoint_descriptor *ep = (const void *)p;
+                bool success = enable ? usbd_set_endpoint(busid, ep) : usbd_reset_endpoint(busid, ep);
+                if (!success) return false;
+            }
+        }
+        offset += p[DESC_bLength];
+    }
+    return true;
+}
+
 /**
  * @brief set USB interface
  *
@@ -401,68 +443,42 @@ static bool usbd_set_configuration(uint8_t busid, uint8_t config_index, uint8_t 
 static bool usbd_set_interface(uint8_t busid, uint8_t iface, uint8_t alt_setting)
 {
     const uint8_t *if_desc = NULL;
-    struct usb_endpoint_descriptor *ep_desc;
-    uint8_t cur_alt_setting = 0xFF;
-    uint8_t cur_iface = 0xFF;
-    bool ret = false;
     const uint8_t *p;
-    uint32_t desc_len = 0;
+    const uint8_t *configuration;
+    uint32_t desc_len;
     uint32_t current_desc_len = 0;
 
-    p = g_usbd_core[busid].descriptors->config_descriptor_callback(g_usbd_core[busid].speed);
+    configuration = g_usbd_core[busid].descriptors->config_descriptor_callback(g_usbd_core[busid].speed);
+    if ((configuration == NULL) || (configuration[DESC_bLength] < 9U) ||
+        (configuration[DESC_bDescriptorType] != USB_DESCRIPTOR_TYPE_CONFIGURATION)) return false;
+    desc_len = configuration[CONF_DESC_wTotalLength] | (configuration[CONF_DESC_wTotalLength + 1] << 8);
+    if (desc_len < configuration[DESC_bLength]) return false;
+    p = configuration;
 
     USB_LOG_DBG("iface %u alt_setting %u\r\n", iface, alt_setting);
 
-    while (p[DESC_bLength] != 0U) {
-        switch (p[DESC_bDescriptorType]) {
-            case USB_DESCRIPTOR_TYPE_CONFIGURATION:
-                current_desc_len = 0;
-                desc_len = (p[CONF_DESC_wTotalLength]) |
-                           (p[CONF_DESC_wTotalLength + 1] << 8);
-
-                break;
-
-            case USB_DESCRIPTOR_TYPE_INTERFACE:
-                /* remember current alternate setting */
-                cur_alt_setting = p[INTF_DESC_bAlternateSetting];
-                cur_iface = p[INTF_DESC_bInterfaceNumber];
-
-                if (cur_iface == iface &&
-                    cur_alt_setting == alt_setting) {
-                    if_desc = (void *)p;
-                }
-
-                break;
-
-            case USB_DESCRIPTOR_TYPE_ENDPOINT:
-                if (cur_iface == iface) {
-                    ep_desc = (struct usb_endpoint_descriptor *)p;
-
-                    if (alt_setting == 0) {
-                        ret = usbd_reset_endpoint(busid, ep_desc);
-                    } else if (cur_alt_setting == alt_setting) {
-                        ret = usbd_set_endpoint(busid, ep_desc);
-                    } else {
-                    }
-                }
-
-                break;
-
-            default:
-                break;
+    /* Validate the requested alternate setting before touching live endpoints. */
+    while (current_desc_len < desc_len) {
+        if ((desc_len - current_desc_len < 2U) || (p[DESC_bLength] < 2U) ||
+            (p[DESC_bLength] > desc_len - current_desc_len)) return false;
+        if (p[DESC_bDescriptorType] == USB_DESCRIPTOR_TYPE_INTERFACE) {
+            if (p[DESC_bLength] < 9U) return false;
+            if ((p[INTF_DESC_bInterfaceNumber] == iface) &&
+                (p[INTF_DESC_bAlternateSetting] == alt_setting)) if_desc = p;
+        } else if ((p[DESC_bDescriptorType] == USB_DESCRIPTOR_TYPE_ENDPOINT) &&
+                   (p[DESC_bLength] < 7U)) {
+            return false;
         }
-
-        /* skip to next descriptor */
         current_desc_len += p[DESC_bLength];
         p += p[DESC_bLength];
-        if (current_desc_len >= desc_len && desc_len) {
-            break;
-        }
     }
-
+    if (if_desc == NULL) return false;
+    if (!usbd_interface_endpoints(busid, configuration, desc_len, iface,
+                                    g_usbd_core[busid].intf_altsetting[iface], false)) return false;
+    if (!usbd_interface_endpoints(busid, configuration, desc_len, iface, alt_setting, true)) return false;
+    g_usbd_core[busid].intf_altsetting[iface] = alt_setting;
     usbd_class_event_notify_handler(busid, USBD_EVENT_SET_INTERFACE, (void *)if_desc);
-
-    return ret;
+    return true;
 }
 
 /**
@@ -581,12 +597,16 @@ static bool usbd_std_interface_req_handler(uint8_t busid, struct usb_setup_packe
     uint32_t current_desc_len = 0;
     uint8_t cur_iface = 0xFF;
 
-    p = g_usbd_core[busid].descriptors->config_descriptor_callback(g_usbd_core[busid].speed);
-
     /* Only when device is configured, then interface requests can be valid. */
-    if (!is_device_configured(busid)) {
+    if (!is_device_configured(busid) ||
+        (setup->wIndex != intf_num) ||
+        (intf_num >= sizeof(g_usbd_core[busid].intf_altsetting)) ||
+        (intf_num >= g_usbd_core[busid].intf_offset) ||
+        (g_usbd_core[busid].intf[intf_num] == NULL)) {
         return false;
     }
+
+    p = g_usbd_core[busid].descriptors->config_descriptor_callback(g_usbd_core[busid].speed);
 
     switch (setup->bRequest) {
         case USB_REQUEST_GET_STATUS:
@@ -652,8 +672,8 @@ static bool usbd_std_interface_req_handler(uint8_t busid, struct usb_setup_packe
             break;
 
         case USB_REQUEST_SET_INTERFACE:
-            g_usbd_core[busid].intf_altsetting[intf_num] = LO_BYTE(setup->wValue);
-            usbd_set_interface(busid, setup->wIndex, setup->wValue);
+            if (HI_BYTE(setup->wValue) != 0U) return false;
+            ret = usbd_set_interface(busid, intf_num, LO_BYTE(setup->wValue));
             *len = 0;
             break;
 
@@ -1387,3 +1407,91 @@ int usbd_deinitialize(uint8_t busid)
     usbd_class_event_notify_handler(busid, USBD_EVENT_DEINIT, NULL);
     return 0;
 }
+
+#if defined(RTOS_HIL_AUDIT_PENDSV)
+static const uint8_t *audit_configuration(uint8_t speed)
+{
+    (void)speed;
+    static const uint8_t descriptor[] = { 9U, USB_DESCRIPTOR_TYPE_CONFIGURATION,
+                                          9U, 0U, 1U, 1U, 0U, 0x80U, 50U };
+    return descriptor;
+}
+
+bool usbd_core_audit_interface_request(uint8_t request, uint16_t index)
+{
+    static const struct usb_descriptor descriptors = {
+        .config_descriptor_callback = audit_configuration
+    };
+    static struct usbd_interface interface;
+    uint8_t buffer[8] = { 0 };
+    uint8_t *data = buffer;
+    uint32_t length = 1U;
+    struct usb_setup_packet setup = {
+        .bmRequestType = USB_REQUEST_RECIPIENT_INTERFACE,
+        .bRequest = request,
+        .wIndex = index,
+        .wValue = 0U,
+        .wLength = 1U
+    };
+    usbd_desc_register(0U, &descriptors);
+    usbd_add_interface(0U, &interface);
+    g_usbd_core[0].configuration = 1U;
+    return usbd_std_interface_req_handler(0U, &setup, &data, &length);
+}
+
+static const uint8_t *audit_interface_configuration(uint8_t speed)
+{
+    (void)speed;
+    static const uint8_t descriptor[] = {
+        9U, USB_DESCRIPTOR_TYPE_CONFIGURATION, 25U, 0U, 1U, 1U, 0U, 0x80U, 50U,
+        9U, USB_DESCRIPTOR_TYPE_INTERFACE, 0U, 0U, 1U, 0xFFU, 0U, 0U, 0U,
+        7U, USB_DESCRIPTOR_TYPE_ENDPOINT, 0x81U, USB_ENDPOINT_TYPE_BULK, 64U, 0U, 0U
+    };
+    return descriptor;
+}
+
+bool usbd_core_audit_select_interface(uint8_t alt_setting)
+{
+    static const struct usb_descriptor descriptors = {
+        .config_descriptor_callback = audit_interface_configuration
+    };
+    static struct usbd_interface interface;
+    uint8_t buffer[8] = { 0 };
+    uint8_t *data = buffer;
+    uint32_t length = 0U;
+    struct usb_setup_packet setup = {
+        .bmRequestType = USB_REQUEST_RECIPIENT_INTERFACE,
+        .bRequest = USB_REQUEST_SET_INTERFACE,
+        .wIndex = 0U,
+        .wValue = alt_setting,
+        .wLength = 0U
+    };
+    usbd_desc_register(0U, &descriptors);
+    usbd_add_interface(0U, &interface);
+    g_usbd_core[0].configuration = 1U;
+    if (!usbd_set_configuration(0U, 1U, 0U)) return false;
+    return usbd_std_interface_req_handler(0U, &setup, &data, &length);
+}
+
+static const uint8_t *audit_bounded_configuration(uint8_t speed)
+{
+    (void)speed;
+    /* Only the first 9 bytes belong to the configuration returned by this
+     * callback. The tail imitates unrelated flash bytes after the descriptor. */
+    static const uint8_t descriptor[] = {
+        9U, USB_DESCRIPTOR_TYPE_CONFIGURATION, 9U, 0U, 1U, 1U, 0U, 0x80U, 50U,
+        9U, USB_DESCRIPTOR_TYPE_CONFIGURATION, 9U, 0U, 1U, 2U, 0U, 0x80U, 50U,
+        0U
+    };
+    return descriptor;
+}
+
+bool usbd_core_audit_configuration_bounds(void)
+{
+    static const struct usb_descriptor descriptors = {
+        .config_descriptor_callback = audit_bounded_configuration
+    };
+    usbd_desc_register(0U, &descriptors);
+    return usbd_set_configuration(0U, 2U, 0U);
+}
+#endif

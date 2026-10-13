@@ -74,17 +74,7 @@
 /** @brief 毫秒转 Tick。USB_OSAL_WAITING_FOREVER → RTOS_WAIT_FOREVER。 */
 static rtos_tick_t usb_osal_ms_to_ticks(uint32_t ms)
 {
-    if (ms == USB_OSAL_WAITING_FOREVER) {
-        return RTOS_WAIT_FOREVER;
-    }
-    if (ms == 0U) {
-        return RTOS_NO_WAIT;
-    }
-    rtos_tick_t ticks = (ms * RTOS_CONFIG_TICK_RATE_HZ) / 1000U;
-    if (ticks == 0U) {
-        ticks = 1U;
-    }
-    return ticks;
+    return rtos_usb_timeout_ticks(ms);
 }
 
 /** @brief rtos_status_t → CherryUSB int 返回值。 */
@@ -106,10 +96,16 @@ usb_osal_thread_t usb_osal_thread_create(const char *name, uint32_t stack_size, 
 {
     /* CherryUSB stack_size 单位为字节, 本 RTOS 单位为字(4 字节) */
     uint32_t stack_words = stack_size / sizeof(rtos_stack_t);
+    if ((stack_size % sizeof(rtos_stack_t)) != 0U) {
+        stack_words++;
+    }
     if (stack_words == 0U) {
         stack_words = RTOS_CONFIG_USB_THREAD_STACK_SIZE;
     }
     /* usb_thread_entry_t 与 rtos_task_func_t 签名一致(都是 void(*)(void*)) */
+    if (prio >= RTOS_CONFIG_MAX_PRIORITIES) {
+        prio = RTOS_CONFIG_MAX_PRIORITIES - 1U;
+    }
     rtos_usb_thread_t *t =
         rtos_usb_thread_create(name, stack_words, (rtos_prio_t)prio, (rtos_task_func_t)entry, args);
     if (t == NULL) {
@@ -285,8 +281,9 @@ void usb_osal_timer_delete(struct usb_osal_timer *timer)
     if (timer == NULL) {
         return;
     }
-    rtos_usb_timer_delete((rtos_usb_timer_t *)timer->timer);
-    rtos_usb_free(timer);
+    if (rtos_usb_timer_delete_checked((rtos_usb_timer_t *)timer->timer) == RTOS_OK) {
+        rtos_usb_free(timer);
+    }
 }
 
 void usb_osal_timer_start(struct usb_osal_timer *timer)

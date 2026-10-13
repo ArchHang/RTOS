@@ -4,12 +4,14 @@
  *
  * @details 消息队列用于在任务/中断间传递定长数据(按值拷贝)。
  *          本实现采用环形缓冲区:
- *            - 发送: 写入 tail 指向的槽位，tail 回绕，count++。
- *            - 接收: 读取 head 槽位，head 回绕，count--。
- *          队列满时发送者阻塞(可选超时)；队列空时接收者阻塞。
- *          ISR 中发送可选触发优先级升顶(发送解阻塞的高优先级任务立即运行)。
+ *            - 发送: 写入 tail 指向的槽位, tail 回绕, count++。
+ *            - 接收: 读取 head 槽位, head 回绕, count--。
+ *          队列满时发送者阻塞(可选超时); 队列空时接收者阻塞。
+ *          等待链按任务优先级有序插入, 唤醒时取链首, 因此**先醒者必为等待者中
+ *          优先级最高者**(同优先级之间保持入链先后)。
  *
- *          等待链表按任务优先级排序，保证高优先级任务先得到消息。
+ *          入链成本为 O(等待者数): 若目标场景存在大量任务阻塞在同一队列上,
+ *          该成本会体现在 take/阻塞侧(高频侧是唤醒侧的 O(1) 取链首)。
  */
 #ifndef RTOS_QUEUE_H_
 #define RTOS_QUEUE_H_
@@ -27,15 +29,14 @@ extern "C" {
  */
 struct rtos_queue {
     uint8_t is_initialized;
-    uint8_t in_use;
     uint8_t *storage; /**< 数据存储区指针。 */
     uint32_t item_size; /**< 单条消息字节数。 */
     uint32_t capacity; /**< 队列容量(消息条数)。 */
     volatile uint32_t count; /**< 当前消息数。 */
     uint32_t head; /**< 读指针(下一条待读)。 */
     uint32_t tail; /**< 写指针(下一条待写)。 */
-    rtos_wait_node_t *send_wait_head; /**< 发送等待链表(队列满时)。 */
-    rtos_wait_node_t *recv_wait_head; /**< 接收等待链表(队列空时)。 */
+    rtos_wait_node_t *send_wait_head; /**< 发送等待链(队列满时, 按优先级有序)。 */
+    rtos_wait_node_t *recv_wait_head; /**< 接收等待链(队列空时, 按优先级有序)。 */
 };
 
 /**
@@ -44,6 +45,9 @@ struct rtos_queue {
  * @param storage   存储区(由用户提供，大小 = item_size * capacity)。
  * @param item_size 单条消息字节数。
  * @param capacity  容量。
+ * @return item_size * capacity 超过 UINT32_MAX 时返回 RTOS_ERR_PARAM;
+ *         有发送/接收等待者时返回 RTOS_ERR_ALREADY 并保留原状态。
+ * @note   无等待者时允许重新初始化; 首次调用可传入未初始化的存储。
  */
 rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_size,
                               uint32_t capacity);

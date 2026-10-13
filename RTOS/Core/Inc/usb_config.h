@@ -107,13 +107,8 @@ extern "C" {
 #define CONFIG_USBDEV_MSC_THREAD
 
 #ifndef CONFIG_USBDEV_MSC_STACKSIZE
-/* ★ 必须与线程池槽内嵌栈一致(rtos_usb.c 的 rtos_usb_thread_t.stack,
- *   大小 = RTOS_CONFIG_USB_THREAD_STACK_SIZE 字): rtos_usb_thread_create
- *   会把超过池大小的请求钳制到池大小。若此处配置更大值, MSC 线程栈
- *   会被静默截断(实际栈 = 配置意图的 1/4), 栈溢出为静默内存损坏。
- *   需要更大的 MSC 栈时, 应同步增大 RTOS_CONFIG_USB_THREAD_STACK_SIZE
- *   (注意 RAM 预算: 每个线程槽 4x 字节数)。 */
-#define CONFIG_USBDEV_MSC_STACKSIZE (RTOS_CONFIG_USB_THREAD_STACK_SIZE)
+/* CherryUSB expects bytes; the RTOS pool configuration counts 32-bit words. */
+#define CONFIG_USBDEV_MSC_STACKSIZE (RTOS_CONFIG_USB_THREAD_STACK_SIZE * 4U)
 #endif
 
 #ifndef CONFIG_USBDEV_MSC_PRIO

@@ -296,6 +296,47 @@ uint32_t rtos_heap_get_free(void)
     return s_heap_free;
 }
 
+uint32_t rtos_heap_get_max_alloc(void)
+{
+    if (!s_inited) {
+        return 0U;
+    }
+
+    RTOS_PORT_ENTER_CRITICAL();
+
+    /* 必须取**最大单块连续空闲块**, 而不是空闲字节总和:
+     * first-fit 只会在一个连续块内满足请求, 总和会把碎片高估成可用容量,
+     * 导致调用方据此放行的请求实际返回 ERR_NO_MEM(而非参数错误)。
+     * 遍历方式与 rtos_heap_alloc 完全一致(逐块按 size 前进)。 */
+    uint32_t largest = 0U;
+    header_t *hdr = (header_t *)s_heap_buf;
+
+    while ((uint8_t *)hdr < s_heap_buf + s_heap_total) {
+        if (hdr->magic != RTOS_HEAP_MAGIC) {
+            break; /* 堆损坏, 停止统计 */
+        }
+
+        uint32_t blk_size = hdr->size & RTOS_HEAP_SIZE_MASK;
+        if (blk_size == 0U) {
+            break; /* 防御性: 避免死循环 */
+        }
+
+        if (block_is_free(hdr)) {
+            /* 该块可供用户使用的字节 = 块大小 - 块头 */
+            uint32_t payload = blk_size - sizeof(header_t);
+            if (payload > largest) {
+                largest = payload;
+            }
+        }
+        hdr = (header_t *)((uint8_t *)hdr + blk_size);
+    }
+
+    RTOS_PORT_EXIT_CRITICAL();
+
+    /* 请求会被 align_up 到 RTOS_HEAP_ALIGN, 故上界向下对齐 */
+    return largest & ~((uint32_t)RTOS_HEAP_ALIGN - 1U);
+}
+
 uint32_t rtos_heap_get_alloc_count(void)
 {
     return s_alloc_count;

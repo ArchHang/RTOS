@@ -517,12 +517,13 @@ static bool SCSI_read10(uint8_t busid, uint8_t **data, uint32_t *len)
     g_usbd_msc[busid].start_sector = GET_BE32(&g_usbd_msc[busid].cbw.CB[2]); /* Logical Block Address of First Block */
     g_usbd_msc[busid].nsectors = GET_BE16(&g_usbd_msc[busid].cbw.CB[7]); /* Number of Blocks to transfer */
 
-    if ((g_usbd_msc[busid].start_sector + g_usbd_msc[busid].nsectors) > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) {
+    if ((g_usbd_msc[busid].start_sector >= g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) ||
+        (g_usbd_msc[busid].nsectors > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN] - g_usbd_msc[busid].start_sector)) {
         SCSI_SetSenseData(busid, SCSI_KCQIR_LBAOUTOFRANGE);
         return false;
     }
 
-    if (g_usbd_msc[busid].cbw.dDataLength != (g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN])) {
+    if ((uint64_t)g_usbd_msc[busid].cbw.dDataLength != ((uint64_t)g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN])) {
         return false;
     }
     g_usbd_msc[busid].stage = MSC_DATA_IN;
@@ -550,12 +551,13 @@ static bool SCSI_read12(uint8_t busid, uint8_t **data, uint32_t *len)
     g_usbd_msc[busid].start_sector = GET_BE32(&g_usbd_msc[busid].cbw.CB[2]); /* Logical Block Address of First Block */
     g_usbd_msc[busid].nsectors = GET_BE32(&g_usbd_msc[busid].cbw.CB[6]); /* Number of Blocks to transfer */
 
-    if ((g_usbd_msc[busid].start_sector + g_usbd_msc[busid].nsectors) > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) {
+    if ((g_usbd_msc[busid].start_sector >= g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) ||
+        (g_usbd_msc[busid].nsectors > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN] - g_usbd_msc[busid].start_sector)) {
         SCSI_SetSenseData(busid, SCSI_KCQIR_LBAOUTOFRANGE);
         return false;
     }
 
-    if (g_usbd_msc[busid].cbw.dDataLength != (g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN])) {
+    if ((uint64_t)g_usbd_msc[busid].cbw.dDataLength != ((uint64_t)g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN])) {
         return false;
     }
     g_usbd_msc[busid].stage = MSC_DATA_IN;
@@ -586,11 +588,12 @@ static bool SCSI_write10(uint8_t busid, uint8_t **data, uint32_t *len)
     g_usbd_msc[busid].nsectors = GET_BE16(&g_usbd_msc[busid].cbw.CB[7]); /* Number of Blocks to transfer */
 
     data_len = g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN];
-    if ((g_usbd_msc[busid].start_sector + g_usbd_msc[busid].nsectors) > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) {
+    if ((g_usbd_msc[busid].start_sector >= g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) ||
+        (g_usbd_msc[busid].nsectors > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN] - g_usbd_msc[busid].start_sector)) {
         return false;
     }
 
-    if (g_usbd_msc[busid].cbw.dDataLength != data_len) {
+    if ((uint64_t)g_usbd_msc[busid].cbw.dDataLength != ((uint64_t)g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN])) {
         return false;
     }
     g_usbd_msc[busid].stage = MSC_DATA_OUT;
@@ -615,11 +618,12 @@ static bool SCSI_write12(uint8_t busid, uint8_t **data, uint32_t *len)
     g_usbd_msc[busid].nsectors = GET_BE32(&g_usbd_msc[busid].cbw.CB[6]); /* Number of Blocks to transfer */
 
     data_len = g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN];
-    if ((g_usbd_msc[busid].start_sector + g_usbd_msc[busid].nsectors) > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) {
+    if ((g_usbd_msc[busid].start_sector >= g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN]) ||
+        (g_usbd_msc[busid].nsectors > g_usbd_msc[busid].scsi_blk_nbr[g_usbd_msc[busid].cbw.bLUN] - g_usbd_msc[busid].start_sector)) {
         return false;
     }
 
-    if (g_usbd_msc[busid].cbw.dDataLength != data_len) {
+    if ((uint64_t)g_usbd_msc[busid].cbw.dDataLength != ((uint64_t)g_usbd_msc[busid].nsectors * g_usbd_msc[busid].scsi_blk_size[g_usbd_msc[busid].cbw.bLUN])) {
         return false;
     }
     g_usbd_msc[busid].stage = MSC_DATA_OUT;
@@ -694,7 +698,10 @@ static bool SCSI_CBWDecode(uint8_t busid, uint32_t nbytes)
     g_usbd_msc[busid].csw.dTag = g_usbd_msc[busid].cbw.dTag;
     g_usbd_msc[busid].csw.dDataResidue = g_usbd_msc[busid].cbw.dDataLength;
 
-    if ((g_usbd_msc[busid].cbw.dSignature != MSC_CBW_Signature) || (g_usbd_msc[busid].cbw.bCBLength < 1) || (g_usbd_msc[busid].cbw.bCBLength > 16)) {
+    if ((g_usbd_msc[busid].cbw.dSignature != MSC_CBW_Signature) ||
+        (g_usbd_msc[busid].cbw.bLUN > g_usbd_msc[busid].max_lun) ||
+        (g_usbd_msc[busid].cbw.bLUN >= CONFIG_USBDEV_MSC_MAX_LUN) ||
+        (g_usbd_msc[busid].cbw.bCBLength < 1) || (g_usbd_msc[busid].cbw.bCBLength > 16)) {
         SCSI_SetSenseData(busid, SCSI_KCQIR_INVALIDCOMMAND);
         return false;
     } else {
@@ -961,3 +968,34 @@ __WEAK int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, ui
 
     return 0;
 }
+
+#if defined(RTOS_HIL_AUDIT_PENDSV)
+/* Pure protocol injection for on-board audit builds; endpoint I/O is wrapped.
+ * The production CBW decoder performs all validation under test. */
+bool usbd_msc_audit_decode(uint8_t lun, uint8_t command, uint32_t sector,
+                           uint32_t blocks)
+{
+    memset(&g_usbd_msc[0], 0, sizeof(g_usbd_msc[0]));
+    mass_ep_data[0][MSD_IN_EP_IDX].ep_addr = 0x84U;
+    g_usbd_msc[0].max_lun = CONFIG_USBDEV_MSC_MAX_LUN - 1U;
+    g_usbd_msc[0].scsi_blk_nbr[0] = 64U;
+    g_usbd_msc[0].scsi_blk_size[0] = 512U;
+    struct CBW *cbw = &g_usbd_msc[0].cbw;
+    cbw->dSignature = MSC_CBW_Signature;
+    cbw->bLUN = lun;
+    cbw->bmFlags = 0x80U;
+    cbw->bCBLength = 10U;
+    cbw->CB[0] = command;
+    cbw->dDataLength = 8U;
+    if (command == SCSI_CMD_READ10) {
+        cbw->dDataLength = blocks * 512U;
+        cbw->CB[2] = sector >> 24;
+        cbw->CB[3] = sector >> 16;
+        cbw->CB[4] = sector >> 8;
+        cbw->CB[5] = sector;
+        cbw->CB[7] = blocks >> 8;
+        cbw->CB[8] = blocks;
+    }
+    return SCSI_CBWDecode(0U, sizeof(struct CBW));
+}
+#endif

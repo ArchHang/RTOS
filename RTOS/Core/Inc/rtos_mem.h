@@ -3,7 +3,7 @@
  * @brief   内存管理接口
  *
  * @details 提供两种内存管理方案:
- *            1. 固定块内存池(Fixed Block Pool): O(1) 分配/释放，无碎片，
+ *            1. 固定块内存池(Fixed Block Pool): O(1) 分配，无碎片，
  *               适合实时系统。每个池内块大小固定。
  *            2. (可选)动态堆: 仅在 RTOS_CONFIG_USE_STATIC_ALLOCATION=0 时启用。
  *          本实现默认采用静态分配策略，对象池(TCB/信号量等)在编译期固定。
@@ -38,7 +38,10 @@ typedef struct rtos_mempool {
  * @param base        存储区基址(用户分配，需 4 字节对齐)。
  * @param block_size  每块大小(字节)。
  * @param block_count 块数。
- * @note 存储区大小需 >= block_size * block_count (内部会按 4 字节向上对齐)。
+ * @note 存储区大小需 >= max(align4(block_size), sizeof(void *)) * block_count。
+ *       接口不接收存储区容量，调用方必须提供足够空间。
+ *       pool 和 base 在使用期间必须保持有效；池自动登记到性能统计表，
+ *       因此 pool 需保持有效直到性能监视器重新初始化。
  */
 rtos_status_t rtos_mempool_init(rtos_mempool_t *pool, void *base, uint32_t block_size,
                                 uint32_t block_count);
@@ -53,6 +56,8 @@ void *rtos_mempool_alloc(rtos_mempool_t *pool);
  * @brief 释放块。
  * @param pool 池。
  * @param block 之前分配的块指针。
+ * @return 双重释放返回 RTOS_ERR_ALREADY；内部地址返回 RTOS_ERR_PARAM。
+ * @note 为防止双重释放污染空闲链，释放最坏 O(block_count)。
  */
 rtos_status_t rtos_mempool_free(rtos_mempool_t *pool, void *block);
 

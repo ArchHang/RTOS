@@ -45,6 +45,7 @@ struct rtos_tcb {
     /* ---- 就绪表链表(同一优先级) ---- */
     struct rtos_tcb *next_ready; /**< 同优先级就绪链表后继。 */
     struct rtos_tcb *prev_ready; /**< 同优先级就绪链表前驱。 */
+    struct rtos_tcb *next_all; /**< Live task registry, independent of performance monitoring. */
 
     /* ---- 阻塞字段 ---- */
     rtos_wait_node_t wait_node; /**< 等待节点(挂入对象等待链表)。 */
@@ -55,7 +56,6 @@ struct rtos_tcb {
     /* ---- 任务通知(轻量级同步) ---- */
     volatile uint32_t notify_value; /**< 通知值。 */
     volatile uint8_t notify_state; /**< 通知状态(空闲/待处理/已接收)。 */
-    rtos_notify_type_t notify_type; /**< 通知类型。 */
 
     /* ---- 标识与统计 ---- */
     char name[RTOS_CONFIG_MAX_TASK_NAME_LEN]; /**< 任务名。 */

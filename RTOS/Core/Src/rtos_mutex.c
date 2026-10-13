@@ -101,6 +101,25 @@ rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex)
     if (mutex == NULL) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK();
+    RTOS_PORT_ENTER_CRITICAL();
+    /* Match the address before reading/resetting the object: init supports
+     * previously uninitialized automatic storage. Duplicate registration would
+     * leave a dangling entry after the first deinit and lose an active owner. */
+    for (uint32_t i = 0U; i < s_mutex_count; i++) {
+        if (s_mutex_registry[i] == mutex) {
+            /* Preserve the existing idle re-init contract without appending a
+             * second registry entry. An owned/waited-on mutex cannot reset. */
+            rtos_status_t status = (mutex->owner == NULL && mutex->wait_head == NULL &&
+                                    mutex->recursion_count == 0U) ? RTOS_OK : RTOS_ERR_ALREADY;
+            RTOS_PORT_EXIT_CRITICAL();
+            return status;
+        }
+    }
+    if (s_mutex_count >= RTOS_CONFIG_MAX_MUTEXES) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_NO_MEM;
+    }
     memset(mutex, 0, sizeof(*mutex));
     mutex->owner = NULL;
     mutex->recursion_count = 0U;
@@ -110,16 +129,10 @@ rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex)
     /* 注册到互斥锁注册表(供任务删除时清理所有权)。
      * [bug fix G-1] 池满时显式报错而非静默放弃注册: 未注册锁的 owner 被删时
      * release_all 扫不到 → 所有权悬垂 + 等待者永久死锁, 失败必须是显式的。 */
-    RTOS_PORT_ENTER_CRITICAL();
-    if (s_mutex_count < RTOS_CONFIG_MAX_MUTEXES) {
-        s_mutex_registry[s_mutex_count] = mutex;
-        s_mutex_count++;
-        RTOS_PORT_EXIT_CRITICAL();
-        return RTOS_OK;
-    }
+    s_mutex_registry[s_mutex_count] = mutex;
+    s_mutex_count++;
     RTOS_PORT_EXIT_CRITICAL();
-    mutex->is_initialized = 0U;
-    return RTOS_ERR_NO_MEM;
+    return RTOS_OK;
 }
 
 rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout)
@@ -156,6 +169,14 @@ rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout)
     if (timeout == RTOS_NO_WAIT) {
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_TIMEOUT;
+    }
+
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞: 必须在 mutex_try_inherit **之前**返回,
+     * 否则会白白提升持有者优先级(且此后无人把它恢复, 因为恢复发生在释放路径上,
+     * 而释放者可能就是被永久阻塞的那个任务)。 */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED;
     }
 
     /* 优先级继承: 提升持有者优先级 */
@@ -230,6 +251,7 @@ rtos_status_t rtos_mutex_deinit(rtos_mutex_t *mutex)
     if (mutex == NULL) {
         return RTOS_ERR_NULL;
     }
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     /* 先摘所有权再恢复(compute_effective 不计入本锁等待者, 见 restore 注释) */
     rtos_tcb_t *deinit_owner = mutex->owner;
@@ -327,19 +349,85 @@ rtos_prio_t rtos_internal_mutex_compute_effective_priority(rtos_tcb_t *owner)
         return (rtos_prio_t)RTOS_CONFIG_MAX_PRIORITIES;
     }
 
-    /* 从 base_priority 开始, 取所有持有锁的等待者中最高优先级(数值最小) */
+    /* 每把锁的等待链始终按有效优先级排序: 入链和优先级变化都会
+     * insert_by_prio/requeue，离开时只摘链。故每把锁只需检查链首，
+     * 不必重复扫描同一把锁的全部等待者。调用方持有内核临界区。 */
     rtos_prio_t effective = owner->base_priority;
     for (uint32_t i = 0U; i < s_mutex_count; i++) {
         rtos_mutex_t *mutex = s_mutex_registry[i];
         if ((mutex != NULL) && (mutex->owner == owner)) {
             rtos_wait_node_t *node = mutex->wait_head;
-            while (node != NULL) {
+            if (node != NULL) {
                 if (node->tcb->priority < effective) {
                     effective = node->tcb->priority;
                 }
-                node = node->next;
             }
         }
     }
     return effective;
+}
+
+/* ============================== 内部接口: 注册表占用查询 ============================== */
+
+/**
+ * @brief 等待者优先级变化后, 重新评估其所在互斥锁持有者的继承优先级。
+ *
+ * @param waiter [in] 优先级刚被修改的任务(可能正阻塞在某把互斥锁上)。
+ *
+ * @details [缺陷修复 BM-3] 优先级继承只在"新等待者进入 take"与"等待者离开"
+ *          两个时刻重新评估。若等待者在**阻塞期间**被 `rtos_task_set_priority`
+ *          改了优先级, 原实现只重排了等待链, 持有者的提升值仍停留在旧优先级:
+ *             L(base 10) 持锁 → H(base 8) 阻塞, L 被提升到 8;
+ *             set_priority(H, 2) → 等待链已把 H 排到最前, 但 L 仍是 8;
+ *             中优先级任务 M(5) 依旧能抢占 L → H(有效优先级 2) 仍被无限期饥饿,
+ *             即优先级继承要消除的那个反转又回来了。
+ *
+ *          本函数按"等待者 → 它阻塞在哪把锁"反查注册表(不需要在 TCB 里保存
+ *          互斥锁类型信息), 重算该锁持有者的有效优先级。
+ *
+ * @note 调用方需在临界区内。
+ */
+void rtos_internal_mutex_waiter_requeued(rtos_tcb_t *waiter)
+{
+    if (waiter == NULL) {
+        return;
+    }
+    for (uint32_t i = 0U; i < s_mutex_count; i++) {
+        rtos_mutex_t *mutex = s_mutex_registry[i];
+        if ((mutex == NULL) || (mutex->owner == NULL) || (mutex->owner == waiter)) {
+            continue;
+        }
+        /* 遍历本锁等待链时校验节点的归属: wait_obj 必须回指本锁, 且节点自报的
+         * list_head 必须就是本锁的链头地址。等待链的 prev/next 由多个模块共享
+         * 同一个侵入式节点结构, 节点可能属于别的对象(或已被复用), 无校验的
+         * 正向遍历一旦遇到陈旧指针就会解引用野地址(实测: 曾在此处触发
+         * BusFault PRECISERR, BFAR = 0x056884B5)。校验失败即视为不在本链。 */
+        for (rtos_wait_node_t *node = mutex->wait_head; node != NULL; node = node->next) {
+            if (node->wait_obj != (void *)mutex) {
+                break;
+            }
+            if (node->list_head != &mutex->wait_head) {
+                break;
+            }
+            if (node->tcb == waiter) {
+                mutex_restore_priority(mutex->owner);
+                return;
+            }
+        }
+    }
+}
+
+/**
+ * @brief 当前已注册的互斥锁数量。
+ * @return 注册表条目数(0 .. RTOS_CONFIG_MAX_MUTEXES)。
+ *
+ * @details 供回归用例做"注册表槽位无泄漏"守卫: 注册表容量有限, 若创建方忘记
+ *          deinit, 槽位会被长期占用, 后续 mutex_init 返回 ERR_NO_MEM ——
+ *          该锁随即失去优先级继承(释放路径 compute_effective_priority 需要
+ *          通过注册表枚举持有者的锁), 表现为静默的优先级反转。
+ *          实测过该级联故障, 故把占用数暴露为可观测的内部接口。
+ */
+uint32_t rtos_internal_mutex_registry_count(void)
+{
+    return s_mutex_count;
 }

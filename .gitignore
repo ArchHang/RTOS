@@ -9,6 +9,7 @@ Release/
 *.o
 *.d
 *.a
+*.su
 
 # 编辑器/工具本地配置
 .vscode/
@@ -22,3 +23,10 @@ Release/
 # Windows
 Thumbs.db
 desktop.ini
+
+# HIL 测试台的构建中间产物与历史日志(权威夹具 hil/fw/、当前日志 hil/logs/current/ 保留入库)
+hil/fwsrc/
+hil/templates/subdir.mk.last_variant
+hil/logs/archive/
+# Local rollback copies are not authoritative source or published test evidence.
+hil/backup_precleanup/

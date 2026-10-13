@@ -368,7 +368,7 @@ rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats)
      *       CPU 占用 = 1 - idle/total。
      * 除零保护: 窗口极短时 total 可能为 0, 返回 0%。 */
     uint32_t cpu_x100 = 0U;
-    if (total_cycles_window > 0U) {
+    if (RTOS_CONFIG_PERF_HOTPATH_STATS && (total_cycles_window > 0U)) {
         if (idle_cycles_window >= total_cycles_window) {
             /* 空闲周期 >= 总周期(窗口边界或测量误差), CPU=0% */
             cpu_x100 = 0U;

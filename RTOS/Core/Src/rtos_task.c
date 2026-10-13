@@ -38,6 +38,51 @@ extern uint32_t rtos_internal_alloc_task_id(void);
  * 链表使用 TCB 的 next_ready 字段复用为链表指针(任务已删除, 不在就绪表)。
  * 操作均在临界区内, 无需额外同步。 */
 static rtos_tcb_t *s_pending_free_list = NULL;
+static rtos_tcb_t *s_all_tasks = NULL;
+
+/* Address reservation includes construction so a second static create cannot
+ * reset the TCB while the first call initializes its stack outside critical. */
+static rtos_bool_t task_reserved(const rtos_tcb_t *tcb)
+{
+    for (rtos_tcb_t *p = s_all_tasks; p != NULL; p = p->next_all) {
+        if (p == tcb) return RTOS_TRUE;
+    }
+    return RTOS_FALSE;
+}
+
+/* Public mutations may only operate on fully constructed live tasks. Lookup
+ * first, then inspect the known registry node rather than an arbitrary handle. */
+static rtos_bool_t task_registered(const rtos_tcb_t *tcb)
+{
+    for (rtos_tcb_t *p = s_all_tasks; p != NULL; p = p->next_all) {
+        if (p == tcb) return p->state != RTOS_TASK_INITIALIZING;
+    }
+    return RTOS_FALSE;
+}
+
+rtos_bool_t rtos_internal_object_has_waiters(const void *obj)
+{
+    for (rtos_tcb_t *p = s_all_tasks; p != NULL; p = p->next_all) {
+        if (p->blocked_on == obj && p->wait_node.list_head != NULL) return RTOS_TRUE;
+    }
+    return RTOS_FALSE;
+}
+
+static void task_unregister(rtos_tcb_t *tcb)
+{
+    for (rtos_tcb_t **p = &s_all_tasks; *p != NULL; p = &(*p)->next_all) {
+        if (*p == tcb) {
+            *p = tcb->next_all;
+            tcb->next_all = NULL;
+            return;
+        }
+    }
+}
+
+/* [防御] TCB 与任务栈共用同一个堆: 若 TCB 本身大到吃掉整个堆, 动态任务将
+ * 永远无法创建(校验式的除法也会失去意义)。此处编译期兜底。 */
+_Static_assert(sizeof(rtos_tcb_t) < RTOS_CONFIG_HEAP_SIZE,
+               "TCB must be smaller than the heap it shares with task stacks");
 
 /**
  * @brief 将动态分配的 TCB 加入待释放链表(供 idle 任务清理)。
@@ -113,20 +158,99 @@ void rtos_internal_wait_insert_by_prio(rtos_wait_node_t **head, rtos_wait_node_t
 }
 
 /**
+ * @brief 将等待节点【尾插】到等待链表(O(1))。
+ *
+ * @param head 等待链表头指针的地址。
+ * @param node 待入链节点。
+ *
+ * @details 与 rtos_internal_wait_insert_by_prio 的区别: 本函数不做优先级定序,
+ *          只做尾插。调用方必须同时维护配套的优先级位图, 并在唤醒时改用
+ *          rtos_internal_wake_highest_bm —— 两者组合后语义与原有序链等价
+ *          (最高优先级、同优先级 FIFO), 但入链成本与等待者数解耦。
+ *
+ * @note  同一对象内不可与 insert_by_prio 混用, 否则唤醒顺序失真。
+ *        尾插需要遍历到链尾, 因此本函数是 O(n) —— 但它的调用点在 **take/阻塞侧**
+ *        (低频), 而收益体现在 **give/唤醒侧**(高频), 故净收益为正。
+ */
+void rtos_internal_wait_append(rtos_wait_node_t **head, rtos_wait_node_t *node)
+{
+    node->next = NULL;
+
+    if (*head == NULL) {
+        node->prev = NULL;
+        *head = node;
+        return;
+    }
+
+    rtos_wait_node_t *tail = *head;
+    while (tail->next != NULL) {
+        tail = tail->next;
+    }
+    tail->next = node;
+    node->prev = tail;
+}
+
+/**
  * @brief 从等待链表移除节点。
  */
 void rtos_internal_wait_remove(rtos_wait_node_t **head, rtos_wait_node_t *node)
 {
-    if (node->prev != NULL) {
-        node->prev->next = node->next;
+    rtos_wait_node_t *next = node->next;
+    rtos_wait_node_t *prev = node->prev;
+
+    /* 合法非循环链的邻居不是 node，先快照可避免邻居写入后的重复 SRAM 读取。 */
+    if (prev != NULL) {
+        prev->next = next;
     } else {
-        *head = node->next;
+        *head = next;
     }
-    if (node->next != NULL) {
-        node->next->prev = node->prev;
+    if (next != NULL) {
+        next->prev = prev;
     }
     node->next = NULL;
     node->prev = NULL;
+}
+
+/**
+ * @brief 从等待链表移除节点, 并同步维护位图索引链的优先级位图。
+ *
+ * @param head [in,out] 等待链表头指针的地址。
+ * @param node [in]     待移除节点。
+ *
+ * @details 适用对象: 采用"尾插 O(1) + 优先级位图"的等待链(信号量/队列)。
+ *          位图位在该节点的优先级上可能被**同优先级的其它等待者**共享, 因此
+ *          不能无条件清位 —— 先摘链, 再扫描剩余链判断该优先级是否仍有人等待,
+ *          无人时才清位。
+ *
+ *          为什么需要它: `process_delayed_tasks` 的超时清理原先只调
+ *          `rtos_internal_wait_remove`, 位图位被留在原处, 使"位图 ⇔ 链"这一
+ *          不变式在每次超时后失效(真机实测残留 bit13 = 8192)。
+ *
+ * @note 调用方需在临界区内。节点不在链上时按 `rtos_internal_wait_remove`
+ *       的防御语义处理(空操作)。
+ */
+void rtos_internal_wait_remove_sync_bitmap(rtos_wait_node_t **head, rtos_wait_node_t *node)
+{
+    volatile uint32_t *bitmap = node->queue_bitmap;
+    const rtos_prio_t   prio   = node->tcb != NULL ? node->tcb->priority : node->queued_priority;
+
+    rtos_internal_wait_remove(head, node);
+
+    /* 非位图链(有序链: 事件组/互斥锁)无需维护位图 */
+    if (bitmap == NULL) {
+        return;
+    }
+
+    rtos_bool_t still_waiting = RTOS_FALSE;
+    for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
+        if (p->tcb != NULL && p->tcb->priority == prio) {
+            still_waiting = RTOS_TRUE;
+            break;
+        }
+    }
+    if (still_waiting == RTOS_FALSE) {
+        *bitmap &= ~(1UL << prio);
+    }
 }
 
 /**
@@ -149,14 +273,24 @@ rtos_status_t rtos_internal_block_current_on(void *obj, rtos_wait_node_t **head,
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     RTOS_ASSERT(cur != NULL);
 
+    /* [缺陷修复 SD-1] 调度器不在运行态(如被 rtos_sched_suspend 挂起)时禁止阻塞:
+     * 此时 tick 已停走, 阻塞下去既不会被唤醒也不会有超时 ⇒ 永久挂死。
+     * 必须在**任何状态修改之前**返回, 保证不留下半初始化的等待节点。 */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        return RTOS_ERR_SCHED;
+    }
+
     cur->blocked_on = obj;
     cur->wait_node.tcb = cur;
+    cur->wait_node.on_timeout = NULL;
     cur->wait_node.wait_obj = obj;
     cur->wait_node.timed_out = RTOS_FALSE;
     cur->wait_node.next = NULL;
     cur->wait_node.prev = NULL;
     /* 注意: transfer_buf 不在此清除 —— 队列零拷贝需在调用本函数前设置并保留。 */
     cur->wait_node.list_head = head; /* 记录所在链表，供超时清理 */
+    cur->wait_node.queue_bitmap = NULL; /* 默认有序链; 位图链由调用方覆盖 */
+    cur->wait_node.queued_priority = cur->priority;
     cur->wait_result = RTOS_OK;
 
     /* 按优先级插入对象等待链表 */
@@ -200,6 +334,78 @@ rtos_tcb_t *rtos_internal_wake_highest(rtos_wait_node_t **head)
 }
 
 /**
+ * @brief 唤醒"位图索引等待链"中最高优先级的任务。
+ *
+ * @param head   等待链表头指针的地址(同优先级内 FIFO)。
+ * @param bitmap 存在等待者的优先级位图(调用方维护, 本函数负责清位)。
+ * @return 被唤醒的 TCB, NULL 表示无等待者。
+ *
+ * @details 语义与 rtos_internal_wake_highest 完全等价(取最高优先级等待者,
+ *          同优先级取最早入链者), 但"找最高优先级"从遍历链表改为
+ *          `__builtin_ctz`(编译为 RBIT+CLZ 两条指令):
+ *            - **单节点快路径**: 链上只有 1 个节点时零遍历、零位图运算 ——
+ *              这是"每对象 1~2 个等待者"的典型嵌入式负载下最常见的情形;
+ *            - 多节点时按位图取最高优先级, 再在该优先级分组内取链首,
+ *              分组内扫描长度 = 同优先级等待者数, 与总等待者数无关。
+ *
+ * @note  位图与链表理论上不会不一致(两者由同一临界区维护); 但为防止
+ *        位图位残留导致"取不到牺牲者", 找不到时退化为**全链扫描取最高优先级**
+ *        —— 绝不退化为"取链首", 那会唤醒错误的任务并破坏唤醒序语义。
+ */
+rtos_tcb_t *rtos_internal_wake_highest_bm(rtos_wait_node_t **head, volatile uint32_t *bitmap)
+{
+    rtos_wait_node_t *victim = *head;
+
+    if (victim == NULL) {
+        return NULL;
+    }
+
+    if (victim->next != NULL) {
+        const rtos_prio_t top = (*bitmap != 0U) ?
+            (rtos_prio_t)__builtin_ctz(*bitmap) : RTOS_CONFIG_MAX_PRIORITIES;
+        rtos_wait_node_t *cur = *head;
+
+        while ((cur != NULL) && (cur->tcb->priority != top)) {
+            cur = cur->next;
+        }
+        if (cur != NULL) {
+            victim = cur;
+        } else {
+            rtos_prio_t best = victim->tcb->priority;
+            for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
+                if (p->tcb->priority < best) {
+                    best = p->tcb->priority;
+                    victim = p;
+                }
+            }
+        }
+    }
+
+    rtos_internal_wait_remove(head, victim);
+
+    /* 该优先级若已无其它等待者则清位, 避免位图残留导致后续空扫描 */
+    {
+        rtos_bool_t still_waiting = RTOS_FALSE;
+        for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
+            if (p->tcb->priority == victim->tcb->priority) {
+                still_waiting = RTOS_TRUE;
+                break;
+            }
+        }
+        if (still_waiting == RTOS_FALSE) {
+            *bitmap &= ~(1UL << victim->tcb->priority);
+        }
+    }
+
+    victim->tcb->blocked_on = NULL;
+    victim->tcb->wait_result = RTOS_OK;
+    victim->list_head = NULL;
+
+    rtos_sched_unblock(victim->tcb);
+    return victim->tcb;
+}
+
+/**
  * @brief 唤醒等待链表中所有任务(用于对象销毁)。
  */
 void rtos_internal_wake_all(rtos_wait_node_t **head, rtos_status_t reason)
@@ -226,17 +432,29 @@ void rtos_internal_wake_all(rtos_wait_node_t **head, rtos_status_t reason)
  */
 static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, uint32_t stack_size,
                                       rtos_task_func_t entry, void *arg, rtos_prio_t priority,
-                                      const char *name, rtos_bool_t is_static)
+                                      const char *name, rtos_bool_t is_static, rtos_tcb_t **publish)
 {
+    RTOS_PORT_ENTER_CRITICAL();
+    if (task_reserved(tcb)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_ALREADY;
+    }
     /* 初始化 TCB */
     memset(tcb, 0, sizeof(*tcb));
     tcb->is_static = is_static;
     tcb->priority = priority;
     tcb->base_priority = priority;
-    tcb->state = RTOS_TASK_READY;
+    tcb->state = RTOS_TASK_INITIALIZING;
     tcb->task_id = rtos_internal_alloc_task_id();
     tcb->notify_state = NOTIFY_IDLE;
     tcb->notify_value = 0U;
+    tcb->next_all = s_all_tasks;
+    s_all_tasks = tcb;
+    RTOS_PORT_EXIT_CRITICAL();
+#if defined(RTOS_HIL_AUDIT_PENDSV)
+    extern void audit_task_constructing_hook(rtos_tcb_t *tcb);
+    audit_task_constructing_hook(tcb);
+#endif
 
     if (name != NULL) {
         strncpy(tcb->name, name, RTOS_CONFIG_MAX_TASK_NAME_LEN - 1U);
@@ -264,6 +482,8 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     /* 加入就绪表(临界区) */
     RTOS_PORT_ENTER_CRITICAL();
     rtos_sched_add_ready(tcb);
+    tcb->state = RTOS_TASK_READY;
+    if (publish != NULL) *publish = tcb;
     /* 若调度器已运行且新任务优先级更高，立即切换 */
     if ((rtos_kernel.sched_state == RTOS_SCHED_RUNNING) &&
         (priority < rtos_kernel.current_tcb->priority)) {
@@ -278,9 +498,12 @@ rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
                                       rtos_task_func_t entry, void *arg, rtos_prio_t priority,
                                       const char *name)
 {
+    if (RTOS_PORT_IN_ISR()) return RTOS_ERR_ISR;
     if ((tcb == NULL) || (stack_buf == NULL) || (entry == NULL)) {
         return RTOS_ERR_NULL;
     }
+    if (((uintptr_t)tcb % _Alignof(rtos_tcb_t)) != 0U ||
+        ((uintptr_t)stack_buf % _Alignof(rtos_stack_t)) != 0U) return RTOS_ERR_PARAM;
     if (priority >= RTOS_CONFIG_MAX_PRIORITIES) {
         return RTOS_ERR_PARAM;
     }
@@ -295,12 +518,13 @@ rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     }
 
     return task_create_core(tcb, stack_buf, stack_size, entry, arg, priority, name,
-                            RTOS_TRUE /* is_static */);
+                            RTOS_TRUE /* is_static */, NULL);
 }
 
 rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_task_func_t entry,
                                void *arg, rtos_prio_t priority, const char *name)
 {
+    if (RTOS_PORT_IN_ISR()) return RTOS_ERR_ISR;
     if ((tcb_out == NULL) || (entry == NULL)) {
         return RTOS_ERR_NULL;
     }
@@ -308,8 +532,20 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
         return RTOS_ERR_PARAM;
     }
     /* 与 rtos_task_create_static 相同的最小栈校验(FPU 扩展帧, 见上文注释)。
-     * 动态栈从堆分配, 上限同时受堆大小约束。 */
-    if ((stack_size < 96U) || (stack_size > (RTOS_CONFIG_HEAP_SIZE / sizeof(rtos_stack_t)))) {
+     * 动态栈从堆分配, 其上界必须用**堆的真实可分配上界**表达, 而不是
+     * "堆字节数 / 栈单元字节数" —— 后者有两处高估:
+     *   1) TCB 自身在栈之前从同一个堆分配, 已占走 sizeof(rtos_tcb_t);
+     *   2) 每次分配还要额外吃掉一个块头, 且请求向上对齐到 8 字节。
+     * 高估的后果: API 声明可接受、实际必然返回 ERR_NO_MEM 的"假上界"。
+     *   修复前上界 = 32768/4 = 8192 字(= 整个堆) —— 必然失败;
+     *   仅扣 TCB 后 = 8157 字 —— 仍失败(未计块头/对齐);
+     *   用 rtos_heap_get_max_alloc() 表达后, 上界与分配器完全一致。
+     * [边界测试 BT|TASK|create_stack_upper_ok 实测该缺陷并修复] */
+    if (stack_size < 96U) {
+        return RTOS_ERR_PARAM;
+    }
+    if ((uint64_t)stack_size * (uint64_t)sizeof(rtos_stack_t) >
+        (uint64_t)rtos_heap_get_max_alloc()) {
         return RTOS_ERR_PARAM;
     }
 
@@ -327,7 +563,7 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
     }
 
     rtos_status_t st = task_create_core(tcb, stack_buf, stack_size, entry, arg, priority, name,
-                                        RTOS_FALSE /* is_static */);
+                                        RTOS_FALSE /* is_static */, tcb_out);
     if (st != RTOS_OK) {
         /* 失败时回滚堆分配 */
         rtos_heap_free(stack_buf);
@@ -335,7 +571,6 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
         return st;
     }
 
-    *tcb_out = tcb;
     return RTOS_OK;
 }
 
@@ -369,13 +604,17 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
      * s_pending_free_list 上且 state=DELETED; 若持旧句柄再次 delete, 非自删路径
      * 会立即 heap_free, 新任务复用该内存后 idle 再释放一次 → 释放正在使用的
      * TCB/栈。同款防护顺带拒绝删除 idle(删 idle 后系统进入不可恢复脏态)。 */
-    if (tcb->state == RTOS_TASK_DELETED) {
+    if (!task_registered(tcb) || tcb->state == RTOS_TASK_DELETED) {
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_PARAM;
     }
     if (tcb == rtos_kernel.idle_tcb) {
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_PARAM;
+    }
+    if (self_delete && rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED;
     }
 
     /* 从就绪表移除 */
@@ -399,7 +638,9 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
      * 继承优先级(等待者减少后撤销多余的提升)。 */
     if (tcb->blocked_on != NULL) {
         if (tcb->wait_node.list_head != NULL) {
-            rtos_internal_wait_remove(tcb->wait_node.list_head, &tcb->wait_node);
+            /* [缺陷修复 BM-1] 用同步位图的摘链: 删除等待者同样必须清掉位图中
+             * 属于它的优先级位(同优先级可能还有其它等待者, 故由 helper 判定)。 */
+            rtos_internal_wait_remove_sync_bitmap(tcb->wait_node.list_head, &tcb->wait_node);
             tcb->wait_node.list_head = NULL;
         }
         /* 若该任务正阻塞在互斥锁上, 等待者减少后重新评估持有者的继承优先级 */
@@ -408,6 +649,7 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
     }
 
     tcb->state = RTOS_TASK_DELETED;
+    task_unregister(tcb);
 
     /* [bug fix RACE-1] 若该任务已被选为 next_tcb(PendSV 已 pend 未执行),
      * 必须失效并重选, 否则 PendSV 切换到已 DELETED/已释放的 TCB
@@ -443,8 +685,8 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
         }
     }
 
-    if (self_delete) {
-        /* 切换到下一任务 */
+    if (rtos_kernel.sched_state == RTOS_SCHED_RUNNING) {
+        /* Re-select after invalidating an earlier pending choice. */
         rtos_sched_schedule();
     }
 
@@ -454,7 +696,12 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
 
 void rtos_task_yield(void)
 {
+    if (RTOS_PORT_IN_ISR()) return;
     RTOS_PORT_ENTER_CRITICAL();
+    if (rtos_kernel.sched_state != RTOS_SCHED_RUNNING) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return;
+    }
     /* 把当前任务移到同优先级就绪链表尾 */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     /* [bug fix RACE-4] 阻塞路径"出就绪表→schedule→退出临界区→PendSV 入口"间
@@ -486,6 +733,13 @@ void rtos_task_delay(rtos_tick_t ticks)
     }
 
     RTOS_PORT_ENTER_CRITICAL();
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞: tick 已停走, 阻塞下去永远醒不来。
+     * 延时接口返回 void, 无法上报错误码 —— 此处选择"不阻塞、直接返回",
+     * 与同函数上方 `RTOS_PORT_IN_ISR()` 的处理方式一致(ISR 中亦是静默不阻塞)。 */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return;
+    }
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     /* 复用 sched_block: 统一处理就绪表移除 + 延时表插入(O(n) 升序) */
     rtos_sched_block(cur, ticks);
@@ -504,6 +758,13 @@ void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period)
     }
 
     RTOS_PORT_ENTER_CRITICAL();
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞(同 rtos_task_delay 的说明)。
+     * 这里必须在修改 *last_wake_tick **之前**返回, 否则会白白推进周期基准,
+     * 让恢复后的第一次唤醒点被跳过。 */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return;
+    }
     rtos_tick_t now = rtos_kernel.tick_count;
     rtos_tick_t elapsed = now - *last_wake_tick;
     rtos_tick_t remain = (period > elapsed) ? (period - elapsed) : 0U;
@@ -544,17 +805,55 @@ rtos_prio_t rtos_task_get_priority(const rtos_tcb_t *tcb)
 void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb)
 {
     /* [bug fix PI-2] 优先级变化(用户 set_priority 或内核继承提升/恢复)后,
-     * 该任务若正阻塞在某对象等待链上, 必须按新优先级重排——等待链按优先级
-     * 排序插入, 不重排则 wake_highest 按旧优先级取链首, 唤醒顺序倒置。 */
-    if ((tcb->blocked_on != NULL) && (tcb->wait_node.list_head != NULL)) {
-        rtos_wait_node_t **head = tcb->wait_node.list_head;
-        rtos_internal_wait_remove(head, &tcb->wait_node);
-        rtos_internal_wait_insert_by_prio(head, &tcb->wait_node);
+     * 该任务若正阻塞在某对象等待链上, 必须让唤醒选择看到新优先级。
+     *
+     * 两套等待链约定并存, 必须分别处理:
+     *   1. 位图索引链(信号量/队列): 顺序由位图决定。重排链表会破坏"同优先级
+     *      FIFO", 所以这里只同步位图, 并把节点尾插回原位序。
+     *   2. 有序链(事件组/互斥锁): 摘出后按新优先级重插。
+     * 不可对位图链调用 insert_by_prio, 否则会把它的 FIFO 语义破坏掉。 */
+    if ((tcb->blocked_on == NULL) || (tcb->wait_node.list_head == NULL)) {
+        return;
     }
+
+    rtos_wait_node_t **head = tcb->wait_node.list_head;
+    const rtos_prio_t new_prio = tcb->priority;
+    const rtos_prio_t old_prio = tcb->wait_node.queued_priority;
+    if (new_prio == old_prio) return; /* Effective no-op must preserve FIFO. */
+
+    rtos_internal_wait_remove(head, &tcb->wait_node);
+
+    if (tcb->wait_node.queue_bitmap != NULL) {
+        /* [缺陷修复 BM-2] 旧位不能无条件清除。
+         * 原注释称"若链上仍有同优先级等待者, 它自己的位早已置位, 不受影响",
+         * 该论断是错的: 同优先级等待者共享**同一个位**, 清位会把它的位一并
+         * 抹掉。反例: A(prio10)、B(prio10) 同链 → bitmap={10}; 把 A 改为 3,
+         * 原逻辑清掉 bit10, 于是 B 仍在链上但 bitmap 中已无它的位。
+         * 正确做法与超时/删除路径一致: 摘链后扫描剩余链, 确认该优先级确实
+         * 无人等待才清位。 */
+        rtos_bool_t still_waiting = RTOS_FALSE;
+        for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
+            if ((p->tcb != NULL) && (p->tcb->priority == old_prio)) {
+                still_waiting = RTOS_TRUE;
+                break;
+            }
+        }
+        if ((still_waiting == RTOS_FALSE) && (old_prio < RTOS_CONFIG_MAX_PRIORITIES)) {
+            *tcb->wait_node.queue_bitmap &= ~(1UL << old_prio);
+        }
+        *tcb->wait_node.queue_bitmap |= (1UL << new_prio);
+        tcb->wait_node.queued_priority = new_prio;
+        rtos_internal_wait_append(head, &tcb->wait_node);
+        return;
+    }
+
+    rtos_internal_wait_insert_by_prio(head, &tcb->wait_node);
+    tcb->wait_node.queued_priority = new_prio;
 }
 
 rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio)
 {
+    RTOS_ASSERT_ISR_OK();
     if (tcb == NULL) {
         tcb = rtos_kernel.current_tcb;
     }
@@ -563,6 +862,11 @@ rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio)
     }
 
     RTOS_PORT_ENTER_CRITICAL();
+    if (!task_registered(tcb) || (tcb == rtos_kernel.idle_tcb &&
+                                  prio != RTOS_CONFIG_MAX_PRIORITIES - 1U)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
     rtos_bool_t was_ready = (tcb->state == RTOS_TASK_READY) || (tcb->state == RTOS_TASK_RUNNING);
 
     if (was_ready) {
@@ -580,6 +884,10 @@ rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio)
      * 不重排则对象释放时 wake_highest 仍按旧优先级取链首 → 唤醒顺序倒置
      * (低优先级先得资源)。 */
     rtos_internal_requeue_wait_lists(tcb);
+
+    /* [缺陷修复 BM-3] 若该任务正阻塞在某把互斥锁上, 持有者的继承提升值必须
+     * 跟着新优先级走 —— 否则持有者仍以旧优先级运行, 中优先级任务继续插队。 */
+    rtos_internal_mutex_waiter_requeued(tcb);
 
     /* 若提升的优先级高于当前，或当前被降低，触发切换 */
     if (rtos_kernel.sched_state == RTOS_SCHED_RUNNING) {
@@ -608,6 +916,15 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
 
     RTOS_PORT_ENTER_CRITICAL();
     rtos_bool_t self_suspend = (tcb == rtos_kernel.current_tcb);
+    if (!task_registered(tcb) || tcb == rtos_kernel.idle_tcb) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
+    if (self_suspend && (RTOS_PORT_IN_ISR() || rtos_internal_block_permitted() != RTOS_OK)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_PORT_IN_ISR() ? RTOS_ERR_ISR : RTOS_ERR_SCHED;
+    }
+    RTOS_ASSERT_ISR_OK();
 
     if (tcb->state == RTOS_TASK_READY || tcb->state == RTOS_TASK_RUNNING) {
         rtos_sched_remove_ready(tcb);
@@ -628,7 +945,8 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
      * 语义沿用 RTOS_ERR_DELETED(对象销毁同款): 等待已作废。 */
     if (tcb->blocked_on != NULL) {
         if (tcb->wait_node.list_head != NULL) {
-            rtos_internal_wait_remove(tcb->wait_node.list_head, &tcb->wait_node);
+            /* [缺陷修复 BM-1] 挂起同样会让等待者离开链表, 位图必须同步 */
+            rtos_internal_wait_remove_sync_bitmap(tcb->wait_node.list_head, &tcb->wait_node);
             tcb->wait_node.list_head = NULL;
         }
         /* 若该任务正阻塞在互斥锁上, 等待者减少后重新评估持有者的继承优先级 */
@@ -646,7 +964,7 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
         rtos_kernel.next_tcb = NULL;
     }
 
-    if (self_suspend) {
+    if (rtos_kernel.sched_state == RTOS_SCHED_RUNNING) {
         rtos_sched_schedule();
     }
     RTOS_PORT_EXIT_CRITICAL();
@@ -655,6 +973,7 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
 
 rtos_status_t rtos_task_resume(rtos_tcb_t *tcb)
 {
+    RTOS_ASSERT_ISR_OK();
     if (tcb == NULL) {
         return RTOS_ERR_NULL;
     }
@@ -664,6 +983,10 @@ rtos_status_t rtos_task_resume(rtos_tcb_t *tcb)
      * 本任务恢复后会再次 add_ready 一个已在环中的节点 → 环形链表前驱指针
      * 被改写 → 同优先级其他任务从调度器中永久消失或 HardFault)。 */
     RTOS_PORT_ENTER_CRITICAL();
+    if (!task_registered(tcb)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
     if (tcb->state == RTOS_TASK_SUSPENDED) {
         tcb->state = RTOS_TASK_READY;
         rtos_sched_add_ready(tcb);
@@ -685,6 +1008,10 @@ rtos_status_t rtos_task_notify(rtos_tcb_t *tcb, uint32_t value, rtos_notify_type
     RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
 
     RTOS_PORT_ENTER_CRITICAL();
+    if (!task_registered(tcb)) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
     switch (type) {
         case RTOS_NOTIFY_VALUE:
             tcb->notify_value = value;
@@ -725,6 +1052,10 @@ rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value)
     RTOS_PORT_ENTER_CRITICAL();
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
 
+    if (cur == NULL) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED;
+    }
     if (cur->notify_state == NOTIFY_PENDING) {
         if (recv_value != NULL) {
             *recv_value = cur->notify_value;
@@ -740,14 +1071,23 @@ rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value)
         return RTOS_ERR_TIMEOUT;
     }
 
+    /* [缺陷修复 SD-1] 挂起期间禁止阻塞: 返回显式错误码而非永久挂死。 */
+    if (rtos_internal_block_permitted() != RTOS_OK) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_SCHED;
+    }
+
     /* 阻塞等待 */
     cur->blocked_on = (void *)cur; /* 标记在等通知 */
     cur->wait_node.tcb = cur;
     cur->wait_node.wait_obj = (void *)cur;
+    cur->wait_node.on_timeout = NULL;
     cur->wait_node.timed_out = RTOS_FALSE;
     cur->wait_node.next = NULL;
     cur->wait_node.prev = NULL;
     cur->wait_node.list_head = NULL; /* notify 不挂入对象等待链表，超时无需清理 */
+    cur->wait_node.queue_bitmap = NULL;
+    cur->wait_node.queued_priority = cur->priority;
     cur->wait_result = RTOS_OK;
     rtos_sched_block(cur, timeout);
     rtos_sched_schedule();
@@ -803,6 +1143,7 @@ void rtos_idle_task(void *arg)
          * 外执行 —— 原实现在临界区内调用 rtos_stack_overflow_hook, 用户钩子里
          * 的任何 RTOS API/中断式 printf 都会在 PendSV 被屏蔽的状态下请求调度,
          * 语义破坏。 */
+#if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW
         if ((idle_count & 0xFFU) == 0U) {
             rtos_tcb_t *overflowed[RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE];
             uint32_t n_overfl = 0U;
@@ -853,5 +1194,6 @@ void rtos_idle_task(void *arg)
                 rtos_stack_overflow_hook(overflowed[i]); /* 临界区外执行 */
             }
         }
+#endif
     }
 }
