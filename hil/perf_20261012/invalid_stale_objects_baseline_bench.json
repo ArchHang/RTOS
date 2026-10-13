@@ -1,0 +1,197 @@
+﻿{
+    "stage":  "baseline_bench",
+    "variant":  "bench",
+    "sha256":  "E89C1501AEF5382B7BD8E9DB859DC6A9CCFB77CDE15B138907DA11728F18B6D5",
+    "repeated":  3,
+    "runs":  [
+                 {
+                     "tag":  "perf_20261012_baseline_bench_r1",
+                     "sha256":  "E89C1501AEF5382B7BD8E9DB859DC6A9CCFB77CDE15B138907DA11728F18B6D5",
+                     "mutex_checks_passed":  0,
+                     "metrics":  [
+                                     {
+                                         "name":  "critical_pair",
+                                         "samples":  1,
+                                         "avg":  30,
+                                         "min":  30,
+                                         "max":  30
+                                     },
+                                     {
+                                         "name":  "yield_switch",
+                                         "samples":  1,
+                                         "avg":  234,
+                                         "min":  234,
+                                         "max":  234
+                                     },
+                                     {
+                                         "name":  "sem_roundtrip",
+                                         "samples":  1,
+                                         "avg":  1654,
+                                         "min":  1654,
+                                         "max":  1654
+                                     },
+                                     {
+                                         "name":  "sem_wake_latency",
+                                         "samples":  1000,
+                                         "avg":  469,
+                                         "min":  469,
+                                         "max":  685
+                                     },
+                                     {
+                                         "name":  "queue_send_wake",
+                                         "samples":  5000,
+                                         "avg":  528,
+                                         "min":  521,
+                                         "max":  746
+                                     },
+                                     {
+                                         "name":  "task_create_del",
+                                         "samples":  1,
+                                         "avg":  6165,
+                                         "min":  6165,
+                                         "max":  6165
+                                     },
+                                     {
+                                         "name":  "delay1_period",
+                                         "samples":  1,
+                                         "avg":  167999,
+                                         "min":  167999,
+                                         "max":  167999
+                                     },
+                                     {
+                                         "name":  "isr_wake_latency",
+                                         "samples":  100,
+                                         "avg":  516,
+                                         "min":  509,
+                                         "max":  580
+                                     }
+                                 ]
+                 },
+                 {
+                     "tag":  "perf_20261012_baseline_bench_r2",
+                     "sha256":  "E89C1501AEF5382B7BD8E9DB859DC6A9CCFB77CDE15B138907DA11728F18B6D5",
+                     "mutex_checks_passed":  0,
+                     "metrics":  [
+                                     {
+                                         "name":  "critical_pair",
+                                         "samples":  1,
+                                         "avg":  30,
+                                         "min":  30,
+                                         "max":  30
+                                     },
+                                     {
+                                         "name":  "yield_switch",
+                                         "samples":  1,
+                                         "avg":  234,
+                                         "min":  234,
+                                         "max":  234
+                                     },
+                                     {
+                                         "name":  "sem_roundtrip",
+                                         "samples":  1,
+                                         "avg":  1654,
+                                         "min":  1654,
+                                         "max":  1654
+                                     },
+                                     {
+                                         "name":  "sem_wake_latency",
+                                         "samples":  1000,
+                                         "avg":  469,
+                                         "min":  469,
+                                         "max":  685
+                                     },
+                                     {
+                                         "name":  "queue_send_wake",
+                                         "samples":  5000,
+                                         "avg":  528,
+                                         "min":  521,
+                                         "max":  746
+                                     },
+                                     {
+                                         "name":  "task_create_del",
+                                         "samples":  1,
+                                         "avg":  6165,
+                                         "min":  6165,
+                                         "max":  6165
+                                     },
+                                     {
+                                         "name":  "delay1_period",
+                                         "samples":  1,
+                                         "avg":  167999,
+                                         "min":  167999,
+                                         "max":  167999
+                                     },
+                                     {
+                                         "name":  "isr_wake_latency",
+                                         "samples":  100,
+                                         "avg":  516,
+                                         "min":  509,
+                                         "max":  580
+                                     }
+                                 ]
+                 },
+                 {
+                     "tag":  "perf_20261012_baseline_bench_r3",
+                     "sha256":  "E89C1501AEF5382B7BD8E9DB859DC6A9CCFB77CDE15B138907DA11728F18B6D5",
+                     "mutex_checks_passed":  0,
+                     "metrics":  [
+                                     {
+                                         "name":  "critical_pair",
+                                         "samples":  1,
+                                         "avg":  30,
+                                         "min":  30,
+                                         "max":  30
+                                     },
+                                     {
+                                         "name":  "yield_switch",
+                                         "samples":  1,
+                                         "avg":  234,
+                                         "min":  234,
+                                         "max":  234
+                                     },
+                                     {
+                                         "name":  "sem_roundtrip",
+                                         "samples":  1,
+                                         "avg":  1654,
+                                         "min":  1654,
+                                         "max":  1654
+                                     },
+                                     {
+                                         "name":  "sem_wake_latency",
+                                         "samples":  1000,
+                                         "avg":  469,
+                                         "min":  469,
+                                         "max":  685
+                                     },
+                                     {
+                                         "name":  "queue_send_wake",
+                                         "samples":  5000,
+                                         "avg":  528,
+                                         "min":  521,
+                                         "max":  746
+                                     },
+                                     {
+                                         "name":  "task_create_del",
+                                         "samples":  1,
+                                         "avg":  6165,
+                                         "min":  6165,
+                                         "max":  6165
+                                     },
+                                     {
+                                         "name":  "delay1_period",
+                                         "samples":  1,
+                                         "avg":  167999,
+                                         "min":  167999,
+                                         "max":  167999
+                                     },
+                                     {
+                                         "name":  "isr_wake_latency",
+                                         "samples":  100,
+                                         "avg":  516,
+                                         "min":  509,
+                                         "max":  580
+                                     }
+                                 ]
+                 }
+             ]
+}

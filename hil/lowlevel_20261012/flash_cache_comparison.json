@@ -1,0 +1,80 @@
+[
+  {
+    "tag": "lowlevel_20261012_checks_static_flash_flash_r1",
+    "sha256": "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+    "mode_cycles": [
+      {
+        "mode": "ICACHE_ON_FIRST",
+        "cycles": 1229
+      },
+      {
+        "mode": "ICACHE_OFF",
+        "cycles": 1750
+      },
+      {
+        "mode": "ICACHE_ON_AGAIN",
+        "cycles": 1229
+      }
+    ],
+    "acr_sequence": [
+      "0x705",
+      "0x505",
+      "0x705"
+    ],
+    "heap_payload": 28496,
+    "passed": 7,
+    "failed": 0
+  },
+  {
+    "tag": "lowlevel_20261012_checks_static_flash_flash_r2",
+    "sha256": "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+    "mode_cycles": [
+      {
+        "mode": "ICACHE_ON_FIRST",
+        "cycles": 1229
+      },
+      {
+        "mode": "ICACHE_OFF",
+        "cycles": 1750
+      },
+      {
+        "mode": "ICACHE_ON_AGAIN",
+        "cycles": 1229
+      }
+    ],
+    "acr_sequence": [
+      "0x705",
+      "0x505",
+      "0x705"
+    ],
+    "heap_payload": 28496,
+    "passed": 7,
+    "failed": 0
+  },
+  {
+    "tag": "lowlevel_20261012_checks_static_flash_flash_r3",
+    "sha256": "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+    "mode_cycles": [
+      {
+        "mode": "ICACHE_ON_FIRST",
+        "cycles": 1229
+      },
+      {
+        "mode": "ICACHE_OFF",
+        "cycles": 1750
+      },
+      {
+        "mode": "ICACHE_ON_AGAIN",
+        "cycles": 1229
+      }
+    ],
+    "acr_sequence": [
+      "0x705",
+      "0x505",
+      "0x705"
+    ],
+    "heap_payload": 28496,
+    "passed": 7,
+    "failed": 0
+  }
+]

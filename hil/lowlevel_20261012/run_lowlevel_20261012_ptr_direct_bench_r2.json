@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "lowlevel_20261012_ptr_direct_bench_r2",
+    "started":  "2026-10-12T20:32:24.1468142+08:00",
+    "finished":  "2026-10-12T20:32:26.7199484+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "AA1D207086E5BFBBCA76CA1C531D6A0297223B492CB6EBFCBE91A124CC72944F",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BM\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

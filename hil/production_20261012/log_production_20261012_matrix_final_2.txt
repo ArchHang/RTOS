@@ -1,0 +1,218 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+STRESS|BEGIN|seed=305419896 seconds=60 queue_capacity=8 workers=16 priorities=5..20 synthetic=1 inject=0
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=initialize_sixteen_workers_and_ipc status=PASS
+STRESS|CHECK|name=start_two_hardware_interrupt_sources status=PASS
+STRESS|CHECK|name=phase_irq_snapshot_start status=PASS
+STRESS|PHASE|phase=1 ticks=20000
+STRESS|PROGRESS|ticks=5000 phase=1 recv=14261 errors=0 full=0
+STRESS|PROGRESS|ticks=10000 phase=1 recv=28519 errors=0 full=0
+STRESS|PROGRESS|ticks=15000 phase=1 recv=42777 errors=0 full=0
+STRESS|CHECK|name=phase_irq_snapshot_end status=PASS
+STRESS|CHECK|name=all_sixteen_workers_progress_each_phase status=PASS
+STRESS|PROGRESS|ticks=20000 phase=1 recv=57062 errors=0 full=0
+STRESS|CHECK|name=phase_irq_snapshot_start status=PASS
+STRESS|PHASE|phase=2 ticks=20000
+STRESS|PROGRESS|ticks=5000 phase=2 recv=62080 errors=0 full=4925
+STRESS|PROGRESS|ticks=10000 phase=2 recv=67080 errors=0 full=9835
+STRESS|PROGRESS|ticks=15000 phase=2 recv=72080 errors=0 full=14755
+STRESS|CHECK|name=phase_irq_snapshot_end status=PASS
+STRESS|CHECK|name=all_sixteen_workers_progress_each_phase status=PASS
+STRESS|CHECK|name=irq_backpressure_hit status=PASS
+STRESS|CHECK|name=task_send_timeout_hit status=PASS
+STRESS|PROGRESS|ticks=20000 phase=2 recv=77101 errors=0 full=19666
+STRESS|CHECK|name=phase_irq_snapshot_start status=PASS
+STRESS|PHASE|phase=3 ticks=20000
+STRESS|PROGRESS|ticks=5000 phase=3 recv=90747 errors=0 full=0
+STRESS|PROGRESS|ticks=10000 phase=3 recv=104387 errors=0 full=0
+STRESS|PROGRESS|ticks=15000 phase=3 recv=118034 errors=0 full=0
+STRESS|CHECK|name=phase_irq_snapshot_end status=PASS
+STRESS|CHECK|name=all_sixteen_workers_progress_each_phase status=PASS
+STRESS|CHECK|name=recovery_reaches_empty_queue status=PASS
+STRESS|PROGRESS|ticks=20000 phase=3 recv=131724 errors=0 full=0
+STRESS|CHECK|name=irq_stop_restores_peripherals status=PASS
+STRESS|CHECK|name=irq_stopped_snapshot status=PASS
+STRESS|CHECK|name=bounded_graceful_queue_drain status=PASS
+STRESS|CHECK|name=all_workers_acknowledge_shutdown status=PASS
+STRESS|WORKER|id=0 priority=5 heartbeat=6012 completed=6008 stack_free_words=212 switches=7240
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=1 priority=6 heartbeat=10512 completed=10508 stack_free_words=208 switches=19574
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=2 priority=7 heartbeat=9402 completed=7765 stack_free_words=208 switches=17041
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=3 priority=8 heartbeat=8946 completed=6752 stack_free_words=208 switches=15829
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=4 priority=9 heartbeat=8547 completed=5498 stack_free_words=208 switches=14891
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=5 priority=10 heartbeat=45056 completed=45048 stack_free_words=208 switches=75208
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=6 priority=11 heartbeat=34678 completed=34670 stack_free_words=208 switches=64133
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=7 priority=12 heartbeat=27970 completed=27962 stack_free_words=208 switches=55224
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=8 priority=13 heartbeat=24070 completed=24058 stack_free_words=208 switches=47043
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=9 priority=14 heartbeat=60091 completed=60086 stack_free_words=214 switches=60238
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=10 priority=15 heartbeat=60090 completed=60085 stack_free_words=214 switches=60221
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=11 priority=16 heartbeat=60075 completed=60069 stack_free_words=212 switches=60264
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=12 priority=17 heartbeat=12267 completed=6311 stack_free_words=212 switches=22998
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=13 priority=18 heartbeat=7515 completed=0 stack_free_words=212 switches=15058
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=14 priority=19 heartbeat=6318 completed=6312 stack_free_words=212 switches=28358
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|WORKER|id=15 priority=20 heartbeat=2970 completed=2970 stack_free_words=212 switches=3581
+STRESS|CHECK|name=worker_stack_margin status=PASS
+STRESS|CHECK|name=worker_stack_magic_and_low_watermark status=PASS
+STRESS|CHECK|name=worker_is_suspended status=PASS
+STRESS|CHECK|name=worker_priority_restored status=PASS
+STRESS|CHECK|name=worker_role_has_real_result status=PASS
+STRESS|CONTROLLER|stack_free_words=694
+STRESS|CHECK|name=controller_stack_margin status=PASS
+STRESS|SOURCE|source=0 sent=10508 validated=10508 prefix=10508 pending=0
+STRESS|CHECK|name=source_has_successful_send status=PASS
+STRESS|CHECK|name=every_successful_identity_validated_exactly_once status=PASS
+STRESS|SOURCE|source=1 sent=7765 validated=7765 prefix=7765 pending=0
+STRESS|CHECK|name=source_has_successful_send status=PASS
+STRESS|CHECK|name=every_successful_identity_validated_exactly_once status=PASS
+STRESS|SOURCE|source=2 sent=6752 validated=6752 prefix=6752 pending=0
+STRESS|CHECK|name=source_has_successful_send status=PASS
+STRESS|CHECK|name=every_successful_identity_validated_exactly_once status=PASS
+STRESS|SOURCE|source=3 sent=5498 validated=5498 prefix=5498 pending=0
+STRESS|CHECK|name=source_has_successful_send status=PASS
+STRESS|CHECK|name=every_successful_identity_validated_exactly_once status=PASS
+STRESS|SOURCE|source=4 sent=40346 validated=40346 prefix=40346 pending=0
+STRESS|CHECK|name=source_has_successful_send status=PASS
+STRESS|CHECK|name=every_successful_identity_validated_exactly_once status=PASS
+STRESS|SOURCE|source=5 sent=60869 validated=60869 prefix=60869 pending=0
+STRESS|CHECK|name=source_has_successful_send status=PASS
+STRESS|CHECK|name=every_successful_identity_validated_exactly_once status=PASS
+STRESS|SEMAPHORE|accepted=120200 taken0=60086 taken1=60085 pending=29 overflow=26027
+STRESS|CHECK|name=irq_semaphore_conservation status=PASS
+STRESS|CHECK|name=both_shared_semaphore_consumers_serviced status=PASS
+STRESS|COVERAGE|queue_recv_waiters=4 queue_send_waiters=4 sem_waiters=2 lease_waiters=2 event_waiters=3 mutex_waiters=4 pi_observed=3178 high_full=19666 recovery_empty=19615
+STRESS|CHECK|name=four_simultaneous_queue_receivers status=PASS
+STRESS|CHECK|name=blocking_queue_sender_exercised status=PASS
+STRESS|CHECK|name=two_simultaneous_semaphore_waiters status=PASS
+STRESS|CHECK|name=three_simultaneous_event_waiters status=PASS
+STRESS|CHECK|name=shared_resource_semaphore_contention status=PASS
+STRESS|CHECK|name=real_priority_inheritance_observed status=PASS
+STRESS|CHECK|name=event_any_all_timeout_exercised status=PASS
+STRESS|CHECK|name=synthetic_control_deadline status=PASS
+STRESS|CHECK|name=two_second_role_progress_watchdog status=PASS
+STRESS|CONTROL|period_ticks=10 deadline_ticks=10 jitter_max=0 response_max=1 misses=0 watchdog_misses=0
+STRESS|IRQ|entries0=60068 entries1=86159 sent0=40346 sent1=60869 rejected0=19722 rejected1=25290 nested=1033 depth_max=2 forced=469 errors=0
+STRESS|CHECK|name=both_real_timer_irqs status=PASS
+STRESS|CHECK|name=actual_nvic_nested_preemption status=PASS
+STRESS|CHECK|name=irq_clean_stop status=PASS
+STRESS|CHECK|name=irq_context_and_register_contracts status=PASS
+STRESS|CHECK|name=all_fixture_wait_chains_empty status=PASS
+STRESS|CHECK|name=shared_mutex_released status=PASS
+STRESS|CHECK|name=all_resource_leases_returned status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=static_worker_delete status=PASS
+STRESS|CHECK|name=event_deinit status=PASS
+STRESS|CHECK|name=mutex_deinit status=PASS
+STRESS|CHECK|name=lease_sem_deinit status=PASS
+STRESS|CHECK|name=irq_sem_deinit status=PASS
+STRESS|CHECK|name=queue_deinit status=PASS
+STRESS|HEAP|before=28496 after=28496 max_before=28496 max_after=28496
+STRESS|CHECK|name=static_fixture_preserves_heap status=PASS
+STRESS|CHECK|name=no_fixture_heap_allocation status=PASS
+STRESS|CHECK|name=all_runtime_contracts status=PASS
+STRESS|SUMMARY|pass=161 fail=0 worker_errors=0
+STRESS|DONE|status=0

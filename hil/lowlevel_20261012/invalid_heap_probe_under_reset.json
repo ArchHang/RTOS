@@ -1,0 +1,10 @@
+{
+  "valid_heap_snapshot": false,
+  "reason": "The first RAM probe used Under Reset separately for each read. Connection resets invalidate comparison of completed-run RAM; header A happened to match, header B was zero. These reads do not support any allocator conclusion.",
+  "tag": "lowlevel_20261012_heap_fragment_recheck",
+  "preserved_logs": [
+    "heap_fragment_free_header_a.txt",
+    "heap_fragment_free_header_b.txt"
+  ],
+  "replacement": "heap_fragment_hotplug_verified.json"
+}

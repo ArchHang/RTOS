@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "audit_20261012_lifecycle_before",
+    "started":  "2026-10-12T10:54:52.7094523+08:00",
+    "finished":  "2026-10-12T10:55:25.8754475+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "39C1A794038AC4005791A2D720BAC54A1DCC1684CDFC32E9B4DB94DEBB553417",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AT\\|DONE",
+    "terminator_seen":  false,
+    "failure_lines":  [
+                          "AT|MEMTIMER|timer_repeat_init_keeps_active|FAIL|actual=0|expect=1"
+                      ]
+}

@@ -1,0 +1,8 @@
+﻿{
+    "tag":  "production_20261012_smoke_connected_1",
+    "sha256":  "E10A59FA70F7F6B5A54D9310B569D2D976A2FD59B801971820AD4C70DEDCD060",
+    "seed":  1,
+    "seconds":  30,
+    "capacity":  8,
+    "result":  "passed"
+}

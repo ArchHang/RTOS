@@ -1,0 +1,10 @@
+# Local rollback/provenance snapshots; readable here, not repository source.
+baseline_RTOS/
+baseline_fw/
+*.before
+*.current
+*.elf
+user_changes.patch
+objects.list
+subdir.mk
+primask_compile/

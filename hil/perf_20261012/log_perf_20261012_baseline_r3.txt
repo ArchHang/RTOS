@@ -1,0 +1,47 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+BM|META|target|f446_rtos (custom RTOS) 168MHz -O2
+BM|0|critical_pair|N=1|avg=30|min=30|max=30
+BM|1|yield_switch|N=1|avg=241|min=241|max=241
+BM|2|sem_roundtrip|N=1|avg=1395|min=1395|max=1395
+BM|3|sem_wake_latency|N=1000|avg=487|min=487|max=776
+BM|4|queue_send_wake|N=5000|avg=574|min=574|max=797
+BM|5|task_create_del|N=1|avg=6188|min=6188|max=6188
+BM|6|delay1_period|N=1|avg=168000|min=168000|max=168000
+BM|7|isr_wake_latency|N=100|avg=546|min=542|max=606
+PC|owner_base_set|PASS
+PC|mutex_w01_prepared|PASS
+PB|mutex_compute_w01|N=1000|avg=45|min=45|max=57
+PC|mutex_compute_w01|PASS
+PC|mutex_w01_cleanup|PASS
+PC|mutex_w04_prepared|PASS
+PB|mutex_compute_w04|N=1000|avg=71|min=71|max=90
+PC|mutex_compute_w04|PASS
+PC|mutex_w04_cleanup|PASS
+PC|mutex_w08_prepared|PASS
+PB|mutex_compute_w08|N=1000|avg=107|min=107|max=126
+PC|mutex_compute_w08|PASS
+PC|mutex_w08_cleanup|PASS
+PC|multilock_sorted_initial|PASS
+PC|multilock_lower_waiter|PASS
+PC|multilock_other_head_selected|PASS
+PC|multilock_raise_waiter|PASS
+PC|multilock_same_priority_fifo|PASS
+PC|multilock_suspend_shared_top|PASS
+PC|multilock_delete_top_rollback|PASS
+PC|multilock_release_keeps_other_boost|PASS
+PC|multilock_suspend_top_restores_base|PASS
+PC|multilock_final_base|PASS
+PC|multilock_cleanup|PASS
+PC|owner_base_restored|PASS
+PC|SUMMARY|pass=22 fail=0
+BM|DONE|benchmark complete

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "production_20261012_matrix_final_3",
+    "started":  "2026-10-13T09:51:35.5660087+08:00",
+    "finished":  "2026-10-13T09:52:38.6665758+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "3FAAAD75D29BE7321890B2BC5A759EC773CC42BCF739483CC5707CE8B53DD0C6",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "STRESS\\|DONE\\|",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

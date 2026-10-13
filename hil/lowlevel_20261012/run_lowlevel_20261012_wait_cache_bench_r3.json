@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "lowlevel_20261012_wait_cache_bench_r3",
+    "started":  "2026-10-12T20:41:31.3337711+08:00",
+    "finished":  "2026-10-12T20:41:33.8952752+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "D3BA014BEABE65D010A2216037C1E4786553BFEB7329487440B5DC2870BFDA63",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BM\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

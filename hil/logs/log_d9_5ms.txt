@@ -1,0 +1,27 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+SC|META|scenario=21|tick_hz=1000|us_per_call=5952
+SC|START|scenario=21
+SC|LOG|D9 start: worst-case interrupt blackout window (BASEPRI hold time)
+SC|D9|baseline_done|cnt=2010|w=21
+SC|D9|mark_stopped
+SC|D9|mark_load_on
+SC|D9|mark_loop_end|cnt=4219|w=13
+SC|D9|mark_stopped
+SC|D9|baseline_max_late_ns|value=0|samples=2316
+SC|D9|loaded_max_late_ns|value=190|samples=4525
+SC|D9|late_ns_percentiles|n=189|p50=47|p99=190|p99_9=190
+SC|D9|control_known_bad_ns|value=190|ctrl_hold_ns=5006083
+SC|D9|dbg|basepri=0x50|tim6_ip=0x40|aircr=0xFA050300
+SC|D9|verdict|value=measured|unit=text
+SC|LOG|D9 done
+SC|DONE|scenario=21|status=0

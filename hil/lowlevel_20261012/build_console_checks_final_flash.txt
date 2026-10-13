@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'flash_diag' OK -- same-image Flash instruction-cache ON/OFF/ON diagnostic; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  33800	    120	  41992	  75912	  12888	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

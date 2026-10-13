@@ -1,0 +1,27 @@
+﻿      -------------------------------------------------------------------
+                       STM32CubeProgrammer v2.15.0                  
+      -------------------------------------------------------------------
+
+ST-LINK SN  : 066DFF555775514867092907
+ST-LINK FW  : V2J43M28
+Board       : NUCLEO-F446RE
+Voltage     : 3.25V
+SWD freq    : 4000 KHz
+Connect mode: Hot Plug
+Reset mode  : Software reset
+Device ID   : 0x421
+Revision ID : Rev A
+Device name : STM32F446xx
+Flash size  : 512 KBytes
+Device type : MCU
+Device CPU  : Cortex-M4
+BL Version  : 0x90
+
+
+Reading 32-bit memory content
+  Size          : 4 Bytes
+  Address:      : 0x20001314
+
+0x20001314 : 000003FE
+
+

@@ -1,0 +1,62 @@
+[
+  {
+    "tag": "lowlevel_20261012_checks_final_lowlevel_r1",
+    "mode": "lowlevel",
+    "sha256": "7C474D473324DD8725EAF6FDC6E09F240EC3430B2408328CC163B2F08EEADC7A",
+    "passed": 24,
+    "failed": 0,
+    "mutex_checks": 22,
+    "fpu_rounds_per_task": 10000,
+    "hotpath_stats": false
+  },
+  {
+    "tag": "lowlevel_20261012_checks_final_lowlevel_r2",
+    "mode": "lowlevel",
+    "sha256": "7C474D473324DD8725EAF6FDC6E09F240EC3430B2408328CC163B2F08EEADC7A",
+    "passed": 24,
+    "failed": 0,
+    "mutex_checks": 22,
+    "fpu_rounds_per_task": 10000,
+    "hotpath_stats": false
+  },
+  {
+    "tag": "lowlevel_20261012_checks_final_lowlevel_r3",
+    "mode": "lowlevel",
+    "sha256": "7C474D473324DD8725EAF6FDC6E09F240EC3430B2408328CC163B2F08EEADC7A",
+    "passed": 24,
+    "failed": 0,
+    "mutex_checks": 22,
+    "fpu_rounds_per_task": 10000,
+    "hotpath_stats": false
+  },
+  {
+    "tag": "lowlevel_20261012_checks_final_stats_r1",
+    "mode": "stats",
+    "sha256": "138BD6DA82012C2D081E24AF2B93EB7ED79AB1E2260F3135526C14C5328D8E93",
+    "passed": 24,
+    "failed": 0,
+    "mutex_checks": 22,
+    "fpu_rounds_per_task": 10000,
+    "hotpath_stats": true
+  },
+  {
+    "tag": "lowlevel_20261012_checks_final_stats_r2",
+    "mode": "stats",
+    "sha256": "138BD6DA82012C2D081E24AF2B93EB7ED79AB1E2260F3135526C14C5328D8E93",
+    "passed": 24,
+    "failed": 0,
+    "mutex_checks": 22,
+    "fpu_rounds_per_task": 10000,
+    "hotpath_stats": true
+  },
+  {
+    "tag": "lowlevel_20261012_checks_final_stats_r3",
+    "mode": "stats",
+    "sha256": "138BD6DA82012C2D081E24AF2B93EB7ED79AB1E2260F3135526C14C5328D8E93",
+    "passed": 24,
+    "failed": 0,
+    "mutex_checks": 22,
+    "fpu_rounds_per_task": 10000,
+    "hotpath_stats": true
+  }
+]

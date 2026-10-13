@@ -1,0 +1,68 @@
+[
+  {
+    "stage": "baseline",
+    "resets": 3,
+    "sha256": "BCD7EB4E69919E39D81BE50D0385241ABAF359143A403D988EA86131C0A85148",
+    "verified": true
+  },
+  {
+    "stage": "port",
+    "resets": 3,
+    "sha256": "0630E40732D2401E9F20761A8FFF871962355080FFBA5329F3D07C7C68BAD008",
+    "verified": true
+  },
+  {
+    "stage": "sched",
+    "resets": 3,
+    "sha256": "4772BF0F829B2729E57E24BECEF4F7B12B39270FC41CFC722540B2A933F29D34",
+    "verified": true
+  },
+  {
+    "stage": "combined",
+    "resets": 3,
+    "sha256": "6E25A056915612B88A094903DD77C0CC0A6EA69C6097E8C5D38B39E7B66B66F3",
+    "verified": true
+  },
+  {
+    "stage": "clean_base_bench",
+    "resets": 3,
+    "sha256": "19A4A997A303BA820C1F0AAEE6B1C217135CDB2870801572DA3D0341AB43BD28",
+    "verified": true
+  },
+  {
+    "stage": "nosched",
+    "resets": 3,
+    "sha256": "B3EE45FD57CE5EE3AB7B6B393CD2C90A926B58D132F7388D1B2EEA9B17D998A4",
+    "verified": true
+  },
+  {
+    "stage": "nosched_bench",
+    "resets": 3,
+    "sha256": "92A29E85E957C37F73BCB61633656C885C626CF1D652DB22956E26E653A4E4A9",
+    "verified": true
+  },
+  {
+    "stage": "mutex_only",
+    "resets": 3,
+    "sha256": "C74994FAA2A0B3E1A8E9261C8C1C20CF376FBC3926153598D114B5BAF169519F",
+    "verified": true
+  },
+  {
+    "stage": "mutex_only_bench",
+    "resets": 3,
+    "sha256": "516FA44190D39E91651B595BCB7AFEF58A4650C64EFD64D16FBD6AF2B362BC94",
+    "verified": true
+  },
+  {
+    "stage": "mutex_align",
+    "resets": 3,
+    "sha256": "AAF51EF43EBEE27B2AC41991D55EDC2B45114EEAAAD2454869C55C3D8D36B929",
+    "verified": true
+  },
+  {
+    "stage": "clean_combined_bench",
+    "resets": 3,
+    "sha256": "7379DB158DA261869D8AACD8A6E310628E38B53EF091D20984C6AA23DFC01504",
+    "verified": true
+  }
+]

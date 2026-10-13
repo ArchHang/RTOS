@@ -1,0 +1,15 @@
+{
+  "validated_utc": "2026-10-12T08:41:52.5542851Z",
+  "measurement_stages": 11,
+  "measurement_download_reset_runs": 33,
+  "final_regression_captures": 11,
+  "final_rtos_sources": 61,
+  "source_manifest_matches": true,
+  "flashed_hashes_match_saved_elf": true,
+  "powershell_parse_errors": 0,
+  "excluded_invalid_stage": "baseline_bench",
+  "final_kernel_changes": [
+    "RTOS/Core/Inc/rtos_port.h",
+    "RTOS/Core/Src/rtos_mutex.c"
+  ]
+}

@@ -1,0 +1,27 @@
+﻿{
+    "tag":  "audit_20261012_new_before",
+    "started":  "2026-10-12T10:39:20.1058891+08:00",
+    "finished":  "2026-10-12T10:39:24.3962004+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "D8CE98448CA7A1739C87D1980BF8C39501B50FA6DFC7F2B2E22F0AF6338415BC",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AT\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+                          "AT|SCHEDTASK|construct_resume_rejected|FAIL",
+                          "AT|SCHEDTASK|construct_priority_rejected|FAIL",
+                          "AT|SCHEDTASK|construct_notify_rejected|FAIL",
+                          "AT|SCHEDTASK|construct_suspend_rejected|FAIL",
+                          "AT|SCHEDTASK|canceled_switch_restores_running|FAIL",
+                          "AT|USBPORT|dwc2_oversize_rx_preserves_guard|FAIL|actual=0|expected=1",
+                          "AT|USBPORT|core_get_invalid_interface_rejected|FAIL|actual=1|expected=0",
+                          "AT|USBPORT|core_set_invalid_interface_rejected|FAIL|actual=1|expected=0",
+                          "AT|USBPORT|core_high_index_interface_rejected|FAIL|actual=1|expected=0",
+                          "AT|USBPORT|osal_return_pool_reused|FAIL|actual=4|expected=5",
+                          "AT|USBPORT|osal_return_completed|FAIL|actual=4|expected=5",
+                          "AT|USBPORT|osal_self_delete_pool_reused|FAIL|actual=4|expected=5",
+                          "AT|USBPORT|osal_self_delete_completed|FAIL|actual=4|expected=5"
+                      ]
+}

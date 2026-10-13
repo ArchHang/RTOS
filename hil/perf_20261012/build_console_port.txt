@@ -1,0 +1,3 @@
+﻿built 'perf' OK -- controlled performance comparison plus mutex robustness probes; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  36804	    120	  51520	  88444	  1597c	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "lowlevel_20261012_checks_static_flash_flash_r1",
+    "started":  "2026-10-12T20:53:08.9694485+08:00",
+    "finished":  "2026-10-12T20:53:12.0424236+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BM\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

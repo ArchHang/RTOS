@@ -1,0 +1,7 @@
+baseline_RTOS/
+*.before
+*.elf
+primask_compile/
+primask_final_selected/Inc/
+primask_final_selected/Src/
+primask_final_selected/Obj/

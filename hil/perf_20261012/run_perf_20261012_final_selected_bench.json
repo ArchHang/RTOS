@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "perf_20261012_final_selected_bench",
+    "started":  "2026-10-12T16:34:32.4322710+08:00",
+    "finished":  "2026-10-12T16:34:34.9988553+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "92A29E85E957C37F73BCB61633656C885C626CF1D652DB22956E26E653A4E4A9",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BM\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

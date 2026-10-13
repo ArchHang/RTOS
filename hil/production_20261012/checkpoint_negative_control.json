@@ -1,0 +1,8 @@
+﻿{
+    "tag":  "production_20261012_negative_control_1",
+    "sha256":  "BECE1B18F88FB329FFC293F3F19E19139E90A2C5C05448482E5B79204887273B",
+    "seed":  1,
+    "seconds":  6,
+    "capacity":  8,
+    "result":  "expected_corruption_detected"
+}

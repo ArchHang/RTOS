@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "audit_20261012_daily",
+    "started":  "2026-10-12T15:33:08.1971967+08:00",
+    "finished":  "2026-10-12T15:33:29.0515642+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "84A409C774D629D2D2B992A8908C38A9393236CF4EB78D360778D7FE60BC2A42",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

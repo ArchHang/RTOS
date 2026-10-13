@@ -1,0 +1,325 @@
+﻿{
+    "total_captures":  60,
+    "successful_captures":  57,
+    "excluded_diagnostic_failures":  [
+                                         "lowlevel_20261012_checks_final_flash_r1",
+                                         "lowlevel_20261012_heap_fragment_recheck",
+                                         "lowlevel_20261012_heap_fragment_hotplug"
+                                     ],
+    "performance_stages":  12,
+    "compiled_units":  91,
+    "compile_warnings":  0,
+    "final_source_count":  61,
+    "changed_production_files":  [
+                                     "RTOS\\Core\\Inc\\rtos_config.h",
+                                     "RTOS\\Core\\Inc\\rtos_internal.h",
+                                     "RTOS\\Core\\Src\\rtos_sched.c",
+                                     "RTOS\\Core\\Src\\rtos_sem.c",
+                                     "RTOS\\Core\\Src\\rtos_task.c",
+                                     "RTOS\\Port\\GCC\\ARM_CM7\\port.c"
+                                 ],
+    "all_saved_elf_hashes_match":  true,
+    "final_source_matches_daily":  true,
+    "captures":  [
+                     {
+                         "tag":  "lowlevel_20261012_baseline_bench_r1",
+                         "sha256":  "92A29E85E957C37F73BCB61633656C885C626CF1D652DB22956E26E653A4E4A9",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_baseline_bench_r2",
+                         "sha256":  "92A29E85E957C37F73BCB61633656C885C626CF1D652DB22956E26E653A4E4A9",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_baseline_bench_r3",
+                         "sha256":  "92A29E85E957C37F73BCB61633656C885C626CF1D652DB22956E26E653A4E4A9",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_baseline_r1",
+                         "sha256":  "B3EE45FD57CE5EE3AB7B6B393CD2C90A926B58D132F7388D1B2EEA9B17D998A4",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_baseline_r2",
+                         "sha256":  "B3EE45FD57CE5EE3AB7B6B393CD2C90A926B58D132F7388D1B2EEA9B17D998A4",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_baseline_r3",
+                         "sha256":  "B3EE45FD57CE5EE3AB7B6B393CD2C90A926B58D132F7388D1B2EEA9B17D998A4",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_flash_r1",
+                         "sha256":  "07B09BCEAED3A7423F027E3E7EE159FE3050841BAE644D7654045AFB750E7100",
+                         "classification":  "excluded_diagnostic_failure"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_lowlevel_r1",
+                         "sha256":  "7C474D473324DD8725EAF6FDC6E09F240EC3430B2408328CC163B2F08EEADC7A",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_lowlevel_r2",
+                         "sha256":  "7C474D473324DD8725EAF6FDC6E09F240EC3430B2408328CC163B2F08EEADC7A",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_lowlevel_r3",
+                         "sha256":  "7C474D473324DD8725EAF6FDC6E09F240EC3430B2408328CC163B2F08EEADC7A",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_stats_r1",
+                         "sha256":  "138BD6DA82012C2D081E24AF2B93EB7ED79AB1E2260F3135526C14C5328D8E93",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_stats_r2",
+                         "sha256":  "138BD6DA82012C2D081E24AF2B93EB7ED79AB1E2260F3135526C14C5328D8E93",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_final_stats_r3",
+                         "sha256":  "138BD6DA82012C2D081E24AF2B93EB7ED79AB1E2260F3135526C14C5328D8E93",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_static_flash_flash_r1",
+                         "sha256":  "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_static_flash_flash_r2",
+                         "sha256":  "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_checks_static_flash_flash_r3",
+                         "sha256":  "59C7EB70BB3488E29E9B24AC4E6256186F290FA788784B174E5637C86D3AF74A",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_daily",
+                         "sha256":  "6E1EEF7A252DE32239FCE7F79553471C64229EE52CC56B071165B92C24A0BA46",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_audit1",
+                         "sha256":  "B3FEFBE65DA21911FCDAD67739B4582321F14C4E89C8080863133221BC99DD4F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_audit2",
+                         "sha256":  "B3FEFBE65DA21911FCDAD67739B4582321F14C4E89C8080863133221BC99DD4F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_audit3",
+                         "sha256":  "B3FEFBE65DA21911FCDAD67739B4582321F14C4E89C8080863133221BC99DD4F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_bench",
+                         "sha256":  "69C64789185A9404E525E2F5059B397F371E0EB10B47893D67EAF17A4D1AC5C0",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_boundary",
+                         "sha256":  "39BD25256429C2DA0C57ACB0DEE6C02B08AEA90B1D3B7407ED584A37B36F3AD0",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_S1",
+                         "sha256":  "9C3C07067F779AE5AF6D5E1FD3839DBF27ADD5F0470438CC925EE59CC2A6D782",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_S2",
+                         "sha256":  "711134908728C1C3476E6D5E6CC642DB0F94E32CE8FE9AD0CB8BA03C6C6894E4",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_S3",
+                         "sha256":  "3533D7E50738BAA318D5E9FE6109CFC0F08C8361E8B70768698637E50C8BDE97",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_S4",
+                         "sha256":  "47A29A345384B73F323D069BC07BEBAFC897D5FE4B6F2172832381D6594E0C64",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_S5",
+                         "sha256":  "3508F01B019FB90F294726E9411E1CD22B9DDBC41F74648C020E281F2158F7E8",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_final_selected_selftest",
+                         "sha256":  "A4FEDB8C592B07BFEE4DB2DA648A8C042804A39BFEAF8E9B63F6BE9E87F96822",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_heap_fragment_hotplug",
+                         "sha256":  "07B09BCEAED3A7423F027E3E7EE159FE3050841BAE644D7654045AFB750E7100",
+                         "classification":  "excluded_diagnostic_failure"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_heap_fragment_recheck",
+                         "sha256":  "07B09BCEAED3A7423F027E3E7EE159FE3050841BAE644D7654045AFB750E7100",
+                         "classification":  "excluded_diagnostic_failure"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_isr_cached_bench_r1",
+                         "sha256":  "69C64789185A9404E525E2F5059B397F371E0EB10B47893D67EAF17A4D1AC5C0",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_isr_cached_bench_r2",
+                         "sha256":  "69C64789185A9404E525E2F5059B397F371E0EB10B47893D67EAF17A4D1AC5C0",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_isr_cached_bench_r3",
+                         "sha256":  "69C64789185A9404E525E2F5059B397F371E0EB10B47893D67EAF17A4D1AC5C0",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_isr_cached_r1",
+                         "sha256":  "40AECCDD864DA39CD8C574D2BF0D185E504B8CAE387C8927804326A729968D6D",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_isr_cached_r2",
+                         "sha256":  "40AECCDD864DA39CD8C574D2BF0D185E504B8CAE387C8927804326A729968D6D",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_isr_cached_r3",
+                         "sha256":  "40AECCDD864DA39CD8C574D2BF0D185E504B8CAE387C8927804326A729968D6D",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_direct_bench_r1",
+                         "sha256":  "AA1D207086E5BFBBCA76CA1C531D6A0297223B492CB6EBFCBE91A124CC72944F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_direct_bench_r2",
+                         "sha256":  "AA1D207086E5BFBBCA76CA1C531D6A0297223B492CB6EBFCBE91A124CC72944F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_direct_bench_r3",
+                         "sha256":  "AA1D207086E5BFBBCA76CA1C531D6A0297223B492CB6EBFCBE91A124CC72944F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_direct_r1",
+                         "sha256":  "210B0ED46504BE0872453743BA191317D53C8DFA84F51D40EECB3351E0CF8B13",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_direct_r2",
+                         "sha256":  "210B0ED46504BE0872453743BA191317D53C8DFA84F51D40EECB3351E0CF8B13",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_direct_r3",
+                         "sha256":  "210B0ED46504BE0872453743BA191317D53C8DFA84F51D40EECB3351E0CF8B13",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_return_bench_r1",
+                         "sha256":  "DF76BF6A39B1A3416F20BADA77BBE768C602B2D6194DF90B9F0F48FE4A699829",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_return_bench_r2",
+                         "sha256":  "DF76BF6A39B1A3416F20BADA77BBE768C602B2D6194DF90B9F0F48FE4A699829",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_return_bench_r3",
+                         "sha256":  "DF76BF6A39B1A3416F20BADA77BBE768C602B2D6194DF90B9F0F48FE4A699829",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_return_r1",
+                         "sha256":  "057A120C4322869AFF1E02E9FC0383EF9475D40F7E8D26052641B7E2AA98F2D9",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_return_r2",
+                         "sha256":  "057A120C4322869AFF1E02E9FC0383EF9475D40F7E8D26052641B7E2AA98F2D9",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_ptr_return_r3",
+                         "sha256":  "057A120C4322869AFF1E02E9FC0383EF9475D40F7E8D26052641B7E2AA98F2D9",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_sem_cur_bench_r1",
+                         "sha256":  "D12C3EE5AAE2AF631291C414E4874864DAF2C81339B19FBBF303FC762C2DE76F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_sem_cur_bench_r2",
+                         "sha256":  "D12C3EE5AAE2AF631291C414E4874864DAF2C81339B19FBBF303FC762C2DE76F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_sem_cur_bench_r3",
+                         "sha256":  "D12C3EE5AAE2AF631291C414E4874864DAF2C81339B19FBBF303FC762C2DE76F",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_sem_cur_r1",
+                         "sha256":  "8690136A5FF044F1808DC18179717DCE8EC7F9F676CEBF70DCFEFB7D008157A2",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_sem_cur_r2",
+                         "sha256":  "8690136A5FF044F1808DC18179717DCE8EC7F9F676CEBF70DCFEFB7D008157A2",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_sem_cur_r3",
+                         "sha256":  "8690136A5FF044F1808DC18179717DCE8EC7F9F676CEBF70DCFEFB7D008157A2",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_wait_cache_bench_r1",
+                         "sha256":  "D3BA014BEABE65D010A2216037C1E4786553BFEB7329487440B5DC2870BFDA63",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_wait_cache_bench_r2",
+                         "sha256":  "D3BA014BEABE65D010A2216037C1E4786553BFEB7329487440B5DC2870BFDA63",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_wait_cache_bench_r3",
+                         "sha256":  "D3BA014BEABE65D010A2216037C1E4786553BFEB7329487440B5DC2870BFDA63",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_wait_cache_r1",
+                         "sha256":  "DE054E6B8EF9489CB1EBAA411B6A49196EBA86C007D2B64A9BFB8E49BA615AB6",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_wait_cache_r2",
+                         "sha256":  "DE054E6B8EF9489CB1EBAA411B6A49196EBA86C007D2B64A9BFB8E49BA615AB6",
+                         "classification":  "passed"
+                     },
+                     {
+                         "tag":  "lowlevel_20261012_wait_cache_r3",
+                         "sha256":  "DE054E6B8EF9489CB1EBAA411B6A49196EBA86C007D2B64A9BFB8E49BA615AB6",
+                         "classification":  "passed"
+                     }
+                 ]
+}

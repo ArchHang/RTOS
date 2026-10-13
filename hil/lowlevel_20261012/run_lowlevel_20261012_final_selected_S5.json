@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "lowlevel_20261012_final_selected_S5",
+    "started":  "2026-10-12T20:46:13.4590043+08:00",
+    "finished":  "2026-10-12T20:46:16.1900859+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "3508F01B019FB90F294726E9411E1CD22B9DDBC41F74648C020E281F2158F7E8",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "SC\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

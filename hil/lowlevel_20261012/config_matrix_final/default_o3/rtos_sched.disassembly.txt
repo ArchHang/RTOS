@@ -1,0 +1,995 @@
+
+E:\STM32_Project\CubeIDE\f446_rtos\hil\lowlevel_20261012\config_matrix_final\default_o3\Obj\rtos_sched.o:     file format elf32-littlearm
+
+
+Disassembly of section .text.rtos_sched_init:
+
+00000000 <rtos_sched_init>:
+   0:	b570      	push	{r4, r5, r6, lr}
+   2:	4d10      	ldr	r5, [pc, #64]	; (44 <rtos_sched_init+0x44>)
+   4:	f8d5 4098 	ldr.w	r4, [r5, #152]	; 0x98
+   8:	b084      	sub	sp, #16
+   a:	b9c4      	cbnz	r4, 3e <rtos_sched_init+0x3e>
+   c:	22f4      	movs	r2, #244	; 0xf4
+   e:	4621      	mov	r1, r4
+  10:	4628      	mov	r0, r5
+  12:	f7ff fffe 	bl	0 <memset>
+			12: R_ARM_THM_CALL	memset
+  16:	4e0c      	ldr	r6, [pc, #48]	; (48 <rtos_sched_init+0x48>)
+  18:	4a0c      	ldr	r2, [pc, #48]	; (4c <rtos_sched_init+0x4c>)
+  1a:	490d      	ldr	r1, [pc, #52]	; (50 <rtos_sched_init+0x50>)
+  1c:	9400      	str	r4, [sp, #0]
+  1e:	231f      	movs	r3, #31
+  20:	e9cd 3201 	strd	r3, r2, [sp, #4]
+  24:	4630      	mov	r0, r6
+  26:	4b0b      	ldr	r3, [pc, #44]	; (54 <rtos_sched_init+0x54>)
+  28:	2280      	movs	r2, #128	; 0x80
+  2a:	f7ff fffe 	bl	0 <rtos_task_create_static>
+			2a: R_ARM_THM_CALL	rtos_task_create_static
+  2e:	b920      	cbnz	r0, 3a <rtos_sched_init+0x3a>
+  30:	4b09      	ldr	r3, [pc, #36]	; (58 <rtos_sched_init+0x58>)
+  32:	f8c5 6098 	str.w	r6, [r5, #152]	; 0x98
+  36:	2202      	movs	r2, #2
+  38:	601a      	str	r2, [r3, #0]
+  3a:	b004      	add	sp, #16
+  3c:	bd70      	pop	{r4, r5, r6, pc}
+  3e:	f06f 0004 	mvn.w	r0, #4
+  42:	e7fa      	b.n	3a <rtos_sched_init+0x3a>
+	...
+			44: R_ARM_ABS32	.bss.rtos_kernel
+			48: R_ARM_ABS32	.bss.s_idle_tcb
+			4c: R_ARM_ABS32	.rodata.rtos_sched_init.str1.4
+			50: R_ARM_ABS32	.bss.s_idle_stack
+			54: R_ARM_ABS32	rtos_idle_task
+			58: R_ARM_ABS32	.data.s_next_task_id
+
+Disassembly of section .text.rtos_sched_start:
+
+00000000 <rtos_sched_start>:
+   0:	b508      	push	{r3, lr}
+   2:	f3ef 8305 	mrs	r3, IPSR
+   6:	bb0b      	cbnz	r3, 4c <rtos_sched_start+0x4c>
+   8:	4b15      	ldr	r3, [pc, #84]	; (60 <rtos_sched_start+0x60>)
+   a:	781a      	ldrb	r2, [r3, #0]
+   c:	b9da      	cbnz	r2, 46 <rtos_sched_start+0x46>
+   e:	f3ef 8011 	mrs	r0, BASEPRI
+  12:	2250      	movs	r2, #80	; 0x50
+  14:	f382 8812 	msr	BASEPRI_MAX, r2
+  18:	f3bf 8f6f 	isb	sy
+  1c:	2101      	movs	r1, #1
+  1e:	7019      	strb	r1, [r3, #0]
+  20:	689a      	ldr	r2, [r3, #8]
+  22:	b1b2      	cbz	r2, 52 <rtos_sched_start+0x52>
+  24:	fa92 f2a2 	rbit	r2, r2
+  28:	fab2 f282 	clz	r2, r2
+  2c:	eb03 0282 	add.w	r2, r3, r2, lsl #2
+  30:	68d2      	ldr	r2, [r2, #12]
+  32:	f8c3 2090 	str.w	r2, [r3, #144]	; 0x90
+  36:	b102      	cbz	r2, 3a <rtos_sched_start+0x3a>
+  38:	7511      	strb	r1, [r2, #20]
+  3a:	f7ff fffe 	bl	0 <rtos_perf_on_scheduler_start>
+			3a: R_ARM_THM_CALL	rtos_perf_on_scheduler_start
+  3e:	f7ff fffe 	bl	0 <rtos_port_start_scheduler>
+			3e: R_ARM_THM_CALL	rtos_port_start_scheduler
+  42:	f7ff fffe 	bl	0 <rtos_port_start_first_task>
+			42: R_ARM_THM_CALL	rtos_port_start_first_task
+  46:	f06f 0004 	mvn.w	r0, #4
+  4a:	bd08      	pop	{r3, pc}
+  4c:	f06f 0003 	mvn.w	r0, #3
+  50:	bd08      	pop	{r3, pc}
+  52:	701a      	strb	r2, [r3, #0]
+  54:	f380 8811 	msr	BASEPRI, r0
+  58:	f06f 0008 	mvn.w	r0, #8
+  5c:	bd08      	pop	{r3, pc}
+  5e:	bf00      	nop
+  60:	00000000 	.word	0x00000000
+			60: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_sched_schedule:
+
+00000000 <rtos_sched_schedule>:
+   0:	4b11      	ldr	r3, [pc, #68]	; (48 <rtos_sched_schedule+0x48>)
+   2:	781a      	ldrb	r2, [r3, #0]
+   4:	2a01      	cmp	r2, #1
+   6:	b2d1      	uxtb	r1, r2
+   8:	d11c      	bne.n	44 <rtos_sched_schedule+0x44>
+   a:	689a      	ldr	r2, [r3, #8]
+   c:	b1d2      	cbz	r2, 44 <rtos_sched_schedule+0x44>
+   e:	fa92 f2a2 	rbit	r2, r2
+  12:	fab2 f282 	clz	r2, r2
+  16:	eb03 0282 	add.w	r2, r3, r2, lsl #2
+  1a:	f8d3 0090 	ldr.w	r0, [r3, #144]	; 0x90
+  1e:	68d2      	ldr	r2, [r2, #12]
+  20:	4282      	cmp	r2, r0
+  22:	d008      	beq.n	36 <rtos_sched_schedule+0x36>
+  24:	f8d3 10a0 	ldr.w	r1, [r3, #160]	; 0xa0
+  28:	f8c3 2094 	str.w	r2, [r3, #148]	; 0x94
+  2c:	3101      	adds	r1, #1
+  2e:	f8c3 10a0 	str.w	r1, [r3, #160]	; 0xa0
+  32:	f7ff bffe 	b.w	0 <rtos_port_context_switch>
+			32: R_ARM_THM_JUMP24	rtos_port_context_switch
+  36:	2000      	movs	r0, #0
+  38:	f8c3 0094 	str.w	r0, [r3, #148]	; 0x94
+  3c:	b112      	cbz	r2, 44 <rtos_sched_schedule+0x44>
+  3e:	7d13      	ldrb	r3, [r2, #20]
+  40:	b903      	cbnz	r3, 44 <rtos_sched_schedule+0x44>
+  42:	7511      	strb	r1, [r2, #20]
+  44:	4770      	bx	lr
+  46:	bf00      	nop
+  48:	00000000 	.word	0x00000000
+			48: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_sched_tick:
+
+00000000 <rtos_sched_tick>:
+   0:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
+   4:	f8df 8130 	ldr.w	r8, [pc, #304]	; 138 <rtos_sched_tick+0x138>
+   8:	f898 3000 	ldrb.w	r3, [r8]
+   c:	2b01      	cmp	r3, #1
+   e:	d001      	beq.n	14 <rtos_sched_tick+0x14>
+  10:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
+  14:	b2dd      	uxtb	r5, r3
+  16:	f8d8 3004 	ldr.w	r3, [r8, #4]
+  1a:	f8d8 408c 	ldr.w	r4, [r8, #140]	; 0x8c
+  1e:	3301      	adds	r3, #1
+  20:	f8c8 3004 	str.w	r3, [r8, #4]
+  24:	f8d8 6004 	ldr.w	r6, [r8, #4]
+  28:	2c00      	cmp	r4, #0
+  2a:	d047      	beq.n	bc <rtos_sched_tick+0xbc>
+  2c:	6da3      	ldr	r3, [r4, #88]	; 0x58
+  2e:	1b9b      	subs	r3, r3, r6
+  30:	2b00      	cmp	r3, #0
+  32:	f04f 0900 	mov.w	r9, #0
+  36:	f04f 07fd 	mov.w	r7, #253	; 0xfd
+  3a:	dc3f      	bgt.n	bc <rtos_sched_tick+0xbc>
+  3c:	e9d4 3206 	ldrd	r3, r2, [r4, #24]
+  40:	f8c8 308c 	str.w	r3, [r8, #140]	; 0x8c
+  44:	b123      	cbz	r3, 50 <rtos_sched_tick+0x50>
+  46:	6999      	ldr	r1, [r3, #24]
+  48:	2900      	cmp	r1, #0
+  4a:	bf08      	it	eq
+  4c:	460a      	moveq	r2, r1
+  4e:	61da      	str	r2, [r3, #28]
+  50:	6de2      	ldr	r2, [r4, #92]	; 0x5c
+  52:	e9c4 9906 	strd	r9, r9, [r4, #24]
+  56:	b1ba      	cbz	r2, 88 <rtos_sched_tick+0x88>
+  58:	6a63      	ldr	r3, [r4, #36]	; 0x24
+  5a:	b113      	cbz	r3, 62 <rtos_sched_tick+0x62>
+  5c:	f104 0024 	add.w	r0, r4, #36	; 0x24
+  60:	4798      	blx	r3
+  62:	6ce0      	ldr	r0, [r4, #76]	; 0x4c
+  64:	f884 5030 	strb.w	r5, [r4, #48]	; 0x30
+  68:	f884 7060 	strb.w	r7, [r4, #96]	; 0x60
+  6c:	b128      	cbz	r0, 7a <rtos_sched_tick+0x7a>
+  6e:	f104 0124 	add.w	r1, r4, #36	; 0x24
+  72:	f7ff fffe 	bl	0 <rtos_internal_wait_remove_sync_bitmap>
+			72: R_ARM_THM_CALL	rtos_internal_wait_remove_sync_bitmap
+  76:	f8c4 904c 	str.w	r9, [r4, #76]	; 0x4c
+  7a:	4620      	mov	r0, r4
+  7c:	f7ff fffe 	bl	0 <rtos_internal_mutex_waiter_left>
+			7c: R_ARM_THM_CALL	rtos_internal_mutex_waiter_left
+  80:	f8d8 308c 	ldr.w	r3, [r8, #140]	; 0x8c
+  84:	f8c4 905c 	str.w	r9, [r4, #92]	; 0x5c
+  88:	68e2      	ldr	r2, [r4, #12]
+  8a:	f884 9014 	strb.w	r9, [r4, #20]
+  8e:	1c91      	adds	r1, r2, #2
+  90:	eb08 0181 	add.w	r1, r8, r1, lsl #2
+  94:	fa05 f202 	lsl.w	r2, r5, r2
+  98:	6848      	ldr	r0, [r1, #4]
+  9a:	b350      	cbz	r0, f2 <rtos_sched_tick+0xf2>
+  9c:	f8d8 1008 	ldr.w	r1, [r8, #8]
+  a0:	430a      	orrs	r2, r1
+  a2:	f8c8 2008 	str.w	r2, [r8, #8]
+  a6:	69c2      	ldr	r2, [r0, #28]
+  a8:	e9c4 0206 	strd	r0, r2, [r4, #24]
+  ac:	6194      	str	r4, [r2, #24]
+  ae:	61c4      	str	r4, [r0, #28]
+  b0:	b123      	cbz	r3, bc <rtos_sched_tick+0xbc>
+  b2:	461c      	mov	r4, r3
+  b4:	6da3      	ldr	r3, [r4, #88]	; 0x58
+  b6:	1b9b      	subs	r3, r3, r6
+  b8:	2b00      	cmp	r3, #0
+  ba:	ddbf      	ble.n	3c <rtos_sched_tick+0x3c>
+  bc:	f8d8 3008 	ldr.w	r3, [r8, #8]
+  c0:	2b00      	cmp	r3, #0
+  c2:	d0a5      	beq.n	10 <rtos_sched_tick+0x10>
+  c4:	fa93 f3a3 	rbit	r3, r3
+  c8:	fab3 f383 	clz	r3, r3
+  cc:	3302      	adds	r3, #2
+  ce:	eb08 0383 	add.w	r3, r8, r3, lsl #2
+  d2:	f8d8 1090 	ldr.w	r1, [r8, #144]	; 0x90
+  d6:	685a      	ldr	r2, [r3, #4]
+  d8:	428a      	cmp	r2, r1
+  da:	d016      	beq.n	10a <rtos_sched_tick+0x10a>
+  dc:	f8d8 30a0 	ldr.w	r3, [r8, #160]	; 0xa0
+  e0:	f8c8 2094 	str.w	r2, [r8, #148]	; 0x94
+  e4:	3301      	adds	r3, #1
+  e6:	f8c8 30a0 	str.w	r3, [r8, #160]	; 0xa0
+  ea:	e8bd 43f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
+  ee:	f7ff bffe 	b.w	0 <rtos_port_context_switch>
+			ee: R_ARM_THM_JUMP24	rtos_port_context_switch
+  f2:	e9c4 4406 	strd	r4, r4, [r4, #24]
+  f6:	604c      	str	r4, [r1, #4]
+  f8:	f8d8 1008 	ldr.w	r1, [r8, #8]
+  fc:	430a      	orrs	r2, r1
+  fe:	f8c8 2008 	str.w	r2, [r8, #8]
+ 102:	2b00      	cmp	r3, #0
+ 104:	d0da      	beq.n	bc <rtos_sched_tick+0xbc>
+ 106:	461c      	mov	r4, r3
+ 108:	e7d4      	b.n	b4 <rtos_sched_tick+0xb4>
+ 10a:	2a00      	cmp	r2, #0
+ 10c:	d080      	beq.n	10 <rtos_sched_tick+0x10>
+ 10e:	7d11      	ldrb	r1, [r2, #20]
+ 110:	2901      	cmp	r1, #1
+ 112:	f47f af7d 	bne.w	10 <rtos_sched_tick+0x10>
+ 116:	6991      	ldr	r1, [r2, #24]
+ 118:	4291      	cmp	r1, r2
+ 11a:	f43f af79 	beq.w	10 <rtos_sched_tick+0x10>
+ 11e:	f8d8 20a0 	ldr.w	r2, [r8, #160]	; 0xa0
+ 122:	6059      	str	r1, [r3, #4]
+ 124:	3201      	adds	r2, #1
+ 126:	f8c8 1094 	str.w	r1, [r8, #148]	; 0x94
+ 12a:	f8c8 20a0 	str.w	r2, [r8, #160]	; 0xa0
+ 12e:	e8bd 43f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
+ 132:	f7ff bffe 	b.w	0 <rtos_port_context_switch>
+			132: R_ARM_THM_JUMP24	rtos_port_context_switch
+ 136:	bf00      	nop
+ 138:	00000000 	.word	0x00000000
+			138: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_sched_resume:
+
+00000000 <rtos_sched_resume>:
+   0:	b538      	push	{r3, r4, r5, lr}
+   2:	f3ef 8305 	mrs	r3, IPSR
+   6:	b9cb      	cbnz	r3, 3c <rtos_sched_resume+0x3c>
+   8:	2350      	movs	r3, #80	; 0x50
+   a:	f3ef 8211 	mrs	r2, BASEPRI
+   e:	f383 8812 	msr	BASEPRI_MAX, r3
+  12:	f3bf 8f6f 	isb	sy
+  16:	4c25      	ldr	r4, [pc, #148]	; (ac <rtos_sched_resume+0xac>)
+  18:	6823      	ldr	r3, [r4, #0]
+  1a:	b90b      	cbnz	r3, 20 <rtos_sched_resume+0x20>
+  1c:	4924      	ldr	r1, [pc, #144]	; (b0 <rtos_sched_resume+0xb0>)
+  1e:	600a      	str	r2, [r1, #0]
+  20:	3301      	adds	r3, #1
+  22:	4a24      	ldr	r2, [pc, #144]	; (b4 <rtos_sched_resume+0xb4>)
+  24:	6023      	str	r3, [r4, #0]
+  26:	7813      	ldrb	r3, [r2, #0]
+  28:	2b02      	cmp	r3, #2
+  2a:	d008      	beq.n	3e <rtos_sched_resume+0x3e>
+  2c:	6823      	ldr	r3, [r4, #0]
+  2e:	3b01      	subs	r3, #1
+  30:	6023      	str	r3, [r4, #0]
+  32:	b91b      	cbnz	r3, 3c <rtos_sched_resume+0x3c>
+  34:	4b1e      	ldr	r3, [pc, #120]	; (b0 <rtos_sched_resume+0xb0>)
+  36:	681b      	ldr	r3, [r3, #0]
+  38:	f383 8811 	msr	BASEPRI, r3
+  3c:	bd38      	pop	{r3, r4, r5, pc}
+  3e:	f8d2 30a8 	ldr.w	r3, [r2, #168]	; 0xa8
+  42:	2b01      	cmp	r3, #1
+  44:	d908      	bls.n	58 <rtos_sched_resume+0x58>
+  46:	3b01      	subs	r3, #1
+  48:	f8c2 30a8 	str.w	r3, [r2, #168]	; 0xa8
+  4c:	6823      	ldr	r3, [r4, #0]
+  4e:	3b01      	subs	r3, #1
+  50:	6023      	str	r3, [r4, #0]
+  52:	2b00      	cmp	r3, #0
+  54:	d1f2      	bne.n	3c <rtos_sched_resume+0x3c>
+  56:	e7ed      	b.n	34 <rtos_sched_resume+0x34>
+  58:	2301      	movs	r3, #1
+  5a:	7013      	strb	r3, [r2, #0]
+  5c:	7813      	ldrb	r3, [r2, #0]
+  5e:	2100      	movs	r1, #0
+  60:	2b01      	cmp	r3, #1
+  62:	f8c2 10a8 	str.w	r1, [r2, #168]	; 0xa8
+  66:	b2d8      	uxtb	r0, r3
+  68:	d1e0      	bne.n	2c <rtos_sched_resume+0x2c>
+  6a:	6893      	ldr	r3, [r2, #8]
+  6c:	2b00      	cmp	r3, #0
+  6e:	d0dd      	beq.n	2c <rtos_sched_resume+0x2c>
+  70:	fa93 f3a3 	rbit	r3, r3
+  74:	fab3 f383 	clz	r3, r3
+  78:	eb02 0383 	add.w	r3, r2, r3, lsl #2
+  7c:	f8d2 5090 	ldr.w	r5, [r2, #144]	; 0x90
+  80:	68db      	ldr	r3, [r3, #12]
+  82:	42ab      	cmp	r3, r5
+  84:	d009      	beq.n	9a <rtos_sched_resume+0x9a>
+  86:	f8d2 10a0 	ldr.w	r1, [r2, #160]	; 0xa0
+  8a:	f8c2 3094 	str.w	r3, [r2, #148]	; 0x94
+  8e:	3101      	adds	r1, #1
+  90:	f8c2 10a0 	str.w	r1, [r2, #160]	; 0xa0
+  94:	f7ff fffe 	bl	0 <rtos_port_context_switch>
+			94: R_ARM_THM_CALL	rtos_port_context_switch
+  98:	e7c8      	b.n	2c <rtos_sched_resume+0x2c>
+  9a:	f8c2 1094 	str.w	r1, [r2, #148]	; 0x94
+  9e:	2b00      	cmp	r3, #0
+  a0:	d0c4      	beq.n	2c <rtos_sched_resume+0x2c>
+  a2:	7d1a      	ldrb	r2, [r3, #20]
+  a4:	2a00      	cmp	r2, #0
+  a6:	d1c1      	bne.n	2c <rtos_sched_resume+0x2c>
+  a8:	7518      	strb	r0, [r3, #20]
+  aa:	e7bf      	b.n	2c <rtos_sched_resume+0x2c>
+	...
+			ac: R_ARM_ABS32	rtos_port_crit_nest
+			b0: R_ARM_ABS32	rtos_port_saved_mask
+			b4: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_sched_get_tick_count:
+
+00000000 <rtos_sched_get_tick_count>:
+   0:	4b01      	ldr	r3, [pc, #4]	; (8 <rtos_sched_get_tick_count+0x8>)
+   2:	6858      	ldr	r0, [r3, #4]
+   4:	4770      	bx	lr
+   6:	bf00      	nop
+   8:	00000000 	.word	0x00000000
+			8: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_sched_get_state:
+
+00000000 <rtos_sched_get_state>:
+   0:	4b01      	ldr	r3, [pc, #4]	; (8 <rtos_sched_get_state+0x8>)
+   2:	7818      	ldrb	r0, [r3, #0]
+   4:	4770      	bx	lr
+   6:	bf00      	nop
+   8:	00000000 	.word	0x00000000
+			8: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_init:
+
+00000000 <rtos_init>:
+   0:	b570      	push	{r4, r5, r6, lr}
+   2:	4c18      	ldr	r4, [pc, #96]	; (64 <rtos_init+0x64>)
+   4:	f8d4 3098 	ldr.w	r3, [r4, #152]	; 0x98
+   8:	b084      	sub	sp, #16
+   a:	bb43      	cbnz	r3, 5e <rtos_init+0x5e>
+   c:	f7ff fffe 	bl	0 <rtos_perf_init>
+			c: R_ARM_THM_CALL	rtos_perf_init
+  10:	b108      	cbz	r0, 16 <rtos_init+0x16>
+  12:	b004      	add	sp, #16
+  14:	bd70      	pop	{r4, r5, r6, pc}
+  16:	f7ff fffe 	bl	0 <rtos_heap_init>
+			16: R_ARM_THM_CALL	rtos_heap_init
+  1a:	2800      	cmp	r0, #0
+  1c:	d1f9      	bne.n	12 <rtos_init+0x12>
+  1e:	f8d4 5098 	ldr.w	r5, [r4, #152]	; 0x98
+  22:	b9e5      	cbnz	r5, 5e <rtos_init+0x5e>
+  24:	22f4      	movs	r2, #244	; 0xf4
+  26:	4629      	mov	r1, r5
+  28:	4620      	mov	r0, r4
+  2a:	f7ff fffe 	bl	0 <memset>
+			2a: R_ARM_THM_CALL	memset
+  2e:	4e0e      	ldr	r6, [pc, #56]	; (68 <rtos_init+0x68>)
+  30:	4a0e      	ldr	r2, [pc, #56]	; (6c <rtos_init+0x6c>)
+  32:	490f      	ldr	r1, [pc, #60]	; (70 <rtos_init+0x70>)
+  34:	9500      	str	r5, [sp, #0]
+  36:	231f      	movs	r3, #31
+  38:	e9cd 3201 	strd	r3, r2, [sp, #4]
+  3c:	4630      	mov	r0, r6
+  3e:	4b0d      	ldr	r3, [pc, #52]	; (74 <rtos_init+0x74>)
+  40:	2280      	movs	r2, #128	; 0x80
+  42:	f7ff fffe 	bl	0 <rtos_task_create_static>
+			42: R_ARM_THM_CALL	rtos_task_create_static
+  46:	2800      	cmp	r0, #0
+  48:	d1e3      	bne.n	12 <rtos_init+0x12>
+  4a:	4b0b      	ldr	r3, [pc, #44]	; (78 <rtos_init+0x78>)
+  4c:	f8c4 6098 	str.w	r6, [r4, #152]	; 0x98
+  50:	2202      	movs	r2, #2
+  52:	601a      	str	r2, [r3, #0]
+  54:	b004      	add	sp, #16
+  56:	e8bd 4070 	ldmia.w	sp!, {r4, r5, r6, lr}
+  5a:	f7ff bffe 	b.w	0 <rtos_timer_init>
+			5a: R_ARM_THM_JUMP24	rtos_timer_init
+  5e:	f06f 0004 	mvn.w	r0, #4
+  62:	e7d6      	b.n	12 <rtos_init+0x12>
+	...
+			64: R_ARM_ABS32	.bss.rtos_kernel
+			68: R_ARM_ABS32	.bss.s_idle_tcb
+			6c: R_ARM_ABS32	.rodata.rtos_sched_init.str1.4
+			70: R_ARM_ABS32	.bss.s_idle_stack
+			74: R_ARM_ABS32	rtos_idle_task
+			78: R_ARM_ABS32	.data.s_next_task_id
+
+Disassembly of section .text.rtos_start:
+
+00000000 <rtos_start>:
+   0:	b508      	push	{r3, lr}
+   2:	f3ef 8305 	mrs	r3, IPSR
+   6:	bb0b      	cbnz	r3, 4c <rtos_start+0x4c>
+   8:	4b15      	ldr	r3, [pc, #84]	; (60 <rtos_start+0x60>)
+   a:	781a      	ldrb	r2, [r3, #0]
+   c:	b9da      	cbnz	r2, 46 <rtos_start+0x46>
+   e:	f3ef 8011 	mrs	r0, BASEPRI
+  12:	2250      	movs	r2, #80	; 0x50
+  14:	f382 8812 	msr	BASEPRI_MAX, r2
+  18:	f3bf 8f6f 	isb	sy
+  1c:	2101      	movs	r1, #1
+  1e:	7019      	strb	r1, [r3, #0]
+  20:	689a      	ldr	r2, [r3, #8]
+  22:	b1b2      	cbz	r2, 52 <rtos_start+0x52>
+  24:	fa92 f2a2 	rbit	r2, r2
+  28:	fab2 f282 	clz	r2, r2
+  2c:	eb03 0282 	add.w	r2, r3, r2, lsl #2
+  30:	68d2      	ldr	r2, [r2, #12]
+  32:	f8c3 2090 	str.w	r2, [r3, #144]	; 0x90
+  36:	b102      	cbz	r2, 3a <rtos_start+0x3a>
+  38:	7511      	strb	r1, [r2, #20]
+  3a:	f7ff fffe 	bl	0 <rtos_perf_on_scheduler_start>
+			3a: R_ARM_THM_CALL	rtos_perf_on_scheduler_start
+  3e:	f7ff fffe 	bl	0 <rtos_port_start_scheduler>
+			3e: R_ARM_THM_CALL	rtos_port_start_scheduler
+  42:	f7ff fffe 	bl	0 <rtos_port_start_first_task>
+			42: R_ARM_THM_CALL	rtos_port_start_first_task
+  46:	f06f 0004 	mvn.w	r0, #4
+  4a:	bd08      	pop	{r3, pc}
+  4c:	f06f 0003 	mvn.w	r0, #3
+  50:	bd08      	pop	{r3, pc}
+  52:	701a      	strb	r2, [r3, #0]
+  54:	f380 8811 	msr	BASEPRI, r0
+  58:	f06f 0008 	mvn.w	r0, #8
+  5c:	bd08      	pop	{r3, pc}
+  5e:	bf00      	nop
+  60:	00000000 	.word	0x00000000
+			60: R_ARM_ABS32	.bss.rtos_kernel
+
+Disassembly of section .text.rtos_get_version:
+
+00000000 <rtos_get_version>:
+   0:	4800      	ldr	r0, [pc, #0]	; (4 <rtos_get_version+0x4>)
+   2:	4770      	bx	lr
+   4:	00000000 	.word	0x00000000
+			4: R_ARM_ABS32	.rodata.rtos_get_version.str1.4
+
+Disassembly of section .text.rtos_internal_alloc_task_id:
+
+00000000 <rtos_internal_alloc_task_id>:
+   0:	4b02      	ldr	r3, [pc, #8]	; (c <rtos_internal_alloc_task_id+0xc>)
+   2:	6818      	ldr	r0, [r3, #0]
+   4:	1c42      	adds	r2, r0, #1
+   6:	601a      	str	r2, [r3, #0]
+   8:	4770      	bx	lr
+   a:	bf00      	nop
+   c:	00000000 	.word	0x00000000
+			c: R_ARM_ABS32	.data.s_next_task_id
+
+Disassembly of section .text.rtos_idle_hook:
+
+00000000 <rtos_idle_hook>:
+   0:	bf30      	wfi
+   2:	4770      	bx	lr
+
+Disassembly of section .text.rtos_stack_overflow_hook:
+
+00000000 <rtos_stack_overflow_hook>:
+   0:	e7fe      	b.n	0 <rtos_stack_overflow_hook>
+   2:	bf00      	nop
+
+Disassembly of section .text.rtos_task_delete_hook:
+
+00000000 <rtos_task_delete_hook>:
+   0:	4770      	bx	lr
+   2:	bf00      	nop
+
+Disassembly of section .text.rtos_assert_fail:
+
+00000000 <rtos_assert_fail>:
+   0:	e7fe      	b.n	0 <rtos_assert_fail>
+   2:	bf00      	nop
+
+Disassembly of section .text.rtos_sched_add_ready:
+
+00000000 <rtos_sched_add_ready>:
+   0:	b510      	push	{r4, lr}
+   2:	4604      	mov	r4, r0
+   4:	b1a8      	cbz	r0, 32 <rtos_sched_add_ready+0x32>
+   6:	68e0      	ldr	r0, [r4, #12]
+   8:	490d      	ldr	r1, [pc, #52]	; (40 <rtos_sched_add_ready+0x40>)
+   a:	1c83      	adds	r3, r0, #2
+   c:	eb01 0383 	add.w	r3, r1, r3, lsl #2
+  10:	685a      	ldr	r2, [r3, #4]
+  12:	b152      	cbz	r2, 2a <rtos_sched_add_ready+0x2a>
+  14:	69d3      	ldr	r3, [r2, #28]
+  16:	e9c4 2306 	strd	r2, r3, [r4, #24]
+  1a:	619c      	str	r4, [r3, #24]
+  1c:	61d4      	str	r4, [r2, #28]
+  1e:	688a      	ldr	r2, [r1, #8]
+  20:	2301      	movs	r3, #1
+  22:	4083      	lsls	r3, r0
+  24:	4313      	orrs	r3, r2
+  26:	608b      	str	r3, [r1, #8]
+  28:	bd10      	pop	{r4, pc}
+  2a:	e9c4 4406 	strd	r4, r4, [r4, #24]
+  2e:	605c      	str	r4, [r3, #4]
+  30:	e7f5      	b.n	1e <rtos_sched_add_ready+0x1e>
+  32:	4904      	ldr	r1, [pc, #16]	; (44 <rtos_sched_add_ready+0x44>)
+  34:	4804      	ldr	r0, [pc, #16]	; (48 <rtos_sched_add_ready+0x48>)
+  36:	f240 12e1 	movw	r2, #481	; 0x1e1
+  3a:	f7ff fffe 	bl	0 <rtos_sched_add_ready>
+			3a: R_ARM_THM_CALL	rtos_assert_fail
+  3e:	e7e2      	b.n	6 <rtos_sched_add_ready+0x6>
+	...
+			40: R_ARM_ABS32	.bss.rtos_kernel
+			44: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+  48:	00000064 	.word	0x00000064
+			48: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+
+Disassembly of section .text.rtos_sched_remove_ready:
+
+00000000 <rtos_sched_remove_ready>:
+   0:	b538      	push	{r3, r4, r5, lr}
+   2:	4604      	mov	r4, r0
+   4:	b1e0      	cbz	r0, 40 <rtos_sched_remove_ready+0x40>
+   6:	68e5      	ldr	r5, [r4, #12]
+   8:	4811      	ldr	r0, [pc, #68]	; (50 <rtos_sched_remove_ready+0x50>)
+   a:	1cab      	adds	r3, r5, #2
+   c:	eb00 0383 	add.w	r3, r0, r3, lsl #2
+  10:	6859      	ldr	r1, [r3, #4]
+  12:	b159      	cbz	r1, 2c <rtos_sched_remove_ready+0x2c>
+  14:	69a2      	ldr	r2, [r4, #24]
+  16:	4294      	cmp	r4, r2
+  18:	d009      	beq.n	2e <rtos_sched_remove_ready+0x2e>
+  1a:	69e0      	ldr	r0, [r4, #28]
+  1c:	428c      	cmp	r4, r1
+  1e:	6182      	str	r2, [r0, #24]
+  20:	61d0      	str	r0, [r2, #28]
+  22:	bf08      	it	eq
+  24:	605a      	streq	r2, [r3, #4]
+  26:	2300      	movs	r3, #0
+  28:	e9c4 3306 	strd	r3, r3, [r4, #24]
+  2c:	bd38      	pop	{r3, r4, r5, pc}
+  2e:	2200      	movs	r2, #0
+  30:	605a      	str	r2, [r3, #4]
+  32:	6883      	ldr	r3, [r0, #8]
+  34:	2201      	movs	r2, #1
+  36:	40aa      	lsls	r2, r5
+  38:	ea23 0302 	bic.w	r3, r3, r2
+  3c:	6083      	str	r3, [r0, #8]
+  3e:	e7f2      	b.n	26 <rtos_sched_remove_ready+0x26>
+  40:	4904      	ldr	r1, [pc, #16]	; (54 <rtos_sched_remove_ready+0x54>)
+  42:	4805      	ldr	r0, [pc, #20]	; (58 <rtos_sched_remove_ready+0x58>)
+  44:	f240 12e7 	movw	r2, #487	; 0x1e7
+  48:	f7ff fffe 	bl	0 <rtos_sched_remove_ready>
+			48: R_ARM_THM_CALL	rtos_assert_fail
+  4c:	e7db      	b.n	6 <rtos_sched_remove_ready+0x6>
+  4e:	bf00      	nop
+	...
+			50: R_ARM_ABS32	.bss.rtos_kernel
+			54: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+  58:	00000064 	.word	0x00000064
+			58: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+
+Disassembly of section .text.rtos_sched_block:
+
+00000000 <rtos_sched_block>:
+   0:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+   2:	460d      	mov	r5, r1
+   4:	4604      	mov	r4, r0
+   6:	2800      	cmp	r0, #0
+   8:	d058      	beq.n	bc <rtos_sched_block+0xbc>
+   a:	7d23      	ldrb	r3, [r4, #20]
+   c:	2b01      	cmp	r3, #1
+   e:	d931      	bls.n	74 <rtos_sched_block+0x74>
+  10:	2d00      	cmp	r5, #0
+  12:	da05      	bge.n	20 <rtos_sched_block+0x20>
+  14:	2302      	movs	r3, #2
+  16:	f04f 32ff 	mov.w	r2, #4294967295
+  1a:	7523      	strb	r3, [r4, #20]
+  1c:	65a2      	str	r2, [r4, #88]	; 0x58
+  1e:	bdf8      	pop	{r3, r4, r5, r6, r7, pc}
+  20:	4f35      	ldr	r7, [pc, #212]	; (f8 <rtos_sched_block+0xf8>)
+  22:	2304      	movs	r3, #4
+  24:	6879      	ldr	r1, [r7, #4]
+  26:	7523      	strb	r3, [r4, #20]
+  28:	f8d7 608c 	ldr.w	r6, [r7, #140]	; 0x8c
+  2c:	4429      	add	r1, r5
+  2e:	65a1      	str	r1, [r4, #88]	; 0x58
+  30:	2e00      	cmp	r6, #0
+  32:	d056      	beq.n	e2 <rtos_sched_block+0xe2>
+  34:	69b3      	ldr	r3, [r6, #24]
+  36:	2b00      	cmp	r3, #0
+  38:	d047      	beq.n	ca <rtos_sched_block+0xca>
+  3a:	69f5      	ldr	r5, [r6, #28]
+  3c:	b1a5      	cbz	r5, 68 <rtos_sched_block+0x68>
+  3e:	6dab      	ldr	r3, [r5, #88]	; 0x58
+  40:	1acb      	subs	r3, r1, r3
+  42:	2b00      	cmp	r3, #0
+  44:	da2b      	bge.n	9e <rtos_sched_block+0x9e>
+  46:	4633      	mov	r3, r6
+  48:	2000      	movs	r0, #0
+  4a:	e000      	b.n	4e <rtos_sched_block+0x4e>
+  4c:	4613      	mov	r3, r2
+  4e:	6d9a      	ldr	r2, [r3, #88]	; 0x58
+  50:	1a52      	subs	r2, r2, r1
+  52:	2a00      	cmp	r2, #0
+  54:	dc3f      	bgt.n	d6 <rtos_sched_block+0xd6>
+  56:	699a      	ldr	r2, [r3, #24]
+  58:	4618      	mov	r0, r3
+  5a:	2a00      	cmp	r2, #0
+  5c:	d1f6      	bne.n	4c <rtos_sched_block+0x4c>
+  5e:	e9c4 2306 	strd	r2, r3, [r4, #24]
+  62:	619c      	str	r4, [r3, #24]
+  64:	61f4      	str	r4, [r6, #28]
+  66:	bdf8      	pop	{r3, r4, r5, r6, r7, pc}
+  68:	461d      	mov	r5, r3
+  6a:	699b      	ldr	r3, [r3, #24]
+  6c:	2b00      	cmp	r3, #0
+  6e:	d1fb      	bne.n	68 <rtos_sched_block+0x68>
+  70:	61f5      	str	r5, [r6, #28]
+  72:	e7e4      	b.n	3e <rtos_sched_block+0x3e>
+  74:	68e6      	ldr	r6, [r4, #12]
+  76:	4820      	ldr	r0, [pc, #128]	; (f8 <rtos_sched_block+0xf8>)
+  78:	1cb3      	adds	r3, r6, #2
+  7a:	eb00 0383 	add.w	r3, r0, r3, lsl #2
+  7e:	6859      	ldr	r1, [r3, #4]
+  80:	2900      	cmp	r1, #0
+  82:	d0c5      	beq.n	10 <rtos_sched_block+0x10>
+  84:	69a2      	ldr	r2, [r4, #24]
+  86:	4294      	cmp	r4, r2
+  88:	d00f      	beq.n	aa <rtos_sched_block+0xaa>
+  8a:	69e0      	ldr	r0, [r4, #28]
+  8c:	428c      	cmp	r4, r1
+  8e:	6182      	str	r2, [r0, #24]
+  90:	61d0      	str	r0, [r2, #28]
+  92:	bf08      	it	eq
+  94:	605a      	streq	r2, [r3, #4]
+  96:	2300      	movs	r3, #0
+  98:	e9c4 3306 	strd	r3, r3, [r4, #24]
+  9c:	e7b8      	b.n	10 <rtos_sched_block+0x10>
+  9e:	2300      	movs	r3, #0
+  a0:	e9c4 3506 	strd	r3, r5, [r4, #24]
+  a4:	61ac      	str	r4, [r5, #24]
+  a6:	61f4      	str	r4, [r6, #28]
+  a8:	bdf8      	pop	{r3, r4, r5, r6, r7, pc}
+  aa:	6882      	ldr	r2, [r0, #8]
+  ac:	2101      	movs	r1, #1
+  ae:	40b1      	lsls	r1, r6
+  b0:	ea22 0201 	bic.w	r2, r2, r1
+  b4:	6082      	str	r2, [r0, #8]
+  b6:	2200      	movs	r2, #0
+  b8:	605a      	str	r2, [r3, #4]
+  ba:	e7ec      	b.n	96 <rtos_sched_block+0x96>
+  bc:	490f      	ldr	r1, [pc, #60]	; (fc <rtos_sched_block+0xfc>)
+  be:	4810      	ldr	r0, [pc, #64]	; (100 <rtos_sched_block+0x100>)
+  c0:	f240 12ed 	movw	r2, #493	; 0x1ed
+  c4:	f7ff fffe 	bl	0 <rtos_sched_block>
+			c4: R_ARM_THM_CALL	rtos_assert_fail
+  c8:	e79f      	b.n	a <rtos_sched_block+0xa>
+  ca:	4635      	mov	r5, r6
+  cc:	6dab      	ldr	r3, [r5, #88]	; 0x58
+  ce:	1acb      	subs	r3, r1, r3
+  d0:	2b00      	cmp	r3, #0
+  d2:	dbb8      	blt.n	46 <rtos_sched_block+0x46>
+  d4:	e7e3      	b.n	9e <rtos_sched_block+0x9e>
+  d6:	61a3      	str	r3, [r4, #24]
+  d8:	b140      	cbz	r0, ec <rtos_sched_block+0xec>
+  da:	61e0      	str	r0, [r4, #28]
+  dc:	6184      	str	r4, [r0, #24]
+  de:	61dc      	str	r4, [r3, #28]
+  e0:	bdf8      	pop	{r3, r4, r5, r6, r7, pc}
+  e2:	e9c4 6606 	strd	r6, r6, [r4, #24]
+  e6:	f8c7 408c 	str.w	r4, [r7, #140]	; 0x8c
+  ea:	bdf8      	pop	{r3, r4, r5, r6, r7, pc}
+  ec:	61e5      	str	r5, [r4, #28]
+  ee:	61f4      	str	r4, [r6, #28]
+  f0:	f8c7 408c 	str.w	r4, [r7, #140]	; 0x8c
+  f4:	bdf8      	pop	{r3, r4, r5, r6, r7, pc}
+  f6:	bf00      	nop
+	...
+			f8: R_ARM_ABS32	.bss.rtos_kernel
+			fc: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+ 100:	00000064 	.word	0x00000064
+			100: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+
+Disassembly of section .text.rtos_sched_unblock:
+
+00000000 <rtos_sched_unblock>:
+   0:	b510      	push	{r4, lr}
+   2:	4604      	mov	r4, r0
+   4:	2800      	cmp	r0, #0
+   6:	d05a      	beq.n	be <rtos_sched_unblock+0xbe>
+   8:	7d23      	ldrb	r3, [r4, #20]
+   a:	2b04      	cmp	r3, #4
+   c:	4b37      	ldr	r3, [pc, #220]	; (ec <rtos_sched_unblock+0xec>)
+   e:	d020      	beq.n	52 <rtos_sched_unblock+0x52>
+  10:	68e0      	ldr	r0, [r4, #12]
+  12:	1c82      	adds	r2, r0, #2
+  14:	2100      	movs	r1, #0
+  16:	eb03 0282 	add.w	r2, r3, r2, lsl #2
+  1a:	7521      	strb	r1, [r4, #20]
+  1c:	6851      	ldr	r1, [r2, #4]
+  1e:	b1a1      	cbz	r1, 4a <rtos_sched_unblock+0x4a>
+  20:	69ca      	ldr	r2, [r1, #28]
+  22:	e9c4 1206 	strd	r1, r2, [r4, #24]
+  26:	6194      	str	r4, [r2, #24]
+  28:	61cc      	str	r4, [r1, #28]
+  2a:	6899      	ldr	r1, [r3, #8]
+  2c:	2201      	movs	r2, #1
+  2e:	4082      	lsls	r2, r0
+  30:	430a      	orrs	r2, r1
+  32:	609a      	str	r2, [r3, #8]
+  34:	781a      	ldrb	r2, [r3, #0]
+  36:	2a01      	cmp	r2, #1
+  38:	d106      	bne.n	48 <rtos_sched_unblock+0x48>
+  3a:	689a      	ldr	r2, [r3, #8]
+  3c:	fa92 f2a2 	rbit	r2, r2
+  40:	fab2 f282 	clz	r2, r2
+  44:	4282      	cmp	r2, r0
+  46:	d013      	beq.n	70 <rtos_sched_unblock+0x70>
+  48:	bd10      	pop	{r4, pc}
+  4a:	e9c4 4406 	strd	r4, r4, [r4, #24]
+  4e:	6054      	str	r4, [r2, #4]
+  50:	e7eb      	b.n	2a <rtos_sched_unblock+0x2a>
+  52:	f8d3 008c 	ldr.w	r0, [r3, #140]	; 0x8c
+  56:	69e2      	ldr	r2, [r4, #28]
+  58:	69a1      	ldr	r1, [r4, #24]
+  5a:	4284      	cmp	r4, r0
+  5c:	d025      	beq.n	aa <rtos_sched_unblock+0xaa>
+  5e:	2a00      	cmp	r2, #0
+  60:	d0d6      	beq.n	10 <rtos_sched_unblock+0x10>
+  62:	6191      	str	r1, [r2, #24]
+  64:	2900      	cmp	r1, #0
+  66:	d03b      	beq.n	e0 <rtos_sched_unblock+0xe0>
+  68:	61ca      	str	r2, [r1, #28]
+  6a:	2200      	movs	r2, #0
+  6c:	61e2      	str	r2, [r4, #28]
+  6e:	e7cf      	b.n	10 <rtos_sched_unblock+0x10>
+  70:	781a      	ldrb	r2, [r3, #0]
+  72:	2a01      	cmp	r2, #1
+  74:	b2d1      	uxtb	r1, r2
+  76:	d1e7      	bne.n	48 <rtos_sched_unblock+0x48>
+  78:	689a      	ldr	r2, [r3, #8]
+  7a:	2a00      	cmp	r2, #0
+  7c:	d0e4      	beq.n	48 <rtos_sched_unblock+0x48>
+  7e:	fa92 f2a2 	rbit	r2, r2
+  82:	fab2 f282 	clz	r2, r2
+  86:	eb03 0282 	add.w	r2, r3, r2, lsl #2
+  8a:	f8d3 0090 	ldr.w	r0, [r3, #144]	; 0x90
+  8e:	68d2      	ldr	r2, [r2, #12]
+  90:	4282      	cmp	r2, r0
+  92:	d01b      	beq.n	cc <rtos_sched_unblock+0xcc>
+  94:	f8d3 10a0 	ldr.w	r1, [r3, #160]	; 0xa0
+  98:	f8c3 2094 	str.w	r2, [r3, #148]	; 0x94
+  9c:	3101      	adds	r1, #1
+  9e:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
+  a2:	f8c3 10a0 	str.w	r1, [r3, #160]	; 0xa0
+  a6:	f7ff bffe 	b.w	0 <rtos_port_context_switch>
+			a6: R_ARM_THM_JUMP24	rtos_port_context_switch
+  aa:	f8c3 108c 	str.w	r1, [r3, #140]	; 0x8c
+  ae:	2900      	cmp	r1, #0
+  b0:	d0db      	beq.n	6a <rtos_sched_unblock+0x6a>
+  b2:	6988      	ldr	r0, [r1, #24]
+  b4:	2800      	cmp	r0, #0
+  b6:	bf08      	it	eq
+  b8:	4602      	moveq	r2, r0
+  ba:	61ca      	str	r2, [r1, #28]
+  bc:	e7d5      	b.n	6a <rtos_sched_unblock+0x6a>
+  be:	490c      	ldr	r1, [pc, #48]	; (f0 <rtos_sched_unblock+0xf0>)
+  c0:	480c      	ldr	r0, [pc, #48]	; (f4 <rtos_sched_unblock+0xf4>)
+  c2:	f240 2206 	movw	r2, #518	; 0x206
+  c6:	f7ff fffe 	bl	0 <rtos_sched_unblock>
+			c6: R_ARM_THM_CALL	rtos_assert_fail
+  ca:	e79d      	b.n	8 <rtos_sched_unblock+0x8>
+  cc:	2000      	movs	r0, #0
+  ce:	f8c3 0094 	str.w	r0, [r3, #148]	; 0x94
+  d2:	2a00      	cmp	r2, #0
+  d4:	d0b8      	beq.n	48 <rtos_sched_unblock+0x48>
+  d6:	7d13      	ldrb	r3, [r2, #20]
+  d8:	2b00      	cmp	r3, #0
+  da:	d1b5      	bne.n	48 <rtos_sched_unblock+0x48>
+  dc:	7511      	strb	r1, [r2, #20]
+  de:	bd10      	pop	{r4, pc}
+  e0:	4282      	cmp	r2, r0
+  e2:	bf0c      	ite	eq
+  e4:	61d1      	streq	r1, [r2, #28]
+  e6:	61c2      	strne	r2, [r0, #28]
+  e8:	e7bf      	b.n	6a <rtos_sched_unblock+0x6a>
+  ea:	bf00      	nop
+	...
+			ec: R_ARM_ABS32	.bss.rtos_kernel
+			f0: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+  f4:	00000064 	.word	0x00000064
+			f4: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+
+Disassembly of section .text.rtos_sched_remove_delayed:
+
+00000000 <rtos_sched_remove_delayed>:
+   0:	b510      	push	{r4, lr}
+   2:	4604      	mov	r4, r0
+   4:	b1e8      	cbz	r0, 42 <rtos_sched_remove_delayed+0x42>
+   6:	7d23      	ldrb	r3, [r4, #20]
+   8:	2b04      	cmp	r3, #4
+   a:	d000      	beq.n	e <rtos_sched_remove_delayed+0xe>
+   c:	bd10      	pop	{r4, pc}
+   e:	4913      	ldr	r1, [pc, #76]	; (5c <rtos_sched_remove_delayed+0x5c>)
+  10:	69e3      	ldr	r3, [r4, #28]
+  12:	f8d1 008c 	ldr.w	r0, [r1, #140]	; 0x8c
+  16:	69a2      	ldr	r2, [r4, #24]
+  18:	4284      	cmp	r4, r0
+  1a:	d008      	beq.n	2e <rtos_sched_remove_delayed+0x2e>
+  1c:	2b00      	cmp	r3, #0
+  1e:	d0f5      	beq.n	c <rtos_sched_remove_delayed+0xc>
+  20:	619a      	str	r2, [r3, #24]
+  22:	b1aa      	cbz	r2, 50 <rtos_sched_remove_delayed+0x50>
+  24:	61d3      	str	r3, [r2, #28]
+  26:	2300      	movs	r3, #0
+  28:	e9c4 3306 	strd	r3, r3, [r4, #24]
+  2c:	bd10      	pop	{r4, pc}
+  2e:	f8c1 208c 	str.w	r2, [r1, #140]	; 0x8c
+  32:	2a00      	cmp	r2, #0
+  34:	d0f7      	beq.n	26 <rtos_sched_remove_delayed+0x26>
+  36:	6991      	ldr	r1, [r2, #24]
+  38:	2900      	cmp	r1, #0
+  3a:	bf08      	it	eq
+  3c:	460b      	moveq	r3, r1
+  3e:	61d3      	str	r3, [r2, #28]
+  40:	e7f1      	b.n	26 <rtos_sched_remove_delayed+0x26>
+  42:	4907      	ldr	r1, [pc, #28]	; (60 <rtos_sched_remove_delayed+0x60>)
+  44:	4807      	ldr	r0, [pc, #28]	; (64 <rtos_sched_remove_delayed+0x64>)
+  46:	f240 222f 	movw	r2, #559	; 0x22f
+  4a:	f7ff fffe 	bl	0 <rtos_sched_remove_delayed>
+			4a: R_ARM_THM_CALL	rtos_assert_fail
+  4e:	e7da      	b.n	6 <rtos_sched_remove_delayed+0x6>
+  50:	4283      	cmp	r3, r0
+  52:	bf0c      	ite	eq
+  54:	61da      	streq	r2, [r3, #28]
+  56:	61c3      	strne	r3, [r0, #28]
+  58:	e7e5      	b.n	26 <rtos_sched_remove_delayed+0x26>
+  5a:	bf00      	nop
+	...
+			5c: R_ARM_ABS32	.bss.rtos_kernel
+			60: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+  64:	00000064 	.word	0x00000064
+			64: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+
+Disassembly of section .text.rtos_sched_suspend:
+
+00000000 <rtos_sched_suspend>:
+   0:	b538      	push	{r3, r4, r5, lr}
+   2:	f3ef 8305 	mrs	r3, IPSR
+   6:	b9eb      	cbnz	r3, 44 <rtos_sched_suspend+0x44>
+   8:	2350      	movs	r3, #80	; 0x50
+   a:	f3ef 8211 	mrs	r2, BASEPRI
+   e:	f383 8812 	msr	BASEPRI_MAX, r3
+  12:	f3bf 8f6f 	isb	sy
+  16:	4c19      	ldr	r4, [pc, #100]	; (7c <rtos_sched_suspend+0x7c>)
+  18:	6823      	ldr	r3, [r4, #0]
+  1a:	b90b      	cbnz	r3, 20 <rtos_sched_suspend+0x20>
+  1c:	4918      	ldr	r1, [pc, #96]	; (80 <rtos_sched_suspend+0x80>)
+  1e:	600a      	str	r2, [r1, #0]
+  20:	3301      	adds	r3, #1
+  22:	4d18      	ldr	r5, [pc, #96]	; (84 <rtos_sched_suspend+0x84>)
+  24:	6023      	str	r3, [r4, #0]
+  26:	782b      	ldrb	r3, [r5, #0]
+  28:	2b01      	cmp	r3, #1
+  2a:	b2da      	uxtb	r2, r3
+  2c:	d00b      	beq.n	46 <rtos_sched_suspend+0x46>
+  2e:	782b      	ldrb	r3, [r5, #0]
+  30:	2b02      	cmp	r3, #2
+  32:	d010      	beq.n	56 <rtos_sched_suspend+0x56>
+  34:	6823      	ldr	r3, [r4, #0]
+  36:	3b01      	subs	r3, #1
+  38:	6023      	str	r3, [r4, #0]
+  3a:	b91b      	cbnz	r3, 44 <rtos_sched_suspend+0x44>
+  3c:	4b10      	ldr	r3, [pc, #64]	; (80 <rtos_sched_suspend+0x80>)
+  3e:	681b      	ldr	r3, [r3, #0]
+  40:	f383 8811 	msr	BASEPRI, r3
+  44:	bd38      	pop	{r3, r4, r5, pc}
+  46:	2102      	movs	r1, #2
+  48:	2300      	movs	r3, #0
+  4a:	f8c5 20a8 	str.w	r2, [r5, #168]	; 0xa8
+  4e:	7029      	strb	r1, [r5, #0]
+  50:	f8c5 3094 	str.w	r3, [r5, #148]	; 0x94
+  54:	e7ee      	b.n	34 <rtos_sched_suspend+0x34>
+  56:	f8d5 30a8 	ldr.w	r3, [r5, #168]	; 0xa8
+  5a:	1c59      	adds	r1, r3, #1
+  5c:	d003      	beq.n	66 <rtos_sched_suspend+0x66>
+  5e:	3301      	adds	r3, #1
+  60:	f8c5 30a8 	str.w	r3, [r5, #168]	; 0xa8
+  64:	e7e6      	b.n	34 <rtos_sched_suspend+0x34>
+  66:	f240 226d 	movw	r2, #621	; 0x26d
+  6a:	4907      	ldr	r1, [pc, #28]	; (88 <rtos_sched_suspend+0x88>)
+  6c:	4807      	ldr	r0, [pc, #28]	; (8c <rtos_sched_suspend+0x8c>)
+  6e:	f7ff fffe 	bl	0 <rtos_sched_suspend>
+			6e: R_ARM_THM_CALL	rtos_assert_fail
+  72:	f8d5 30a8 	ldr.w	r3, [r5, #168]	; 0xa8
+  76:	1c5a      	adds	r2, r3, #1
+  78:	d0dc      	beq.n	34 <rtos_sched_suspend+0x34>
+  7a:	e7f0      	b.n	5e <rtos_sched_suspend+0x5e>
+	...
+			7c: R_ARM_ABS32	rtos_port_crit_nest
+			80: R_ARM_ABS32	rtos_port_saved_mask
+			84: R_ARM_ABS32	.bss.rtos_kernel
+			88: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+			8c: R_ARM_ABS32	.rodata.rtos_sched_suspend.str1.4
+
+Disassembly of section .text.rtos_sched_commit_context_switch:
+
+00000000 <rtos_sched_commit_context_switch>:
+   0:	b570      	push	{r4, r5, r6, lr}
+   2:	4c17      	ldr	r4, [pc, #92]	; (60 <rtos_sched_commit_context_switch+0x60>)
+   4:	7823      	ldrb	r3, [r4, #0]
+   6:	f8d4 5090 	ldr.w	r5, [r4, #144]	; 0x90
+   a:	2b01      	cmp	r3, #1
+   c:	d004      	beq.n	18 <rtos_sched_commit_context_switch+0x18>
+   e:	2300      	movs	r3, #0
+  10:	f8c4 3094 	str.w	r3, [r4, #148]	; 0x94
+  14:	4628      	mov	r0, r5
+  16:	bd70      	pop	{r4, r5, r6, pc}
+  18:	f8d4 6094 	ldr.w	r6, [r4, #148]	; 0x94
+  1c:	2e00      	cmp	r6, #0
+  1e:	d0f9      	beq.n	14 <rtos_sched_commit_context_switch+0x14>
+  20:	2300      	movs	r3, #0
+  22:	f8c4 3094 	str.w	r3, [r4, #148]	; 0x94
+  26:	7d33      	ldrb	r3, [r6, #20]
+  28:	b13b      	cbz	r3, 3a <rtos_sched_commit_context_switch+0x3a>
+  2a:	42ae      	cmp	r6, r5
+  2c:	d006      	beq.n	3c <rtos_sched_commit_context_switch+0x3c>
+  2e:	490d      	ldr	r1, [pc, #52]	; (64 <rtos_sched_commit_context_switch+0x64>)
+  30:	480d      	ldr	r0, [pc, #52]	; (68 <rtos_sched_commit_context_switch+0x68>)
+  32:	f240 22a5 	movw	r2, #677	; 0x2a5
+  36:	f7ff fffe 	bl	0 <rtos_sched_commit_context_switch>
+			36: R_ARM_THM_CALL	rtos_assert_fail
+  3a:	b125      	cbz	r5, 46 <rtos_sched_commit_context_switch+0x46>
+  3c:	7d2b      	ldrb	r3, [r5, #20]
+  3e:	2b01      	cmp	r3, #1
+  40:	d101      	bne.n	46 <rtos_sched_commit_context_switch+0x46>
+  42:	2300      	movs	r3, #0
+  44:	752b      	strb	r3, [r5, #20]
+  46:	f8d6 3084 	ldr.w	r3, [r6, #132]	; 0x84
+  4a:	2201      	movs	r2, #1
+  4c:	4413      	add	r3, r2
+  4e:	7532      	strb	r2, [r6, #20]
+  50:	4635      	mov	r5, r6
+  52:	f8c6 3084 	str.w	r3, [r6, #132]	; 0x84
+  56:	4628      	mov	r0, r5
+  58:	f8c4 6090 	str.w	r6, [r4, #144]	; 0x90
+  5c:	bd70      	pop	{r4, r5, r6, pc}
+  5e:	bf00      	nop
+	...
+			60: R_ARM_ABS32	.bss.rtos_kernel
+			64: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+			68: R_ARM_ABS32	.rodata.rtos_sched_commit_context_switch.str1.4
+
+Disassembly of section .text.rtos_sched_context_switch:
+
+00000000 <rtos_sched_context_switch>:
+   0:	b570      	push	{r4, r5, r6, lr}
+   2:	4c15      	ldr	r4, [pc, #84]	; (58 <rtos_sched_context_switch+0x58>)
+   4:	7823      	ldrb	r3, [r4, #0]
+   6:	f8d4 6090 	ldr.w	r6, [r4, #144]	; 0x90
+   a:	2b01      	cmp	r3, #1
+   c:	d003      	beq.n	16 <rtos_sched_context_switch+0x16>
+   e:	2300      	movs	r3, #0
+  10:	f8c4 3094 	str.w	r3, [r4, #148]	; 0x94
+  14:	bd70      	pop	{r4, r5, r6, pc}
+  16:	f8d4 5094 	ldr.w	r5, [r4, #148]	; 0x94
+  1a:	2d00      	cmp	r5, #0
+  1c:	d0fa      	beq.n	14 <rtos_sched_context_switch+0x14>
+  1e:	2300      	movs	r3, #0
+  20:	f8c4 3094 	str.w	r3, [r4, #148]	; 0x94
+  24:	7d2b      	ldrb	r3, [r5, #20]
+  26:	b13b      	cbz	r3, 38 <rtos_sched_context_switch+0x38>
+  28:	42ae      	cmp	r6, r5
+  2a:	d006      	beq.n	3a <rtos_sched_context_switch+0x3a>
+  2c:	490b      	ldr	r1, [pc, #44]	; (5c <rtos_sched_context_switch+0x5c>)
+  2e:	480c      	ldr	r0, [pc, #48]	; (60 <rtos_sched_context_switch+0x60>)
+  30:	f240 22a5 	movw	r2, #677	; 0x2a5
+  34:	f7ff fffe 	bl	0 <rtos_sched_context_switch>
+			34: R_ARM_THM_CALL	rtos_assert_fail
+  38:	b126      	cbz	r6, 44 <rtos_sched_context_switch+0x44>
+  3a:	7d33      	ldrb	r3, [r6, #20]
+  3c:	2b01      	cmp	r3, #1
+  3e:	d101      	bne.n	44 <rtos_sched_context_switch+0x44>
+  40:	2300      	movs	r3, #0
+  42:	7533      	strb	r3, [r6, #20]
+  44:	f8d5 3084 	ldr.w	r3, [r5, #132]	; 0x84
+  48:	2201      	movs	r2, #1
+  4a:	4413      	add	r3, r2
+  4c:	752a      	strb	r2, [r5, #20]
+  4e:	f8c5 3084 	str.w	r3, [r5, #132]	; 0x84
+  52:	f8c4 5090 	str.w	r5, [r4, #144]	; 0x90
+  56:	bd70      	pop	{r4, r5, r6, pc}
+	...
+			58: R_ARM_ABS32	.bss.rtos_kernel
+			5c: R_ARM_ABS32	.rodata.rtos_sched_add_ready.str1.4
+			60: R_ARM_ABS32	.rodata.rtos_sched_commit_context_switch.str1.4

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "production_20261012_soak_final_1",
+    "started":  "2026-10-13T09:53:24.3224357+08:00",
+    "finished":  "2026-10-13T10:08:27.4889444+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "4CE304DC46B64E36F8C6A080DFB502D2FF9D556A66B1B13090A69A52EF50B9E5",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "STRESS\\|DONE\\|",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

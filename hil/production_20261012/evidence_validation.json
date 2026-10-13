@@ -1,0 +1,1519 @@
+﻿{
+    "validated_at":  "2026-10-13T10:11:53.4630249+08:00",
+    "status":  "passed_required_suite_with_expected_negative_control",
+    "required_stress_captures":  6,
+    "normal_stress_passes":  5,
+    "expected_negative_controls":  1,
+    "restored_daily_captures":  1,
+    "total_actual_board_captures":  7,
+    "initial_unexecuted_attempts":  1,
+    "normal_check_count_per_capture":  161,
+    "kernel_source_count":  61,
+    "kernel_matches_baseline_and_current_sources":  true,
+    "strict_compile_units":  8,
+    "strict_compile_warnings":  0,
+    "normal_workload_seconds":  1110,
+    "captures":  [
+                     {
+                         "tag":  "production_20261012_smoke_connected_1",
+                         "sha256":  "E10A59FA70F7F6B5A54D9310B569D2D976A2FD59B801971820AD4C70DEDCD060",
+                         "port":  "COM3",
+                         "baud":  115200,
+                         "flash_verified":  true,
+                         "elapsed_wall_seconds":  33.1299557,
+                         "log_sha256":  "CA22D04636EE71792A64DF85C624E64B16B18BD7AE258C00DDD814C13848A13E",
+                         "flash_log_sha256":  "ED2481490FBF4B50647040EE7295F4191820C3106170A829BACEE34FA9845982",
+                         "classification":  "normal_pass",
+                         "configuration":  {
+                                               "seed":  1,
+                                               "seconds":  30,
+                                               "capacity":  8
+                                           },
+                         "checks_passed":  161,
+                         "checks_failed":  0,
+                         "worker_errors":  0,
+                         "messages_successfully_sent":  65920,
+                         "messages_received_by_workers":  65920,
+                         "workers":  [
+                                         {
+                                             "switches":  "3666",
+                                             "id":  "0",
+                                             "completed":  "3008",
+                                             "heartbeat":  "3012",
+                                             "stack_free_words":  "214",
+                                             "priority":  "5"
+                                         },
+                                         {
+                                             "switches":  "7944",
+                                             "id":  "1",
+                                             "completed":  "3308",
+                                             "heartbeat":  "4486",
+                                             "stack_free_words":  "210",
+                                             "priority":  "6"
+                                         },
+                                         {
+                                             "switches":  "7799",
+                                             "id":  "2",
+                                             "completed":  "3234",
+                                             "heartbeat":  "4442",
+                                             "stack_free_words":  "210",
+                                             "priority":  "7"
+                                         },
+                                         {
+                                             "switches":  "7756",
+                                             "id":  "3",
+                                             "completed":  "3222",
+                                             "heartbeat":  "4434",
+                                             "stack_free_words":  "210",
+                                             "priority":  "8"
+                                         },
+                                         {
+                                             "switches":  "7770",
+                                             "id":  "4",
+                                             "completed":  "3127",
+                                             "heartbeat":  "4421",
+                                             "stack_free_words":  "210",
+                                             "priority":  "9"
+                                         },
+                                         {
+                                             "switches":  "37720",
+                                             "id":  "5",
+                                             "completed":  "22547",
+                                             "heartbeat":  "22556",
+                                             "stack_free_words":  "210",
+                                             "priority":  "10"
+                                         },
+                                         {
+                                             "switches":  "32336",
+                                             "id":  "6",
+                                             "completed":  "17367",
+                                             "heartbeat":  "17376",
+                                             "stack_free_words":  "210",
+                                             "priority":  "11"
+                                         },
+                                         {
+                                             "switches":  "26296",
+                                             "id":  "7",
+                                             "completed":  "13997",
+                                             "heartbeat":  "14006",
+                                             "stack_free_words":  "210",
+                                             "priority":  "12"
+                                         },
+                                         {
+                                             "switches":  "21878",
+                                             "id":  "8",
+                                             "completed":  "12009",
+                                             "heartbeat":  "12024",
+                                             "stack_free_words":  "210",
+                                             "priority":  "13"
+                                         },
+                                         {
+                                             "switches":  "30159",
+                                             "id":  "9",
+                                             "completed":  "30087",
+                                             "heartbeat":  "30092",
+                                             "stack_free_words":  "216",
+                                             "priority":  "14"
+                                         },
+                                         {
+                                             "switches":  "30176",
+                                             "id":  "10",
+                                             "completed":  "30086",
+                                             "heartbeat":  "30091",
+                                             "stack_free_words":  "216",
+                                             "priority":  "15"
+                                         },
+                                         {
+                                             "switches":  "30166",
+                                             "id":  "11",
+                                             "completed":  "30068",
+                                             "heartbeat":  "30075",
+                                             "stack_free_words":  "214",
+                                             "priority":  "16"
+                                         },
+                                         {
+                                             "switches":  "11501",
+                                             "id":  "12",
+                                             "completed":  "3177",
+                                             "heartbeat":  "6151",
+                                             "stack_free_words":  "214",
+                                             "priority":  "17"
+                                         },
+                                         {
+                                             "switches":  "7541",
+                                             "id":  "13",
+                                             "completed":  "0",
+                                             "heartbeat":  "3765",
+                                             "stack_free_words":  "214",
+                                             "priority":  "18"
+                                         },
+                                         {
+                                             "switches":  "14279",
+                                             "id":  "14",
+                                             "completed":  "3177",
+                                             "heartbeat":  "3183",
+                                             "stack_free_words":  "214",
+                                             "priority":  "19"
+                                         },
+                                         {
+                                             "switches":  "1753",
+                                             "id":  "15",
+                                             "completed":  "1489",
+                                             "heartbeat":  "1489",
+                                             "stack_free_words":  "214",
+                                             "priority":  "20"
+                                         }
+                                     ],
+                         "sources":  [
+                                         {
+                                             "prefix":  "3308",
+                                             "sent":  "3308",
+                                             "pending":  "0",
+                                             "validated":  "3308",
+                                             "source":  "0"
+                                         },
+                                         {
+                                             "prefix":  "3234",
+                                             "sent":  "3234",
+                                             "pending":  "0",
+                                             "validated":  "3234",
+                                             "source":  "1"
+                                         },
+                                         {
+                                             "prefix":  "3222",
+                                             "sent":  "3222",
+                                             "pending":  "0",
+                                             "validated":  "3222",
+                                             "source":  "2"
+                                         },
+                                         {
+                                             "prefix":  "3127",
+                                             "sent":  "3127",
+                                             "pending":  "0",
+                                             "validated":  "3127",
+                                             "source":  "3"
+                                         },
+                                         {
+                                             "prefix":  "21293",
+                                             "sent":  "21293",
+                                             "pending":  "0",
+                                             "validated":  "21293",
+                                             "source":  "4"
+                                         },
+                                         {
+                                             "prefix":  "31736",
+                                             "sent":  "31736",
+                                             "pending":  "0",
+                                             "validated":  "31736",
+                                             "source":  "5"
+                                         }
+                                     ],
+                         "semaphore":  {
+                                           "overflow":  "12995",
+                                           "accepted":  "60198",
+                                           "pending":  "25",
+                                           "taken0":  "30087",
+                                           "taken1":  "30086"
+                                       },
+                         "coverage":  {
+                                          "recovery_empty":  "9796",
+                                          "mutex_waiters":  "4",
+                                          "queue_recv_waiters":  "4",
+                                          "sem_waiters":  "2",
+                                          "event_waiters":  "3",
+                                          "lease_waiters":  "2",
+                                          "pi_observed":  "1553",
+                                          "high_full":  "8720",
+                                          "queue_send_waiters":  "4"
+                                      },
+                         "control":  {
+                                         "response_max":  "1",
+                                         "deadline_ticks":  "10",
+                                         "misses":  "0",
+                                         "watchdog_misses":  "0",
+                                         "jitter_max":  "0",
+                                         "period_ticks":  "10"
+                                     },
+                         "interrupts":  {
+                                            "rejected1":  "11390",
+                                            "sent0":  "21293",
+                                            "rejected0":  "8774",
+                                            "entries1":  "43126",
+                                            "nested":  "507",
+                                            "entries0":  "30067",
+                                            "depth_max":  "2",
+                                            "forced":  "234",
+                                            "sent1":  "31736",
+                                            "errors":  "0"
+                                        },
+                         "inferred_entries_without_ipc":  [
+                                                              0,
+                                                              0
+                                                          ],
+                         "interrupt_counter_scope":  "Differences are computed from entry, sent and rejected counters. The log does not print spurious/natural/forced-request counters, so differences are not a directly observed cause classification.",
+                         "heap":  {
+                                      "max_after":  "28496",
+                                      "before":  "28496",
+                                      "max_before":  "28496",
+                                      "after":  "28496"
+                                  },
+                         "manifest_sha256":  "F3A3C1A4B19A9E6B022B829BE270082063281B091356941F13458AC0644DB706"
+                     },
+                     {
+                         "tag":  "production_20261012_negative_control_1",
+                         "sha256":  "BECE1B18F88FB329FFC293F3F19E19139E90A2C5C05448482E5B79204887273B",
+                         "port":  "COM3",
+                         "baud":  115200,
+                         "flash_verified":  true,
+                         "elapsed_wall_seconds":  9.1744674,
+                         "log_sha256":  "F93DA74880F131E5614B021145102BEB657FDDA66F0B49BF7D430B6A90EDFCE6",
+                         "flash_log_sha256":  "DD2027511E31AA9E7A909D74264BAB85B7CC5D8B14B5C18B0EA69AF9A855A89D",
+                         "classification":  "expected_single_checksum_corruption",
+                         "configuration":  {
+                                               "seed":  1,
+                                               "seconds":  6,
+                                               "capacity":  8
+                                           },
+                         "checks_passed":  159,
+                         "checks_failed":  3,
+                         "worker_errors":  1,
+                         "messages_successfully_sent":  13386,
+                         "messages_received_by_workers":  13386,
+                         "workers":  [
+                                         {
+                                             "switches":  "747",
+                                             "id":  "0",
+                                             "completed":  "612",
+                                             "heartbeat":  "616",
+                                             "stack_free_words":  "212",
+                                             "priority":  "5"
+                                         },
+                                         {
+                                             "switches":  "1797",
+                                             "id":  "1",
+                                             "completed":  "860",
+                                             "heartbeat":  "989",
+                                             "stack_free_words":  "208",
+                                             "priority":  "6"
+                                         },
+                                         {
+                                             "switches":  "1633",
+                                             "id":  "2",
+                                             "completed":  "688",
+                                             "heartbeat":  "918",
+                                             "stack_free_words":  "208",
+                                             "priority":  "7"
+                                         },
+                                         {
+                                             "switches":  "1605",
+                                             "id":  "3",
+                                             "completed":  "668",
+                                             "heartbeat":  "908",
+                                             "stack_free_words":  "208",
+                                             "priority":  "8"
+                                         },
+                                         {
+                                             "switches":  "1562",
+                                             "id":  "4",
+                                             "completed":  "584",
+                                             "heartbeat":  "884",
+                                             "stack_free_words":  "208",
+                                             "priority":  "9"
+                                         },
+                                         {
+                                             "switches":  "7637",
+                                             "id":  "5",
+                                             "completed":  "4576",
+                                             "heartbeat":  "4584",
+                                             "stack_free_words":  "208",
+                                             "priority":  "10"
+                                         },
+                                         {
+                                             "switches":  "6669",
+                                             "id":  "6",
+                                             "completed":  "3538",
+                                             "heartbeat":  "3546",
+                                             "stack_free_words":  "208",
+                                             "priority":  "11"
+                                         },
+                                         {
+                                             "switches":  "5445",
+                                             "id":  "7",
+                                             "completed":  "2844",
+                                             "heartbeat":  "2853",
+                                             "stack_free_words":  "208",
+                                             "priority":  "12"
+                                         },
+                                         {
+                                             "switches":  "4499",
+                                             "id":  "8",
+                                             "completed":  "2428",
+                                             "heartbeat":  "2442",
+                                             "stack_free_words":  "208",
+                                             "priority":  "13"
+                                         },
+                                         {
+                                             "switches":  "6145",
+                                             "id":  "9",
+                                             "completed":  "6120",
+                                             "heartbeat":  "6125",
+                                             "stack_free_words":  "214",
+                                             "priority":  "14"
+                                         },
+                                         {
+                                             "switches":  "6149",
+                                             "id":  "10",
+                                             "completed":  "6119",
+                                             "heartbeat":  "6124",
+                                             "stack_free_words":  "214",
+                                             "priority":  "15"
+                                         },
+                                         {
+                                             "switches":  "6130",
+                                             "id":  "11",
+                                             "completed":  "6103",
+                                             "heartbeat":  "6109",
+                                             "stack_free_words":  "212",
+                                             "priority":  "16"
+                                         },
+                                         {
+                                             "switches":  "2338",
+                                             "id":  "12",
+                                             "completed":  "645",
+                                             "heartbeat":  "1249",
+                                             "stack_free_words":  "212",
+                                             "priority":  "17"
+                                         },
+                                         {
+                                             "switches":  "1540",
+                                             "id":  "13",
+                                             "completed":  "0",
+                                             "heartbeat":  "769",
+                                             "stack_free_words":  "212",
+                                             "priority":  "18"
+                                         },
+                                         {
+                                             "switches":  "2921",
+                                             "id":  "14",
+                                             "completed":  "645",
+                                             "heartbeat":  "651",
+                                             "stack_free_words":  "212",
+                                             "priority":  "19"
+                                         },
+                                         {
+                                             "switches":  "365",
+                                             "id":  "15",
+                                             "completed":  "304",
+                                             "heartbeat":  "304",
+                                             "stack_free_words":  "212",
+                                             "priority":  "20"
+                                         }
+                                     ],
+                         "sources":  [
+                                         {
+                                             "prefix":  "3",
+                                             "sent":  "860",
+                                             "pending":  "4294967295",
+                                             "validated":  "859",
+                                             "source":  "0"
+                                         },
+                                         {
+                                             "prefix":  "688",
+                                             "sent":  "688",
+                                             "pending":  "0",
+                                             "validated":  "688",
+                                             "source":  "1"
+                                         },
+                                         {
+                                             "prefix":  "668",
+                                             "sent":  "668",
+                                             "pending":  "0",
+                                             "validated":  "668",
+                                             "source":  "2"
+                                         },
+                                         {
+                                             "prefix":  "584",
+                                             "sent":  "584",
+                                             "pending":  "0",
+                                             "validated":  "584",
+                                             "source":  "3"
+                                         },
+                                         {
+                                             "prefix":  "4234",
+                                             "sent":  "4234",
+                                             "pending":  "0",
+                                             "validated":  "4234",
+                                             "source":  "4"
+                                         },
+                                         {
+                                             "prefix":  "6352",
+                                             "sent":  "6352",
+                                             "pending":  "0",
+                                             "validated":  "6352",
+                                             "source":  "5"
+                                         }
+                                     ],
+                         "semaphore":  {
+                                           "overflow":  "2586",
+                                           "accepted":  "12268",
+                                           "pending":  "29",
+                                           "taken0":  "6120",
+                                           "taken1":  "6119"
+                                       },
+                         "coverage":  {
+                                          "recovery_empty":  "1952",
+                                          "mutex_waiters":  "3",
+                                          "queue_recv_waiters":  "4",
+                                          "sem_waiters":  "2",
+                                          "event_waiters":  "3",
+                                          "lease_waiters":  "2",
+                                          "pi_observed":  "336",
+                                          "high_full":  "1827",
+                                          "queue_send_waiters":  "4"
+                                      },
+                         "control":  {
+                                         "response_max":  "1",
+                                         "deadline_ticks":  "10",
+                                         "misses":  "0",
+                                         "watchdog_misses":  "0",
+                                         "jitter_max":  "0",
+                                         "period_ticks":  "10"
+                                     },
+                         "interrupts":  {
+                                            "rejected1":  "2400",
+                                            "sent0":  "4234",
+                                            "rejected0":  "1868",
+                                            "entries1":  "8752",
+                                            "nested":  "105",
+                                            "entries0":  "6102",
+                                            "depth_max":  "2",
+                                            "forced":  "47",
+                                            "sent1":  "6352",
+                                            "errors":  "0"
+                                        },
+                         "inferred_entries_without_ipc":  [
+                                                              0,
+                                                              0
+                                                          ],
+                         "interrupt_counter_scope":  "Differences are computed from entry, sent and rejected counters. The log does not print spurious/natural/forced-request counters, so differences are not a directly observed cause classification.",
+                         "heap":  {
+                                      "max_after":  "28496",
+                                      "before":  "28496",
+                                      "max_before":  "28496",
+                                      "after":  "28496"
+                                  },
+                         "manifest_sha256":  "AC5F795B00C6D21EA966AF7EBF310BB7873D4CCB65ED7BDB53913F14872E55DF"
+                     },
+                     {
+                         "tag":  "production_20261012_matrix_final_1",
+                         "sha256":  "FCB1EB3DB3940AFCCFEC410C2B1F63202369E2FC18601A3626C0A902C7752FAD",
+                         "port":  "COM3",
+                         "baud":  115200,
+                         "flash_verified":  true,
+                         "elapsed_wall_seconds":  63.1012342,
+                         "log_sha256":  "556CBFAF4CEC9990024BD3CCDEDB9E2B0BFE1D61B691F3A9466079F91C7E0CFA",
+                         "flash_log_sha256":  "84C87D5F3174823EC51FA29986EE658A40E7D3C0699BA8EF98944C81168C02ED",
+                         "classification":  "normal_pass",
+                         "configuration":  {
+                                               "seed":  1,
+                                               "seconds":  60,
+                                               "capacity":  1
+                                           },
+                         "checks_passed":  161,
+                         "checks_failed":  0,
+                         "worker_errors":  0,
+                         "messages_successfully_sent":  130390,
+                         "messages_received_by_workers":  130390,
+                         "workers":  [
+                                         {
+                                             "switches":  "7283",
+                                             "id":  "0",
+                                             "completed":  "6008",
+                                             "heartbeat":  "6012",
+                                             "stack_free_words":  "214",
+                                             "priority":  "5"
+                                         },
+                                         {
+                                             "switches":  "20175",
+                                             "id":  "1",
+                                             "completed":  "10535",
+                                             "heartbeat":  "10545",
+                                             "stack_free_words":  "210",
+                                             "priority":  "6"
+                                         },
+                                         {
+                                             "switches":  "17574",
+                                             "id":  "2",
+                                             "completed":  "7698",
+                                             "heartbeat":  "9358",
+                                             "stack_free_words":  "210",
+                                             "priority":  "7"
+                                         },
+                                         {
+                                             "switches":  "16813",
+                                             "id":  "3",
+                                             "completed":  "6679",
+                                             "heartbeat":  "8958",
+                                             "stack_free_words":  "210",
+                                             "priority":  "8"
+                                         },
+                                         {
+                                             "switches":  "15898",
+                                             "id":  "4",
+                                             "completed":  "5460",
+                                             "heartbeat":  "8521",
+                                             "stack_free_words":  "210",
+                                             "priority":  "9"
+                                         },
+                                         {
+                                             "switches":  "78580",
+                                             "id":  "5",
+                                             "completed":  "45049",
+                                             "heartbeat":  "45057",
+                                             "stack_free_words":  "210",
+                                             "priority":  "10"
+                                         },
+                                         {
+                                             "switches":  "65265",
+                                             "id":  "6",
+                                             "completed":  "34293",
+                                             "heartbeat":  "34301",
+                                             "stack_free_words":  "210",
+                                             "priority":  "11"
+                                         },
+                                         {
+                                             "switches":  "54558",
+                                             "id":  "7",
+                                             "completed":  "27446",
+                                             "heartbeat":  "27454",
+                                             "stack_free_words":  "210",
+                                             "priority":  "12"
+                                         },
+                                         {
+                                             "switches":  "46165",
+                                             "id":  "8",
+                                             "completed":  "23602",
+                                             "heartbeat":  "23615",
+                                             "stack_free_words":  "210",
+                                             "priority":  "13"
+                                         },
+                                         {
+                                             "switches":  "60246",
+                                             "id":  "9",
+                                             "completed":  "60087",
+                                             "heartbeat":  "60092",
+                                             "stack_free_words":  "216",
+                                             "priority":  "14"
+                                         },
+                                         {
+                                             "switches":  "60234",
+                                             "id":  "10",
+                                             "completed":  "60086",
+                                             "heartbeat":  "60091",
+                                             "stack_free_words":  "216",
+                                             "priority":  "15"
+                                         },
+                                         {
+                                             "switches":  "60241",
+                                             "id":  "11",
+                                             "completed":  "60069",
+                                             "heartbeat":  "60076",
+                                             "stack_free_words":  "214",
+                                             "priority":  "16"
+                                         },
+                                         {
+                                             "switches":  "22964",
+                                             "id":  "12",
+                                             "completed":  "6347",
+                                             "heartbeat":  "12297",
+                                             "stack_free_words":  "214",
+                                             "priority":  "17"
+                                         },
+                                         {
+                                             "switches":  "15055",
+                                             "id":  "13",
+                                             "completed":  "0",
+                                             "heartbeat":  "7515",
+                                             "stack_free_words":  "214",
+                                             "priority":  "18"
+                                         },
+                                         {
+                                             "switches":  "28451",
+                                             "id":  "14",
+                                             "completed":  "6347",
+                                             "heartbeat":  "6353",
+                                             "stack_free_words":  "214",
+                                             "priority":  "19"
+                                         },
+                                         {
+                                             "switches":  "3568",
+                                             "id":  "15",
+                                             "completed":  "2970",
+                                             "heartbeat":  "2970",
+                                             "stack_free_words":  "214",
+                                             "priority":  "20"
+                                         }
+                                     ],
+                         "sources":  [
+                                         {
+                                             "prefix":  "10535",
+                                             "sent":  "10535",
+                                             "pending":  "0",
+                                             "validated":  "10535",
+                                             "source":  "0"
+                                         },
+                                         {
+                                             "prefix":  "7698",
+                                             "sent":  "7698",
+                                             "pending":  "0",
+                                             "validated":  "7698",
+                                             "source":  "1"
+                                         },
+                                         {
+                                             "prefix":  "6679",
+                                             "sent":  "6679",
+                                             "pending":  "0",
+                                             "validated":  "6679",
+                                             "source":  "2"
+                                         },
+                                         {
+                                             "prefix":  "5460",
+                                             "sent":  "5460",
+                                             "pending":  "0",
+                                             "validated":  "5460",
+                                             "source":  "3"
+                                         },
+                                         {
+                                             "prefix":  "39203",
+                                             "sent":  "39203",
+                                             "pending":  "0",
+                                             "validated":  "39203",
+                                             "source":  "4"
+                                         },
+                                         {
+                                             "prefix":  "60815",
+                                             "sent":  "60815",
+                                             "pending":  "0",
+                                             "validated":  "60815",
+                                             "source":  "5"
+                                         }
+                                     ],
+                         "semaphore":  {
+                                           "overflow":  "26025",
+                                           "accepted":  "120201",
+                                           "pending":  "28",
+                                           "taken0":  "60087",
+                                           "taken1":  "60086"
+                                       },
+                         "coverage":  {
+                                          "recovery_empty":  "19612",
+                                          "mutex_waiters":  "4",
+                                          "queue_recv_waiters":  "4",
+                                          "sem_waiters":  "2",
+                                          "event_waiters":  "3",
+                                          "lease_waiters":  "2",
+                                          "pi_observed":  "3130",
+                                          "high_full":  "19664",
+                                          "queue_send_waiters":  "4"
+                                      },
+                         "control":  {
+                                         "response_max":  "1",
+                                         "deadline_ticks":  "10",
+                                         "misses":  "0",
+                                         "watchdog_misses":  "0",
+                                         "jitter_max":  "0",
+                                         "period_ticks":  "10"
+                                     },
+                         "interrupts":  {
+                                            "rejected1":  "25342",
+                                            "sent0":  "39203",
+                                            "rejected0":  "20866",
+                                            "entries1":  "86159",
+                                            "nested":  "1038",
+                                            "entries0":  "60069",
+                                            "depth_max":  "2",
+                                            "forced":  "469",
+                                            "sent1":  "60815",
+                                            "errors":  "0"
+                                        },
+                         "inferred_entries_without_ipc":  [
+                                                              0,
+                                                              2
+                                                          ],
+                         "interrupt_counter_scope":  "Differences are computed from entry, sent and rejected counters. The log does not print spurious/natural/forced-request counters, so differences are not a directly observed cause classification.",
+                         "heap":  {
+                                      "max_after":  "28496",
+                                      "before":  "28496",
+                                      "max_before":  "28496",
+                                      "after":  "28496"
+                                  },
+                         "manifest_sha256":  "CE78532CC09B6D16637972AA5B16DF1BB3E8CA4823CABD8809D912ECD262F7BF"
+                     },
+                     {
+                         "tag":  "production_20261012_matrix_final_2",
+                         "sha256":  "E42F17B4BBD14AE005AAFAC4D5579E48CD95D4DEDFF74EEE9219025C7487BE14",
+                         "port":  "COM3",
+                         "baud":  115200,
+                         "flash_verified":  true,
+                         "elapsed_wall_seconds":  63.111207799999995,
+                         "log_sha256":  "69242C1F6F761B090FA86941E591DB0FEF9BCA83AD686279DEA45B0158E11388",
+                         "flash_log_sha256":  "2F10373259E1D7F7A35ECF08D3E69FCE09C844CD99C95CC11F4FCEE02080A147",
+                         "classification":  "normal_pass",
+                         "configuration":  {
+                                               "seed":  305419896,
+                                               "seconds":  60,
+                                               "capacity":  8
+                                           },
+                         "checks_passed":  161,
+                         "checks_failed":  0,
+                         "worker_errors":  0,
+                         "messages_successfully_sent":  131738,
+                         "messages_received_by_workers":  131738,
+                         "workers":  [
+                                         {
+                                             "switches":  "7240",
+                                             "id":  "0",
+                                             "completed":  "6008",
+                                             "heartbeat":  "6012",
+                                             "stack_free_words":  "212",
+                                             "priority":  "5"
+                                         },
+                                         {
+                                             "switches":  "19574",
+                                             "id":  "1",
+                                             "completed":  "10508",
+                                             "heartbeat":  "10512",
+                                             "stack_free_words":  "208",
+                                             "priority":  "6"
+                                         },
+                                         {
+                                             "switches":  "17041",
+                                             "id":  "2",
+                                             "completed":  "7765",
+                                             "heartbeat":  "9402",
+                                             "stack_free_words":  "208",
+                                             "priority":  "7"
+                                         },
+                                         {
+                                             "switches":  "15829",
+                                             "id":  "3",
+                                             "completed":  "6752",
+                                             "heartbeat":  "8946",
+                                             "stack_free_words":  "208",
+                                             "priority":  "8"
+                                         },
+                                         {
+                                             "switches":  "14891",
+                                             "id":  "4",
+                                             "completed":  "5498",
+                                             "heartbeat":  "8547",
+                                             "stack_free_words":  "208",
+                                             "priority":  "9"
+                                         },
+                                         {
+                                             "switches":  "75208",
+                                             "id":  "5",
+                                             "completed":  "45048",
+                                             "heartbeat":  "45056",
+                                             "stack_free_words":  "208",
+                                             "priority":  "10"
+                                         },
+                                         {
+                                             "switches":  "64133",
+                                             "id":  "6",
+                                             "completed":  "34670",
+                                             "heartbeat":  "34678",
+                                             "stack_free_words":  "208",
+                                             "priority":  "11"
+                                         },
+                                         {
+                                             "switches":  "55224",
+                                             "id":  "7",
+                                             "completed":  "27962",
+                                             "heartbeat":  "27970",
+                                             "stack_free_words":  "208",
+                                             "priority":  "12"
+                                         },
+                                         {
+                                             "switches":  "47043",
+                                             "id":  "8",
+                                             "completed":  "24058",
+                                             "heartbeat":  "24070",
+                                             "stack_free_words":  "208",
+                                             "priority":  "13"
+                                         },
+                                         {
+                                             "switches":  "60238",
+                                             "id":  "9",
+                                             "completed":  "60086",
+                                             "heartbeat":  "60091",
+                                             "stack_free_words":  "214",
+                                             "priority":  "14"
+                                         },
+                                         {
+                                             "switches":  "60221",
+                                             "id":  "10",
+                                             "completed":  "60085",
+                                             "heartbeat":  "60090",
+                                             "stack_free_words":  "214",
+                                             "priority":  "15"
+                                         },
+                                         {
+                                             "switches":  "60264",
+                                             "id":  "11",
+                                             "completed":  "60069",
+                                             "heartbeat":  "60075",
+                                             "stack_free_words":  "212",
+                                             "priority":  "16"
+                                         },
+                                         {
+                                             "switches":  "22998",
+                                             "id":  "12",
+                                             "completed":  "6311",
+                                             "heartbeat":  "12267",
+                                             "stack_free_words":  "212",
+                                             "priority":  "17"
+                                         },
+                                         {
+                                             "switches":  "15058",
+                                             "id":  "13",
+                                             "completed":  "0",
+                                             "heartbeat":  "7515",
+                                             "stack_free_words":  "212",
+                                             "priority":  "18"
+                                         },
+                                         {
+                                             "switches":  "28358",
+                                             "id":  "14",
+                                             "completed":  "6312",
+                                             "heartbeat":  "6318",
+                                             "stack_free_words":  "212",
+                                             "priority":  "19"
+                                         },
+                                         {
+                                             "switches":  "3581",
+                                             "id":  "15",
+                                             "completed":  "2970",
+                                             "heartbeat":  "2970",
+                                             "stack_free_words":  "212",
+                                             "priority":  "20"
+                                         }
+                                     ],
+                         "sources":  [
+                                         {
+                                             "prefix":  "10508",
+                                             "sent":  "10508",
+                                             "pending":  "0",
+                                             "validated":  "10508",
+                                             "source":  "0"
+                                         },
+                                         {
+                                             "prefix":  "7765",
+                                             "sent":  "7765",
+                                             "pending":  "0",
+                                             "validated":  "7765",
+                                             "source":  "1"
+                                         },
+                                         {
+                                             "prefix":  "6752",
+                                             "sent":  "6752",
+                                             "pending":  "0",
+                                             "validated":  "6752",
+                                             "source":  "2"
+                                         },
+                                         {
+                                             "prefix":  "5498",
+                                             "sent":  "5498",
+                                             "pending":  "0",
+                                             "validated":  "5498",
+                                             "source":  "3"
+                                         },
+                                         {
+                                             "prefix":  "40346",
+                                             "sent":  "40346",
+                                             "pending":  "0",
+                                             "validated":  "40346",
+                                             "source":  "4"
+                                         },
+                                         {
+                                             "prefix":  "60869",
+                                             "sent":  "60869",
+                                             "pending":  "0",
+                                             "validated":  "60869",
+                                             "source":  "5"
+                                         }
+                                     ],
+                         "semaphore":  {
+                                           "overflow":  "26027",
+                                           "accepted":  "120200",
+                                           "pending":  "29",
+                                           "taken0":  "60086",
+                                           "taken1":  "60085"
+                                       },
+                         "coverage":  {
+                                          "recovery_empty":  "19615",
+                                          "mutex_waiters":  "4",
+                                          "queue_recv_waiters":  "4",
+                                          "sem_waiters":  "2",
+                                          "event_waiters":  "3",
+                                          "lease_waiters":  "2",
+                                          "pi_observed":  "3178",
+                                          "high_full":  "19666",
+                                          "queue_send_waiters":  "4"
+                                      },
+                         "control":  {
+                                         "response_max":  "1",
+                                         "deadline_ticks":  "10",
+                                         "misses":  "0",
+                                         "watchdog_misses":  "0",
+                                         "jitter_max":  "0",
+                                         "period_ticks":  "10"
+                                     },
+                         "interrupts":  {
+                                            "rejected1":  "25290",
+                                            "sent0":  "40346",
+                                            "rejected0":  "19722",
+                                            "entries1":  "86159",
+                                            "nested":  "1033",
+                                            "entries0":  "60068",
+                                            "depth_max":  "2",
+                                            "forced":  "469",
+                                            "sent1":  "60869",
+                                            "errors":  "0"
+                                        },
+                         "inferred_entries_without_ipc":  [
+                                                              0,
+                                                              0
+                                                          ],
+                         "interrupt_counter_scope":  "Differences are computed from entry, sent and rejected counters. The log does not print spurious/natural/forced-request counters, so differences are not a directly observed cause classification.",
+                         "heap":  {
+                                      "max_after":  "28496",
+                                      "before":  "28496",
+                                      "max_before":  "28496",
+                                      "after":  "28496"
+                                  },
+                         "manifest_sha256":  "61C2753EF7717F1626EA64AD2C49AC8187B4FEA726F4D14329CF3436833E3F0F"
+                     },
+                     {
+                         "tag":  "production_20261012_matrix_final_3",
+                         "sha256":  "3FAAAD75D29BE7321890B2BC5A759EC773CC42BCF739483CC5707CE8B53DD0C6",
+                         "port":  "COM3",
+                         "baud":  115200,
+                         "flash_verified":  true,
+                         "elapsed_wall_seconds":  63.1005671,
+                         "log_sha256":  "9AE6896CFE4E5BE45BB12B730430C46B84E8EEE13EC6195C85E0949358D4FFB4",
+                         "flash_log_sha256":  "0A99528EE90AF20B314FD83108936A59FBD25BBFB2D81BF7C86A6819AFE79902",
+                         "classification":  "normal_pass",
+                         "configuration":  {
+                                               "seed":  2779096485,
+                                               "seconds":  60,
+                                               "capacity":  32
+                                           },
+                         "checks_passed":  161,
+                         "checks_failed":  0,
+                         "worker_errors":  0,
+                         "messages_successfully_sent":  131756,
+                         "messages_received_by_workers":  131756,
+                         "workers":  [
+                                         {
+                                             "switches":  "7307",
+                                             "id":  "0",
+                                             "completed":  "6008",
+                                             "heartbeat":  "6012",
+                                             "stack_free_words":  "214",
+                                             "priority":  "5"
+                                         },
+                                         {
+                                             "switches":  "17542",
+                                             "id":  "1",
+                                             "completed":  "8249",
+                                             "heartbeat":  "9633",
+                                             "stack_free_words":  "210",
+                                             "priority":  "6"
+                                         },
+                                         {
+                                             "switches":  "16169",
+                                             "id":  "2",
+                                             "completed":  "6895",
+                                             "heartbeat":  "9030",
+                                             "stack_free_words":  "210",
+                                             "priority":  "7"
+                                         },
+                                         {
+                                             "switches":  "15764",
+                                             "id":  "3",
+                                             "completed":  "6526",
+                                             "heartbeat":  "8899",
+                                             "stack_free_words":  "210",
+                                             "priority":  "8"
+                                         },
+                                         {
+                                             "switches":  "15353",
+                                             "id":  "4",
+                                             "completed":  "6088",
+                                             "heartbeat":  "8754",
+                                             "stack_free_words":  "210",
+                                             "priority":  "9"
+                                         },
+                                         {
+                                             "switches":  "74978",
+                                             "id":  "5",
+                                             "completed":  "45048",
+                                             "heartbeat":  "45056",
+                                             "stack_free_words":  "210",
+                                             "priority":  "10"
+                                         },
+                                         {
+                                             "switches":  "64204",
+                                             "id":  "6",
+                                             "completed":  "34743",
+                                             "heartbeat":  "34751",
+                                             "stack_free_words":  "210",
+                                             "priority":  "11"
+                                         },
+                                         {
+                                             "switches":  "55223",
+                                             "id":  "7",
+                                             "completed":  "27952",
+                                             "heartbeat":  "27960",
+                                             "stack_free_words":  "210",
+                                             "priority":  "12"
+                                         },
+                                         {
+                                             "switches":  "44343",
+                                             "id":  "8",
+                                             "completed":  "24013",
+                                             "heartbeat":  "24025",
+                                             "stack_free_words":  "210",
+                                             "priority":  "13"
+                                         },
+                                         {
+                                             "switches":  "60275",
+                                             "id":  "9",
+                                             "completed":  "60085",
+                                             "heartbeat":  "60090",
+                                             "stack_free_words":  "216",
+                                             "priority":  "14"
+                                         },
+                                         {
+                                             "switches":  "60237",
+                                             "id":  "10",
+                                             "completed":  "60084",
+                                             "heartbeat":  "60089",
+                                             "stack_free_words":  "216",
+                                             "priority":  "15"
+                                         },
+                                         {
+                                             "switches":  "60245",
+                                             "id":  "11",
+                                             "completed":  "60069",
+                                             "heartbeat":  "60075",
+                                             "stack_free_words":  "214",
+                                             "priority":  "16"
+                                         },
+                                         {
+                                             "switches":  "22956",
+                                             "id":  "12",
+                                             "completed":  "6326",
+                                             "heartbeat":  "12248",
+                                             "stack_free_words":  "214",
+                                             "priority":  "17"
+                                         },
+                                         {
+                                             "switches":  "15053",
+                                             "id":  "13",
+                                             "completed":  "0",
+                                             "heartbeat":  "7515",
+                                             "stack_free_words":  "214",
+                                             "priority":  "18"
+                                         },
+                                         {
+                                             "switches":  "28560",
+                                             "id":  "14",
+                                             "completed":  "6327",
+                                             "heartbeat":  "6333",
+                                             "stack_free_words":  "214",
+                                             "priority":  "19"
+                                         },
+                                         {
+                                             "switches":  "3559",
+                                             "id":  "15",
+                                             "completed":  "2972",
+                                             "heartbeat":  "2972",
+                                             "stack_free_words":  "214",
+                                             "priority":  "20"
+                                         }
+                                     ],
+                         "sources":  [
+                                         {
+                                             "prefix":  "8249",
+                                             "sent":  "8249",
+                                             "pending":  "0",
+                                             "validated":  "8249",
+                                             "source":  "0"
+                                         },
+                                         {
+                                             "prefix":  "6895",
+                                             "sent":  "6895",
+                                             "pending":  "0",
+                                             "validated":  "6895",
+                                             "source":  "1"
+                                         },
+                                         {
+                                             "prefix":  "6526",
+                                             "sent":  "6526",
+                                             "pending":  "0",
+                                             "validated":  "6526",
+                                             "source":  "2"
+                                         },
+                                         {
+                                             "prefix":  "6088",
+                                             "sent":  "6088",
+                                             "pending":  "0",
+                                             "validated":  "6088",
+                                             "source":  "3"
+                                         },
+                                         {
+                                             "prefix":  "41578",
+                                             "sent":  "41578",
+                                             "pending":  "0",
+                                             "validated":  "41578",
+                                             "source":  "4"
+                                         },
+                                         {
+                                             "prefix":  "62420",
+                                             "sent":  "62420",
+                                             "pending":  "0",
+                                             "validated":  "62420",
+                                             "source":  "5"
+                                         }
+                                     ],
+                         "semaphore":  {
+                                           "overflow":  "26026",
+                                           "accepted":  "120200",
+                                           "pending":  "31",
+                                           "taken0":  "60085",
+                                           "taken1":  "60084"
+                                       },
+                         "coverage":  {
+                                          "recovery_empty":  "19635",
+                                          "mutex_waiters":  "4",
+                                          "queue_recv_waiters":  "4",
+                                          "sem_waiters":  "2",
+                                          "event_waiters":  "3",
+                                          "lease_waiters":  "2",
+                                          "pi_observed":  "3241",
+                                          "high_full":  "18412",
+                                          "queue_send_waiters":  "4"
+                                      },
+                         "control":  {
+                                         "response_max":  "1",
+                                         "deadline_ticks":  "10",
+                                         "misses":  "0",
+                                         "watchdog_misses":  "0",
+                                         "jitter_max":  "0",
+                                         "period_ticks":  "10"
+                                     },
+                         "interrupts":  {
+                                            "rejected1":  "23738",
+                                            "sent0":  "41578",
+                                            "rejected0":  "18490",
+                                            "entries1":  "86158",
+                                            "nested":  "1024",
+                                            "entries0":  "60068",
+                                            "depth_max":  "2",
+                                            "forced":  "469",
+                                            "sent1":  "62420",
+                                            "errors":  "0"
+                                        },
+                         "inferred_entries_without_ipc":  [
+                                                              0,
+                                                              0
+                                                          ],
+                         "interrupt_counter_scope":  "Differences are computed from entry, sent and rejected counters. The log does not print spurious/natural/forced-request counters, so differences are not a directly observed cause classification.",
+                         "heap":  {
+                                      "max_after":  "28496",
+                                      "before":  "28496",
+                                      "max_before":  "28496",
+                                      "after":  "28496"
+                                  },
+                         "manifest_sha256":  "667BA554F7C3971EB50A682BD68C9C669B3CC1CE84E3C7823B6BC6546A2F8B1E"
+                     },
+                     {
+                         "tag":  "production_20261012_soak_final_1",
+                         "sha256":  "4CE304DC46B64E36F8C6A080DFB502D2FF9D556A66B1B13090A69A52EF50B9E5",
+                         "port":  "COM3",
+                         "baud":  115200,
+                         "flash_verified":  true,
+                         "elapsed_wall_seconds":  903.1665087,
+                         "log_sha256":  "C0655670CE8AF5BDD790D073D0F6B5CDA6AA3F7800ED865D37E4E954873E6789",
+                         "flash_log_sha256":  "FC5E8618C6BC53B83A56DB4384B8BE3D09AC3C9D812E3BDBE9D6CF63D2857579",
+                         "classification":  "normal_pass",
+                         "configuration":  {
+                                               "seed":  3735928559,
+                                               "seconds":  900,
+                                               "capacity":  8
+                                           },
+                         "checks_passed":  161,
+                         "checks_failed":  0,
+                         "worker_errors":  0,
+                         "messages_successfully_sent":  1973931,
+                         "messages_received_by_workers":  1973931,
+                         "workers":  [
+                                         {
+                                             "switches":  "108838",
+                                             "id":  "0",
+                                             "completed":  "90008",
+                                             "heartbeat":  "90012",
+                                             "stack_free_words":  "212",
+                                             "priority":  "5"
+                                         },
+                                         {
+                                             "switches":  "260543",
+                                             "id":  "1",
+                                             "completed":  "120468",
+                                             "heartbeat":  "142689",
+                                             "stack_free_words":  "208",
+                                             "priority":  "6"
+                                         },
+                                         {
+                                             "switches":  "249593",
+                                             "id":  "2",
+                                             "completed":  "110449",
+                                             "heartbeat":  "138603",
+                                             "stack_free_words":  "208",
+                                             "priority":  "7"
+                                         },
+                                         {
+                                             "switches":  "242449",
+                                             "id":  "3",
+                                             "completed":  "104455",
+                                             "heartbeat":  "136084",
+                                             "stack_free_words":  "208",
+                                             "priority":  "8"
+                                         },
+                                         {
+                                             "switches":  "229776",
+                                             "id":  "4",
+                                             "completed":  "89954",
+                                             "heartbeat":  "130950",
+                                             "stack_free_words":  "208",
+                                             "priority":  "9"
+                                         },
+                                         {
+                                             "switches":  "1129088",
+                                             "id":  "5",
+                                             "completed":  "675049",
+                                             "heartbeat":  "675057",
+                                             "stack_free_words":  "208",
+                                             "priority":  "10"
+                                         },
+                                         {
+                                             "switches":  "969883",
+                                             "id":  "6",
+                                             "completed":  "519816",
+                                             "heartbeat":  "519825",
+                                             "stack_free_words":  "208",
+                                             "priority":  "11"
+                                         },
+                                         {
+                                             "switches":  "810517",
+                                             "id":  "7",
+                                             "completed":  "419043",
+                                             "heartbeat":  "419052",
+                                             "stack_free_words":  "208",
+                                             "priority":  "12"
+                                         },
+                                         {
+                                             "switches":  "677455",
+                                             "id":  "8",
+                                             "completed":  "360023",
+                                             "heartbeat":  "360050",
+                                             "stack_free_words":  "208",
+                                             "priority":  "13"
+                                         },
+                                         {
+                                             "switches":  "902370",
+                                             "id":  "9",
+                                             "completed":  "900088",
+                                             "heartbeat":  "900093",
+                                             "stack_free_words":  "214",
+                                             "priority":  "14"
+                                         },
+                                         {
+                                             "switches":  "902125",
+                                             "id":  "10",
+                                             "completed":  "900087",
+                                             "heartbeat":  "900092",
+                                             "stack_free_words":  "214",
+                                             "priority":  "15"
+                                         },
+                                         {
+                                             "switches":  "902696",
+                                             "id":  "11",
+                                             "completed":  "900069",
+                                             "heartbeat":  "900076",
+                                             "stack_free_words":  "212",
+                                             "priority":  "16"
+                                         },
+                                         {
+                                             "switches":  "343849",
+                                             "id":  "12",
+                                             "completed":  "94807",
+                                             "heartbeat":  "183625",
+                                             "stack_free_words":  "212",
+                                             "priority":  "17"
+                                         },
+                                         {
+                                             "switches":  "225355",
+                                             "id":  "13",
+                                             "completed":  "0",
+                                             "heartbeat":  "112515",
+                                             "stack_free_words":  "212",
+                                             "priority":  "18"
+                                         },
+                                         {
+                                             "switches":  "426166",
+                                             "id":  "14",
+                                             "completed":  "94807",
+                                             "heartbeat":  "94813",
+                                             "stack_free_words":  "212",
+                                             "priority":  "19"
+                                         },
+                                         {
+                                             "switches":  "53463",
+                                             "id":  "15",
+                                             "completed":  "44464",
+                                             "heartbeat":  "44464",
+                                             "stack_free_words":  "212",
+                                             "priority":  "20"
+                                         }
+                                     ],
+                         "sources":  [
+                                         {
+                                             "prefix":  "120468",
+                                             "sent":  "120468",
+                                             "pending":  "0",
+                                             "validated":  "120468",
+                                             "source":  "0"
+                                         },
+                                         {
+                                             "prefix":  "110449",
+                                             "sent":  "110449",
+                                             "pending":  "0",
+                                             "validated":  "110449",
+                                             "source":  "1"
+                                         },
+                                         {
+                                             "prefix":  "104455",
+                                             "sent":  "104455",
+                                             "pending":  "0",
+                                             "validated":  "104455",
+                                             "source":  "2"
+                                         },
+                                         {
+                                             "prefix":  "89954",
+                                             "sent":  "89954",
+                                             "pending":  "0",
+                                             "validated":  "89954",
+                                             "source":  "3"
+                                         },
+                                         {
+                                             "prefix":  "614340",
+                                             "sent":  "614340",
+                                             "pending":  "0",
+                                             "validated":  "614340",
+                                             "source":  "4"
+                                         },
+                                         {
+                                             "prefix":  "934265",
+                                             "sent":  "934265",
+                                             "pending":  "0",
+                                             "validated":  "934265",
+                                             "source":  "5"
+                                         }
+                                     ],
+                         "semaphore":  {
+                                           "overflow":  "390869",
+                                           "accepted":  "1800201",
+                                           "pending":  "26",
+                                           "taken0":  "900088",
+                                           "taken1":  "900087"
+                                       },
+                         "coverage":  {
+                                          "recovery_empty":  "294300",
+                                          "mutex_waiters":  "4",
+                                          "queue_recv_waiters":  "4",
+                                          "sem_waiters":  "2",
+                                          "event_waiters":  "3",
+                                          "lease_waiters":  "2",
+                                          "pi_observed":  "47334",
+                                          "high_full":  "285073",
+                                          "queue_send_waiters":  "4"
+                                      },
+                         "control":  {
+                                         "response_max":  "1",
+                                         "deadline_ticks":  "10",
+                                         "misses":  "0",
+                                         "watchdog_misses":  "0",
+                                         "jitter_max":  "0",
+                                         "period_ticks":  "10"
+                                     },
+                         "interrupts":  {
+                                            "rejected1":  "356736",
+                                            "sent0":  "614340",
+                                            "rejected0":  "285729",
+                                            "entries1":  "1291003",
+                                            "nested":  "15477",
+                                            "entries0":  "900069",
+                                            "depth_max":  "2",
+                                            "forced":  "7031",
+                                            "sent1":  "934265",
+                                            "errors":  "0"
+                                        },
+                         "inferred_entries_without_ipc":  [
+                                                              0,
+                                                              2
+                                                          ],
+                         "interrupt_counter_scope":  "Differences are computed from entry, sent and rejected counters. The log does not print spurious/natural/forced-request counters, so differences are not a directly observed cause classification.",
+                         "heap":  {
+                                      "max_after":  "28496",
+                                      "before":  "28496",
+                                      "max_before":  "28496",
+                                      "after":  "28496"
+                                  },
+                         "manifest_sha256":  "2C3F0D08C5545530D4CC25C42181781F810466F53FFC3950643DAD18F5F01A83"
+                     }
+                 ],
+    "daily":  {
+                  "tag":  "production_20261012_final_daily",
+                  "sha256":  "49BF44168E556C2157A30BD723323B536CE0F68EA63C82C89158A25AAF6E386E",
+                  "port":  "COM3",
+                  "baud":  115200,
+                  "flash_verified":  true,
+                  "elapsed_wall_seconds":  21.271209799999998,
+                  "log_sha256":  "41EA38545EB56AF1DA8F0C9E9E696D3DBC5798D8832900B307AFF405A20973D5",
+                  "flash_log_sha256":  "D2CF6A6BE6A2421D94872322C6EB7913BF2BD3F444A471D7E7ED7264AF70B1F3",
+                  "classification":  "restored_daily_pass",
+                  "serial_capture_seconds":  15,
+                  "source_count":  61,
+                  "acceptance_start":  "last System init done marker in the complete raw capture",
+                  "task0_output_count":  16,
+                  "task1_output_count":  31,
+                  "size_lines":  [
+                                     "   text\t   data\t    bss\t    dec\t    hex\tfilename",
+                                     " 199796\t    128\t 125952\t 325876\t  4f8f4\tE:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf"
+                                 ],
+                  "note":  "Inactive application USART/TIM6 hooks are allowed. USB register initialization is not proof of physical USB enumeration or transfer."
+              },
+    "excluded_attempt":  {
+                             "tag":  "production_20261012_smoke_initial_1",
+                             "classification":  "not_executed_on_board",
+                             "reason":  "COM3 open failed; subsequent CubeProgrammer enumeration detected no ST-LINK",
+                             "build_succeeded":  true,
+                             "flash_attempted":  false,
+                             "runtime_result":  "unavailable",
+                             "note":  "run_hil opens the serial port before flashing; no run metadata or target execution exists for this attempt. Artifacts are preserved, not counted as a passed or failed RTOS test."
+                         },
+    "scope":  "Real STM32F446 board, shared IPC and timer IRQs; synthetic industrial inputs. This does not certify physical sensor/DMA/USB behavior or unrestricted WCET."
+}

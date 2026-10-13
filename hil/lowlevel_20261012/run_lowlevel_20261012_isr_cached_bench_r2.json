@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "lowlevel_20261012_isr_cached_bench_r2",
+    "started":  "2026-10-12T20:43:23.6922688+08:00",
+    "finished":  "2026-10-12T20:43:26.2497527+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "69C64789185A9404E525E2F5059B397F371E0EB10B47893D67EAF17A4D1AC5C0",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BM\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

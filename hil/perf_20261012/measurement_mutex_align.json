@@ -1,0 +1,260 @@
+﻿{
+    "stage":  "mutex_align",
+    "variant":  "perf",
+    "sha256":  "AAF51EF43EBEE27B2AC41991D55EDC2B45114EEAAAD2454869C55C3D8D36B929",
+    "repeated":  3,
+    "runs":  [
+                 {
+                     "tag":  "perf_20261012_mutex_align_r1",
+                     "sha256":  "AAF51EF43EBEE27B2AC41991D55EDC2B45114EEAAAD2454869C55C3D8D36B929",
+                     "mutex_checks_passed":  22,
+                     "metrics":  [
+                                     {
+                                         "name":  "critical_pair",
+                                         "samples":  1,
+                                         "avg":  30,
+                                         "min":  30,
+                                         "max":  30
+                                     },
+                                     {
+                                         "name":  "yield_switch",
+                                         "samples":  1,
+                                         "avg":  240,
+                                         "min":  240,
+                                         "max":  240
+                                     },
+                                     {
+                                         "name":  "sem_roundtrip",
+                                         "samples":  1,
+                                         "avg":  1631,
+                                         "min":  1631,
+                                         "max":  1631
+                                     },
+                                     {
+                                         "name":  "sem_wake_latency",
+                                         "samples":  1000,
+                                         "avg":  466,
+                                         "min":  465,
+                                         "max":  1287
+                                     },
+                                     {
+                                         "name":  "queue_send_wake",
+                                         "samples":  5000,
+                                         "avg":  557,
+                                         "min":  557,
+                                         "max":  782
+                                     },
+                                     {
+                                         "name":  "task_create_del",
+                                         "samples":  1,
+                                         "avg":  6206,
+                                         "min":  6206,
+                                         "max":  6206
+                                     },
+                                     {
+                                         "name":  "delay1_period",
+                                         "samples":  1,
+                                         "avg":  168000,
+                                         "min":  168000,
+                                         "max":  168000
+                                     },
+                                     {
+                                         "name":  "isr_wake_latency",
+                                         "samples":  100,
+                                         "avg":  523,
+                                         "min":  518,
+                                         "max":  592
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w01",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w04",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w08",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     }
+                                 ]
+                 },
+                 {
+                     "tag":  "perf_20261012_mutex_align_r2",
+                     "sha256":  "AAF51EF43EBEE27B2AC41991D55EDC2B45114EEAAAD2454869C55C3D8D36B929",
+                     "mutex_checks_passed":  22,
+                     "metrics":  [
+                                     {
+                                         "name":  "critical_pair",
+                                         "samples":  1,
+                                         "avg":  30,
+                                         "min":  30,
+                                         "max":  30
+                                     },
+                                     {
+                                         "name":  "yield_switch",
+                                         "samples":  1,
+                                         "avg":  240,
+                                         "min":  240,
+                                         "max":  240
+                                     },
+                                     {
+                                         "name":  "sem_roundtrip",
+                                         "samples":  1,
+                                         "avg":  1631,
+                                         "min":  1631,
+                                         "max":  1631
+                                     },
+                                     {
+                                         "name":  "sem_wake_latency",
+                                         "samples":  1000,
+                                         "avg":  466,
+                                         "min":  465,
+                                         "max":  1287
+                                     },
+                                     {
+                                         "name":  "queue_send_wake",
+                                         "samples":  5000,
+                                         "avg":  557,
+                                         "min":  557,
+                                         "max":  782
+                                     },
+                                     {
+                                         "name":  "task_create_del",
+                                         "samples":  1,
+                                         "avg":  6206,
+                                         "min":  6206,
+                                         "max":  6206
+                                     },
+                                     {
+                                         "name":  "delay1_period",
+                                         "samples":  1,
+                                         "avg":  168000,
+                                         "min":  168000,
+                                         "max":  168000
+                                     },
+                                     {
+                                         "name":  "isr_wake_latency",
+                                         "samples":  100,
+                                         "avg":  523,
+                                         "min":  518,
+                                         "max":  592
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w01",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w04",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w08",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     }
+                                 ]
+                 },
+                 {
+                     "tag":  "perf_20261012_mutex_align_r3",
+                     "sha256":  "AAF51EF43EBEE27B2AC41991D55EDC2B45114EEAAAD2454869C55C3D8D36B929",
+                     "mutex_checks_passed":  22,
+                     "metrics":  [
+                                     {
+                                         "name":  "critical_pair",
+                                         "samples":  1,
+                                         "avg":  30,
+                                         "min":  30,
+                                         "max":  30
+                                     },
+                                     {
+                                         "name":  "yield_switch",
+                                         "samples":  1,
+                                         "avg":  240,
+                                         "min":  240,
+                                         "max":  240
+                                     },
+                                     {
+                                         "name":  "sem_roundtrip",
+                                         "samples":  1,
+                                         "avg":  1631,
+                                         "min":  1631,
+                                         "max":  1631
+                                     },
+                                     {
+                                         "name":  "sem_wake_latency",
+                                         "samples":  1000,
+                                         "avg":  466,
+                                         "min":  465,
+                                         "max":  1287
+                                     },
+                                     {
+                                         "name":  "queue_send_wake",
+                                         "samples":  5000,
+                                         "avg":  557,
+                                         "min":  557,
+                                         "max":  782
+                                     },
+                                     {
+                                         "name":  "task_create_del",
+                                         "samples":  1,
+                                         "avg":  6206,
+                                         "min":  6206,
+                                         "max":  6206
+                                     },
+                                     {
+                                         "name":  "delay1_period",
+                                         "samples":  1,
+                                         "avg":  168000,
+                                         "min":  168000,
+                                         "max":  168000
+                                     },
+                                     {
+                                         "name":  "isr_wake_latency",
+                                         "samples":  100,
+                                         "avg":  523,
+                                         "min":  518,
+                                         "max":  592
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w01",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w04",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     },
+                                     {
+                                         "name":  "mutex_compute_w08",
+                                         "samples":  1000,
+                                         "avg":  46,
+                                         "min":  46,
+                                         "max":  57
+                                     }
+                                 ]
+                 }
+             ]
+}

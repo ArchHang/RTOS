@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "production_20261012_final_daily",
+    "started":  "2026-10-13T10:10:38.3707192+08:00",
+    "finished":  "2026-10-13T10:10:59.6419290+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "49BF44168E556C2157A30BD723323B536CE0F68EA63C82C89158A25AAF6E386E",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

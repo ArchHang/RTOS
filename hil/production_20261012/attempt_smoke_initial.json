@@ -1,0 +1,9 @@
+{
+  "tag": "production_20261012_smoke_initial_1",
+  "classification": "not_executed_on_board",
+  "reason": "COM3 open failed; subsequent CubeProgrammer enumeration detected no ST-LINK",
+  "build_succeeded": true,
+  "flash_attempted": false,
+  "runtime_result": "unavailable",
+  "note": "run_hil opens the serial port before flashing; no run metadata or target execution exists for this attempt. Artifacts are preserved, not counted as a passed or failed RTOS test."
+}

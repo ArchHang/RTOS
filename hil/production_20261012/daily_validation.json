@@ -1,0 +1,22 @@
+﻿{
+    "tag":  "production_20261012_final_daily",
+    "sha256":  "49BF44168E556C2157A30BD723323B536CE0F68EA63C82C89158A25AAF6E386E",
+    "source_count":  61,
+    "matches_production_kernel_baseline":  true,
+    "active_test_entries":  0,
+    "active_test_rules":  0,
+    "serial_port":  "COM3",
+    "serial_baud":  115200,
+    "serial_capture_seconds":  15,
+    "flash_download_verified":  true,
+    "initialized":  true,
+    "acceptance_start":  "last System init done marker in the complete raw capture",
+    "task0_output_count":  16,
+    "task1_output_count":  31,
+    "failure_lines":  0,
+    "size_lines":  [
+                       "   text\t   data\t    bss\t    dec\t    hex\tfilename",
+                       " 199796\t    128\t 125952\t 325876\t  4f8f4\tE:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf"
+                   ],
+    "note":  "Existing inactive USART selftest and TIM6 benchmark hooks remain in the application; no test tasks were started. USB initialization output does not prove physical USB enumeration or transfer."
+}
