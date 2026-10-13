@@ -36,7 +36,7 @@
 
 ---
 
-# 第一部分：设计剖析
+# 第一部分: 设计剖析
 
 # 第一章 设计哲学与整体架构
 
@@ -63,7 +63,7 @@ FreeRTOS 是一个**以任务为唯一中心、以侵入式链表为唯一黏合
 
 
 
-## 1.2 源码文件地图（V10.4，量级供心里有数）
+## 1.2 源码文件地图 (V10.4, 量级供心里有数)
 
 | 文件 | 行数约（V10.4.6） | 职责 | 依赖 list.c 的程度 |
 |---|---|---|---|
@@ -106,9 +106,9 @@ FreeRTOS 是一个**以任务为唯一中心、以侵入式链表为唯一黏合
 
 ---
 
-# 第二章 list.c：整个内核的地基
+# 第二章 list.c: 整个内核的地基
 
-## 2.1 结构定义（完整，一字未减）
+## 2.1 结构定义 (完整, 一字未减)
 
 ```c
 struct xLIST {                          /* List_t */
@@ -142,7 +142,7 @@ struct xLIST_ITEM {                     /* ListItem_t */
 | 事件组等待链 | 打包的等待条件（8 章） | 无序，靠扫描 |
 | 挂起链/终止链 | （不关心） | 尾插 |
 
-## 2.2 环形链 + 哨兵：一张图
+## 2.2 环形链 + 哨兵: 一张图
 
 ```
           ┌──────────────────────────────────────────────┐
@@ -169,7 +169,7 @@ struct xLIST_ITEM {                     /* ListItem_t */
 - **完整性校验字节**：定义 `configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES = 1` 后，list.c 的每个插入/删除动作都会用 `listTEST_LIST_INTEGRITY` 校验链表与节点的魔数——内存被踩（栈溢出/野指针写）时第一时间在链表操作处断言，而不是等到链表撕裂后的随机崩溃。这是 15/16 章两类"随机崩溃"的前置哨兵。
 - **vListInsert 里的著名注释**：V10.4 源码在有序插入循环上方直接内嵌了一段"崩溃排查指南"，官方按命中率列出五大死因——**① 栈溢出；② Cortex-M 中断优先级配错（数值大=优先级低的反直觉陷阱）；③ 在临界区/调度器挂起期调用了非 FromISR API；④ 在初始化前或调度器启动前使用了队列/信号量（如启动前中断已开）；⑤ 支持中断嵌套的 port 中 tick 中断优先级未压到 syscall 域**。这份清单与本手册 15/16/17 章的分流表互为印证——FreeRTOS 作者把用户最常踩的坑直接写进了最可能崩溃的函数里。
 
-## 2.3 uxListInsert：有序插入（核心代码）
+## 2.3 uxListInsert: 有序插入 (核心代码)
 
 ```c
 void uxListInsert( List_t * const pxList, ListItem_t * const pxNewListItem )
@@ -203,7 +203,7 @@ void uxListInsert( List_t * const pxList, ListItem_t * const pxNewListItem )
 
 注意循环从哨兵出发而非真实首节点：`pxIterator->pxNext` 从链首开始参与比较，因此**可以插到首节点之前**——这是循环初始化的微妙之处，也是空链（只有哨兵）天然可用的原因。
 
-## 2.4 vListInsertEnd：尾插（核心代码）
+## 2.4 vListInsertEnd: 尾插 (核心代码)
 
 ```c
 void vListInsertEnd( List_t * const pxList, ListItem_t * const pxNewListItem )
@@ -222,7 +222,7 @@ void vListInsertEnd( List_t * const pxList, ListItem_t * const pxNewListItem )
 
 "插到 pxIndex 之前"= **逻辑队尾**。为什么？因为 pxIndex 指向"上次被遍历返回的节点"（2.6），它刚刚被消费过——新节点排在它后面（即它的 pxPrevious 侧），下轮遍历要转完一圈才轮到，等效 FIFO 尾插。就绪链用它。
 
-## 2.5 uxListRemove：摘除（核心代码）
+## 2.5 uxListRemove: 摘除 (核心代码)
 
 ```c
 UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
@@ -248,7 +248,7 @@ UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
 
 `return 链剩余长度`——tasks.c 的 taskRESET_READY_PRIORITY 用返回值 0 判断"该优先级链已空，该清位图了"。
 
-## 2.6 listGET_OWNER_OF_NEXT_ENTRY：游标遍历（宏，完整）
+## 2.6 listGET_OWNER_OF_NEXT_ENTRY: 游标遍历 (宏, 完整)
 
 ```c
 #define listGET_OWNER_OF_NEXT_ENTRY( pxTCB, pxList )                           \
@@ -277,7 +277,7 @@ T5 被删:  pxIndex 修正(2.5) → 下次走到 T8, 不重不漏
 
 **同级轮转免费融合进"选任务"这个必然动作**——对比自研 ready_list_rotate（tick 里主动搬队尾）：FreeRTOS 轮转发生在**每次切换**而非每 tick，且新就绪任务的尾插位置（pxIndex 之前）保证它要等一圈。
 
-## 2.7 pxContainer 的双重语义（对应自研 list_head）
+## 2.7 pxContainer 的双重语义 (对应自研 list_head)
 
 | 问题 | pxContainer 如何回答 |
 |---|---|
@@ -290,7 +290,7 @@ T5 被删:  pxIndex 修正(2.5) → 下次走到 T8, 不重不漏
 
 # 第三章 TCB 与任务生命周期
 
-## 3.1 TCB 结构（V10.4，按分组节选）
+## 3.1 TCB 结构 (V10.4, 按分组节选)
 
 ```c
 typedef struct tskTaskControlBlock {
@@ -327,7 +327,7 @@ typedef struct tskTaskControlBlock {
 | 等待侧 | wait_node 挂对象等待链 | xEventListItem 挂对象等待链 |
 | 带超时阻塞 | 同时挂两条 | 同时挂两条（State→延时链，Event→对象链） |
 
-## 3.2 xTaskCreate 全流程（动态路径逐步骤）
+## 3.2 xTaskCreate 全流程 (动态路径逐步骤)
 
 ```
 1. pvPortMalloc( sizeof(TCB) + stack_size×4 )        ← heap_4(10章); 失败→vApplicationMallocFailedHook
@@ -354,7 +354,7 @@ typedef struct tskTaskControlBlock {
 
 注意 **e 步的优先级反序**只在创建时写一次；后续优先级变化（继承/归还/`vTaskPrioritySet`）必须同步更新这个值，但**只更新值、不重插事件链**（重插的复杂度不可控，官方有意为之，详见 7.2 与社区案例 7.7）。
 
-## 3.3 pxPortInitialiseStack：逐行（CM4F，与 V10.4.6 源码一致）
+## 3.3 pxPortInitialiseStack: 逐行 (CM4F, 与 V10.4.6 源码一致)
 
 ```c
 StackType_t * pxPortInitialiseStack( StackType_t * pxTopOfStack,
@@ -386,7 +386,7 @@ StackType_t * pxPortInitialiseStack( StackType_t * pxTopOfStack,
 
 **CM4F 移植的三个易漏细节**：① 软件帧里单独保存 `portINITIAL_EXC_RETURN`——因为 PendSV 把 r14 与 r4-r11 一并保存（4.4），每任务的帧类型（基本/含 FPU 扩展）由它自描述；② LR 填 `portTASK_RETURN_ADDRESS` 而默认是 `prvTaskExitError`——这是出口陷阱（3.5），也可被 `configTASK_RETURN_ADDRESS` 覆盖以改善调试器栈回溯；③ PC 经 `portSTART_ADDRESS_MASK` 强制清 bit0——该字将由硬件作为异常返回的 PC 装载，与函数指针的 Thumb 位约定相反。**自研内核同构**（rtos_design.md 4.3"伪造一次中断"）——ARMv7-M 启动任务的唯一正解。
 
-## 3.4 vTaskDelete：普通删除与自删除的两条路径
+## 3.4 vTaskDelete: 普通删除与自删除的两条路径
 
 ```c
 void vTaskDelete( TaskHandle_t xTaskToDelete )  [简化]
@@ -425,7 +425,7 @@ void vTaskDelete( TaskHandle_t xTaskToDelete )  [简化]
 - ②步只摘链，**不释放它持有的互斥锁**——`pxMutexHolder` 仍指向已 free 的 TCB，下一个 take 的继承路径解引用野指针；
 - 句柄悬空问题——FreeRTOS 无任何机制阻止你删除后继续使用句柄。
 
-## 3.5 任务函数 return 了会怎样：prvTaskExitError
+## 3.5 任务函数 return 了会怎样: prvTaskExitError
 
 任务入口不是无限循环、执行完 return——返回地址是初始化时填的 `prvTaskExitError`（V10.4.6 真实代码）：
 
@@ -465,9 +465,9 @@ vTaskResumeFromISR: 若调度器挂起 → 挂 xPendingReadyList(见 4.8)
 
 ---
 
-# 第四章 调度器：决策、切换与空闲任务
+# 第四章 调度器: 决策, 切换与空闲任务
 
-## 4.1 就绪表：一个变量 + 一组链
+## 4.1 就绪表: 一个变量 + 一组链
 
 ```c
 PRIVILEGED_DATA static List_t pxReadyTasksLists[ configMAX_PRIORITIES ];
@@ -483,7 +483,7 @@ PRIVILEGED_DATA static volatile UBaseType_t uxTopReadyPriority = 0;
 
 所以"比自研 32 位全量位图省内存"的说法只在通用版成立；CLZ 版两者数据结构等价，差异仅在优先级方向约定（FreeRTOS 高值=高优先级配 CLZ 找最高置位；自研 0=最高配 CTZ 找最低置位，指令效率相同）。位宽即优先级上限（32 位整型 ≤ 32 优先级；自研显式 32 桶同限）。
 
-## 4.2 两种任务选择：通用循环 vs CLZ 优化
+## 4.2 两种任务选择: 通用循环 vs CLZ 优化
 
 ```c
 #if ( configUSE_PORT_OPTIMISED_TASK_SELECTION == 1 )     /* CM4 开此优化 */
@@ -514,7 +514,7 @@ PRIVILEGED_DATA static volatile UBaseType_t uxTopReadyPriority = 0;
 
 CLZ 版：位图（无符号整型按优先级置位）+ `31-__CLZ` 一条指令找最高置位——**与自研 ctz 版互为镜像**（自研 0=最高配 ctz 找最低位，FreeRTOS 高值=高优先级配 CLZ 找最高位，指令效率相同）。注意位宽即优先级上限（32 位整型 ≤ 32 优先级；自研显式 32 桶同限）。
 
-## 4.3 vTaskSwitchContext：切换的 C 侧
+## 4.3 vTaskSwitchContext: 切换的 C 侧
 
 ```c
 void vTaskSwitchContext( void )  [简化]
@@ -533,7 +533,7 @@ void vTaskSwitchContext( void )  [简化]
 
 **在必然路径上顺路做事**：栈检查（16 章）与 trace 钩子都白嫖"切换必然发生"这个调度不变量。自研内核在同一点挂 perf 记账（rtos_design.md 4.2"每秒白嫖 1000 次"）——同一设计品味。
 
-## 4.4 PendSV 汇编：逐行（CM4F port.c，与 V10.4.6 源码一致）
+## 4.4 PendSV 汇编: 逐行 (CM4F port.c, 与 V10.4.6 源码一致)
 
 ```asm
 xPortPendSVHandler:                      /* naked, 优先级=configKERNEL_INTERRUPT_PRIORITY(典型0xFF最低) */
@@ -577,7 +577,7 @@ xPortPendSVHandler:                      /* naked, 优先级=configKERNEL_INTERR
 3. **两级现场**——硬件存 8 字基本帧（+惰性 FPU 扩展），PendSV 只补 callee-saved——上下文切换的 O(callee) 而非 O(全部寄存器)；
 4. **PSP 隔离 + MSP 决策**——任务跑 PSP，异常处理跑 MSP；`bl vTaskSwitchContext` 期间用 `stmdb sp!, {r0, r3}` 把易损寄存器暂存到 MSP，并用 BASEPRI 把决策窗口罩进临界区——**这是与自研内核"schedule 由调用方在临界区内调用"的拓扑差异**：FreeRTOS 把临界区收进 PendSV 内部，自研把它放在决策调用者一侧。
 
-## 4.5 SVC 启动第一个任务（逐行，与 V10.4.6 源码一致）
+## 4.5 SVC 启动第一个任务 (逐行, 与 V10.4.6 源码一致)
 
 ```asm
 vPortSVCHandler:                    /* 由 prvPortStartFirstTask 的 "svc 0" 触发 */
@@ -621,7 +621,7 @@ prvPortStartFirstTask:
 
 **合并语义**：PendSV 挂多次只执行一次；一个 tick 里唤醒 10 个任务的 10 个 yield 请求合并成一次切换。决策方各异、执行方唯一——自研用"临界区内 schedule 多次 pend 自然合并"达成同效（rtos_design.md 3.3 好处 1）。
 
-## 4.7 空闲任务 prvIdleTask：三件事
+## 4.7 空闲任务 prvIdleTask: 三件事
 
 ```c
 static portTASK_FUNCTION( prvIdleTask, pvParameters )  [简化]
@@ -657,7 +657,7 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )  [简化]
 
 `configIDLE_SHOULD_YIELD=1` 是关键配置：否则同在优先级 0 的用户任务可能长期饿死（空闲任务不主动让位时靠时间片轮转兜底，轮转关了就饿死）；非抢占配置下 idle 每轮循环都让位。tickless 的真实路径是 **`prvGetExpectedIdleTime` 预估 → 挂起调度器复核 → `portSUPPRESS_TICKS_AND_SLEEP` 停 tick 睡眠并在唤醒后补偿丢失的 tick**——整个逻辑内嵌在 idle 任务里，不需要也不存在"vApplicationSleep"这个钩子（低功耗的进入/退出动作应由用户在 portSUPPRESS_TICKS_AND_SLEEP 的实现里完成）。**自研 idle 同构**（回收+让位，rtos_design.md 5.2），差异是自研默认 WFI（rtos_sched.c 的 idle_hook 弱定义）。
 
-## 4.8 vTaskSuspendAll / xTaskResumeAll：调度器挂起的完整账本
+## 4.8 vTaskSuspendAll / xTaskResumeAll: 调度器挂起的完整账本
 
 ```c
 void vTaskSuspendAll( void )
@@ -707,7 +707,7 @@ BaseType_t xTaskResumeAll( void )  [简化]
 
 ---
 
-# 第五章 延时链表与 tick：双链对滚
+# 第五章 延时链表与 tick: 双链对滚
 
 ## 5.1 为什么需要两条延时链
 
@@ -732,7 +732,7 @@ PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList;  /* 跨翻�
 }
 ```
 
-## 5.2 入链决策：prvAddCurrentTaskToDelayList
+## 5.2 入链决策: prvAddCurrentTaskToDelayList
 
 ```c
 static void prvAddCurrentTaskToDelayList( TickType_t xTicksToWait )  [简化]
@@ -761,7 +761,7 @@ static void prvAddCurrentTaskToDelayList( TickType_t xTicksToWait )  [简化]
 
 **不变式**：本周期链上所有 wake ≤ 0xFFFFFFFF 本周期会到期；溢出链上所有 wake 已回绕成"下周期的小值"。两条链各自内部升序——**每条链内部永远无需处理回绕**。
 
-## 5.3 xTaskIncrementTick 完整流程（逐段注解）
+## 5.3 xTaskIncrementTick 完整流程 (逐段注解)
 
 ```c
 BaseType_t xTaskIncrementTick( void )  [核心结构完整]
@@ -831,7 +831,7 @@ BaseType_t xTaskIncrementTick( void )  [核心结构完整]
 
 重查模式的一个微妙后果：**"被 give 唤醒但醒来前数据又被别人抢走"与"超时"在醒来视角不可区分**——都表现为"队列还是空"。FreeRTOS 用重试循环吞掉这个歧义（6.5），语义上"醒来≠成功"，成功只有重查成功。自研的 wake_highest 直接传递所有权，"唤醒即成功"语义更强——各有代价。
 
-## 5.4 回绕翻转瞬间的图解（tick 用 3 位示意，即从 7 翻到 0）
+## 5.4 回绕翻转瞬间的图解 (tick 用 3 位示意, 即从 7 翻到 0)
 
 ```
 tick=6 时:  本周期链(升序):  [A(wake=7)] [B(wake=7)]
@@ -868,9 +868,9 @@ vTaskDelayUntil(&prev, inc):
 
 ---
 
-# 第六章 queue.c：一个文件统治所有 IPC
+# 第六章 queue.c: 一个文件统治所有 IPC
 
-## 6.1 xQUEUE 结构（完整）
+## 6.1 xQUEUE 结构 (完整)
 
 ```c
 typedef struct QueueDefinition
@@ -894,7 +894,7 @@ typedef struct QueueDefinition
 } Queue_t;
 ```
 
-## 6.2 四种对象，一种结构
+## 6.2 四种对象, 一种结构
 
 | 对象 | uxLength | uxItemSize | 数据区 | 独有行为 |
 |---|---|---|---|---|
@@ -927,7 +927,7 @@ pcHead    pcWriteTo(下一个写位)         pcTail
 
 读指针是**回退式**（先减再读）——这使"读最后一个写过的元素"（xQueuePeek/优先唤醒直传场景）成为 O(1)。自研队列的 head/tail 递增 + 掩码方案等价（rtos_design.md 8.1 环形缓冲）。
 
-## 6.4 xQueueGenericSend 的完整路径（四条分支）
+## 6.4 xQueueGenericSend 的完整路径 (四条分支)
 
 ```c
 BaseType_t xQueueGenericSend( xQueue, pvItemToQueue, xTicksToWait, xCopyPosition )  [简化]
@@ -979,7 +979,7 @@ BaseType_t xQueueGenericSend( xQueue, pvItemToQueue, xTicksToWait, xCopyPosition
 
 四条分支对应：**快路径（有空位） / 零等待失败 / 阻塞慢路径 / 醒来重查**。注意结构：先临界区快查，慢路径前先 `vTaskSuspendAll + 锁队列`——这是队列锁定机制的登场前奏。
 
-## 6.5 xQueueGenericReceive（信号量 take 的本体）
+## 6.5 xQueueGenericReceive (信号量 take 的本体)
 
 ```c
 BaseType_t xQueueGenericReceive( xQueue, pvBuffer, xTicksToWait, xJustPeek )  [简化]
@@ -1035,7 +1035,7 @@ BaseType_t xQueueGenericReceive( xQueue, pvBuffer, xTicksToWait, xJustPeek )  [�
 
 **重查模式全貌**：醒来（无论被唤醒还是超时）→ 循环回顶部 → 临界区重查队列状态 → 有数据就成功（哪怕本是超时醒的）、没数据且 `xTaskCheckForTimeOut` 报真超时才失败。与自研"wait_result 信箱直接判决"的差异在 5.3 已述——**FreeRTOS 的成功定义是"重查成功"，天然容忍唤醒后数据被抢**。
 
-## 6.6 xTaskRemoveFromEventList：唤醒的核心（完整）
+## 6.6 xTaskRemoveFromEventList: 唤醒的核心 (完整)
 
 ```c
 BaseType_t xTaskRemoveFromEventList( const List_t * const pxEventList )  [简化]
@@ -1068,7 +1068,7 @@ BaseType_t xTaskRemoveFromEventList( const List_t * const pxEventList )  [简化
 
 **先到者全摘、后到者扑空**——与自研 3.7 阶段四的竞争裁定结构完全一致：唤醒方摘两条链（事件+延时），超时方（tick）也摘两条链（延时+事件）。两个修改方都被临界区串行化，不存在"两边都摘到"或"都没摘到"的中间态。
 
-## 6.7 队列锁定：cRxLock/cTxLock 的数值语义
+## 6.7 队列锁定: cRxLock/cTxLock 的数值语义
 
 **先厘清两种"延迟"的边界**——这是文档与口碑里最容易混淆的地方：
 
@@ -1144,7 +1144,7 @@ xQueueGenericSend → prvCopyDataToQueue:
 | uxMutexesHeld | TCB | 持锁计数：递归放行 + "归还时是否还有人帮我撑优先级"判定 |
 | pxMutexHolder | xQUEUE(u.xSemaphore) | 指向持有者 TCB——继承的操作对象 |
 
-## 7.2 vTaskPriorityInherit：take 时的提升（逐步数值推演）
+## 7.2 vTaskPriorityInherit: take 时的提升 (逐步数值推演)
 
 场景：任务 L（优先级数值 2=低）持锁 M；任务 H（优先级数值 5=高）`xSemaphoreTake(M, 100)`。FreeRTOS 方向约定：**数值大 = 优先级高**——"持有者优先级低于我"即 `2 < 5`：
 
@@ -1206,7 +1206,7 @@ H 醒来: 重查循环 → 拿到锁, vTaskPriorityInherit?
   (H 自己成为持有者, M 的等待链已空, 无继承对象) → H 正常运行
 ```
 
-## 7.3 vTaskPriorityDisinherit：give 时的归还
+## 7.3 vTaskPriorityDisinherit: give 时的归还
 
 ```c
 BaseType_t xTaskPriorityDisinherit( TaskHandle_t pxMutexHolder, ... )  [简化]
@@ -1230,7 +1230,7 @@ BaseType_t xTaskPriorityDisinherit( TaskHandle_t pxMutexHolder, ... )  [简化]
 
 **所有权移交不在 give 里**：give 只归还优先级 + 清 owner；被唤醒的等待者在自己的重查循环里重新 take 成功、成为新 owner。对比自研"give 内先移交所有权再唤醒"（rtos_design.md 7.3 所有权预移交——消除"唤醒后锁又被第三者抢走"的窗口）：FreeRTOS 用重试循环吞掉该窗口——被抢走就再睡一次，语义保守但路径简单。
 
-## 7.4 超时路径：vTaskPriorityDisinheritAfterTimeout
+## 7.4 超时路径: vTaskPriorityDisinheritAfterTimeout
 
 H 带超时等锁、超时先到（5.3 段 3 摘 H 的两条链之后），take 的超时分支调用：
 
@@ -1270,7 +1270,7 @@ xSemaphoreTakeRecursive: pxMutexHolder == pxCurrentTCB → uxMutexesHeld++ 直�
 xSemaphoreGiveRecursive: --uxMutexesHeld; 减到 0 才走 7.3 真释放
 ```
 
-## 7.6 链式反转为何无解（本实现）
+## 7.6 链式反转为何无解 (本实现)
 
 A(基2) 持 M1，又去 take M2（被 C 持）；H(基5) 等 M1：
 - H 等 M1 → A 提升到 5（一级）；
@@ -1301,7 +1301,7 @@ FreeRTOS 与自研（L10）均未解——业界方案是**优先级天花板**�
 
 # 第八章 任务通知与事件组
 
-## 8.1 任务通知：绕过一切结构的快路
+## 8.1 任务通知: 绕过一切结构的快路
 
 数据基础（3.1 TCB 节选）：每任务内嵌 `ulNotifiedValue[]`（32 位值）与 `ucNotifyState[]`（三态：NOT_WAITING / WAITING / RECEIVED）。
 
@@ -1345,7 +1345,7 @@ taskENTER_CRITICAL();
 
 **自研对照**：rtos_task_notify/notify_wait（rtos_design.md 5.7）同宗——含"超时瞬间通知不丢失"的边界处理（state=RECEIVED 保留给下次 wait），FreeRTOS 的 RECEIVED 挂牌同样实现了这个语义：超时醒来发现 RECEIVED（通知恰在超时后到达）→ 重查按成功处理。
 
-## 8.2 事件组：把等待条件打包进链表节点
+## 8.2 事件组: 把等待条件打包进链表节点
 
 数据基础：`uxEventBits`（当前位）+ `xTasksWaitingForBits`（**无序**等待链——因为满足条件因人而异，必须全扫描，不能像队列只唤醒链首）。
 
@@ -1415,7 +1415,7 @@ xTaskResumeAll();
 
 ---
 
-# 第九章 软件定时器：守护任务架构
+# 第九章 软件定时器: 守护任务架构
 
 ## 9.1 架构与数据结构
 
@@ -1445,7 +1445,7 @@ static List_t xActiveTimerList1, xActiveTimerList2;    /* ★对滚双链, 同�
 
 **守护任务的真实身份**：函数名 `prvTimerTask`，任务名默认 `"Tmr Svc"`（可用 `configTIMER_SERVICE_TASK_NAME` 覆盖）——GDB 里看到的 "Tmr Svc" 就是它。它在 `vTaskStartScheduler` 阶段随 `xTimerCreateTimerTask` 创建（需要 `configUSE_TIMERS=1`）。
 
-## 9.2 命令处理（约十种）与链表操作
+## 9.2 命令处理 (约十种)与链表操作
 
 | 命令 | 链表动作 |
 |---|---|
@@ -1477,7 +1477,7 @@ prvProcessTimerOrBlockTask( 下一到期时刻 xNextExpireTime ):
 
 ---
 
-# 第十章 内存管理：五种堆与 heap_4
+# 第十章 内存管理: 五种堆与 heap_4
 
 ## 10.1 五种堆选型表
 
@@ -1548,7 +1548,7 @@ static void prvInsertBlockIntoFreeList( BlockLink_t * pxBlockToInsert )  [核心
 
 # 第十一章 Cortex-M 移植层与临界区
 
-## 11.1 BASEPRI 临界区（与自研完全同构）
+## 11.1 BASEPRI 临界区 (与自研完全同构)
 
 ```c
 #define portDISABLE_INTERRUPTS()  vPortRaiseBASEPRI()
@@ -1570,7 +1570,7 @@ static void prvInsertBlockIntoFreeList( BlockLink_t * pxBlockToInsert )  [核心
 
 ISR 用"栈上保存旧值"而非全局计数——嵌套中断各自恢复各自入口的 BASEPRI。自研用全局嵌套计数等价（一个在栈、一个在全局，殊途同归）。
 
-## 11.3 vPortValidateInterruptPriority：独门防御
+## 11.3 vPortValidateInterruptPriority: 独门防御
 
 ```c
 void vPortValidateInterruptPriority( void )  [简化]
@@ -1596,7 +1596,7 @@ void vPortValidateInterruptPriority( void )  [简化]
 
 它捕获的是 **15 章的"随机崩溃之王"**：调用 FromISR API 的中断配成 0~4——临界区内闯入、撕裂链表。自研内核无此防御，同款 bug 靠 hardfault_debug.md 事后追凶——**这是 FreeRTOS 值得抄进自研的第二处**（第一处：双链对滚）。
 
-## 11.4 启动时序（xPortStartScheduler，与 V10.4.6 源码一致）
+## 11.4 启动时序 (xPortStartScheduler, 与 V10.4.6 源码一致)
 
 ```
 1. configASSERT( configMAX_SYSCALL_INTERRUPT_PRIORITY )   ← 为0则BASEPRI防线全盘失守
@@ -1617,7 +1617,7 @@ void vPortValidateInterruptPriority( void )  [简化]
 
 第 2 步的**硬件实测**是教科书级的防御性设计：不假设"这本芯片是 4 位优先级"，而是写一遍读一遍让硬件自己回答——不同料号的优先级位数不同（3/4/5 位都有），写死的假设在移植时是静默炸弹。
 
-## 11.5 中断优先级配置规则（15 章的预防针）
+## 11.5 中断优先级配置规则 (15 章的预防针)
 
 ```
 ① configMAX_SYSCALL_INTERRUPT_PRIORITY ≠ 0（=0 会禁用BASEPRI全盘失守）
@@ -1657,13 +1657,13 @@ void vPortValidateInterruptPriority( void )  [简化]
 
 ---
 
-# 第二部分：复杂问题定位与解决
+# 第二部分: 复杂问题定位与解决
 
-# 第十三章 优先级反转、继承失效与死锁
+# 第十三章 优先级反转, 继承失效与死锁
 
 ## 13.1 优先级反转三级跳
 
-### 13.1.1 经典反转（未用互斥锁）
+### 13.1.1 经典反转 (未用互斥锁)
 
 ```
 L(优先级数值2=低)  持资源 R(二值信号量"保护")  运行
@@ -1680,14 +1680,14 @@ M(优先级数值3)     就绪 → 抢占 L 长期运行
 
 **解法**：共享资源一律互斥锁（xSemaphoreCreateMutex），**二值信号量无 owner 无从继承**（6.8）。grep 代码中 `CreateBinary` 出现在共享资源上下文的每一处。
 
-### 13.1.2 继承已开却"看似失效"：四查点
+### 13.1.2 继承已开却"看似失效": 四查点
 
 1. **保护资源的其实是 Binary 不是 Mutex**（命中率最高）——继承只存在于 `ucQueueType == queueQUEUE_IS_MUTEX`（6.2 表）。
 2. **持锁任务被 vTaskSuspend**——继承提升的是就绪优先级，挂起态的锁主救不了 H（3.6）。持锁期间禁 suspend。
 3. **只继承一跳**（7.6 链式反转）——反转在第二层复活。诊断：快照里 H 等的锁主 A 本身 eBlocked 在另一把锁上。解法见 7.6 天花板或重构锁层次。
 4. **中断里的"隐性低优先级"**——ISR 触发 give 唤醒 L，但 ISR 不受任务优先级约束，H 要等 ISR 跑完。这是中断延迟不是反转，别误诊：检查 ISR 是否过长/未置 yield。
 
-### 13.1.3 幽灵优先级：归还的"多锁盲区"（真实行为是"降得太迟"而非"降得太狠"）
+### 13.1.3 幽灵优先级: 归还的"多锁盲区" (真实行为是"降得太迟"而非"降得太狠")
 
 **症状**：低优先级任务偶发以高优先级长期运行、时间片反常；或"give 完锁期望的高优先级接管"没发生。
 
@@ -1702,7 +1702,7 @@ M(优先级数值3)     就绪 → 抢占 L 长期运行
 
 **规避**：多锁任务严格栈式解锁（take 顺序 A→B，give 顺序 B→A）；能合并就合并锁；对"必须立即让位"的语义在应用层补一次 taskYIELD；或切自研内核语义（重算式继承，rtos_design.md 7.4）——两边文档互证的差异点。
 
-## 13.2 死锁：ABBA 的诊断三板斧
+## 13.2 死锁: ABBA 的诊断三板斧
 
 ```
 任务1: take(MutexA)✓ → take(MutexB) 阻塞(任务2持有)
@@ -1721,9 +1721,9 @@ M(优先级数值3)     就绪 → 抢占 L 长期运行
 - 超时 + 补偿回滚（放弃时逆序释放已持锁，稍后重试）；
 - 架构级：双锁需求审视——多数 ABBA 的解是合并粗粒度锁或改队列传递所有权（FreeRTOS 官方 pipe 模式）。
 
-# 第十四章 数据竞争：临界区用错的形态
+# 第十四章 数据竞争: 临界区用错的形态
 
-## 14.1 多字节共享无保护（缝合怪）
+## 14.1 多字节共享无保护 (缝合怪)
 
 ```c
 /* 任务A 写 */  g_count_64 = big;         /* 两条STR */
@@ -1734,7 +1734,7 @@ M(优先级数值3)     就绪 → 抢占 L 长期运行
 
 **解**：写侧 taskENTER_CRITICAL（防任务+可屏蔽 ISR）或 FromISR 屏蔽宏（ISR 侧）；读侧同。**volatile 只管编译器可见性/重排，不管原子性**——嵌入式最高频概念混淆，没有之一。64 位量在 32 位 MCU 上永远需要保护（或用序列锁/双读校验）。
 
-## 14.2 TOCTOU（检查与行动之间被打）
+## 14.2 TOCTOU (检查与行动之间被打)
 
 ```c
 if( uxQueueMessagesWaiting( q ) > 0 )   /* 检查: 有 */
@@ -1761,9 +1761,9 @@ void EXTI0_IRQHandler( void ) {
 
 taskENTER_CRITICAL 内 printf/长循环/Flash 擦除 → 全部 syscall 域中断延迟飙升：串口丢字节、USB 断流、电机环抖动。**诊断**：逻辑分析仪量中断响应延迟；或 perf 统计（自研）对比。**原则**：临界区内只碰指针与计数；数据搬运、IO、慢速外设操作一律在外。
 
-# 第十五章 ISR 优先级域错误：随机崩溃之王
+# 第十五章 ISR 优先级域错误: 随机崩溃之王
 
-## 15.1 机理（为什么"随机"）
+## 15.1 机理 (为什么"随机")
 
 ```
 任务执行到内核临界区内(就绪链正被改, BASEPRI=0x50)
@@ -1785,7 +1785,7 @@ taskENTER_CRITICAL 内 printf/长循环/Flash 擦除 → 全部 syscall 域中�
 | Debug 不崩 Release 崩 | 时序敏感（域错误经典） |
 | **vPortValidateInterruptPriority 断言命中** | 确定性证据，直接锁定 ISR |
 
-## 15.3 诊断流程（四步）
+## 15.3 诊断流程 (四步)
 
 ```
 ① 核对 configMAX_SYSCALL_INTERRUPT_PRIORITY 非 0
@@ -1797,7 +1797,7 @@ taskENTER_CRITICAL 内 printf/长循环/Flash 擦除 → 全部 syscall 域中�
 
 **预防**：configASSERT 常开（至少 Debug 构建常开）。自研用户注意：rtos_config.h 的 MAX_SYSCALL=5 同构，USB 中断已配 6（rtos_design.md 13.5.1），**每新增一个用内核 API 的中断就跑一遍这张表**。
 
-# 第十六章 栈溢出：定位与防御
+# 第十六章 栈溢出: 定位与防御
 
 ## 16.1 发病机理与症状对照
 
@@ -1830,7 +1830,7 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName )
 - **方法 1**：pxTopOfStack 越出 [栈底, 栈顶] 区间——抓"已经爆了"；
 - **方法 2**：栈底 16 字染料 0xA5A5A5A5（创建时，3.2 步 e）被改动即报——抓"**碰到过底**"的未遂事件。必须用方法 2：溢出瞬间栈又收回（深度函数返回了）的话方法 1 扑空，染料的伤痕是永久的。
 
-## 16.3 尺子：高水位普查
+## 16.3 尺子: 高水位普查
 
 ```c
 UBaseType_t remain = uxTaskGetStackHighWaterMark( hTask );  /* 单位: 字 */
@@ -1841,7 +1841,7 @@ UBaseType_t remain = uxTaskGetStackHighWaterMark( hTask );  /* 单位: 字 */
 
 **定位流程**：开方法 2 + Hook → 复现 → Hook 点名 → 高水位量深度 → 增量（printf 换极简格式化/局部数组转 static/递归转迭代）。自研对照：stack_magic + 染料水位（rtos_design.md 2.2/12.3），ft8 测试（main.c）是"SP 低于栈底"活体标本。
 
-# 第十七章 程序崩溃：HardFault 分流表
+# 第十七章 程序崩溃: HardFault 分流表
 
 寄存器级诊断（CFSR 逐位、栈帧归因、任务/ISR 判定）见 [hardfault_debug.md](hardfault_debug.md)——Cortex-M 层与 RTOS 无关，两边通用。此处给**结合 FreeRTOS 特性**的分流：
 
@@ -1856,7 +1856,7 @@ UBaseType_t remain = uxTaskGetStackHighWaterMark( hTask );  /* 单位: 字 */
 
 **FreeRTOS 专属线索**：崩溃时 `pxCurrentTCB` 与被毁 TCB 的关系；`uxCriticalNesting != 0` 时崩溃（临界区内出事 → 强指 15 章闯入）；链表断言先于 HardFault（configASSERT 常开的红利）。
 
-# 第十八章 IPC 问题：丢失唤醒与虚假唤醒
+# 第十八章 IPC 问题: 丢失唤醒与虚假唤醒
 
 ## 18.1 调度器挂起期间的丢失唤醒
 
@@ -1900,13 +1900,13 @@ for( ;; ) {
 
 多读者/多写者的队列场景同理：xQueueReceive 返回 pdTRUE 也要校验内容语义（幂等设计）。
 
-## 18.3 顺序问题：等待链优先级序的副作用
+## 18.3 顺序问题: 等待链优先级序的副作用
 
 队列等待链按优先级唤醒（6.6 链首）——**同优先级 FIFO、跨优先级抢跳**。若业务依赖"先等先得"（公平性），如流水线传感器→算法→执行器全同优先级时天然保序；一旦中间某级优先级抬高，低优先级前端的数据可能被高优先级后端"抄近道"——**数据依赖与优先级倒挂**。诊断：给消息打序号，消费端校验单调性。解法：关键路径统一优先级，或改队列链（前级输出直接作为后级输入的专用队列，不经共享队列）。
 
 # 第十九章 STM32 平台专属问题
 
-## 19.1 SysTick 双主之争（HAL 时基冲突）
+## 19.1 SysTick 双主之争 (HAL 时基冲突)
 
 **症状**：上 FreeRTOS 后 `HAL_Delay()` 卡死 / HAL 驱动超时逻辑失效 / 在 HAL 内部死循环。
 
@@ -1930,7 +1930,7 @@ configUSE_TICKLESS_IDLE 下 WFI 前必须：预测唤醒点（含定时器到期
 
 newlib 全功能 vfprintf 栈 500~1500 字节（浮点翻倍）。多任务并发 printf：**每个可能 printf 的任务**的栈都要装下它。诊断：16 章高水位普查调用 printf 的任务。解：换极简格式化（自研 main.c 的 itm_printf + 128B 静态缓冲即此思路）；或 printf 收敛到单一日志任务。
 
-## 20.2 重入坑（malloc 撕裂）
+## 20.2 重入坑 (malloc 撕裂)
 
 printf 内部 malloc（行缓冲）→ 两任务同时 printf → 同时 malloc → **newlib 堆元数据撕裂** → 随机崩溃，且崩溃点在 malloc 内部（与 15 章域错误的鉴别：域错误崩在链表宏，重入崩在 sbrk/malloc 内部）。
 
@@ -1945,7 +1945,7 @@ Debug 半主机（BKPT 0xAB）在无调试器 attached 时**直接 HardFault**�
 
 # 第二十一章 定时器与回调问题
 
-## 21.1 回调阻塞：全系统定时器集体罢工
+## 21.1 回调阻塞: 全系统定时器集体罢工
 
 机理（9.3）：所有回调串行于守护任务。任一回调 `vTaskDelay(100)`/阻塞 take → **其余全部定时器停摆 100ms**。
 
@@ -1971,7 +1971,7 @@ xTimerStart 走命令队列（9.1）：生效延迟 = 入队 + 守护任务被�
 
 **③ 临界区内自删**：vTaskDelete(NULL) 在持锁状态 → 同②；且 uxCriticalNesting 非零时任务消失 → **临界区计数永久泄漏** → 此后 portEXIT_CRITICAL 永不开中断 → 全系统假死。自删前归位全部资源与临界区状态。
 
-## 22.2 删除的替代方案（按优先级）
+## 22.2 删除的替代方案 (按优先级)
 
 1. 任务常驻 + 任务通知控制启停（零删除、零悬空）；
 2. vTaskSuspend（可逆，但持锁挂起 = 13.1.2 查点 2）；
@@ -1979,7 +1979,7 @@ xTimerStart 走命令队列（9.1）：生效延迟 = 入队 + 守护任务被�
 
 # 第二十三章 排障工具箱与配置基线
 
-## 23.1 FreeRTOSConfig.h 排障基线（Debug 构建常开）
+## 23.1 FreeRTOSConfig.h 排障基线 (Debug 构建常开)
 
 ```c
 #define configASSERT( x )  if( ( x ) == 0 ) vAssertCalled( __FILE__, __LINE__ )
@@ -2000,7 +2000,7 @@ vAssertCalled 里打印文件/行/当前任务名（`pcTaskGetName(NULL)`）→ 
 | uxTaskGetStackHighWaterMark | 发布前普查 | 栈余量（16.3） |
 | vTaskGetRunTimeStatistics | 文本表 | 守护任务冻结（21.1）、CPU 热点 |
 
-## 23.3 排障方法论三条（贴显示器）
+## 23.3 排障方法论三条 (贴显示器)
 
 1. **崩溃点不是肇事点**——域错误（15）与栈溢出（16）都以远处随机崩溃露头。先做确定性防御（configASSERT + 栈 Hook + ValidateInterruptPriority），把随机变必现，再定位；
 2. **诊断靠快照与染料**——双快照对比抓死锁、高水位染料抓栈、CPU 统计抓冻结。不猜，量；

@@ -1,0 +1,6 @@
+﻿# Generated distribution copies produced by toggle_embed_images.ps1 (-Embed).
+# They are self-contained (images inlined as base64 data URIs) and are meant to be
+# carried to another machine, NOT committed: a single picture change would rewrite
+# one enormous line and destroy the diff.
+*.embed.md
+*.extracted.md

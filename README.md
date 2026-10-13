@@ -2,7 +2,9 @@
 
 一个从零设计、[逐行文档化](docs/rtos_design.md)的可移植抢占式 RTOS：内核与芯片解耦（`Core/` 提供全部内核逻辑、`Port/` 提供移植层），不绑定任何具体 MCU 或 SDK；应用侧附带 USB 设备栈（CDC 虚拟串口 + MSC U 盘 + HID 三合一复合设备）、端侧 AI 推理（int8 量化 CNN 说话人识别）与可实战的 HardFault 诊断体系，并配有与 FreeRTOS V10.4.6 官方源码逐段核对的[对照分析](docs/freertos_design.md)。
 
-**当前验证平台**：STM32F446RET6（Cortex-M4F @ 180MHz，STM32CubeIDE + GCC）。内核代码不含任何 ST 头文件引用；换一颗 Cortex-M3/M4/M7 芯片只需替换移植层与目标 SDK 工程，见[移植指南](#移植到其他芯片)。
+**当前验证平台**：STM32F446RET6（Cortex-M4F @ 168MHz，STM32CubeIDE + GCC）。内核代码不含任何 ST 头文件引用；换一颗 Cortex-M3/M4/M7 芯片只需替换移植层与目标 SDK 工程，见[移植指南](#移植到其他芯片)。
+
+**2026-10-13 验证汇总**：已完成内核及 USB 处理路径修复、底层性能优化和 16 任务／双硬件中断综合压力测试。五轮正常压力测试逐条验证 2,433,735 条成功接纳消息，161 项验收检查在每轮均通过；包含 15 分钟持续运行和单包损坏检出对照。日常固件已恢复。详细改动、性能收益与退步、验证范围及证据入口见[本次交付汇总](docs/rtos_release_20261013.md)。物理 USB 总线传输未包含在本轮验证中。
 
 ```
 +------------------------------------------------------------------+
@@ -30,7 +32,7 @@
 
 ### 调度
 
-- **32 级抢占式优先级调度**：就绪表用位图 + `CLZ/CTZ` 单指令选任务，O(1) 决策；
+- **32 级抢占式优先级调度**：就绪表用位图 + `__builtin_ctz`（RBIT、CLZ 两条指令）定位最高就绪优先级，O(1) 选择；
 - **同优先级时间片轮转**：tick 驱动，可配置关闭；
 - **1kHz tick**（可配），`delay` / `delay_until`（周期任务防漂移）两种延时语义；
 - **决策/执行分离**：调度决策收口在 `rtos_sched.c`，切换执行统一由 PendSV 完成——决策在临界区内、切换在临界区外，天然合并多次切换请求。
@@ -47,7 +49,7 @@
 
 ### 内存
 
-- **全静态对象池**：任务/信号量/互斥锁/队列/事件组/定时器/USB 对象全部池化，无碎片、启动即确定；
+- **静态资源与动态任务共存**：`rtos_task_create_static` 使用调用方提供的 TCB 和栈，`rtos_task_create` 从通用堆分配 TCB 和栈；IPC 对象及队列存储由调用方提供，USB OSAL 使用固定对象池；
 - 双档固定块 USB 堆（小块 64B / 大块 512B，O(1)）+ first-fit 前向合并通用堆（可选）。
 
 ### 可观测性（调试即功能）
@@ -104,7 +106,7 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 | 项 | 值 |
 |---|---|
-| MCU | STM32F446RET6（Cortex-M4F @ 180MHz，LQFP64） |
+| MCU | STM32F446RET6（Cortex-M4F @ 168MHz，LQFP64） |
 | 控制台 | USART2 @ PA2(TX)/PA3(RX)，115200-8N1 |
 | USB | OTG_FS @ PA11(DM)/PA12(DP) |
 | IDE | STM32CubeIDE 1.13+（GCC arm-none-eabi） |
@@ -176,16 +178,30 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 | 文档 | 内容 |
 |---|---|
-| [rtos_design.md](docs/rtos_design.md) | 内核设计 22 章：调度/IPC/超时定位全流程解剖/USB 子系统与移植/性能监视/已知限制清单 |
-| [freertos_design.md](docs/freertos_design.md) | FreeRTOS V10.4.6 逐段核对的源码剖析（23 章）+ 互斥锁/竞争/崩溃排障大全 |
-| [hardfault_debug.md](docs/hardfault_debug.md) | HardFault 寄存器级诊断手册（CFSR 逐位/栈帧归因/任务 vs ISR 判定） |
+| [rtos_design.md](docs/rtos_design.md) | **内核设计手册**（22 章）：调度 / IPC 五种机制 / 超时定位全流程解剖 / USB 子系统与移植 / 性能监视 / 已知限制清单 |
+| [rtos_performance_report.md](docs/rtos_performance_report.md) | **性能测试报告**：微基准 BM0–BM7 + 系统级场景 S1–S5 + 与 FreeRTOS V10.3.1 的逐项对照；含布局敏感性与已作废结论的更正记录 |
+| [rtos_testing_report.md](docs/rtos_testing_report.md) | **测试报告**：功能回归 442 用例 / 边界夹具 103 断言 / 两轮源码审计共 11 项内核缺陷与取证 / 设计风险清单 / HIL 方法论教训 / 覆盖缺口 |
+| [hardfault_debug.md](docs/hardfault_debug.md) | HardFault 寄存器级诊断手册（CFSR 逐位 / 栈帧归因 / 任务 vs ISR 判定） |
+| [freertos_design.md](docs/freertos_design.md) | FreeRTOS V10.4.6 逐段核对的源码剖析（23 章）+ 互斥锁 / 竞争 / 崩溃排障大全 |
 | [compilation_pipeline.md](docs/compilation_pipeline.md) | 编译链接原理（从预处理到 map 文件） |
+| [rtos_release_20261013.md](docs/rtos_release_20261013.md) | **当前交付汇总**：改动分类、真实验证结果、证据范围和复现条件 |
+| [rtos_audit_20261012.md](docs/rtos_audit_20261012.md) | 源码审计、调度／IPC／定时器／USB 修复与专项回归 |
+| [rtos_optimization_20261012.md](docs/rtos_optimization_20261012.md) | 第一阶段性能试验、保留方案、撤回方案与测量局限 |
+| [rtos_lowlevel_optimization_20261012.md](docs/rtos_lowlevel_optimization_20261012.md) | 当前底层实现、PendSV／信号量优化和上下文／FPU 检查 |
+| [rtos_production_stress_20261013.md](docs/rtos_production_stress_20261013.md) | 16 任务、两路真实定时器中断、混合 IPC、背压恢复及 900 秒压力运行 |
+
+> 传统测试套件的**一键复现在 `hil\`**：`powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1`
+> （自动切换固件变体、烧录、抓串口）。后续优化与综合压力使用独立入口，见 [HIL 说明](hil/README.md)。历史版本报告归档在 `hil\archive_docs\`。
 
 ## 已知限制（诚实清单）
 
-- 单延时链表，tick 计数约 49.7 天回绕（1kHz）——修复方向是 FreeRTOS 式双链对滚，见文档 L1；
-- 优先级继承为一跳（链式反转未解，与 FreeRTOS 相同）；
-- 通用堆无后向合并（L7）。
+- **单条有限延时/超时上限 0x7FFFFFFF tick**（1kHz 下约 24.8 天）：tick 回绕本身是安全的 —— 所有到期判断与
+  链序比较都用 `sched_tick_after()` 的**带符号差值**；单次延时若超出有限上界，即落在
+  `[0x80000000, 0xFFFFFFFF]`，会被统一钳制为永久阻塞，无超时返回；
+- **延时链插入为 O(n)**：链是双向的、追加有表尾缓存（周期任务/一次性 delay 走 O(1) 快路径），
+  摘除 O(1)，但"插入到链中间"需从链首线性查找 —— 大量任务乱序并发延时是唯一残留退化路径；
+- **优先级继承为一跳**（链式反转未解，与 FreeRTOS 相同）；
+- **通用堆只做前向合并**（仅向高地址合并，无后向合并 → 长期碎片）。
 
 完整债务清单与 FreeRTOS 逐项对照见 [freertos_design.md 第十二章](docs/freertos_design.md)。
 

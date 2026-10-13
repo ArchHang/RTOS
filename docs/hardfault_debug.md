@@ -36,7 +36,7 @@
 
 ---
 
-# 第一章 故障模型：错误如何走到 HardFault
+# 第一章 故障模型: 错误如何走到 HardFault
 
 Cortex-M 实现了**嵌套故障升级链**：
 
@@ -57,7 +57,7 @@ HardFault 自身的优先级固定为 **-1**，仅次于 NMI(-2) 和复位：
 
 ---
 
-# 第二章 异常入口：硬件自动保存的现场
+# 第二章 异常入口: 硬件自动保存的现场
 
 进入任何异常（含 HardFault）**之前**，硬件自动把 8 个寄存器压入**当时正在使用的栈**（PSP 或 MSP，由被打断上下文决定）。
 
@@ -84,7 +84,7 @@ HardFault 自身的优先级固定为 **-1**，仅次于 NMI(-2) 和复位：
 - **扩展帧**：26 字（104 字节），任务执行过 FPU 指令后中断进入时为该格式，EXC_RETURN.bit4=0。本项目 FPCCR 开了惰性堆叠（ASPEN|LSPEN），S0-S15 的实际保存延迟到 FPU 指令真正执行，但**帧空间仍会预留**——解析 PC/LR 用不到 S 寄存器，扩展帧只需知道"SP 比基本帧低 68 字节"即可。
 - **SP 本身**：`SP_at_fault = 传给 C 函数的帧指针`。栈溢出判定就用它对比任务栈边界。注意若压栈失败（MSTKERR/STKERR），此值可能已非法。
 
-## 2.2 栈帧中 LR 的真实语义（2026-08 真机实测教训）
+## 2.2 栈帧中 LR 的真实语义 (2026-08 真机实测教训)
 
 **常见误解**：*"LR 指向出错位置的调用者，用 LR 定位错误"*。这只在一半场景下成立。
 
@@ -134,7 +134,7 @@ HardFault 自身的优先级固定为 **-1**，仅次于 NMI(-2) 和复位：
 
 以下寄存器全部位于系统控制块（SCB，基址 0xE000ED00）。除特别说明外，状态位均为**粘滞位：写 1 清除**——诊断代码只读不清，复位前证据一直在。
 
-## 3.1 CFSR — MMFSR（bit0~7）
+## 3.1 CFSR — MMFSR (bit0~7)
 
 CFSR（0xE000ED28）低字节为存储器管理故障状态（MPU 违规 / XN 区域执行）：
 
@@ -148,7 +148,7 @@ CFSR（0xE000ED28）低字节为存储器管理故障状态（MPU 违规 / XN �
 | 6 | MLSPERR | 惰性 FPU 状态保存失败 | 任务栈溢出（S 寄存器落栈时越界） |
 | 7 | **MMARVALID** | MMFAR（bit 对应 0xE000ED34）内容有效 | =1 才可信任 MMFAR |
 
-## 3.2 CFSR — BFSR（bit8~15）
+## 3.2 CFSR — BFSR (bit8~15)
 
 中字节为总线故障状态（取指/数据访问的总线层错误）：
 
@@ -165,7 +165,7 @@ CFSR（0xE000ED28）低字节为存储器管理故障状态（MPU 违规 / XN �
 
 > 本工程无 MPU，IACCVIOL/DACCVIOL 基本不会出现；总线类故障主要来自访问保留地址区（RAM/FLASH 之外）。
 
-## 3.3 CFSR — UFSR（bit16~31）
+## 3.3 CFSR — UFSR (bit16~31)
 
 高半字为用法故障状态：
 
@@ -222,7 +222,7 @@ CFSR（0xE000ED28）低字节为存储器管理故障状态（MPU 违规 / XN �
 | 3 | UNALIGN_TRP | 所有非对齐访问触发 UsageFault（默认 0=允许） |
 | 4 | DIV_0_TRP | 除零触发 UsageFault（默认 0=返回 0 不报错） |
 
-## 3.8 AFSR / DFSR（简述）
+## 3.8 AFSR / DFSR (简述)
 
 - **AFSR**（0xE000ED3C）：辅助故障状态，厂商自定义（ST 用于实现 Fault Analyzer 扩展，一般读 0）。
 - **DFSR**（0xE000ED30）：调试故障状态（HALT/ breakpoints 等），调试器使用，软件诊断不依赖。
@@ -282,7 +282,7 @@ CFSR（0xE000ED28）低字节为存储器管理故障状态（MPU 违规 / XN �
 
 ---
 
-## 5.1 实战案例：printf 默认实现引发的级联故障（2026-08 真机实测）
+## 5.1 实战案例: printf 默认实现引发的级联故障 (2026-08 真机实测)
 
 **现象**（测试 1：任务读 0x20020000 触发 BusFault）：
 
@@ -316,7 +316,7 @@ ft1 读 0x20020000 → BusFault(优先级0) → dump 开始
 
 **修复**（已实施）：`fault_output` 默认实现改为 USART2 寄存器直写（零库依赖）；`fault_report` 入口增加嵌套故障保护——若 dump 路径再次故障，用原始通道报告第二次故障的 CFSR/HFSR 后停机（不再执行可能再次故障的完整 dump），杜绝 LOCKUP 且调试器保持连接；printf 降级为用户可选的覆盖实现（注释中注明风险与 fflush 建议）。
 
-### 5.2 第二轮：GCC store-merging 生成的非对齐写（同日真机实测）
+### 5.2 第二轮: GCC store-merging 生成的非对齐写 (同日真机实测)
 
 第一轮修复后再次实测测试 1，仍出现 BusFault → HardFault 级联，但这次**嵌套保护捕获了元凶**：
 
@@ -344,7 +344,7 @@ str.w  r2, [sp, #10]     ; SP 4对齐 +10 → 地址恒为 2 mod 4, 非对齐整
 
 **第四条教训**：开启任何"把合法行为变成故障"的调试陷阱（UNALIGN_TRP/DIV_0_TRP/MPU）前，必须意识到它会作用于**全部**代码——包括编译器优化生成的指令和故障处理器自身；故障处理器这类极端上下文应做到对其免疫。
 
-### 5.3 最终方案：printf 默认 + 三层防护
+### 5.3 最终方案: printf 默认 + 三层防护
 
 两轮事故后确立的架构（当前实现）：
 
@@ -379,7 +379,7 @@ str.w  r2, [sp, #10]     ; SP 4对齐 +10 → 地址恒为 2 mod 4, 非对齐整
 
 全部代码落在 **stm32f4xx_it.c 的 USER CODE 区**（CubeMX 重新生成时保留）+ **main.c 一行使能**。不需要新建文件、不改动构建系统。
 
-## 7.1 使能代码（main.c）
+## 7.1 使能代码 (main.c)
 
 ```c
 int main(void)
@@ -408,7 +408,7 @@ int main(void)
 }
 ```
 
-## 7.2 诊断模块（stm32f4xx_it.c）
+## 7.2 诊断模块 (stm32f4xx_it.c)
 
 ```c
 /* USER CODE BEGIN Includes */
@@ -743,7 +743,7 @@ static __attribute__( ( used ) ) void fault_report( uint32_t sp, uint32_t exc_re
 /* USER CODE END 0 */
 ```
 
-## 7.3 四个异常入口的改写（naked 纯汇编版）
+## 7.3 四个异常入口的改写 (naked 纯汇编版)
 
 **为什么必须 naked —— 序言对故障帧定位的破坏**：
 
@@ -867,7 +867,7 @@ E:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 
 ---
 
-# 第九章 验证方法：故意触发各类故障
+# 第九章 验证方法: 故意触发各类故障
 
 **工程已内置 9 项 UART 命令测试**（main.c 的 ft_* 任务，串口发数字 '1'~'9' 触发，每项触发后停机需复位）：
 
@@ -922,11 +922,11 @@ E:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.external
 
 # 第十章 零代码方案与生产期扩展
 
-## 10.1 STM32CubeIDE Fault Analyzer（调试器附加时）
+## 10.1 STM32CubeIDE Fault Analyzer (调试器附加时)
 
 调试运行中 halt（或断点触发）后，IDE 自动弹出 **Fault Analyzer** 视图：自动解码 CFSR/HFSR、显示压栈帧 PC/LR/SP 与 EXC_RETURN。开发期在线调试优先用它；本手册的 Handler 方案解决的是**脱机运行 / 现场偶发 / 无调试器**场景。
 
-## 10.2 生产期黑匣子（方向性设计）
+## 10.2 生产期黑匣子 (方向性设计)
 
 ```
 fault_report 最后一步(替代 while(1)):
