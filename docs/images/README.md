@@ -1,48 +1,65 @@
-# docs/images — 文档插图
+# 文档插图的来源与维护
 
-本目录存放 `docs/*.md` 中插图的 **PNG 渲染结果**。
+本目录保存设计手册和测试报告引用的 PNG。每张可重新生成的图，其唯一来源是相应 Markdown 文档内的 Mermaid 代码块；PNG 是提供给不支持 Mermaid 的查看器使用的渲染结果。修改架构图时先修改源码块，再渲染并检查图片，不直接修改 PNG。
 
-## 这些文件是构建产物
+## 图文配对与稳定命名
 
-**请勿手工编辑 PNG。** 每张图的**唯一真源**是文档内嵌的 ` ```mermaid ` 代码块：
+每个 Mermaid 代码块前必须紧邻一个独立的 Markdown 图片链接，中间可留空行，也可加入一行 `<details><summary>图形源码（mermaid）</summary>`。例如：
 
-```
-<图注: images/rtos_design_03.png>       ← 供不支持 mermaid 的查看器显示
+````markdown
+![中断到任务唤醒路径](images/rtos_design_irq_wakeup.png)
+
+<details><summary>图形源码（mermaid）</summary>
 
 ```mermaid
 flowchart LR
-    ...                                  ← 唯一真源: 改图改这里
+    IRQ[中断处理] --> READY[任务就绪] --> PENDSV[PendSV 切换]
 ```
-```
 
-> 图中占位符 `<图注: …>` 对应 Markdown 的 `![图注](…)` 写法。
-> 该路径是相对**引用它的文档**（如 `docs/rtos_design.md`）解析的，不是相对本文件 ——
-> 本文件位于 `docs/images/`，若要在此处真正插图，路径应为 `rtos_design_03.png`。
+</details>
+````
 
-同时保留 PNG 与 mermaid 源码的原因是：本项目文档可能用 STM32CubeIDE、
-Word 或纯文本编辑器查看，这些环境不渲染 mermaid；而 PNG 在任何 Markdown
-查看器中都能显示。GitHub / VS Code(装插件) 则直接渲染源码块，便于阅读与修改。
+图片名称取自明确的 `images/<文件名>.png` 链接，与代码块的出现顺序无关。已有 `rtos_design_01.png` 等历史名称继续保留；新增图建议按主题命名，例如 `rtos_design_irq_wakeup.png`。编号不连续也合法，插入图时不需要重编号。
 
-## 如何重新生成
+脚本要求图片直接位于 `docs/images/`，拒绝跨目录链接、重复输出名称、缺失配对、空图源和未闭合的 Mermaid 代码块。同一次调用的不同文档也不能使用同一输出名，避免覆盖其他图。
 
-改完文档里的 mermaid 代码块后，在 `docs/` 目录执行：
+## 校验与离线渲染
+
+脚本从自身所在目录定位文档，工作目录可任意选择。只校验图文配对时不需要 Node.js 或浏览器，也不会修改文档、图片或创建临时文件：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "& .\gen_diagrams.ps1 -Docs rtos_design,rtos_performance_report"
+& .\docs\gen_diagrams.ps1 -Docs rtos_design,rtos_performance_report -ValidateOnly
 ```
 
-脚本会按**文档内出现顺序**把每个 mermaid 块渲染为
-`<文档名>_<两位序号>.png`，并校验每个块都有对应的图片链接
-（缺失或编号错位会打印 `WARN`，便于发现图文漂移）。
+渲染使用已经安装的 Node.js、Mermaid CLI 和本地浏览器。显式提供 CLI 入口与 Puppeteer 配置路径，脚本不会通过 `npx` 下载依赖。下面使用示意工具目录；请替换为本机实际安装位置：
 
-依赖：Node.js + `npx`（首次运行会联网拉取 `@mermaid-js/mermaid-cli`，之后走 npm 缓存）。
+```powershell
+$renderArgs = @{
+    Docs = @('rtos_design')
+    NodePath = 'C:\Program Files\nodejs\node.exe'
+    MermaidCliPath = 'C:\tools\mermaid-cli\src\cli.js'
+    PuppeteerConfig = 'C:\tools\mermaid-cli\puppeteer.json'
+}
+& .\docs\gen_diagrams.ps1 @renderArgs
 
-## 命名约定
+# 只更新所列图片；仍先校验全部图源的配对关系。
+& .\docs\gen_diagrams.ps1 @renderArgs -OnlyImages rtos_design_irq_wakeup.png
+```
 
-| 文件 | 说明 |
-|---|---|
-| `rtos_design_NN.png` | 来自 `rtos_design.md`，NN 为块在文档中的序号 |
-| `rtos_vs_freertos_perf_report_NN.png` | 历史文件名, 现由 `rtos_performance_report.md` 引用(合并报告沿用了原图, 不重命名以免重新渲染) |
+Puppeteer JSON 配置必须通过 `executablePath` 指向已经存在的浏览器，例如：
 
-序号与文档顺序绑定，因此**在文档中间插入新图会使后续图片整体重编号** ——
-重新运行脚本即可自动对齐，无需手工改名。
+```json
+{
+  "executablePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+}
+```
+
+请按本机环境配置浏览器参数；脚本将配置原样传给 Mermaid CLI。这里记录的 CLI 版本为 **10.9.1**，本机配置与临时图源放在忽略的 `Debug/doc_editorial/` 中，不作为架构文档提交。
+
+脚本先在独立临时目录渲染，确认 Node.js 返回成功且产物具有 PNG 文件头后，才替换对应图片。解析或渲染失败会以非零退出状态报告，并保留该图的旧文件。`-FixLinks` 仅保留为兼容参数：它执行同样的配对校验，不再改写链接或自动编号；链接变更应由作者在文档中明确完成。
+
+## 发布前复核
+
+渲染成功只说明图源可以生成图片。发布前还应打开 PNG，检查文字是否完整、箭头方向和图例是否准确，并与本文引用的当前源码核对。历史报告沿用的文件名不代表当前架构版本；某张历史图没有配对 Mermaid 图源时，脚本不会重新生成或覆盖它。
+
+典型维护顺序为：修改图源与配套正文 → `-ValidateOnly` → 仅渲染受影响图片 → 打开图片复核 → 检查 Git 差异。图片链接和 Mermaid 图源应随同一文档变更一起提交，保持读者看到的图片与图源一致。

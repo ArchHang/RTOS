@@ -24,7 +24,7 @@
 +------------------------------------------------------------------+
 ```
 
-> 当前实现与接口契约见 [设计手册](docs/rtos_design.md)，修复、优化及实板验证结果见 [交付汇总](docs/rtos_release_20261013.md)。
+> 当前架构、寄存器现场、API 契约及工程集成见 [设计手册](docs/rtos_design.md)，配有状态、等待归属和执行时序图；修复、优化及实板验证结果见 [交付汇总](docs/rtos_release_20261013.md)。
 
 ---
 
@@ -187,7 +187,7 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 | 文档 | 内容 |
 |---|---|
-| [rtos_design.md](docs/rtos_design.md) | **当前内核设计手册**（16 章）：调度 / IPC 五种机制 / 超时定位 / USB 子系统与移植 / 性能监视 / 当前边界 |
+| [rtos_design.md](docs/rtos_design.md) | **当前架构与实现手册**（16 章）：调度不变式 / PendSV 与 FPU 栈帧 / IPC 契约与寿命 / USB 适配 / 统计边界 / API 上下文矩阵 / 资源预算与业务关停 |
 | [rtos_performance_report.md](docs/rtos_performance_report.md) | **性能测试报告**：微基准 BM0–BM7 + 系统级场景 S1–S5 + 与 FreeRTOS V10.3.1 的逐项对照；含布局敏感性与已作废结论的更正记录 |
 | [rtos_testing_report.md](docs/rtos_testing_report.md) | **历史测试汇总**：基础功能与边界夹具、早期审计取证、方法教训及覆盖缺口；后续终验见下列带日期的报告 |
 | [hardfault_debug.md](docs/hardfault_debug.md) | HardFault 寄存器级诊断手册（CFSR 逐位 / 栈帧归因 / 任务 vs ISR 判定） |
