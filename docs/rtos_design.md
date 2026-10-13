@@ -1,7 +1,7 @@
 # 自研 RTOS 实现原理完整技术手册 (详尽版)
 
 > **适用平台**：STM32F446RE（Cortex-M4F，ARMv7-M）+ GCC (arm-none-eabi)
-> **文档基准**：本工程 RTOS/ 当前代码，包含 2026-10-12 源码审计修复。复现、修复和实板结果见 [本次审计报告](rtos_audit_20261012.md)。第十六章以及正文未标明本次日期的性能数字属于历史版本，不能作为当前固件性能结果。
+> **文档基准**：2026-10-13 本工程 `RTOS/` 当前代码，包含源码审计修复、两轮性能优化及综合压力测试后的保留实现。变更与验证总览见 [发布汇总](rtos_release_20261013.md)，缺陷复现见 [审计报告](rtos_audit_20261012.md)，综合负载结果见 [生产压力测试报告](rtos_production_stress_20261013.md)。第十六章以及正文未标明日期的性能数字属于历史版本，不能作为当前固件性能结果。上下文切换、唤醒路径和信号量插图已随流程同步；4.2 中明确标注的历史图只用于追溯，当前行为以该节指令流程为准。
 > **文档目标**：逐函数、逐步骤讲清"调用 API 后内核内部发生了什么"——数据结构如何变化、上下文在哪里切换、任务在哪条指令上暂停又从哪里恢复——并分析每处设计的理念与代价
 > **代码位置**：内核 `RTOS/Core/`、移植层 `RTOS/Port/GCC/ARM_CM7/port.c`
 > **配套文档**：[2026-10-12 底层优化报告](rtos_lowlevel_optimization_20261012.md)（当前实现与实板对照）、[第一轮性能优化报告](rtos_optimization_20261012.md)（历史阶段）、[rtos_performance_report.md](rtos_performance_report.md)（历史微基准 + 系统级场景 + 与 FreeRTOS 的实测对比）、[rtos_testing_report.md](rtos_testing_report.md)（功能回归/边界测试/HIL 复现审计）、[hardfault_debug.md](hardfault_debug.md)（故障诊断）、[compilation_pipeline.md](compilation_pipeline.md)（编译原理）、[freertos_design.md](freertos_design.md)（FreeRTOS 设计分析与排障，与本文互为镜像参照）
@@ -15,9 +15,9 @@
 - [第三章 调度器: 从就绪表到上下文切换的完整链路](#第三章-调度器-从就绪表到上下文切换的完整链路)
 - [第四章 移植层: PendSV, SVC 与临界区的指令级流程](#第四章-移植层-pendsv-svc-与临界区的指令级流程)
 - [第五章 任务管理: 每个 API 的逐步执行流程](#第五章-任务管理-每个-api-的逐步执行流程)
-- [第六章 信号量: take/give 的完整路径](#第六章-信号量-take/give-的完整路径)
+- [第六章 信号量: take/give 的完整路径](#第六章-信号量-takegive-的完整路径)
 - [第七章 互斥锁: 优先级继承的每一步](#第七章-互斥锁-优先级继承的每一步)
-- [第八章 消息队列: 四条路径与零拷贝直传](#第八章-消息队列-四条路径与零拷贝直传)
+- [第八章 消息队列: 四条路径与单次拷贝直传](#第八章-消息队列-四条路径与单次拷贝直传)
 - [第九章 事件标志组](#第九章-事件标志组)
 - [第十章 软件定时器](#第十章-软件定时器)
 - [第十一章 内存管理](#第十一章-内存管理)
@@ -60,14 +60,13 @@ flowchart TB
 
 依赖方向严格单向：上层调用下层。IPC 模块（sem/mutex/queue/event）不知道调度器细节，它们只调用 `rtos_internal_block_current_on` 与 `rtos_internal_wake_highest_bm`（信号量；当前队列使用有序等待链）或 `rtos_internal_wake_highest`（事件组/互斥锁）等内部原语；调度器不知道 PendSV 的存在，它只调用 `rtos_port_context_switch()`"请求一次切换"。
 
-> **文档版本说明**：本文档已按**优化后**的内核实现全面校订。
-> 与早期版本相比，以下机制的描述已更新，阅读时请以本文为准：
-> ① 等待链由"统一按优先级有序插入"改为**两套并存约定**（位图索引链 / 有序链）——唤醒侧从 O(n) 级联降为 O(1)、入链侧的 O(n) 被挪到低频的阻塞路径，见 1.3 不变式 III、2.3、6.5；
+> **当前实现说明**：以下机制已按源码校订：
+> ① 等待链有**两套并存约定**（信号量 FIFO 位图链 / 队列、事件组、互斥锁有序链）。位图选优先级是 O(1)，但信号量多等待者定位与清位仍需扫描，整体最坏 O(n)，见 1.3 不变式 III、2.3、6.3；
 > ② 延时链由"单向 + 摘除 O(n)"改为**双向 + 表尾缓存**（插入 O(1) 快路径、摘除 O(1)），见 3.4；
 > ③ PendSV 由"双层 C 调用 + `isb`"改为**汇编直存 + 单层 `bl`**，见 4.2；
 > ④ 临界区由"out-of-line 函数 + exit 侧 `isb`"改为**头文件内联**，见 4.5；
 > ⑤ 已知限制 L1/L2/L4 已修复，见第十五章；
-> ⑥ 新增第十六章记录本轮性能优化的**机制与实测数据**。
+> ⑥ 第十六章保留历史性能优化记录，当前测量与覆盖以带日期报告为准。
 
 ## 1.2 五条贯穿全内核的设计原则
 
@@ -75,7 +74,7 @@ flowchart TB
 |------|------|------|
 | **1. 一切静态可预测** | 空闲任务/定时器任务/命令队列全静态；任务双路径（堆/静态） | 若 idle 任务依赖堆，堆耗尽时自删任务的 TCB 永远无法回收 → 死锁 |
 | **2. 临界区极短** | 所有内核结构操作在 BASEPRI 临界区内，O(1) 或有界 O(n) | 临界区内执行回调 → SysTick 停走、PendSV 无法执行、中断延迟不可控 |
-| **3. O(1) 热路径** | 选任务（`ctz` 位图）/就绪表/信号量唤醒（位图选最高优先级）/内存池 全部常数时间 | 调度热点出现 O(n) → 任务数增加时实时性衰退 |
+| **3. 优先缩短热路径** | 选任务（`ctz` 位图）、就绪表和内存池分配是 O(1)；信号量单等待者唤醒是 O(1)，多等待者仍最坏 O(n) | 线性扫描与任务数、等待者数一起增加，必须结合业务负载测量 |
 | **4. 侵入式复用** | TCB 内嵌 wait_node 与链表指针，wait_node 字段多路复用 | 若用外部分配的节点，每次阻塞都要 malloc → 引入失败路径与碎片 |
 | **5. 统一清理** | 任务离开等待状态的三条路径（唤醒/超时/中止）共用内核清理代码 | 任何一条路径漏删链表节点 → 悬空指针 → use-after-free |
 
@@ -112,15 +111,15 @@ stateDiagram-v2
 
 **三条硬性不变式**（贯穿全文，每处代码都依赖它们）：
 
-1. **不变式 I**：RUNNING 状态的 TCB 必是其优先级就绪链表的 head（时间片轮转和调度决策都依赖）；
+1. **不变式 I**：已完成切换、没有待执行同级轮转的稳定状态中，RUNNING TCB 是其优先级就绪链表的 head。轮转先移动 head 并登记 next_tcb，PendSV 执行前 current 仍是旧任务；阻塞后切出前也会暂时出现 current 指向 DELAYED/BLOCKED。因此不能只凭 current 指针推断任务处于 RUNNING；yield、取消候选和提交切换分别维护这一窗口；
 2. **不变式 II**：任一时刻，一个 TCB 至多属于一条调度链表（就绪链表或延时链表）+ 至多一条对象等待链表；
 3. **不变式 III（两套并存约定）**：对象等待链表有两种维护纪律，**同一个对象内不可混用**——
-   - **(A) 位图索引链**：信号量、队列（发送链与接收链）。链表是**尾插的 FIFO 链**，链首**不一定**是最高优先级；"最高优先级等待者"由配套的 `uint32_t` 优先级位图 + `__builtin_ctz` 在唤醒时选出（`rtos_internal_wake_highest_bm`）。**入链仍是 O(n)**（尾插要遍历到链尾），但**唤醒侧降为 O(1)**——关键在于入链发生在**阻塞侧（低频）**、唤醒发生在 **give 侧（高频）**，因此这是"把 O(n) 从热路径挪到冷路径"，而非消除 O(n)。
-   - **(B) 有序链**：事件组、互斥锁。仍按任务优先级升序插入，**链首 = 最高优先级等待者**（`rtos_internal_wake_highest`）。插入 O(n)。
+   - **(A) 位图索引链**：当前仅信号量采用。链表是**尾插的 FIFO 链**，链首**不一定**是最高优先级；`uint32_t` 位图 + `__builtin_ctz` 先选最高优先级，再从整条 FIFO 链首定位第一个匹配者（`rtos_internal_wake_highest_bm`）。入链 O(n)，单等待者唤醒 O(1)，多等待者定位和摘链后清位均最坏 O(n)。位图没有独立的每优先级链首，不能据此宣称整体唤醒 O(1)。
+   - **(B) 有序链**：队列（发送链与接收链）、事件组、互斥锁。按任务优先级升序插入，**链首 = 最高优先级等待者**。`rtos_internal_wake_highest` 取链首是 O(1)，插入 O(n)；事件组 set 需逐个判定条件，仍是 O(n)。
    - 两者的共同可观察语义**完全等价**：唤醒的必是最高优先级等待者，且同优先级内 FIFO（先阻塞者先得）。
-   - 任务优先级变化时，由 `rtos_internal_requeue_wait_lists()`（5.8）**按链的类别分别处理**：位图链只同步位图并尾插回原位序，有序链才摘出重插。
+   - 任务有效优先级变化时，由 `rtos_internal_requeue_wait_lists()`（5.8）**按链的类别分别处理**：位图链摘出、同步旧/新位，再尾插；有序链摘出后按新优先级重插。有效优先级不变时不重挂，以保留 FIFO。
 
-> **为什么需要两套**：(A) 把"选最高优先级"的成本从**入链侧**（每次阻塞都付、且随等待者数线性增长）挪到**唤醒侧**（用两条指令的 `ctz` 换取）。信号量/队列是最热的两类 IPC，收益最大。事件组与互斥锁的等待链上还要承载"等待位掩码""插队意图"等附加语义，且其唤醒不是单纯的"取最高优先级"（互斥锁还要做所有权移交与优先级继承重算），故保留有序链以简化正确性论证。
+> **为什么保留两套**：信号量 FIFO 位图链与有序链具有相同的优先级唤醒、同级 FIFO 语义，但付出成本的位置不同。当前队列通过有序等待链直接取最高优先级发送者或接收者；互斥锁还要移交所有权并重算继承，事件组还要检查位条件。两套约定由 `queue_bitmap` 是否为 NULL 区分，不能混用。实际性能收益见带日期报告，不能由位图操作的常数复杂度推导整个 API 的时延。
 
 ---
 
@@ -133,11 +132,10 @@ typedef struct rtos_kernel
 {
     volatile rtos_sched_state_t sched_state;   /* NOT_STARTED/RUNNING/SUSPENDED/STOPPED */
     volatile rtos_tick_t        tick_count;    /* 全局时基, SysTick 每 ms +1 */
-    volatile uint32_t           schedule_pending; /* (保留字段, 现代码未使用) */
 
     volatile uint32_t           ready_bitmap;  /* ★就绪位图 */
-    rtos_tcb_t                 *ready_heads[ 32 ]; /* ★每优先级链表头 */
-    rtos_tcb_t                 *delay_head;    /* 延时链(双向环外挂, wake_tick 升序) */
+    rtos_tcb_t                 *ready_heads[RTOS_CONFIG_MAX_PRIORITIES];
+    rtos_tcb_t                 *delay_head;    /* 单条双向延时链，按半平面时序排序 */
 
     rtos_tcb_t                 *current_tcb;   /* 正在运行 */
     rtos_tcb_t                 *next_tcb;      /* 调度决策结果, PendSV 消费 */
@@ -146,6 +144,7 @@ typedef struct rtos_kernel
     volatile uint32_t           switch_count;  /* 切换计数 */
     volatile uint32_t           critical_nesting; /* (保留字段; 实际计数在移植层
                                                    *  rtos_port_crit_nest, 见 4.5) */
+    uint32_t                   suspend_depth; /* 成对的调度器挂起嵌套深度 */
     /* …统计与性能字段(第十二章, 受 RTOS_CONFIG_USE_PERF_MONITOR 条件编译)… */
 } rtos_kernel_t;
 ```
@@ -177,7 +176,8 @@ struct rtos_tcb
     rtos_task_state_t  state;
     rtos_bool_t        is_static;
 
-    struct rtos_tcb   *next_ready, *prev_ready; /* 双向环(就绪) / next 单链(延时) */
+    struct rtos_tcb   *next_ready, *prev_ready; /* 双向环(就绪) / 双向链(延时) */
+    struct rtos_tcb   *next_all;         /* 全任务地址登记链，独立于调度/等待链 */
 
     rtos_wait_node_t   wait_node;       /* 内嵌等待节点, 见 2.3 */
     rtos_tick_t        wake_tick;       /* 延时链排序键 */
@@ -210,10 +210,11 @@ typedef struct rtos_wait_node
     rtos_bool_t   timed_out;    /* 超时唤醒标记 */
     void         *wait_obj;     /* 所等对象指针: mutex_waiter_left 匹配互斥锁用 */
     struct rtos_wait_node *next, *prev;   /* 对象等待链表(双向) */
-    void         *transfer_buf; /* 队列: 零拷贝缓冲 | 事件组: set 回传的位值 */
+    void         *transfer_buf; /* 队列: 发送/接收缓冲 | 事件组: set 回传的位值 */
     uint32_t      transfer_size;/* 队列: 消息字节数 | 事件组: 等待位掩码 */
     uint8_t       to_front;     /* [队列] 阻塞发送的插队意图(代办入队时按此选写入位置) */
     struct rtos_wait_node **list_head; /* ★所在链表头地址, 超时/中止清理的钥匙 */
+    void (*on_timeout)(struct rtos_wait_node *node); /* 摘对象链前捕获超时结果 */
     volatile uint32_t *queue_bitmap;   /* ★非 NULL = 本链为"位图索引链"(见下) */
     rtos_prio_t   queued_priority;     /* ★入链时的优先级(优先级变化后同步位图用) */
 } rtos_wait_node_t;
@@ -229,25 +230,21 @@ typedef struct rtos_wait_node
 | **queue_bitmap** | **&sem->wait_bitmap** | NULL(有序链) | NULL(有序链) | NULL(有序链) |
 | **queued_priority** | 入链时优先级 | 入链时优先级 | 入链时优先级 | 入链时优先级 |
 
-**`list_head` 为什么存"链表头指针的地址"而不是链表头指针**：超时清理发生在 tick 中断里，此时内核并不知道任务等的是哪个对象（只有 TCB）。存下地址后，`rtos_internal_wait_remove(tcb->wait_node.list_head, &tcb->wait_node)` 即可精确把自己从对应链表摘除——一个字段同时回答了"在不在链表上"（NULL 判断）和"在哪条链表上"两个问题。notify 等待无链表，置 NULL 自动跳过清理。
+**`list_head` 为什么存"链表头指针的地址"而不是链表头指针**：超时清理由 TCB 找到所属对象链头地址，再经 `rtos_internal_wait_remove_sync_bitmap()` 精确摘链并维护位图；字段也标识是否仍挂在对象链上。notify 等待不挂对象链，置 NULL 自动跳过。`on_timeout` 只由内核用于捕获结果，不是可随意执行用户业务回调的入口。
 
 **`queue_bitmap` / `queued_priority` 是"链纪律"的运行时标记**（这是理解唤醒路径的钥匙）：
 
 | queue_bitmap | 含义 | 入链方式 | 唤醒方式 |
 |---|---|---|---|
-| **非 NULL** | 位图索引链 | `rtos_internal_wait_append`（尾插 → **O(n)**，同优先级 FIFO） | `rtos_internal_wake_highest_bm`（`ctz(bitmap)` 选优先级，再在该优先级分组内取链首）→ **O(1)**（单等待者）/ O(同优先级等待者数) |
+| **非 NULL** | 位图索引链（当前仅信号量） | `rtos_internal_wait_append`（尾插 → O(n)，同优先级 FIFO） | `rtos_internal_wake_highest_bm`：单等待者 O(1)；多等待者从整链定位并扫描清位，最坏 O(n) |
 | **NULL** | 按优先级有序链 | `rtos_internal_wait_insert_by_prio`（有序插入 → O(n)） | `rtos_internal_wake_highest`（取链首）→ **O(1)** |
 
 > **两套约定的成本对比（注意：两者入链都是 O(n)，差别在唤醒侧）**：
 > 有序链把成本花在**入链**（为唤醒时的 O(1) 取链首做排序准备）；
-> 位图链把成本留在**入链**（尾插也要走一遍找尾），但唤醒时的"选最高优先级"从
-> "链表已排好序"变成"`ctz` 现算"。**净收益来自调用频率的差异**：
-> 阻塞入链只在真正拿不到资源时发生，而 give 在每次释放资源时都要发生。
-> 实测退化量从 +18.4% 降到 +4.8%（见 16.2）。
+> 位图链尾插仍要找尾，唤醒侧用 `ctz` 选优先级后还需找节点、确认该位是否仍有等待者。减少优先级比较、处理单等待者快路径可以改善实测成本，但不改变多等待者路径最坏 O(n)。历史退化量测量见 16.2，不能代替当前实现复杂度分析。
 
 `queued_priority` 记录**入链当时**的优先级：任务优先级被修改（用户 `set_priority` 或内核优先级继承提升/恢复）时，必须据此把旧位清掉、置新位，否则位图会残留一个"已无人等待"的优先级，导致后续唤醒空扫描甚至选错牺牲者。同步逻辑在 `rtos_internal_requeue_wait_lists()`（5.8）。
 
-**`list_head` 为什么存"链表头指针的地址"而不是链表头指针**：超时清理发生在 tick 中断里，此时内核并不知道任务等的是哪个对象（只有 TCB）。存下地址后，`rtos_internal_wait_remove(tcb->wait_node.list_head, &tcb->wait_node)` 即可精确把自己从对应链表摘除——一个字段同时回答了"在不在链表上"（NULL 判断）和"在哪条链表上"两个问题。notify 等待无链表，置 NULL 自动跳过清理。
 
 ---
 
@@ -334,8 +331,9 @@ sequenceDiagram
     Note over T,P: ★切换真正发生在此刻之后
     P->>P: mrs r0, psp / stmdb {r4-r11} / stmdb {r3,lr}
     P->>P: current_tcb->top_of_stack = r0 (汇编直存)
-    P->>P: bl rtos_sched_context_switch (C: next_tcb 消费, 状态搬运)
-    P->>P: 从新 TCB 取栈顶, ldmia 恢复, msr psp
+    P->>P: 屏蔽 syscall ISR，保存进入前 mask
+    P->>P: bl rtos_sched_commit_context_switch (R0 返回实际运行 TCB)
+    P->>P: 从返回 TCB 取栈顶，恢复上下文/PSP，再还原 mask
     P->>B: bx lr (异常返回) — B 从上次中断点继续
     Note over T: A 的现场已保存在 A 的栈上, 等待下次被选中
 ```
@@ -356,13 +354,13 @@ sequenceDiagram
 ```
 sched_block(tcb, ticks):
 1. state == READY/RUNNING → ready_list_remove(tcb)     ← 先摘出就绪表
-2. ticks == RTOS_WAIT_FOREVER:
+2. ticks == RTOS_WAIT_FOREVER 或 ticks > 0x7FFFFFFF:
       wake_tick = 0xFFFFFFFF (哨兵); state = BLOCKED
-      (不入延时链 —— 永远不会因超时被 tick 唤醒, 只能被对象唤醒)
+      (不入延时链 —— 不会因 tick 超时唤醒；IPC 可被对象唤醒，纯 delay 需外部中止)
 3. 否则:
       wake_tick = tick_count + ticks
       state = RTOS_TASK_DELAYED
-      delay_list_insert(tcb)                            ← O(1) 快路径(表尾缓存, 见 3.4)
+      delay_list_insert(tcb)                            ← 表尾快路径 O(1)，乱序插入 O(n)
 ```
 
 ### 延时链表: 按"睡到几点"排序的**双向**链 (含表尾缓存)
@@ -378,7 +376,7 @@ tcb->prev_ready;          /* 延时链上的前驱 —— 但要见下方的"表
 
 **核心技巧：表头节点的 `prev_ready` 被借用来缓存表尾。**
 
-这是本结构最不直观、也最关键的一处设计。链表是双向的（`next_ready` 指向更晚醒的、`prev_ready` 指向更早醒的，表尾 `next_ready == NULL`），但**表头节点的 `prev_ready` 不指向 NULL，而是指向表尾**：
+链表有两个方向的指针（`next_ready` 指向更晚醒的、普通节点 `prev_ready` 指向更早醒的，表尾 `next_ready == NULL`），长度至少为 2 时**表头节点的 `prev_ready` 借用为表尾缓存**；只有一个节点时，next/prev 均为 NULL。这里的“双向”描述指针方向，不表示有两条延时链：
 
 ![表头借用 prev_ready 缓存表尾](images/rtos_design_04.png)
 
@@ -491,7 +489,7 @@ static void delay_list_insert(rtos_tcb_t *tcb)
 }
 ```
 
-**为什么这条快路径如此重要**：`delay_list_insert` 由 `rtos_sched_block()` 调用，而后者在 **SysTick 临界区内**也会被走到（任务 `delay`、带超时阻塞）。绝大多数延时/超时是"新增一个比现有全部节点都晚的唤醒点"——周期任务、一次性 `delay`、`sem_take(t, 100)` 都是这种形态，因此**快路径命中率极高**，慢路径（真正乱序插入，如高优先级任务插入短延时）才付 O(n)。快路径把常见情况的**关中断窗口**从 O(n) 压到 O(1)，这正是重负载下周期控制环偏差下降的机制来源。
+**快路径的适用条件**：`delay_list_insert` 由 `sched_block` 在内核临界区中调用；新 wake_tick 不早于现有表尾时，尾插只需一次比较，避免 O(n) 搜索。较短超时、多个不同周期或乱序截止时刻可能走慢路径，命中率取决于业务负载，不能从“周期任务”这一标签推导极高命中率。
 
 插入实例（当前 tick = 100，表尾缓存已建立）：
 
@@ -540,9 +538,15 @@ static void delay_list_remove(rtos_tcb_t *tcb)
 
 **③ 同一 `wake_tick` 的任务按 FIFO**——慢路径的循环条件用 `<= 0`（即"当前节点不晚于我"就继续走），使新节点插到所有同值节点**之后**；先睡的排前面、先被唤醒。
 
-> **tick 回绕安全**（原限制 L1，已修复）：所有到期与排序比较统一走
+> **tick 回绕安全**（原限制 L1，已修复）：任务延时链的到期与排序比较统一走
 > `sched_tick_after(a, b) = (int32_t)(a - b)`（模 2³² 减法取半平面），
-> 约定单次延时/超时/周期 < 2³¹ tick。早期实现用无符号比较，
+> 当前有限等待域为 `1..0x7FFFFFFF` tick；`0` 由公共 API 解释为不等待或 yield。
+> `rtos_sched_block()` 把 `0x80000000..0xFFFFFFFF` 转为永久阻塞。
+> 本实现只有一条 `delay_head` 双向链，没有按 tick 回绕拆分的 current/overflow 延时链。
+> 对象等待链 + 延时链的“双链登记”（3.5）也不是两条延时链。
+> `rtos_task_delay_until()` 的 period 应遵守有限域；当前入口没有直接拒绝大 period，
+> 计算出的 remain 最终受 `sched_block` 约束。软件定时器则显式拒绝 `period >= 0x80000000`。
+> 早期实现用无符号比较，
 > 跨 49.7 天回绕点时延时会被排到链首并在下一 tick 立即"到期"。
 
 注意实例里的任务 C：它不是单纯延时，而是**带超时的对象等待**——它会同时出现在延时链**和**信号量等待链上。这正是 3.5 / 3.7 的主角。
@@ -558,11 +562,14 @@ flowchart TB
     subgraph OBJ["对象侧唤醒 (sem_give / mutex give / queue send)"]
         direction TB
         A1["(A) 位图链: rtos_internal_wake_highest_bm<br/>&obj->wait_head, &obj->wait_bitmap"]
-        A2["单节点快路径: 零遍历、零位图运算"]
-        A3["多节点: ctz(bitmap) 取最高优先级<br/>再在该优先级分组内取链首(同优先级 FIFO)"]
-        A4["清位(该优先级已无等待者时)<br/>摘链 O(1)"]
+        AQ{"等待链只有一个节点？"}
+        A2["直接选中唯一等待者，无需位图选优先级<br/>摘链并清位 O(1)"]
+        A3["多节点: ctz(bitmap) 取最高优先级<br/>从整条FIFO链寻找第一个匹配者，最坏O(n)"]
+        A4["摘链O(1)，扫描剩余链确认清位<br/>最坏O(n)"]
         A5["blocked_on = NULL; wait_result = OK"]
-        A1 --> A2 --> A3 --> A4 --> A5
+        A1 --> AQ
+        AQ -->|是| A2 --> A5
+        AQ -->|否| A3 --> A4 --> A5
     end
 
     subgraph OBJ2["对象侧 (B) 有序链: rtos_internal_wake_highest"]
@@ -576,24 +583,26 @@ flowchart TB
         direction TB
         T1["process_delayed_tasks()<br/>从延时链头逐个摘到期节点"]
         T2{"blocked_on != NULL ?"}
-        T3["是: 摘对象链(经 list_head)<br/>+ wait_result = TIMEOUT"]
+        T3["捕获超时结果，摘对象链并同步位图<br/>重算继承，清 blocked_on<br/>wait_result = TIMEOUT"]
         T4["否: 纯 delay, 直接就绪"]
         T5["state = READY; ready_list_push_tail"]
         T1 --> T2
         T2 -->|是| T3 --> T5
         T2 -->|否| T4 --> T5
+        T5 --> T6["本 tick 末尾统一选择就绪任务并请求切换"]
     end
 
     A5 --> U
     B2 --> U
-    T5 --> U
-    U["★ 殊途同归: rtos_sched_unblock(tcb)"]
+    U["对象侧汇合: rtos_sched_unblock(tcb)"]
     U --> U1["state == DELAYED → delay_list_remove<br/>O(1) (双向 + 表尾缓存, 见 3.4)"]
     U1 --> U2["state = READY; ready_list_push_tail"]
     U2 --> U3["sched_state == RUNNING 且<br/>ctz(ready_bitmap) == tcb->priority → sched_schedule()"]
 ```
 
 `rtos_sched_unblock()` 之所以先查延时链（`state == DELAYED → delay_list_remove`），是因为对象侧唤醒发生时，任务的超时时刻可能还没到——**提前醒来要把剩余的守夜义务注销**（从延时链摘掉，否则到点时 tick 还会再"唤醒"它一次，造成双重唤醒）。
+
+时间侧 `process_delayed_tasks()` 已摘掉延时节点，直接置 READY 并尾插就绪表，由本 tick 的末尾统一做调度决策；它不再调用 `rtos_sched_unblock()`。对象链清理由 `rtos_internal_wait_remove_sync_bitmap()` 完成：普通双向摘链是 O(1)，信号量链还需扫描剩余节点确认优先级位是否可清除。
 
 入就绪队尾后，该任务的优先级位已置位，所以这里的 `ctz` 输入必非零。唤醒任务所在优先级是最高就绪优先级时，继续调用 `sched_schedule()` 完整选择该优先级的 **`ready_heads[p]`**；同级 FIFO 队列中它不一定就是刚被唤醒的任务。整个选择过程必须保持在同一临界区内，不能在读取候选前允许合法 RTOS ISR 改变调度状态或就绪位图。
 
@@ -664,15 +673,17 @@ sequenceDiagram
          (a) tick_count++
          (b) process_delayed_tasks():
               now = tick_count
-              while delay_head && delay_head->wake_tick <= now:
+              while delay_head && sched_tick_after(delay_head->wake_tick, now) <= 0:
                   tcb = delay_head; 摘链
                   if tcb->blocked_on != NULL:      ← 对象等待超时
+                      on_timeout != NULL → 捕获对象结果到 wait_node（摘链之前）
                       wait_node.timed_out = TRUE
                       wait_result = RTOS_ERR_TIMEOUT
                       if list_head != NULL:
-                          wait_remove(list_head, &wait_node)  ← 从对象等待链表摘除!
+                          wait_remove_sync_bitmap(list_head, &wait_node)
                           list_head = NULL
                       mutex_waiter_left(tcb)        ← 若等的是互斥锁, 重估 owner 优先级
+                      blocked_on = NULL
                   state = READY; ready_list_push_tail(tcb)
          (c) 单次调度决策:
               top = ctz(ready_bitmap)
@@ -680,9 +691,9 @@ sequenceDiagram
               next != cur → next_tcb=next; pend PendSV        ← 抢占
               否则若时间片开启 && cur 是 RUNNING && 同级链>1:
                    rotate(top); next_tcb=新head; pend PendSV  ← 轮转
-       EXIT_CRITICAL                      ← BASEPRI 清零
-③ 此处可能立即进入 PendSV (若被 pend) → 切换到新任务
-④ HAL_IncTick() (HAL 时基, 与 RTOS 独立)
+       EXIT_CRITICAL                      ← 恢复进入前 mask
+③ SysTick_Handler 继续执行 HAL_IncTick()（HAL 时基，与 RTOS 独立）
+④ SysTick 异常退出后，PendSV（若被 pend）才有机会执行切换
 ```
 
 **为什么超时摘除必须经 list_head**：任务阻塞在信号量上且带超时 → 它同时在 sem->wait_head（对象链）和 delay_head（延时链）两条链上（不变式 II 允许：一条调度链 + 一条等待链）。超时时若只从延时链摘、不从对象链摘，节点就留在 sem->wait_head 里成为悬空指针——之后任何 sem_give 的 wake_highest 都会解引用已就绪任务的节点，状态机立即错乱。这是侵入式链表方案必须付出的对价：**离开任何一条链都要显式摘除**。完整的逐步解剖见下一节。
@@ -695,10 +706,11 @@ sequenceDiagram
 
 ```
 1. sem->count == 0 → 走慢路径
-2. rtos_internal_block_current_on(sem, &sem->wait_head, 100):
+2. sem_take 自行登记位图等待节点（不调用 block_current_on）：
      T->blocked_on = sem                        ← TCB 记下"我睡在 sem 上"
      T->wait_node.list_head = &sem->wait_head   ← ★自记"我的节点挂在哪条链上"
-     按优先级插入 sem->wait_head                 （T 进入对象等待链）
+     queue_bitmap = &sem->wait_bitmap; queued_priority = T->priority
+     FIFO 尾插 sem->wait_head；置 wait_bitmap 中 T 的优先级位
 3. rtos_sched_block(T, 100):
      T 从就绪表摘除
      T->wake_tick = 1000 + 100 = 1100           （T 进入延时链, 按 1100 有序插入）
@@ -712,7 +724,7 @@ sequenceDiagram
 
 ### 阶段二: 守夜 (tick 1001~1099, 每 1ms, ISR 上下文)
 
-每个 SysTick 的 tick 处理只做一次比较：`delay_head->wake_tick <= now ?`——未到期立即返回。**守夜成本与睡眠人数无关**，只与到期事件数相关。T 与其他睡眠者安静地排在延时链上，无人打扰。
+延时到期检查先做一次带符号比较：`sched_tick_after(delay_head->wake_tick, now) <= 0 ?`——链首未到期即结束该阶段。此项检查不遍历睡眠任务；整个 tick 仍包含就绪任务选择和可选时间片处理。
 
 ### 阶段三: 判决 (tick=1100, SysTick ISR, 临界区内)
 
@@ -721,23 +733,25 @@ sequenceDiagram
 ```
 process_delayed_tasks():
   now = 1100
-  while (delay_head != NULL && delay_head->wake_tick <= now):
+  while (delay_head != NULL && sched_tick_after(delay_head->wake_tick, now) <= 0):
       tcb = delay_head;  摘链                   ← 链首 = 全内核最早到期的睡眠者
       if (tcb->blocked_on != NULL):             ← 区分: 对象等待超时 / 纯 delay
+          on_timeout != NULL → 捕获超时时刻的对象结果
           tcb->wait_node.timed_out  = TRUE
           tcb->wait_result = RTOS_ERR_TIMEOUT   ← ★趁 T 还睡着, 把判决写进它的 TCB
           if (tcb->wait_node.list_head != NULL):
-              rtos_internal_wait_remove(list_head, &wait_node)
-                                                 ← ★顺着入睡前自记的地址, O(1) 摘出对象等待链
+              rtos_internal_wait_remove_sync_bitmap(list_head, &wait_node)
+                                                 ← O(1) 摘链；位图链额外扫描确认清位
               tcb->wait_node.list_head = NULL
           rtos_internal_mutex_waiter_left(tcb)  ← 若等的是互斥锁, 重估持有者优先级(7.4)
+          tcb->blocked_on = NULL
       tcb->state = RTOS_TASK_READY
       ready_list_push_tail(tcb)                 ← 进入就绪表, 排队等运行
 ```
 
 两个关键机制：
 
-**① 定位为什么是 O(1)**：tick ISR 手里只有 TCB，它不知道（也不需要知道）T 睡在信号量还是队列上。但 T 入睡前已把"我的节点挂在哪个链表头的**地址**"记进了 `wait_node.list_head`。摘除用 wait_node 的双向指针（prev/next）直接完成。一个字段同时回答"在不在链上"（NULL 判断）与"在哪条链上"（解引用即得）。notify_wait 不挂对象链、list_head 恒 NULL，自动跳过——**同一条超时路径通吃五种阻塞**（delay/sem/mutex/queue/event/notify）。
+**① 定位和双向摘链是 O(1)**：TCB 的 `wait_node.list_head` 记录链表头地址，prev/next 可直接定位邻居。信号量摘链后还需最坏 O(n) 的清位确认，互斥锁需重算继承；因此完整超时处理不能一概写成 O(1)。事件组在摘链前调用内部 `on_timeout` 捕获位值，恢复任务后不再读取可能已销毁的对象。notify_wait 不挂对象链，list_head 为 NULL；该清理流程覆盖 delay/sem/mutex/queue/event/notify 六类等待。
 
 **② 判决的信箱模式**：`wait_result` 在 T 沉睡时被写入 TCB，T 醒来后自取。判决方（tick ISR）与受审方（任务 T）在时间上完全解耦——中间隔着"就绪→排队→PendSV 切换"的完整调度流程，却不需要任何额外的传递机制。
 
@@ -769,11 +783,11 @@ return cur->wait_result;   /* cur 也随任务寄存器恢复；结果为 RTOS_E
 
 ## 3.8 时间片轮转的边界情形
 
-轮转仅在 `next == cur`（无更高优先级就绪）且当前优先级链表多于一个任务时发生。刚被唤醒的同优先级任务在队尾，下一个 tick 轮到它——因此"同级任务被唤醒后最迟 1 个 tick 内获得执行"。
+轮转仅在 `next == cur`、当前任务为 RUNNING、时间片开启且当前优先级链表多于一个任务时发生。刚被唤醒的同优先级任务进入队尾；若前面有多名同级任务，需要多轮轮转才轮到它。更高优先级任务持续就绪、中断负载和显式挂起也会延长等待，不能承诺最迟 1 tick 执行。
 
 ## 3.9 挂起调度器: 与阻塞 API 的互斥契约
 
-`rtos_sched_suspend()` 只把 `sched_state` 置为非 RUNNING，而 `rtos_sched_tick()` 在非 RUNNING 态**直接返回**——tick 计数停走、到期处理停摆。因此"挂起"与"阻塞"互斥：挂起期间若让任务入睡，它既等不到对象侧唤醒（唤醒只会把它放回就绪表，而超时判定已停），也没有任何超时来源，**永久挂死**（真机实测：挂起后 `rtos_task_delay(60)` 永不返回）。
+`rtos_sched_suspend()` 在任务上下文维护 `suspend_depth`：首次挂起置 SUSPENDED 并清除未执行的 `next_tcb`，嵌套挂起增加深度；`resume()` 逐层减深度，最后一层才恢复 RUNNING 并重算调度。二者在 ISR 中均不执行。非 RUNNING 时 tick 不推进，故会阻塞的 API 必须由守卫拒绝；历史缺陷曾使挂起期间 delay 永久挂死，当前版本不会再登记这种等待。挂起期间 ISR 仍可运行，合法 IPC 唤醒仍可修改就绪集合，但不会提交任务切换。
 
 契约写在 `rtos_sched.h`：挂起期间**禁止任何会阻塞的 API**，一律立即返回，非阻塞路径不受影响——
 
@@ -784,9 +798,9 @@ return cur->wait_result;   /* cur 也随任务寄存器恢复；结果为 RTOS_E
 | 阻塞 | `rtos_event_wait` | **0**（该接口返回位掩码，无法报错误码） |
 | 非阻塞 | `RTOS_NO_WAIT`、计数充足、队列未满… | 不受影响 |
 
-统一守卫 `rtos_internal_block_permitted()`（`rtos_internal.h`，`static inline`，只读 `sched_state`，不进临界区）必须在**修改任何状态之前**判定：否则会留下"已入链却无人唤醒"的半初始化 `wait_node`。`rtos_mutex_take` 的判定还必须早于 `mutex_try_inherit()`——否则会留下一次无人恢复的优先级提升（恢复动作在释放路径上，而释放者可能正是被挡住的调用者）。
+统一守卫 `rtos_internal_block_permitted()`（`rtos_internal.h`，`static inline`，检查 RUNNING 且 current_tcb 非 NULL，不自行进入临界区）必须在**修改任何阻塞状态之前**判定：否则会留下"已入链却无人唤醒"的半初始化 `wait_node`。`rtos_mutex_take` 的判定还必须早于 `mutex_try_inherit()`——否则会留下一次无人恢复的优先级提升（恢复动作在释放路径上，而释放者可能正是被挡住的调用者）。
 
-> **与临界区的分工**（4.5）：临界区屏蔽中断、持有时长有明确上界；挂起影响的是调度与 tick，时长由调用者自律。需要"长时间不被打断"应选临界区，而不是挂起调度器。
+> **与临界区的分工**（4.5）：临界区屏蔽 syscall 域中断，必须尽量短；挂起影响任务调度与 RTOS tick，仍允许 ISR。长业务流程不能直接套在关中断临界区里，需要拆分工作并设计同步；具体最长持有时间取决于调用路径和配置，当前测量不能当作 WCET 保证。
 
 ---
 
@@ -927,7 +941,7 @@ rtos_sched_start():
   rtos_port_start_first_task():
       msr basepri, 0x50                     ← ① 屏蔽 SysTick/PendSV(优先级5~15)
       cpsie i                               ← ② 开总中断
-      dsb; isb
+      isb                                   ← 当前启动路径保留 ISB，未使用 DSB
       svc 0                                 ← ③ SVC 优先级0, 不被①屏蔽, 立即响应
   (永不返回)
 
@@ -1005,16 +1019,17 @@ static inline void rtos_port_exit_critical(void)
 ## 5.1 rtos_task_create() (动态)的完整流程
 
 ```
-1. 参数校验: tcb_out/entry 非空, priority < 32, stack_size >= 96字
+1. 拒绝 ISR；参数校验: tcb_out/entry 非空, priority < 配置上限, stack_size >= 96字
+   用 uint64_t 检查栈字节数不大于当前最大连续可分配块；分配 TCB 后仍可能因不足返回 ERR_NO_MEM
 2. tcb = rtos_heap_alloc(sizeof(rtos_tcb_t))       ← first-fit 扫描(11.1)
    失败 → ERR_NO_MEM
 3. stack_buf = rtos_heap_alloc(stack_size * 4)
    失败 → free(tcb); ERR_NO_MEM                    ← 分配失败不留半成品
 4. task_create_core(tcb, stack_buf, ...):
-   a. memset(tcb, 0)                                ← 全零起步
-   b. priority = base_priority = prio; state = INITIALIZING
-      task_id = rtos_internal_alloc_task_id()       ← 全局递增
-      name 复制(截断至15字符+NUL)
+   a. ENTER_CRITICAL；查全任务登记链拒绝重复地址
+      memset(tcb, 0)；priority = base_priority = prio；state = INITIALIZING
+      task_id = rtos_internal_alloc_task_id()；next_all 登记地址；EXIT_CRITICAL
+   b. 临界区外复制 name（截断至配置长度-1，并 NUL 终止）
    c. top_of_stack = rtos_port_init_stack(...)      ← 4.3 的伪帧
    d. stack_magic = 0xDEADBEEF; *stack_buf = 0xDEADBEEF
    e. rtos_perf_on_task_created(tcb):
@@ -1034,12 +1049,15 @@ static inline void rtos_port_exit_critical(void)
 
 **当前创建顺序**：最小栈为 96 字。第一段临界区按地址预留 TCB，并标为 INITIALIZING；栈初始化和水印填充在临界区外进行，此时外部 resume/delete/set_priority/notify/suspend 均拒绝该 TCB。第二段临界区加入就绪表、置 READY，并在请求抢占之前执行 `*tcb_out = tcb`。创建函数返回前新任务可能已经运行；调用者的其他共享数据仍需自行同步。重复使用仍存活或正在构造的静态 TCB 返回 `RTOS_ERR_ALREADY`。
 
+`s_all_tasks` 是独立的全任务地址登记链，包含正在构造和存活的任务，任务删除时摘除。公开修改 API 先在临界区内验证登记，再读写已知 TCB；对象重新 init 也借此检查是否有任务仍挂在该对象等待链上，返回 `RTOS_ERR_ALREADY` 保护存活等待者。地址查找最坏 O(任务数)，不是 O(1)。该登记也不赋予裸指针句柄永久身份：调用方仍不得使用释放后的句柄或跨对象复用的陈旧句柄。
+
 ## 5.2 rtos_task_delete(): 两条路径, 一个陷阱
 
 ```
 1. ISR 中调用 → ERR_ISR (删除需要触发调度, ISR 环境下不安全, 统一禁止)
-2. tcb == NULL → tcb = current_tcb; self_delete = TRUE
+2. tcb == NULL → 使用 current_tcb；显式 tcb == current_tcb 同样是 self_delete
 3. ENTER_CRITICAL
+   登记/DELETED/idle 校验失败 → ERR_PARAM；调度器未运行时自删 → ERR_SCHED
 4. 状态分派摘链:
    READY/RUNNING → rtos_sched_remove_ready
    DELAYED       → rtos_sched_remove_delayed
@@ -1048,10 +1066,10 @@ static inline void rtos_port_exit_critical(void)
                    释放的 TCB → PendSV 切换到已释放内存 = use-after-free
    BLOCKED       → 不在任何调度链, 跳过
 5. 若 blocked_on != NULL (阻塞在 IPC 对象上):
-   list_head != NULL → wait_remove 从对象等待链摘除
+   list_head != NULL → wait_remove_sync_bitmap 摘对象链并同步信号量位图
    mutex_waiter_left(tcb)  ← 重估被等互斥锁 owner 的继承优先级
    blocked_on = NULL
-6. state = DELETED
+6. state = DELETED；摘全任务登记链；若 next_tcb == tcb 则清除候选
 7. perf_on_task_deleted(tcb) ← 从性能注册表移除(swap-with-last)
 8. mutex_release_all(tcb):                     ← 释放其持有的所有互斥锁
    遍历 s_mutex_registry, owner == tcb 的每把锁:
@@ -1065,7 +1083,7 @@ static inline void rtos_port_exit_critical(void)
     静态任务: 不释放(用户管理)
     动态+非自删: free(stack_base); free(tcb)    ← 不在运行位, 立即安全
     动态+自删:   defer_free_tcb(tcb)            ← 挂入待删链
-11. 自删时: sched_schedule()                     ← 选出下一个任务, pend PendSV
+11. 调度器 RUNNING 时重算 sched_schedule()        ← 包括删除其他候选任务
     EXIT_CRITICAL
     → PendSV 切走, 本函数"永不返回到调用者"
     → 代码物理上会执行到 return RTOS_OK, 但该任务再也不会被调度
@@ -1089,7 +1107,7 @@ delete(自身) 挂入 pending_free_list
 ```c
 if( s_pending_free_list != NULL ) {
     临界区摘下整条链并清空表头;      ← 批量摘除, 缩短临界区
-    退出临界区后逐个 free;            ← free 是 O(n) 操作, 不能在临界区里做
+    退出这段临界区后逐个 free;        ← 每次 heap_free 自行保护堆，避免批量清理整段占用临界区
 }
 ```
 
@@ -1097,18 +1115,19 @@ if( s_pending_free_list != NULL ) {
 
 ```
 1. tcb==NULL(自挂起) 且在 ISR → ERR_ISR
-2. ENTER_CRITICAL; self_suspend = (tcb == current)
+2. ENTER_CRITICAL; 校验登记且非 idle；self_suspend = (tcb == current)
+   自挂起且在 ISR/调度器未运行 → ERR_ISR/ERR_SCHED
 3. READY/RUNNING → remove_ready
    DELAYED → rtos_sched_remove_delayed(tcb) 摘除(O(1), 双向 + 表尾缓存, 见 3.4)
              [fix S-7] 原实现手写复制了 delay_list_remove 的循环(与 rtos_sched.c
              重复且**漏清 prev_ready**), 现统一调用公共实现
 4. 若 blocked_on != NULL (阻塞在对象上):
-   wait_remove + mutex_waiter_left
+   wait_remove_sync_bitmap + mutex_waiter_left
    ★wait_result = RTOS_ERR_DELETED                ← 2026-08 修复
    blocked_on = NULL
    (修复前残留 RTOS_OK → resume 后 take 虚假成功 → 互斥锁被"偷")
 5. state = SUSPENDED
-6. self_suspend → sched_schedule() (临界区内, pend PendSV)
+6. 若 next_tcb == tcb 则失效候选；调度器 RUNNING 时重新 sched_schedule()
 7. EXIT_CRITICAL
 ```
 
@@ -1119,18 +1138,22 @@ if( s_pending_free_list != NULL ) {
 ## 5.4 rtos_task_resume()
 
 ```
-state != SUSPENDED → 直接返回 OK (幂等)
 ENTER_CRITICAL
-state = READY; add_ready
-若 RUNNING 且优先级高于当前 → schedule()
+登记校验失败 → ERR_PARAM
+仅 state == SUSPENDED 时: state = READY; add_ready
+    若调度器 RUNNING、current 非 NULL 且优先级高于当前 → schedule()
+其他存活状态 → 无操作 OK（幂等）
 EXIT_CRITICAL → 可能立即切换
 ```
+
+状态判断与入就绪表位于同一临界区，避免任务路径检查后被 ISR resume，同一个 TCB 重复插入就绪环。
 
 ## 5.5 rtos_task_yield(): 同级让出
 
 ```
+ISR → 无操作返回
 ENTER_CRITICAL
-若当前优先级链表多于一个任务:
+仅调度器 RUNNING、current 非 NULL 且为 RUNNING 时，若同级链表多于一个任务:
     heads[p] = heads[p]->next        ← 自己到队尾
     next_tcb = 新 head; pend PendSV  ← 让给同级伙伴
 EXIT_CRITICAL → 切换
@@ -1146,6 +1169,7 @@ EXIT_CRITICAL → 切换
 ticks == 0 → 等价 yield (立即让出)
 ISR 中 → 无操作返回
 ENTER_CRITICAL
+调度器非 RUNNING 或 current 为 NULL → EXIT；不阻塞
 sched_block(cur, ticks)      ← 出就绪表, 入延时链(wake_tick = now+ticks)
 sched_schedule()             ← 选下一个
 EXIT_CRITICAL                ← PendSV 切出; n tick 后被 3.6 流程唤醒
@@ -1155,6 +1179,7 @@ EXIT_CRITICAL                ← PendSV 切出; n tick 后被 3.6 流程唤醒
 
 ```
 ENTER_CRITICAL
+调度器非 RUNNING 或 current 为 NULL → EXIT；不修改 *last_wake_tick
 elapsed = now - *last_wake_tick             ← 无符号减法, 天然回绕安全
 remain   = (period > elapsed) ? period - elapsed : 0
 if remain == 0:                              ← 已经落后(执行超过了周期)
@@ -1175,6 +1200,7 @@ EXIT_CRITICAL
 
 ```
 ENTER_CRITICAL
+先验证 tcb 已登记且构造完成
 switch(type):
     VALUE      → notify_value = value       (覆盖)
     BIT        → notify_value |= value      (按位或)
@@ -1196,9 +1222,11 @@ EXIT_CRITICAL
 ```
 ISR 中 → ERR_ISR
 ENTER_CRITICAL
+current == NULL → ERR_SCHED
 快路径: notify_state == PENDING?
     → *recv = notify_value; 清值清状态; EXIT; return OK
 timeout == 0 → ERR_TIMEOUT
+真正需要阻塞前检查 block_permitted；失败 → ERR_SCHED
 慢路径:
     blocked_on = (void*)cur          ← 自指标记
     wait_node.list_head = NULL       ← 无对象链表, 超时清理自动跳过
@@ -1223,6 +1251,7 @@ return result
 ```
 rtos_task_set_priority(tcb, prio):
   ENTER_CRITICAL
+  先验证 tcb 已登记且构造完成，idle 不允许改为非最低优先级
   ① was_ready = (state == READY || state == RUNNING)
      if was_ready: ready_list_remove(tcb)        ← 它挂在 ready_heads[旧优先级] 上
   ② tcb->base_priority = prio
@@ -1231,8 +1260,9 @@ rtos_task_set_priority(tcb, prio):
            必须维持优先级继承带来的提升, 否则等待者再也无法抢占持锁者
   ③ if was_ready: ready_list_add(tcb)            ← 挂到 ready_heads[新优先级]
   ④ rtos_internal_requeue_wait_lists(tcb)        ← 重挂"对象等待链"
+  ⑤ mutex_waiter_requeued(tcb)                 ← 同步所等锁持有者的继承
+  ⑥ 调度器 RUNNING 时重算 sched_schedule()     ← 提升或降低均需处理
   EXIT_CRITICAL
-  (若该任务已就绪且新优先级高于当前任务, 还需触发一次调度)
 ```
 
 **第 ④ 步是本节的核心**，也是两套链纪律（1.3 不变式 III）必须分别处理的唯一位置：
@@ -1298,7 +1328,7 @@ struct rtos_sem {
 };
 ```
 
-**`wait_bitmap` 是本章的核心机制**，它与 `wait_head` 配对，把"选最高优先级等待者"的成本从**唤醒侧**消除（唤醒是高频路径），代价是入链侧仍需一次链表遍历：
+**`wait_bitmap` 是本章的核心机制**，它与 `wait_head` 配对，以 O(1) 选出最高等待优先级；实际等待节点仍从 FIFO 链首寻找，摘链后也需扫描确认清位。下图比较有序链与当前 FIFO 位图链的操作：
 
 ![位图索引等待链的入链与唤醒](images/rtos_design_11.png)
 
@@ -1316,7 +1346,7 @@ flowchart TB
         direction TB
         A1["阻塞: 尾插 O(n)<br/>循环体只跟 next 指针<br/>(无优先级比较)"] --> A2["wait_bitmap |= (1 << prio)"]
         A2 --> A3["链: 入链序 FIFO<br/>[P5][P2][P9] — 不反映优先级"]
-        A3 --> A4["give: ctz(wait_bitmap)<br/>→ top = P2 (最高优先级)<br/>→ 在该优先级分组内取链首"]
+        A3 --> A4["give: ctz(wait_bitmap)<br/>→ top = P2 (最高优先级)<br/>→ 从整条FIFO链取第一个匹配者，再扫描清位"]
     end
 
     subgraph COST["实测: give 成本随等待者数"]
@@ -1330,18 +1360,16 @@ flowchart TB
 | | 入链（take 阻塞时，**低频**） | 唤醒（give 时，**高频**） |
 |---|---|---|
 | **改造前** | 沿等待链**找有序插入点**：O(n) | 取链首，O(1)（依赖"链已排好序") |
-| **改造后** | 沿等待链**走到尾部**：O(n)（但只需比较尾指针，无优先级比较与重排） | `ctz(wait_bitmap)` 选最高优先级，再在该优先级分组内取链首 |
+| **改造后** | 沿等待链**走到尾部**：O(n)（无需逐节点优先级比较） | `ctz(wait_bitmap)` 选优先级；整链定位与清位扫描，最坏 O(n) |
 
 **关键澄清（避免误读为"入链变 O(1)"）**：尾插同样要遍历到链尾，因此**入链仍是 O(n)**。
-本改造的收益不来自消除遍历，而来自**把成本留在低频侧并把高频侧的排序依赖去掉**：
-give 每一次都要执行，而阻塞入链只在真正拿不到资源时才发生。
-此外尾插的循环体比有序插入更轻（只跟 `next` 指针，不做优先级比较，也不必维护"插到第一个更低优先级者之前"的前驱关系）。
+尾插循环体比有序插入更轻，但唤醒侧也保留线性扫描；给定负载下的性能收益需实测。阻塞与释放各自的调用频率由业务决定，不能统一假定阻塞总是低频。
 
 两者**可观察语义完全等价**：唤醒的必是最高优先级等待者，同优先级内 FIFO（尾插保证）。
 
 `wait_bitmap` 与链表由**同一个临界区**维护，因此二者不会不一致；万一位图位残留导致在链上找不到该优先级的节点，`rtos_internal_wake_highest_bm` 会退化为**全链扫描取最高优先级**（绝不退化为"取链首"——那会唤醒错误的任务并破坏唤醒序语义）。
 
-实测效果：give 成本随等待者数的退化从 **+18.4% 降到 +4.8%**（每等待者增量 ~25 → ~7 周期），详见第十六章。
+历史实测中 give 随等待者数的退化曾从 +18.4% 降到 +4.8%（第十六章）；这是该版本、负载与布局下的测量，不代表当前完整路径为常数时间。
 
 ## 6.2 rtos_sem_take(sem, timeout) 逐步流程
 
@@ -1354,6 +1382,7 @@ give 每一次都要执行，而阻塞入链只在真正拿不到资源时才发
    count--; EXIT_CRITICAL; return RTOS_OK
    (临界区内只有一条判断+一次自减, ~20 周期, 这是无竞争时的全部开销)
 5. timeout == NO_WAIT → EXIT; return ERR_TIMEOUT
+   真正需要阻塞前检查 block_permitted；失败 → ERR_SCHED
 6. ── 慢路径: 阻塞 ──
    ★ 信号量**不走** rtos_internal_block_current_on, 而在本函数内手工初始化
      等待节点后自行入链 —— 因为它需要多设两个与"位图索引链"相关的字段。
@@ -1365,8 +1394,8 @@ give 每一次都要执行，而阻塞入链只在真正拿不到资源时才发
         (transfer_buf 不清零——队列路径要用它区分三态, sem 不用)
         wait_result = RTOS_OK
      c. rtos_internal_wait_append(&wait_head, node)  ← 尾插 O(n)(遍历到链尾; 同优先级 FIFO)
-     d. sem->wait_bitmap |= (1UL << cur->priority)   ← 置位本优先级 (唤醒侧 O(1) 的来源)
-     e. sched_block(cur, timeout)          ← 3.4: 出就绪/入延时链(插入走 O(1) 快路径)
+     d. sem->wait_bitmap |= (1UL << cur->priority)   ← 置存在位；选优先级为 O(1)
+     e. sched_block(cur, timeout)          ← 3.4: 出就绪/入延时链，表尾快路径或乱序扫描
      f. sched_schedule()                   ← 3.3: 决策+pend PendSV
 7. EXIT_CRITICAL
    ★就是这一条指令之后: BASEPRI 归零 → pend 中的 PendSV 立即抢占 →
@@ -1390,14 +1419,14 @@ give 每一次都要执行，而阻塞入链只在真正拿不到资源时才发
 1. 校验
 2. ENTER_CRITICAL
 3. woken = rtos_internal_wake_highest_bm(&sem->wait_head, &sem->wait_bitmap):
-     ┌ 单节点快路径: 链上仅 1 个等待者 → 零遍历、零位图运算, 直接取它
+     ┌ 单节点快路径: 链上仅 1 个等待者 → 直接取它，无需 ctz；摘链后仍清位
      │   (典型嵌入式负载下"每对象 1~2 个等待者"是最常见情形)
      ├ 多节点: top = __builtin_ctz(wait_bitmap)     ← 2 条指令选出最高优先级
      │         从链首找第一个 priority == top 的节点
-     │           ↑ 扫描长度 = 同优先级等待者数, 与总等待者数无关
+     │           ↑ FIFO 物理链没有按优先级分组，可能经过所有前置节点，最坏 O(n)
      │         若找不到(位图位残留) → 退化为全链扫描取最高优先级
      ├ rtos_internal_wait_remove(head, victim)      ← 双向链 O(1) 摘除
-     ├ 若该优先级已无其它等待者 → bitmap &= ~(1<<prio)  ← 清位, 防残留
+     ├ 扫描剩余链确认该优先级已无其它等待者 → 清 bitmap 位；最坏 O(n)
      ├ victim->tcb->blocked_on = NULL
      ├ victim->tcb->wait_result = RTOS_OK     ← 告诉它: 你成功了
      ├ victim->list_head = NULL               ← 标记已离开链表
@@ -1414,14 +1443,14 @@ give 每一次都要执行，而阻塞入链只在真正拿不到资源时才发
    EXIT; return OK
 ```
 
-**"唤醒即传递"的不变量**：`等待者非空 ⟺ count == 0`。因为 give 优先喂等待者、take 优先吃计数，两者永不同时非空——设计上杜绝了"唤醒了任务又加了计数"的双重记账 bug。`wake_highest_bm` 摘对象链 + `sched_unblock` 摘延时链的"两条链都清干净"语义，见 3.5 的双链登记不变式。
+**"唤醒即传递"的不变量**：`等待者非空 ⇒ count == 0`（空链也可以 count 为 0，因此不是双向等价）。give 优先满足等待者而不增加 count，take 优先消费已有 count，避免一次资源重复记账。`wake_highest_bm` 摘对象链 + `sched_unblock` 摘延时链的语义，见 3.5。
 
-> **`wake_highest_bm` 与 `wake_highest` 的分工**：信号量与队列用前者（位图链），
-> 事件组与互斥锁用后者（有序链）。两者可观察语义相同（最高优先级 + 同优先级 FIFO），
+> **`wake_highest_bm` 与 `wake_highest` 的分工**：信号量用前者（位图链），
+> 队列和互斥锁取有序等待链的链首；事件组依次判定有序等待链中的位条件。最高优先级选择与同级 FIFO 语义一致，
 > 差别只在"最高优先级"是**算出来的**（`ctz`）还是**排出来的**（有序插入）。
 > 这是 1.3 不变式 III 两套约定在代码上的落点。
 
-**中断里 give 的效果**：ISR 中执行到 unblock 的 schedule() → pend PendSV（PendSV 优先级低于 ISR，不抢占）→ ISR 退出 → PendSV 执行 → 被唤醒任务立即运行。从硬件事件到任务响应的全部延迟 = ISR 剩余执行时间，这就是"ISR 只做 give、处理放任务"模式高效的原理。
+**中断里 give 的效果**：ISR 可请求 PendSV，待异常退出且屏蔽条件允许后切换。实际响应时延还包括嵌套或 pending 的中断、现有临界区、PendSV 和更高优先级任务，不能只等同于该 ISR 的剩余执行时间。
 
 ## 6.4 sem_deinit
 
@@ -1455,7 +1484,7 @@ struct rtos_mutex {
 static rtos_mutex_t *s_mutex_registry[ 8 ];  /* 全局注册表: 任务删除清理的索引 */
 ```
 
-**为什么需要注册表**：任务持有哪些锁，TCB 里没有记录（FreeRTOS 维护持有链表，本内核为省内存不维护）。任务被删除时，只能反向遍历"所有活着的锁"找 `owner == 被删任务` 的——注册表就是"所有活着的锁"的清单。代价：O(M) 扫描、容量上限、init 注册/deinit 注销的配对责任。
+**为什么需要注册表**：本内核 TCB 没有持锁链，删除任务或重算继承时从注册表找 `owner == tcb`。容量为 `RTOS_CONFIG_MAX_MUTEXES`，满时 init 显式返回 `RTOS_ERR_NO_MEM`。重复 init 一个无持有者、无等待者且递归计数为0的锁幂等返回 OK，不重复登记；存活持有/等待时返回 `RTOS_ERR_ALREADY`。deinit 必须配对注销，避免残留对象地址。
 
 ## 7.2 rtos_mutex_take(mutex, timeout) 逐步流程
 
@@ -1550,12 +1579,13 @@ mutex_waiter_left(waiter):
 task_delete 第 8 步调用(此时任务状态已 DELETED, 不在就绪表):
 遍历 s_mutex_registry:
   mutex->owner == 被删任务:
+      mutex->owner = NULL                ← 先摘所有权，重算时不再计入本锁
       restore_priority(owner)            ← 恢复(但任务已不在就绪表, 只改字段)
       woken = wake_highest(...)
       woken ? 移交所有权 : owner = NULL
 ```
 
-若不做这一步：被删任务持有的锁永远无人能 give（owner 指向已释放 TCB），所有等待者永久死锁——这是 RTOS 删除任务最经典的坑，本内核在注册表的支持下 O(M×W) 一次扫清。
+若不做这一步，mutex->owner 会指向已删除任务，等待者可能永久等待。释放流程扫描 M 把注册锁，每把被释放的锁还会重算其余锁的继承，最坏 O(M²)，并包含必要的等待链重挂；不是对每把锁再遍历 W 个等待者。
 
 ## 7.6 rtos_task_set_priority 与继承的交互
 
@@ -1618,15 +1648,14 @@ sequenceDiagram
    而是调用 `rtos_internal_mutex_compute_effective_priority(owner)` **重算"全部持有锁的综合有效优先级"**。
    原缺陷场景：A 持 L1、L2，H1 等 L1、H2 等 L2；give L1 后若直接恢复 base，
    A 仍持 L2 却丢掉 H2 带来的提升 → 持续到 A 释放 L2 为止的**确定性优先级反转**。
-   代价是释放路径需 O(M) 扫描注册表（M ≤ 8），且**不在无争用快路径上**（仅争用释放时触发）。
-2. 链式继承不传递（A 等 B 的锁、B 等 C 的锁，C 不会被提升）——FreeRTOS 亦然（L10）；
-3. 注册表 O(M) 扫描、容量 8 静默上限（超出后该锁静默失去继承能力——已在 7.1 用
-   `rtos_internal_mutex_registry_count()` 暴露为可观测指标，供回归用例守卫）；
-4. waiter_left 指针匹配而非类型标签（1 字节即可 O(1)）。
+   代价是最终 give 需扫描 M 把注册锁重算，即使本锁无等待者也会执行；持锁者若正在对象链上，还包含重挂成本。
+2. 当前未实现跨多把锁的传递式优先级继承（L10）；
+3. 注册表查找 O(M)、容量由配置限制，满时显式失败，不是静默失去继承；
+4. waiter_left 用等待对象地址扫描注册表匹配，是 O(M)；不增加额外类型标签。
 
 ---
 
-# 第八章 消息队列: 四条路径与零拷贝直传
+# 第八章 消息队列: 四条路径与单次拷贝直传
 
 ## 8.1 数据结构与环形缓冲
 
@@ -1643,15 +1672,19 @@ struct rtos_queue {
 
 不变量：`recv_wait_head 非空 ⟹ count == 0`（接收者只在空时阻塞）；`send_wait_head 非空 ⟹ count == capacity`。
 
+init 检查 item_size×capacity 的乘法溢出，并拒绝清空仍有存活等待者的队列。storage 的实际数组容量仍由调用方保证。等待者记录 transfer_size，直传/代办前检查长度与非 NULL 缓冲，不匹配则以 `RTOS_ERR_PARAM` 中止该等待并继续处理合法等待者。
+
 ## 8.2 rtos_queue_send() 的四条路径
 
 ```
 入口: 校验; ISR 判定(必须 NO_WAIT); ENTER_CRITICAL
 
-── 路径1: 零拷贝直传(接收者正在等) ──
+── 路径1: 单次拷贝直传(接收者正在等) ──
 recv_wait_head != NULL:
     node = 链首(最高优先级接收者)
+    缓冲为NULL或transfer_size不等于item_size → 摘除并返回等待者ERR_PARAM；检查下一个
     wait_remove
+    node->list_head = NULL
     recv_buf = node->transfer_buf     ← 接收者阻塞前存的缓冲指针
     node->transfer_buf = NULL         ← 三态标记: "已直传"
     memcpy(recv_buf, item, item_size) ← ★全流程唯一一次拷贝
@@ -1659,7 +1692,7 @@ recv_wait_head != NULL:
     sched_unblock(接收者)
     EXIT; return OK
     ★消息不经过环形缓冲! to_front 在空队列无意义, 统一走直传
-      (空队列必有等着的接收者——上面的不变量)
+      （接收者等待时队列必为空；空队列不一定有接收者等待）
 
 ── 路径2: 直接入队(有空间) ──
 count < capacity:
@@ -1673,8 +1706,10 @@ count < capacity:
 timeout == NO_WAIT → EXIT; return ERR_TIMEOUT
 
 ── 路径4: 满 → 阻塞发送者 ──
-transfer_buf  = (void*)item      ← 记录发送缓冲(零拷贝的另一半)
+先检查 block_permitted；失败 → ERR_SCHED
+transfer_buf  = (void*)item      ← 记录发送缓冲
 transfer_size = item_size
+to_front      = 调用者插队意图
 block_current_on(queue, &send_wait_head, timeout)
 EXIT_CRITICAL → PendSV 切出
 --- 唤醒后 ---
@@ -1686,7 +1721,7 @@ transfer_buf == NULL   → return OK   ← 接收者"代办入队"了(见 8.3), 
     又满了 → 重设 transfer_buf; 再 block_current_on; EXIT; 再切出 …
 ```
 
-**重试而非报错的理由**：被唤醒到实际运行之间，槽位可能被更高优先级任务偷走。这不是调用方的错误，报 ERR_TIMEOUT 会误导（它没超时）；重新阻塞保持"要么成功要么真超时"的语义。已知妥协（L5）：重试沿用原始 timeout，多次被偷则总时长超预期。
+**当前正常路径与保留重试代码**：对端在唤醒前已完成直传或代办复制，并将 transfer_buf 置 NULL；等待者恢复后直接返回成功，不重新竞争槽位。源码仍保留 transfer_buf 非 NULL 时的重试分支，沿用原始 timeout；本轮没有在合法 API 路径复现该分支引发 L5，不能将“超时必然超预算”列为已确认缺陷。
 
 ## 8.3 rtos_queue_recv() 与"代办入队"
 
@@ -1699,10 +1734,13 @@ count > 0:
     ★腾出的空位立刻补给阻塞的发送者(代办入队):
     send_wait_head != NULL:
         node = 链首
+        缓冲为NULL或长度不匹配 → 以ERR_PARAM中止该等待者；再检查下一个
         wait_remove
-        memcpy(storage + tail*item_size, node->transfer_buf)  ← 从发送者缓冲拷入
-        tail+1; count++          ← 空位被重新填上(净效果: 发送者消息入队)
+        queue_storage_push(queue, node->transfer_buf, node->to_front)
+                                ← 按等待时记录的插队意图写队首或队尾
+        count++                 ← 空位被重新填上
         node->transfer_buf = NULL ← 三态标记: "已代办"
+        node->list_head = NULL
         node->tcb->blocked_on=NULL; wait_result=OK
         sched_unblock(发送者)
     EXIT; return OK
@@ -1710,7 +1748,9 @@ count > 0:
 ── 路径2: 空且不等待 → ERR_TIMEOUT ──
 
 ── 路径3: 空 → 阻塞接收者 ──
+先检查 block_permitted；失败 → ERR_SCHED
 transfer_buf = item               ← 记录接收缓冲, 供发送者直传
+transfer_size = item_size
 block_current_on(queue, &recv_wait_head, timeout)
 EXIT → 切出
 --- 唤醒后 ---
@@ -1719,14 +1759,14 @@ transfer_buf == NULL → return OK  ← 发送者已直传进 item
 否则 → 重试循环(同 8.2 路径4 的对称结构)
 ```
 
-**零拷贝全景**：发送者到达时若接收者已等 → 1 次拷贝（发送缓冲→接收缓冲）；接收者到达时若发送者已等（满队）→ 2 次拷贝（发送缓冲→环 buf→…不对，代办是 1 次拷贝进环，接收者拿的 head 消息是别人的）→ 实际为"发送缓冲→环"+接收者路径正常 1 次。最热的"消费者等待生产者"模式收益最大。
+**拷贝次数**：接收者已等待时，发送缓冲→接收缓冲只有一次 memcpy，省去环形队列中转；这属于单次拷贝直传。满队接收先把已有队首消息拷出，再把阻塞发送者的消息代办拷入，是两条不同消息各一次拷贝；代办消息之后被另一 recv 拷出，仍经过环形缓冲。
 
-**代办入队的已知缺陷（L2）**：`to_front=TRUE` 的阻塞发送者被代办时固定写入 tail——紧急插队语义丢失，消息排到队尾。修复需在 wait_node 记录 to_front 标志（如 transfer_size 最高位）。
+**L2 已修复**：独立 `wait_node.to_front` 记录插队意图，代办调用与普通入队相同的 `queue_storage_push()`，不会固定写 tail，也不借 transfer_size 的位编码。
 
 ## 8.4 设计分析
 
-**优点**：零拷贝直传；优先级唤醒；ISR 可发；to_front 紧急通道；重试语义诚实。
-**缺点**：定长按值拷贝（大消息应传指针+内存池）；L2/L5；无 Peek。
+**优点**：接收等待时单次拷贝直传；优先级唤醒；ISR 非阻塞收发；普通及代办路径都保留 to_front。
+**限制**：消息定长且按值拷贝，临界区包含 memcpy；大消息可传指针并另行管理缓冲寿命。当前没有 Peek。
 
 ---
 
@@ -1755,12 +1795,15 @@ wait_node:
     transfer_buf  = NULL        ← event_set 将写入结果
     wake_tick     = mode        ← 借用字段存模式
     list_head     = &event->wait_head
+    queue_bitmap  = NULL；queued_priority = cur->priority
+    on_timeout    = event_capture_timeout  ← 在超时摘链前记录位快照
 block_current_on 风格: insert_by_prio + sched_block + schedule
 EXIT → 切出
 --- 唤醒后 ---
-result = (bits)transfer_buf               ← event_set 回传的"满足时位值"
-if wait_result != OK:                      ← 超时
-    临界区重读 event->bits 返回(可能已被别的任务置位, 语义可接受)
+result = (bits)transfer_buf               ← 成功或超时均从TCB读取快照
+超时: process_delayed_tasks 在对象等待链摘除前调用 on_timeout 捕获位值
+销毁/挂起中止: transfer_buf 保持 NULL，返回0
+恢复后不再解引用 event                   ← 对象此时可能已 deinit/复用
 return result
 ```
 
@@ -1780,7 +1823,7 @@ bits |= 新位
 EXIT; return 当前 bits
 ```
 
-**多等待者 + CLEAR 的语义**：第一个满足者消费掉位后，后面的等待者可能因此不再满足——"事件被最先到达的等待者消费"，与 FreeRTOS 一致。
+**多等待者 + CLEAR 的当前语义**：按优先级有序链依次检查，同级 FIFO；第一个满足且请求 CLEAR 的等待者会立即清位，后续等待者使用清除后的位值判定，可能继续等待。这是本实现的消费式语义，不能宣称与 FreeRTOS 在一次 set 中让多个等待者观察同一置位快照的行为完全相同。
 
 **设计分析**：优点是一对多/多对一解耦同步、ISR 可 set。缺点：set 是 O(等待者) 遍历无提前终止；参数借存 wake_tick/transfer_size 提高了阅读门槛（历史上曾因借存 notify_value 与任务通知互相覆盖出过 bug，现方案各字段独占）。
 
@@ -1844,8 +1887,8 @@ DELETE: is_active → remove; is_initialized = 0
 
 ## 10.4 设计分析
 
-**优点**：回调可阻塞（任务上下文）；命令串行化无竞态；全静态；到期检查 O(到期数)。
-**缺点**：回调串行排队（长回调拖延后续所有定时器；回调后已重新计算等待时间）；命令队列 16 深度；异步 delete 的生命周期契约；expire_tick 回绕（并入 L1）。
+**优点**：回调在任务上下文、临界区外执行；命令带 generation 防旧命令作用于同地址新对象；服务任务串行维护链；静态控制对象；周期重插按上一 expire 推进并跳过错过相位。
+**缺点**：长回调拖延其他回调；命令队列容量由配置限制；异步 delete 后存储必须保持有效直到命令和回调结束；有限 period 为 `1..0x7FFFFFFF`。到期链首检查 O(1)，活跃链插入仍 O(定时器数)，回调执行成本由用户代码决定，不能把整轮服务写成 O(到期数)。
 
 ---
 
@@ -1885,7 +1928,8 @@ while hdr 在堆内:
             剩余 >= need + 16 + 8 → 在 need 处造新空闲块(写magic/size/FREE)
                                     hdr->size = need
             否则整块分配(尾部碎片 <= 24B, 避免生成不可用小块)
-        标记已分配; 统计 s_heap_free -= 分出的大小-8
+        若分裂新 header，s_heap_free 先扣除8字节元数据
+        标记已分配; s_heap_free 再扣已分配块的payload；增加alloc计数
         EXIT; return hdr+8                       ← 跳过 header
     hdr += 块大小                                  ← 沿隐式链走
 EXIT; return NULL
@@ -1897,6 +1941,7 @@ EXIT; return NULL
 范围检查(必须在堆内) → magic 检查(防双重释放/野指针) → FREE 位检查(防重复释放)
 块大小记录; 标记 FREE
 block_merge_next: 下一块也空闲 → size += 下一块大小; 下一块 magic=0(防复用)
+                 合并回收的8字节header重新计入s_heap_free
    (只向高地址合并——向低地址需知道前一块, 隐式链做不到, L7)
 ```
 
@@ -1915,6 +1960,8 @@ free:  范围和块边界检查; 扫描空闲链拒绝重复释放;
 ```
 
 空闲块自身的空间被复用来存链指针——零元数据。内部碎片 = 块大小对齐的舍入（请求 33B 占 64B 块）。适合 USB URB/网络缓冲这类"少数固定尺寸、高频生灭"的对象。
+
+init 还检查基址指针对齐、块大小向上对齐溢出、总容量乘法和地址加法溢出。free 用整数地址校验范围及精确块边界，再在临界区内有界扫描空闲链，重复释放返回 `RTOS_ERR_ALREADY`；不能为追求 O(1) 释放而绕过该健壮性检查。调用方负责提供实际足够大的存储，不能以参数算术检查替代数组容量约束。
 
 ---
 
@@ -2064,10 +2111,14 @@ USB 物理上只有一对差分线，"同时"是分时复用的宏观效果：
 五个关键设计：
 
 1. **静态对象池**：sem(8)/mutex(8)/mq(4)/thread(4, 内嵌 2KB 栈)/timer(8) 各一数组，create 扫描 `in_use` 取槽、delete 还槽——弥合"本内核静态对象"与"USB 栈 create 返回句柄"的范式差；池满返回 NULL 不崩溃。
-2. **双档固定块堆**（8KB 对半）：≤64B 小块池 + ≤512B 大块池，全部 O(1)——匹配 USB 对象"小而多"的分配画像；>512B 请求失败（当前仅 device 模式，规避了 host class 的大结构）。
+2. **双档固定块堆**（8KB 对半）：≤64B 小块池 + ≤512B 大块池，分配 O(1)，释放为拒绝重复释放扫描空闲链、最坏 O(块数)；>512B 请求失败（当前 device 模式）。
 3. **CDC ACM 封装**：RX 环形缓冲用"原始计数器"模式（head/tail 恒增、访问时掩码/取模——回绕免疫、count=减法）；TX 用完成信号量 + `tx_busy` 在途标记（超时返回后 DMA 未完成时不覆盖缓冲，下次调用先等在途传输）；`ep_in_buf` 为 DMA 安全的独立缓冲（D-cache 一致性 + 超时后用户缓冲复用两大问题一并解决）。
 4. **ZLP 处理**：IN 回调中 nbytes 为 MPS 整数倍时补零包（主机据此识别传输结束）；`tx_busy` 门防陈旧回调污染信号量。
 5. **硬约束**：USB ISR 优先级必须在 syscall 域（本工程 5~15，实配 6）——ISR 内调用 sem_give 会改内核结构，必须能被 BASEPRI 临界区屏蔽。
+
+当前 CDC/HID 多阶段操作共用一次超时预算：开始 tick 只记一次，互斥锁、旧传输和新完成等待均使用 `usb_timeout_remaining()`；RESET、DISCONNECTED、CONFIGURED 增加 session_seq，等待者检查连接与会话变化，避免跨会话继续使用旧状态。线程自删的槽位待切出后才由分配器回收，删除其他线程用 in_use=2 保护删除窗口；定时器 delete 只有命令投递成功才允许归还封装槽位，仍须遵守内核异步删除和回调存储寿命。
+
+审计还覆盖 CherryUSB EP0 描述符/请求长度校验、MSC 块范围与乘法边界、DWC2 FIFO 尾部复制和传输状态。相关实板用例验证代码路径、状态及寄存器行为；本轮没有连接目标 USB 数据总线，不能据此宣称已通过真实主机枚举或 CDC/HID/MSC 端到端传输。覆盖边界与原始证据见 [审计报告](rtos_audit_20261012.md) 和 [发布汇总](rtos_release_20261013.md)。
 
 ## 13.4 OSAL 契约: 必须实现的 26 个函数
 
@@ -2079,7 +2130,7 @@ CherryUSB 面向"动态内核"（FreeRTOS 式）设计，与本内核存在四�
 |---|---|---|---|
 | 对象生命周期 | `create` 返回句柄、`delete` 销毁 | 用户传入静态对象指针 | 静态对象池取槽/还槽 |
 | 超时单位 | 毫秒；`USB_OSAL_WAITING_FOREVER`(0xFFFFFFFF) | Tick；`RTOS_WAIT_FOREVER` | `usb_osal_ms_to_ticks()` |
-| 栈单位 | 字节 | 字（4 字节） | `stack_size / sizeof(rtos_stack_t)` |
+| 栈单位 | 字节 | 字（4 字节） | 除以 sizeof 后向上取整，0 使用配置默认栈 |
 | 返回值 | int：0 成功、`-USB_ERR_TIMEOUT` 超时 | `rtos_status_t` | `rtos_status_to_osal()` 映射 |
 
 优先级语义两边一致（小值=高优先级）直接透传，仅做越界钳位。
@@ -2091,7 +2142,7 @@ CherryUSB 面向"动态内核"（FreeRTOS 式）设计，与本内核存在四�
 | 函数 | 当前构建的调用者 | 实现要点 |
 |---|---|---|
 | `usb_osal_thread_create(name, stack_size, prio, entry, args)` | usbd_msc.c（MSC 线程） | 字节→字换算；prio≥MAX_PRIORITIES 时钳位到 MAX-1；从线程池取槽（TCB+内嵌栈）；`rtos_task_create_static` 创建，自动接入 perf 与栈高水位 |
-| `usb_osal_thread_delete(thread)` | 同上 | `rtos_task_delete` + 还槽 |
+| `usb_osal_thread_delete(thread)` | 同上 | 自删切出后再回收；删他人保护槽位直到删除 API 返回 |
 | `usb_osal_thread_schedule_other()` | （契约，暂无调用者） | 降到最低优先级 → yield → 恢复 |
 
 **信号量组（6 个）**
@@ -2119,9 +2170,10 @@ CherryUSB 面向"动态内核"（FreeRTOS 式）设计，与本内核存在四�
 ### 13.4.3 单位换算的精确规则
 
 ```
-ms → tick:  FOREVER 透传（防乘法溢出）
+ms → tick:  FOREVER 透传
             0 → NO_WAIT
-            其余 (ms × TICK_RATE_HZ) / 1000，结果为 0 则抬到 1（至少等 1 tick）
+            其余使用uint64_t计算 (ms × TICK_RATE_HZ + 999) / 1000（向上取整）
+            超过0x7FFFFFFF则钳到有限上限，不将有限毫秒请求变为永久等待
 返回值映射:  RTOS_OK → 0
             RTOS_ERR_TIMEOUT → -USB_ERR_TIMEOUT
             其他负值 → -1
@@ -2294,32 +2346,26 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 | 操作 | 复杂度 | 关中断时间 | 热度 |
 |------|--------|-----------|------|
-| find_highest_priority | O(1) 2周期 | — | 每次调度 |
+| find_highest_priority | O(1)，RBIT + CLZ（整体含零输入判定） | — | 每次调度 |
 | 就绪表 push/remove/rotate | O(1) | 含于调用者 | 高频 |
-| enter/exit_critical | **23 周期/对**(实测, 含内联+isb) | — | 每 API ≥1 对 |
-| PendSV 切换核心 | **16 条指令**(汇编) + C 决策 25 周期 | 不占关中断 | 每次切换 |
+| enter/exit_critical | O(1)，保存原 mask、嵌套计数和进入屏障 | 持有时间取决于被保护操作 | 每 API ≥1 对 |
+| PendSV 切换核心 | O(1) 上下文保存/恢复；FPU、统计开关影响成本 | 提交 current/next 至安装 PSP 的窗口屏蔽 syscall ISR | 每次切换 |
 | **延时链插入** | **O(1) 快路径**(表尾缓存) / O(n) 慢路径(乱序) | 低频路径 | 低 |
 | **延时链摘除** | **O(1)**(双向 + 表尾缓存交接) | 低频路径 | 低 |
 | sem take 快路径 | O(1) | 低 | 最高频 IPC |
 | sem take 阻塞入链 | O(n) 尾插遍历(低频侧) | 含阻塞 | 低 |
-| sem give 唤醒路径 | **O(1) 单等待者快路径** / O(同优先级等待者数) 多位图 | O(1)+决策 | 最高频 IPC |
+| sem give 唤醒路径 | 单等待者 O(1)；多等待者定位/清位最坏 O(n) | 含扫描、摘链和调度决策 | 高频 IPC |
 | mutex take 继承 | O(1)(就绪表重挂) + O(M) 有效优先级重算 | 同 take | 中 |
 | mutex waiter_left | O(M) M=注册锁数 | 每次超时/中止 | 低频 |
-| queue 空队直传 | O(1)+1次memcpy | 含唤醒 | 高 |
-| queue 阻塞入链 | O(n) 尾插遍历(低频侧) | 含阻塞 | 低 |
-| tick 处理 | O(到期数)+O(1) | 同左 | 每 ms |
+| queue 空队直传 | O(消息字节数)，等待者链首选择 O(1) | 含复制和唤醒 | 高 |
+| queue 阻塞入链 | O(n)，按优先级有序插入 | 含阻塞 | 负载相关 |
+| tick 处理 | O(到期数)+各节点对象清理成本；信号量清位可能 O(n) | 同左，互斥锁还需重算继承 | 每 ms |
 | 堆 alloc / free | O(n) 全堆扫描 / O(1)+前向合并 | O(n) | 低频 |
-| mempool alloc/free | O(1) | 极短 | 高(USB) |
-| 定时器到期派发 | O(到期数) | 仅收集/重插段 | 低 |
-| **rtos_task_set_priority** | O(1) 位图链 / O(n) 有序链 | 含重挂 | 低频 |
+| mempool alloc/free | alloc O(1)；free 最坏 O(块数)，拒绝重复释放 | free 含有界扫描 | 高(USB) |
+| 定时器到期派发 | 链首检查 O(1)；重插 O(活跃定时器数)；回调成本由应用决定 | 仅摘链/控制/重插段，回调在外 | 负载相关 |
+| **rtos_task_set_priority** | O(任务数) 登记检查 + O(注册锁数) 继承计算 + O(等待者数) 重挂 | 含登记、继承和重挂 | 低频 |
 
-> **复杂度总结的要点**：改造后内核中残留的 O(n) 数据结构操作是
-> ① 信号量/队列的**阻塞入链**（尾插遍历，在低频侧；唤醒侧已 O(1)）、
-> ② 延时链的乱序插入慢路径（命中率低）、
-> ③ 有序链（事件组/互斥锁）的插入与重挂、
-> ④ 堆分配的全堆扫描、⑤ 互斥锁有效优先级的跨锁扫描。
-> 其中①②③在常见负载下均可行走更快路径；④⑤不在无争用快路径上（11.1、7.x）。
-> **最高频 IPC 的唤醒侧已与等待者数解耦**，这是本轮优化的核心成果。
+> **复杂度与测量要分别解读**：位图选择、就绪表、单等待者唤醒等有 O(1) 快路径，但多等待者信号量、有序入链/重挂、对象重新初始化守卫、任务登记、堆扫描、内存池重复释放检查和定时器重插仍有线性成本。23 周期临界区、16 条 PendSV 等历史数据不描述当前加固后的完整路径；当前实测见 [底层优化报告](rtos_lowlevel_optimization_20261012.md)。关键中断/任务的最坏响应时间必须结合配置、消息大小、等待者数和外部 ISR 负载重新评估。
 
 ---
 
@@ -2327,7 +2373,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 | 编号 | 问题 | 触发条件 | 影响 | 状态 |
 |------|------|----------|------|----------|
-| ~~**L1**~~ | ~~tick 回绕(49.7天@1kHz): 延时链/定时器链无符号比较~~ | — | — | ✅ **已修复**：统一改用 `sched_tick_after(a,b) = (int32_t)(a-b)` 有符号差值半平面比较（3.4）。原症状：跨回绕的延时被排到链首并在下一 tick 立即"到期" |
+| ~~**L1**~~ | ~~tick 回绕(49.7天@1kHz): 延时链/定时器链无符号比较~~ | — | — | ✅ **已修复**：任务延时使用 `sched_tick_after`，软件定时器使用 `timer_tick_diff`，均按 `(int32_t)(a-b)` 比较。原跨回绕排序问题已修复；有限等待仍受 L16 约束 |
 | ~~**L2**~~ | ~~队列代办入队丢 to_front~~ | — | — | ✅ **已修复**(BUG-6)：`wait_node.to_front` 记录阻塞发送者的插队意图，代办入队时据此选写入位置 |
 | ~~**L3**~~ | 调度决策失效与 PendSV ISR 竞态 | 合法 ISR 唤醒刚阻塞任务 | 过期候选/丢失新决策 | 已修复并实板复现：失效候选取消、RUNNING 恢复、PendSV 屏蔽保护；见 2026-10-12 审计报告 |
 | ~~**L4**~~ | ~~多锁 give 丢继承~~ | — | — | ✅ **已修复**(PI-1)：释放时改为重算"全部持有锁的综合有效优先级"，而非无条件降回 base_priority |
@@ -2335,13 +2381,15 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | ~~**L6**~~ | 回调前计算剩余等待时间 | 长回调 | 多睡一段旧剩余时间 | 当前代码回调后重新计算，本次真实板用例通过；长回调串行排队仍是设计限制 |
 | **L7** | 堆无后向合并 | 交错分配释放 | 长期碎片 | ⚠️ 仍存在。修复方向：块尾 footer 存 prev_size，O(1) 双向合并 |
 | ~~**L8**~~ | notify_wait 超时后 blocked_on 残留 | 超时唤醒 | 状态不洁 | 当前超时与恢复路径已清理；见现有 FIX 自测 |
-| L9 | 优先级≤32/任务名16B/对象池8 | — | 配置硬上限 | 取舍非缺陷 |
-| L10 | 链式继承不传递 | A→B→C 三层锁 | 深嵌套反转残留 | 业界通病 |
-| **L11** | 位图链的**入链侧仍是 O(n)**（尾插遍历到链尾） | 大量任务同时阻塞在同一信号量/队列 | 阻塞侧关中断窗口随等待者数线性增长 | 设计取舍：本轮只把成本从高频的唤醒侧挪到低频的阻塞侧，**未消除**。若要彻底消除，可给每个等待对象加表尾指针（+4B/对象），把尾插降为 O(1) |
-| **L12** | 有序链插入 O(n) | 大量任务阻塞在同一事件组/互斥锁 | 关中断窗口随等待者数线性增长 | 设计取舍：仅高位图链（sem/queue）做了唤醒侧 O(1) 化；若事件组成为热点，可套用同一套位图机制 |
+| L9 | 优先级≤32，任务名长度及各对象/观察注册表容量由配置限制 | 增加任务或对象超过配置 | 创建失败或观察表不包含所有任务 | 配置取舍；综合压力测试对所有 worker 直接检查TCB，不能只依赖容量有限的perf注册表 |
+| L10 | 链式继承不传递 | A→B→C 三层锁 | 深嵌套反转残留 | 当前实现限制，不能据此概括其他 RTOS |
+| **L11** | 信号量 FIFO 位图链入链、唤醒、清位最坏 O(n) | 大量任务阻塞在同一信号量 | 临界区随等待者数增长 | 表尾可优化尾插；要优化唤醒/清位还需要每优先级链首或计数，当前未实现 |
+| **L12** | 有序链插入/重挂 O(n) | 大量任务阻塞在同一队列、事件组或互斥锁 | 临界区随等待者数增长 | 当前设计取舍，不能宣称整体 IPC 常数时间 |
 | **L13** | `rtos_kernel.critical_nesting` 为死字段 | — | 误读该字段会得到恒 0 | 卫生问题：计数实际在 `rtos_port_crit_nest`；建议后续删除该字段 |
 | ~~**L14**~~ | ~~`rtos_task_suspend` 手写复制延时链摘除循环~~ | — | — | ✅ **已修复**(S-7)：原实现复制了 `delay_list_remove` 的循环且**漏清 `prev_ready`**（残留指针可被误当就绪环解引用）；现统一调用 `rtos_sched_remove_delayed()` |
 | ~~**L15**~~ | 历史第二轮审计条目 | 队列重初始化/传递长度/周期相位 | 越界复制或永久漂移 | 本次修复队列存活等待者保护、传递长度校验、绝对周期相位；EXC_RETURN 注释已校正。伪造 NULL TCB 节点不是合法 API 输入，未把该加固项计作已复现缺陷 |
+| **L16** | 有限延时/超时域上限 | 需要单次超过 0x7FFFFFFF tick 的等待 | sched_block 转为永久阻塞；定时器拒绝大 period；delay_until 大 period 未统一入口拒绝 | 当前单条延时链的半平面约束（3.4）；回绕修复和 BD-1 上界修复均未解除此约束 |
+| **L17** | 实板覆盖边界 | 真实 USB 数据总线、外部传感器/DMA 或长期最坏时延要求 | 当前记录不能证明这些业务通过 | 已验证板载寄存器/软件路径与合成业务负载，真实端到端业务需专门 HIL |
 
 > **本轮修复的三项(L1/L2/L4)都是从"核对代码与文档一致性"中确认的**，
 > 说明第十五章这类清单必须随代码演进同步维护，否则会退化为误导性文档。
@@ -2362,8 +2410,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 # 第十六章 性能优化实录: 机制, 实测与权衡
 
-> 本章记录本轮针对"自研 RTOS 相对 FreeRTOS V10.3.1 的实测性能差距"所做的优化。
-> 完整数据见 `rtos_performance_report.md`（微基准 + 场景已合并为一份）。此处只讲**改了哪个机制、为什么有效、代价是什么**。
+> 本章保留早期针对与 FreeRTOS V10.3.1 性能差距的优化记录，数字和成本总账均属于历史基线。当前代码已经增加生命周期、ISR 与 PendSV 防护，队列也使用有序等待链；不能将本章机制表直接当作当前实现。完整历史数据见 [性能对比报告](rtos_performance_report.md)，当前基线、退步项和上板验证见 [第一轮优化报告](rtos_optimization_20261012.md)、[底层优化报告](rtos_lowlevel_optimization_20261012.md) 和 [发布汇总](rtos_release_20261013.md)。
 
 ## 16.1 优化清单与实测收益
 
@@ -2372,7 +2419,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | 编号 | 改动 | 涉及的机制 | 实测收益 |
 |---|---|---|---|
 | **G1** | `sched_unblock` 用 `ctz(ready_bitmap)` 判抢占，取代"与当前任务优先级比较" | 3.3 调度决策 | 省一次冗余位图选择；收益在噪声内，方向正确，保留 |
-| **G2** | 信号量/队列等待链：有序插入 → **尾插 + 优先级位图** | 6.1 / 1.3 不变式 III | 把 O(n) 从**高频唤醒侧**挪到**低频阻塞侧**；give 随等待者数的退化 **+18.4% → +4.8%**；每等待者增量 ~25 → ~7 周期 |
+| **G2（历史）** | 曾记录尾插 + 优先级位图改造；当前仅信号量保留 | 6.1 / 1.3 不变式 III | 历史 give 随等待者数的退化 +18.4% → +4.8%；该测量不等于最坏 O(1) |
 | **G3** | 延时链插入加**表尾缓存快路径** | 3.4 | 常见入睡路径 O(n) → O(1)；S4 唤醒偏差 max 30 → 22 周期 |
 | **P-1** | 临界区改头文件 `static inline` + exit 去 `isb` | 4.5 | 临界区进出对 **55 → 23 周期**(FreeRTOS 47) |
 | **P-2** | PendSV 扁平化：双层 C 调用 → 汇编直存 + 单层 `bl` | 4.2 | 省一层调用序言/尾声与间接寻址 |
@@ -2383,39 +2430,22 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 队列唤醒(1.49×)、ISR 唤醒(1.47×)五项领先；yield 切换(1.35×)与任务创建(1.21×)两项落后；
 `delay(1)` 周期两者**完全相同**(均 168000 周期 = 1.000 ms)。详见对比报告。
 
-## 16.2 G2 详解: 为什么"位图 + 尾插"能同时拿到 O(1) 与优先级语义
+## 16.2 G2 复核: 位图选择不等于整体 O(1)
 
-这是本轮最有价值的改动，因为早期文档曾把它当作一个**必须二选一的权衡**：
-
-> *"自研的等待链表按优先级排序插入 (O(n)) vs FreeRTOS 尾插 (O(1)) 是一个『实时性保证换吞吐』
-> 的选择：自研在任意时刻唤醒的必是最高优先级等待者，FreeRTOS 依赖『高优先级必然先阻塞』
-> 的调度序不变式。"* —— 早期报告
-
-**该权衡实际上可以两全**。关键在于认识到：**"谁该被唤醒"与"链表物理顺序"是两件独立的事**。位图记录了"哪些优先级有人在等"，`ctz` 用两条指令给出其中最高的那个，然后只需在该优先级分组内取链首（同优先级 FIFO 由尾插保证）。
+早期解释把“位图选最高优先级”与“定位该优先级节点”合并成一个 O(1) 操作，这是对实际数据结构的误读。当前信号量只有一条 FIFO 等待链和一个存在位图，没有每优先级分组链首。
 
 ```
-旧: 唤醒 = 取链首        (O(1)，但要求入链时把链表按优先级排好 → 入链 O(n) 且循环体更重)
-新: 唤醒 = ctz(位图) → 该优先级分组内的链首   (唤醒侧 O(1) / O(同优先级等待者数))
-    入链 = 尾插 + 置位                        (仍是 O(n)，但循环体更轻、且发生在低频侧)
+有序链: 入链寻找有序位置 O(n)；唤醒取链首 O(1)
+信号量FIFO位图链:
+    入链遍历到尾 O(n)，置位 O(1)
+    唤醒ctz选优先级 O(1)，从整条链定位匹配节点最坏 O(n)
+    双向摘链 O(1)，扫描剩余链确认清位最坏 O(n)
+    链上仅一个等待者时采用 O(1) 快路径
 ```
 
-**收益的真正来源是频率差，而不是复杂度降级**——这一点必须说清楚，否则容易误以为入链变成了 O(1)：
+例如 FIFO 链 `[P9, P8, P7, P2]` 中，位图立即给出 P2，仍需经过三个更低优先级节点才能取得它；只有一个 P2 也不会让定位成本降为 O(同优先级人数)。唤醒后还需确认剩余链是否有 P2，避免误清同级共享位。
 
-| | 触发频率 | 改造前成本 | 改造后成本 |
-|---|---|---|---|
-| **入链**（阻塞） | 仅当拿不到资源时 | O(n)：遍历 + 优先级比较 + 找插入点 | O(n)：遍历到链尾（循环体更轻） |
-| **唤醒**（give） | **每次释放资源** | O(1)：取链首，但**依赖链已排好序** | O(1)：`ctz` 现算，**不再依赖链序** |
-
-把"优先级顺序"从**链表的物理顺序**中解耦出来，是这次改造的本质：
-一旦链序不再承载优先级语义，唤醒侧就不必为"维持有序"付出任何代价，
-而入链侧也只需保证 FIFO。实测退化量从 +18.4% 降到 +4.8% 正是这一点的体现。
-
-代价与副作用（必须如实记录）：
-1. 每个等待对象多 4 字节（`wait_bitmap`），每个等待节点多 8 字节（`queue_bitmap` 指针 + `queued_priority`）；
-2. **优先级变化时必须同步位图**，多出一条容易写错的路径（5.8 的 `requeue_wait_lists`），且该路径的重新入链同样是 O(n)——这是本改动引入的**主要复杂度成本**；
-3. 唤醒时多一次"在分组内找链首"的短扫描（长度 = 同优先级等待者数，通常为 1）；
-4. 事件组与互斥锁**未**套用该机制（保留有序链），故两套链纪律必须并存维护——这是 L11 的来源；
-5. **入链侧的 O(n) 并未消除**：若某应用有大量任务同时阻塞在同一信号量上，阻塞侧仍会退化（只是这条路走得少）。
+历史 +18.4% → +4.8% 是特定负载与版本的实测，保留用于比较，不作为算法复杂度证据。当前性能优化主要减少冗余调用、计数/TCB 重读和等待节点邻居重读，同时保留保护与校验。若继续优化多等待者最坏路径，需要独立设计每优先级链首、计数或其他索引结构，并覆盖 FIFO、动态改优先级、超时、删除、挂起和 ISR 竞争。
 
 ## 16.3 S-10 详解: `isb` 的真实代价与删除的依据
 
@@ -2439,7 +2469,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | 方案 | 预期 | 实测 | 结论 |
 |---|---|---|---|
 | **嵌套临界区跳过冗余 `msr`+`isb`** | 省 2 次写入/屏障 | `give_no_waiter` 91→**99**，`give_w01` 1246→**1277** | **净负收益，已回退**。计数为 volatile，"判断+自增+分支"的读-改-写开销超过省下的写入；且 sem 的 give 路径**本身不嵌套**，收益面不存在 |
-| 合并 PendSV 两次 `ldr r1,=rtos_kernel` | 省 1 条字面量加载 | — | **不划算**：第二次加载在 `bl` 之后，此时 R4-R11 已是新任务上下文（恢复序列正要覆盖它们），无可用暂存寄存器；省 1 条需付 push/pop，净值 ≤0 |
+| 合并 PendSV 两次 `ldr r1,=rtos_kernel`（历史直接暂存方案） | 省加载 | 旧方案未保留 | 当前已用另一方案实现：C 提交函数通过 R0 返回实际 TCB，公共 void ABI 保留，不依赖跨调用暂存内核地址；见4.2 |
 | 合并保存侧两条 `stmdb` | 省 1 条指令 | — | **风险大于收益**：`{r3,lr}` 承担 EXC_RETURN 暂存与对齐，该布局与 `init_stack`/SVC 恢复序三处强耦合 |
 | `str ICSR` 后的 `dsb`+`isb` 降为 `dmb` | 省约 10 周期 | 未验证 | **暂不动**：语义依赖对中断系统的可见性，未取得确定性等价论证 |
 | 延时链摘除改双向 O(1) | — | 已实现(3.4) | ✅ 已落地，并顺带得到插入快路径 |
@@ -2470,4 +2500,10 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 ---
 
-*基准代码：本工程 `RTOS/` 目录 | 内核 ~3300 行 C + ~120 行汇编 | Flash ~14KB / 静态 RAM ~70KB（不含 USB 子系统与 RAM 盘）*
+## 16.7 当前实现的验证入口
+
+当前实现与历史数字应按阶段复核：审计与边界回归见 [审计报告](rtos_audit_20261012.md)；默认/统计配置的 PendSV、FPU、取消切换和上下文完整性见 [底层优化报告](rtos_lowlevel_optimization_20261012.md)；16 个不同优先级业务 worker、任务与 TIM6/TIM7 共享 IPC、真实两层中断嵌套、队列容量 1/8/32、清理与数据账本见 [综合压力测试报告](rtos_production_stress_20261013.md)。
+
+综合压力测试有五轮正常运行，共 805 次检查、2,433,735 条成功接收消息，含 900 秒 soak；另一次故意破坏校验和的负向测试应失败，用于验证检测机制。有限时间实板测试不等于任意配置、无限运行或真实 USB 总线业务已通过。HIL 入口及历史原始文本证据见 [hil/README.md](../hil/README.md)，本地 ELF 和回滚副本的复核限制见 [发布汇总](rtos_release_20261013.md)。
+
+*本章历史代码规模与 Flash/RAM 估算不用于当前资源承诺；当前构建资源及配置请以对应固件的构建记录为准。*
