@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'selftest' OK -- full functional regression (selftest.c); warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  82848	    120	  44152	 127120	  1f090	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "amb_basepri_a1_O2",
+    "started":  "2026-10-26T00:28:15.7168546+08:00",
+    "finished":  "2026-10-26T00:28:19.0827087+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "836EC0B2CA0E15C3DCE1E4FAE3D93AE9933A4C3B8B4E7CFE0BEC25009B7796A9",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AMB\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

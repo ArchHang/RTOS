@@ -17,7 +17,8 @@ param(
     [int]    $Baud = 115200,
     [string] $OutDir = '',
     [switch] $NoFlash,
-    [switch] $AllowFailures
+    [switch] $AllowFailures,
+    [switch] $LiveLog
 )
 $ErrorActionPreference = 'Stop'
 
@@ -48,12 +49,19 @@ if (-not $NoFlash) {
 }
 
 $sb = New-Object System.Text.StringBuilder
+$nextLiveWrite = [DateTime]::MinValue
 $deadline = (Get-Date).AddSeconds($Seconds)
 $replied = $false
 
 while ((Get-Date) -lt $deadline) {
     try { $null = $sb.Append($sp.ReadExisting()) } catch { }
     $text = $sb.ToString()
+    if ($LiveLog -and (Get-Date) -ge $nextLiveWrite) {
+        # A partial snapshot permits read-only monitoring without opening COM
+        # twice. The final log and acceptance checks still use the full buffer.
+        [System.IO.File]::WriteAllText(($log + '.partial'), $text)
+        $nextLiveWrite = (Get-Date).AddSeconds(2)
+    }
     if ((-not $replied) -and ($ReplyOn -ne '') -and ($text -match $ReplyOn)) {
         Start-Sleep -Milliseconds 150
         $sp.Write($Reply)
@@ -68,6 +76,9 @@ try { $null = $sb.Append($sp.ReadExisting()) } catch { }
 
 $text = $sb.ToString()
 Set-Content -Path $log -Value $text -NoNewline
+if ($LiveLog -and (Test-Path -LiteralPath ($log + '.partial'))) {
+    Remove-Item -LiteralPath ($log + '.partial') -Force
+}
 Write-Host ("===== " + $Tag + " (" + $text.Length + " chars) -> " + $log + " =====")
 Write-Host $text
 [ordered]@{ tag=$Tag; started=$started; finished=(Get-Date).ToString('o'); elf=$elfPath;

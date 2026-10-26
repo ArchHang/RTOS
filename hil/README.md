@@ -7,18 +7,26 @@
 > [历史性能报告](../docs/rtos_performance_report.md)（性能数据与复现纪律）、
 > [底层优化报告](../docs/rtos_lowlevel_optimization_20261012.md)（当前优化实现）、
 > [综合压力报告](../docs/rtos_production_stress_20261013.md)（16 任务、双 IRQ 及原始证据）。
+> 后续补充：[BASEPRI 修复与回归报告](../docs/rtos_basepri_fix_20261025.md)（精确抢占、阻塞返回、三层 IRQ）。
+> 复杂并发：[对抗场景与健壮性报告](../docs/rtos_adversarial_20261026.md)（传递继承、对象销毁窗口、循环依赖、递归溢出及配置矩阵）。
 
 ---
 
 ## 1. 一分钟上手
 
 ```powershell
-# 跑传统套件：audit / bench / boundary / selftest / scenario
-# 自动切换固件变体 → 烧录 → 抓串口；不包含后续优化及综合压力批次
+# 默认 audit / port / adversarial / bench / boundary / selftest / scenario
+# port 包含 74 个镜像的屏蔽、阻塞返回和优先级边界，不能仅用正常交接替代
 powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1
 
 # 只跑部分
 powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1 -Only selftest,boundary
+
+# 只跑精确抢占、不同编译配置和负向 IRQ 边界
+powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1 -Only port
+
+# 60 个复杂并发镜像：4 套场景的 48 组合，加容量边界的 12 组合
+powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1 -Only adversarial
 
 # 单独构建某个变体（不烧录）
 powershell -ExecutionPolicy Bypass -File hil\build_fw.ps1 -Variant bench
@@ -35,12 +43,18 @@ powershell -ExecutionPolicy Bypass -File hil\restore_project.ps1 -Rebuild
 路径配置发生变化时须保存新的源码身份与证据，不能将新构建认作原始实测镜像。
 
 Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和解析结果。
-`Debug/`、本地 ELF、`baseline_RTOS/` 等回退快照及 `backup_precleanup/` 不随 Git 发布。
+`Debug/`、本地 ELF、编译器 `.su` 栈记录、`baseline_RTOS/` 等回退快照及 `backup_precleanup/` 不随 Git 发布。
 因此，clone 后可以审阅提交的文本证据，但不能原样执行完整原始身份复核：
-历史 `validate_evidence.ps1` 还依赖保存的 ELF、本机源码身份及日常构建目录；
+历史 `validate_evidence.ps1` 和新批次 `verify_evidence.py` 还依赖保存的 ELF、本机源码身份、栈记录及日常构建目录；
 缺少这些输入时应视为证据不可用，不能绕过哈希检查或据此生成新的通过结论。
 
-`repro_all.ps1` 只覆盖传统套件。第一轮性能优化、底层优化和综合压力分别使用下表中
+清单记录的是本机实测时的原始文件字节。当前 Git 使用 `core.autocrlf=true`，部分源码会在提交或
+检出时规范换行，因此不能保证 clone 后源码摘要与原实测字节自动一致；不要为匹配新检出文件而
+重写历史清单。原始 HIL txt/json 等通过 `.gitattributes` 的 `-text` 保持字节。
+更换路径、换行或配置后应运行新批次并生成新证据，完整流程和缺陷总览见
+[2026-10-26 修复汇总](../docs/rtos_fix_summary_20261026.md)。
+
+`repro_all.ps1` 包含传统套件及端口、复杂并发矩阵。第一轮性能优化、底层优化和综合压力分别使用下表中
 `perf_20261012/`、`lowlevel_20261012/`、`production_20261012/` 的独立入口；
 历史阶段名称不会自动回退实现，复测前须按对应报告确认当前源码和配置。
 
@@ -61,6 +75,9 @@ Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和
 | `production_20261012/run_production.ps1` | 综合压力批次：smoke / matrix / soak / negative；保留源码身份、构建、ELF、反汇编、真实下载和串口证据 |
 | `production_20261012/restore_daily.ps1` | 本轮结束后检查内核身份、恢复日常固件并上板验证；拒绝覆盖已有恢复证据 |
 | `production_20261012/validate_evidence.ps1` | 独立读取本轮证据，核对参数、消息与令牌守恒、覆盖、固件身份及日常恢复；不连接硬件 |
+| `basepri_20261025/run_matrix.ps1` | 74 个镜像：精确中断交错、阻塞返回、优先级契约、关闭断言的非法嵌套；默认写新时间戳目录 |
+| `basepri_20261025/run_regressions.ps1` | `functional` 原回归；`production` 多容量/种子和已知损坏对照；`soak` 900 秒三层 IRQ 业务负载 |
+| `basepri_20261025/verify_evidence.py` | 标准库离线重算日志、不变量、ELF/下载身份和源码保留；只有严格完整通过才生成汇总 |
 
 ## 3. 固件变体（`-Variant`）
 
@@ -68,6 +85,10 @@ Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和
 |---|---|---|
 | `daily` | 无（日常演示固件：应用任务 + HardFault 测试任务 + USB） | — |
 | `audit` | `fw/Src/audit_{regressions,ipc,memory_timer,usb_port}.c`，2026-10-12 专项回归 | `AT\|DONE` |
+| `basepri` | `fw/Src/basepri_regressions.c`，600 交错、百万 pair、mask/计数与调度进展 | `BP\|DONE\|status=…` |
+| `basepri_blocking` | `fw/Src/basepri_blocking.c`，无生产者的真实阻塞返回及数据哨兵 | `BLOCK\|DONE\|status=…` |
+| `basepri_guard` | `fw/Src/basepri_guard.c`，真实 ISR 优先级契约与非法嵌套；仅此变体包装断言接收器 | `BP\|DONE\|status=…` |
+| `basepri_nesting` | `fw/Src/basepri_nesting.c`，关闭断言时非法计数不回绕且完整保留调用方状态 | `NEST\|DONE\|status=…` |
 | `selftest` | `Core/Src/selftest.c` | `ST\|SUMMARY\|pass=… fail=… info=… total=…\|END` |
 | `bench` | `Core/Src/benchmark.c` | `BM\|DONE` |
 | `perf` | `fw/Src/perf_probes.c`，叠加性能及互斥锁检查 | `BM\|DONE` |
@@ -77,7 +98,7 @@ Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和
 | `scenario` | `fw/Src/{kern_port_rtos,test_framework,test_scenarios}.c` | `SC\|DONE` |
 | `scenario_usb` | 同上，但保留 USB 应用任务（复现历史采集环境） | `SC\|DONE` |
 | `diag` | 追加 `fw/Src/diag_scenarios.c`：诊断场景 D1/D4–D10（用 `-Scenario <n>` 选择，见 §4.1） | `SC\|DONE` |
-| `production_stress` | `fw/Src/production_{stress,irq}.c`：16 个不同优先级业务任务，共享 queue / sem / mutex / event，TIM6 / TIM7 真实中断 | `STRESS\|DONE\|status=…` |
+| `production_stress` | `fw/Src/production_{stress,irq,highirq}.c`：16 个不同优先级业务任务、共享 IPC，TIM6/TIM7 系统调用中断与 TIM2(0) 硬实时干扰 | `STRESS\|DONE\|status=…` |
 
 > 隔离测试变体关闭日常应用和故障演示任务，仍有测试任务、idle 和启用的软件定时器任务。
 > `scenario_usb` 保留 USB 应用任务，`daily` 运行演示任务，`production_stress` 则主动混合业务任务及 IRQ。
@@ -98,7 +119,8 @@ Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和
 | `test_framework.{c,h}`（统计与上报） | `fw/Src/`、`fw/Inc/` | — | 同上 |
 | `kern_port.h` + `kern_port_rtos.c`（内核适配层） | `fw/Src/`、`fw/Inc/` | — | 同上 |
 | `diag_scenarios.{c,h}`（D1/D4–D10 诊断场景） | `fw/Src/`、`fw/Inc/` | — | `diag` |
-| `production_{stress,irq}.{c,h}`（综合压力与双定时器 IRQ） | `fw/Src/`、`fw/Inc/` | — | `production_stress` |
+| `production_{stress,irq,highirq}.{c,h}`（综合压力与三层 IRQ） | `fw/Src/`、`fw/Inc/` | — | `production_stress` |
+| `basepri_{regressions,blocking,guard,nesting}.c`（精确交错与屏蔽／返回契约） | `fw/Src/` | `basepri_regressions.h` 在 `fw/Inc` | 四种 `basepri*` 变体 |
 
 `build_fw.ps1` 会把 `fw/Src/*.c` 复制到构建目录 `fwsrc/` 编译（让 Makefile 生成的文件保持干净可还原），
 头文件搜索路径直接指向 `fw/Inc`。
@@ -144,6 +166,7 @@ hil/
 ├── perf_20261012/           第一阶段性能优化证据
 ├── lowlevel_20261012/       底层优化与上下文检查证据
 ├── production_20261012/     后续综合压力证据（实际完成于 2026-10-13）
+├── basepri_20261025/        临界区修复对照、74 镜像、三层 IRQ 与独立验证脚本
 ├── archive_docs/            已合并的历史文档（见其 README.md）
 ├── archive_tests/           已作废的测试资产（见 §6）
 └── backup_precleanup/       源码清理前回滚点（仅本地归档，不入库）
@@ -245,3 +268,37 @@ powershell -NoProfile -ExecutionPolicy Bypass -File hil\run_hil.ps1 `
 `run_production.ps1` 是本轮固定板卡／目录的批次执行器，重复执行必须使用新的 `-Label`，
 否则拒绝覆盖已有结果。本轮恢复脚本也只接受尚无恢复证据的状态。
 `validate_evidence.ps1` 只复核本轮固定 tags，新增批次需相应提供独立复核，不能套用旧结果。
+
+## 10. 复杂并发与销毁窗口
+
+`adversarial_20261025/` 保存 10 月 25 日开始、26 日完成的批次。
+新测试覆盖此前正常交接测试缺少的依赖传播和检查窗口，夹具不修改日常 `main.c`。
+
+| 构建变体 | 主要判据 | 测试方式 |
+|---|---|---|
+| `adversarial_mutex` | 2／3／6 层锁链的继承与撤销，15 个场景 | 公共 API 建链；成功、超时、挂起、删除及动态改优先级 |
+| `adversarial_wait` | 8 轮混合等待，73 个阶段、120 次合法 ISR 请求 | 多发送／接收者、信号量、ANY／ALL 事件、通知、超时与迟到操作；TIM2 优先级 0 背景中断 |
+| `adversarial_lifetime` | 80 次对象检查窗口，销毁后不再改状态或输出 | 测试钩子在外部预检后挂起真实 TIM7 优先级 5 中断；静态存储不释放 |
+| `adversarial_mutex_boundary` | 溢出拒绝、删除持锁者后的移交、有限循环依赖 | 仅递归计数边界显式注入 `UINT32_MAX`；其余使用公共 API |
+| `adversarial_registry` | 8 把锁／9 个所有者移交、删除双锁所有者，共 259 项检查 | 公共 API 构造，观察图容量和两条等待链的连续移交 |
+
+```powershell
+# 新目录保存每个镜像的源码身份、编译命令、固件、SWD 校验、串口和结果索引。
+# 同一目录拒绝覆盖；矩阵为 4×2×2×3 = 48 个镜像。
+powershell -NoProfile -ExecutionPolicy Bypass -File hil\adversarial_20261025\run_matrix.ps1 `
+    -OutDir hil\adversarial_repeat_01
+
+# 补充注册表满容量／多锁删除的同一组 12 种配置。
+powershell -NoProfile -ExecutionPolicy Bypass -File hil\adversarial_20261025\run_matrix.ps1 `
+    -RegistryOnly -ExpectedRegistryChecks 259 -OutDir hil\adversarial_repeat_01\registry
+
+# 8 个相关内核文件的 12 配置严格编译，加 CM7 端口仅编译检查。
+powershell -NoProfile -ExecutionPolicy Bypass -File hil\adversarial_20261025\compile_checks.ps1 `
+    -OutDir hil\adversarial_repeat_01\compile
+```
+
+销毁窗口钩子只在专用生命周期变体编译，生产固件不包含该钩子。
+测试的是仍可访问的对象存储；调用者仍须管理存储寿命，不能在其它上下文仍持有指针时释放或复用内存。
+有限循环测试以真实超时打破依赖，不能解释为内核提供死锁检测。
+各场景都有有限捕获期限；缺少结束行、出现 FAIL 或检查数量不足均拒绝验收。
+原始故障基线及本批独立复核入口见[报告](../docs/rtos_adversarial_20261026.md)。

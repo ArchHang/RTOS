@@ -15,7 +15,12 @@ param(
     [uint32] $StressSeed = 1,
     [ValidateRange(6,900)][int] $StressSeconds = 30,
     [ValidateRange(1,64)][int] $StressQueueCapacity = 8,
-    [switch] $StressInjectCorruption
+    [switch] $StressInjectCorruption,
+    [ValidateSet('basepri','primask')][string] $CriticalMask = 'basepri',
+    [switch] $DisableAssertions,
+    [ValidateSet('O0','O2','O3')][string] $Optimization = 'O2',
+    [ValidateRange(1,16)][int] $CriticalGuardCase = 1,
+    [ValidateRange(0,15)][int] $CriticalGuardPriority = 0
 )
 $ErrorActionPreference = 'Stop'
 
@@ -32,6 +37,71 @@ $env:PATH = "$TOOLS;$env:PATH"
 # exclude : Core/Src translation units dropped from this variant
 # extra   : source basenames copied hil\fw\Src -> hil\fwsrc and compiled
 $VARIANTS = @{
+    adversarial_registry = @{
+        desc = 'maximum mutex owner graph and deletion with multiple owned locks'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('adversarial_registry')
+    }
+    adversarial_mutex_boundary = @{
+        desc = 'recursive count overflow, owner deletion and finite mutex dependency cycles'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('adversarial_mutex_boundary')
+    }
+    adversarial_lifetime = @{
+        desc = 'legal ISR deinitialization in the object liveness-check window'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_ADVERSARIAL_LIFETIME=1',
+            'RTOS_HIL_OBJECT_LIFETIME=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('adversarial_lifetime')
+    }
+    adversarial_mutex = @{
+        desc = 'bounded mutex dependency chains and inherited-priority withdrawal'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_ADVERSARIAL_MUTEX=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('adversarial_mutex')
+    }
+    adversarial_wait = @{
+        desc = 'mixed ISR wait races, exact-once handoff and object lifecycle'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_ADVERSARIAL_WAIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('adversarial_wait','production_highirq')
+    }
+    basepri = @{
+        desc = 'deterministic critical-state preemption and interrupt-mask regression'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0',
+            'FIRMWARE_APP_TASKS=0','RTOS_HIL_CRITICAL_TEST=1')
+        exclude = @('benchmark')
+        extra = @('basepri_regressions')
+    }
+    basepri_guard = @{
+        desc = 'real IRQ syscall-priority assertions and invalid critical nesting'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0',
+            'FIRMWARE_APP_TASKS=0',"BASEPRI_GUARD_CASE=${CriticalGuardCase}U",
+            "BASEPRI_GUARD_PRIORITY=${CriticalGuardPriority}U")
+        exclude = @('benchmark')
+        extra = @('basepri_guard')
+    }
+    basepri_blocking = @{
+        desc = 'blocking return values must be read after the pending context switch'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0',
+            'FIRMWARE_APP_TASKS=0','FIRMWARE_BASEPRI_BLOCKING=1')
+        exclude = @('benchmark')
+        extra = @('basepri_blocking','production_highirq')
+    }
+    basepri_nesting = @{
+        desc = 'assertion-disabled invalid critical nesting preserves caller state'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0',
+            'FIRMWARE_APP_TASKS=0','RTOS_CONFIG_ASSERT_ENABLED=0')
+        exclude = @('benchmark')
+        extra = @('basepri_nesting')
+    }
     audit = @{
         desc = '2026-10-12 kernel audit regressions'
         flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0','KERN_IS_CUSTOM_RTOS=1','RTOS_HIL_AUDIT_PENDSV=1','FIRMWARE_AUDIT_REPEAT_TIMER_INIT=1')
@@ -67,7 +137,7 @@ $VARIANTS = @{
         exclude = @(); extra = @('flash_diag')
     }
     production_stress = @{
-        desc = 'industrial pipeline: sixteen priorities, shared IPC and nested timer IRQs'
+        desc = 'industrial pipeline: sixteen priorities, shared IPC and three IRQ levels'
         flags = @('FIRMWARE_PRODUCTION_STRESS=1','FIRMWARE_USB_APP=0',
             'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0',
             "PRODUCTION_STRESS_SEED=${StressSeed}U",
@@ -75,7 +145,7 @@ $VARIANTS = @{
             "PRODUCTION_STRESS_QUEUE_CAPACITY=$StressQueueCapacity",
             "PRODUCTION_STRESS_INJECT_CORRUPTION=$([int][bool]$StressInjectCorruption)")
         exclude = @('benchmark')
-        extra = @('production_stress','production_irq')
+        extra = @('production_stress','production_irq','production_highirq')
     }
     boundary = @{
         desc    = 'boundary / contract fixture (hil\fw\Src\boundary_test.c)'
@@ -111,6 +181,19 @@ if (-not $VARIANTS.ContainsKey($Variant)) {
     throw "unknown variant '$Variant'; known: $($VARIANTS.Keys -join ', ')"
 }
 $cfg = $VARIANTS[$Variant]
+if ($Variant -eq 'basepri_guard' -and $DisableAssertions) {
+    throw 'basepri_guard requires assertions; use basepri for assertion-disabled mask tests'
+}
+
+# These overrides are opt-in and are propagated to all kernel translation units.
+$configFlags = @()
+if ($CriticalMask -eq 'primask') { $configFlags += '-DRTOS_CONFIG_USE_BASEPRI=0' }
+if ($DisableAssertions -or $Variant -eq 'basepri_nesting') {
+    $configFlags += '-DRTOS_CONFIG_ASSERT_ENABLED=0'
+}
+if ($Variant -eq 'basepri') { $configFlags += '-DRTOS_HIL_CRITICAL_TEST=1' }
+if ($Variant -eq 'adversarial_lifetime') { $configFlags += '-DRTOS_HIL_OBJECT_LIFETIME=1' }
+$configArgs = $configFlags -join ' '
 
 # The audit injects a real syscall-priority IRQ at the PendSV decision window.
 # Keep this hook out of every production build and recompile on macro changes.
@@ -120,6 +203,8 @@ foreach ($rel in @('RTOS/Core/Src','RTOS/Port/GCC/ARM_CM7','RTOS/lib/third/Cherr
     if (-not (Test-Path -LiteralPath $kernelTpl)) { Copy-Item -LiteralPath $kernelMk -Destination $kernelTpl }
     $kernelRaw = [System.IO.File]::ReadAllText($kernelTpl)
     if ($Variant -eq 'audit') { $kernelRaw = $kernelRaw.Replace('-DDEBUG', '-DDEBUG -DRTOS_HIL_AUDIT_PENDSV=1') }
+    if ($configArgs -ne '') { $kernelRaw = $kernelRaw.Replace('-DDEBUG', "-DDEBUG $configArgs") }
+    $kernelRaw = $kernelRaw -replace '-O[0-3sg]\b', "-$Optimization"
     if ([System.IO.File]::ReadAllText($kernelMk) -ne $kernelRaw) {
         [System.IO.File]::WriteAllText($kernelMk, $kernelRaw)
         Get-ChildItem -LiteralPath (Join-Path $DBG $rel) -File | Where-Object { $_.Extension -in '.o','.d' } | Remove-Item -Force
@@ -131,6 +216,9 @@ if (-not (Test-Path -LiteralPath $auditLinkTpl)) { Copy-Item -LiteralPath $audit
 $auditLinkRaw = [System.IO.File]::ReadAllText($auditLinkTpl)
 if ($Variant -eq 'audit') {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=usbd_ep_start_write -Wl,--wrap=usbd_ep_start_read')
+}
+if ($Variant -eq 'basepri_guard') {
+    $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_assert_fail')
 }
 [System.IO.File]::WriteAllText($auditLinkMk, $auditLinkRaw)
 
@@ -166,6 +254,7 @@ foreach ($e in $cfg.exclude) {
 }
 
 $flagArgs = ($cfg.flags | ForEach-Object { "-D$_" }) -join ' '
+if ($configArgs -ne '') { $flagArgs += " $configArgs" }
 $incExtra = '-I"E:/STM32_Project/CubeIDE/f446_rtos/hil/fwsrc" -I"E:/STM32_Project/CubeIDE/f446_rtos/hil/fw/Inc"'
 
 $out = New-Object System.Collections.Generic.List[string]
@@ -178,6 +267,7 @@ foreach ($l in $lines) {
 
     if ($l -match '^\s*arm-none-eabi-gcc') {
         $nl = $l
+        $nl = $nl -replace '-O[0-3sg]\b', "-$Optimization"
         if ($flagArgs -ne '') { $nl = $nl -replace '-DDEBUG', ("-DDEBUG " + $flagArgs) }
         $nl = $nl -replace [regex]::Escape('-I"E:/STM32_Project/CubeIDE/f446_rtos/RTOS/Core/Inc"'),
                                ('-I"E:/STM32_Project/CubeIDE/f446_rtos/RTOS/Core/Inc" ' + $incExtra)
@@ -192,7 +282,7 @@ foreach ($l in $lines) {
 
 if ($cfg.extra.Count -gt 0) {
     $rule = ($out | Where-Object { $_ -match '^\s*arm-none-eabi-gcc' } | Select-Object -First 1)
-    if ($Variant -in @('lowlevel','flash_diag','production_stress')) {
+    if ($Variant -in @('lowlevel','flash_diag','production_stress','basepri','basepri_guard','basepri_blocking','basepri_nesting','adversarial_mutex','adversarial_wait','adversarial_lifetime','adversarial_mutex_boundary','adversarial_registry')) {
         # Enforce the requested warning policy for the new low-level fixtures.
         $rule = $rule.Replace('-Wall', '-Wall -Wextra -Werror')
     }
@@ -241,7 +331,7 @@ Set-Content (Join-Path $DBG 'objects.list') -Value $ol
 # the last build and force-recompile the affected translation units when it
 # changes (a stale main.o silently runs the previous scenario).
 $stampFile = Join-Path $DBG '.hil_build_stamp'
-$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')"
+$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$CriticalMask|$DisableAssertions|$Optimization"
 $prev = if (Test-Path $stampFile) { (Get-Content $stampFile -Raw).Trim() } else { '' }
 if ($prev -ne $stamp) {
     foreach ($f in @('Core\Src\main.o','Core\Src\main.d')) {

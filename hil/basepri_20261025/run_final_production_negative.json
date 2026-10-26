@@ -1,0 +1,24 @@
+﻿{
+    "tag":  "final_production_negative",
+    "started":  "2026-10-25T23:05:09.2926516+08:00",
+    "finished":  "2026-10-25T23:05:18.9279710+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "F18DDF6447420E1910E240073331636763DFDB7963BBDCB585D1B4213961F083",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "STRESS\\|DONE\\|",
+    "terminator_seen":  true,
+    "failure_lines":  [
+                          "STRESS|FAIL|packet_integrity checksum_errors=1",
+                          "STRESS|FAIL|first=PACKET_CHECKSUM actual=0 expected=6 errors=1",
+                          "STRESS|FAIL|packet_integrity checksum_errors=1",
+                          "STRESS|FAIL|first=PACKET_CHECKSUM actual=0 expected=6 errors=1",
+                          "STRESS|FAIL|packet_integrity checksum_errors=1",
+                          "STRESS|FAIL|first=PACKET_CHECKSUM actual=0 expected=6 errors=1",
+                          "STRESS|FAIL|check=every_successful_identity_validated_exactly_once",
+                          "STRESS|FAIL|check=all_runtime_contracts",
+                          "STRESS|FAIL|packet_integrity checksum_errors=1",
+                          "STRESS|FAIL|first=PACKET_CHECKSUM actual=0 expected=6 errors=1"
+                      ]
+}

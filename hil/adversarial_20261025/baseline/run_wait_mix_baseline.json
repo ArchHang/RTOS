@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "wait_mix_baseline",
+    "started":  "2026-10-25T23:58:31.4959713+08:00",
+    "finished":  "2026-10-25T23:58:34.1648727+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "CBAF958958B4048F9DE636D124CB5AC91A755B91273B26BF2D6A7BD21A38151F",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AW\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "final_nohook_bench",
+    "started":  "2026-10-25T22:59:09.6445304+08:00",
+    "finished":  "2026-10-25T22:59:12.5839681+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "663032713E8D30F96B56D43A4719FF56F005B8F36DC091217E54E3FBA4C5BBD3",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BM\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

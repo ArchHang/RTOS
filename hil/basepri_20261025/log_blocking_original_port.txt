@@ -1,0 +1,46 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+BLOCK|META|rounds_per_kind=100 timeout_ticks=2 highirq=1 givers=0 setters=0 notifiers=0 port_hooks=0 notify_timeout_output=stored_zero
+BLOCK|CHECK|task_context|PASS
+BLOCK|CHECK|full_queue_preload|PASS
+BLOCK|CHECK|highirq_start|PASS
+BLOCK|CHECK|sem|PASS
+BLOCK|CASE|FAIL|kind=sem round=0 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=1 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=2 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=3 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=4 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=5 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=6 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=7 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=8 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|CASE|FAIL|kind=sem round=9 ret=0 expected=-3 elapsed=2 wait_result=-3 timed_out=1 state=1 out=0xC35AA53C resource_valid=1 basepri=0x00 primask=0 nest=0
+BLOCK|KIND|sem|attempts=100 fail=100 unexpected_ret=100 false_ok=100 early=0 wait_errors=0 resource_errors=0 state_errors=0 mask_errors=0 elapsed_min=2 elapsed_max=2
+BLOCK|CHECK|queue_recv|PASS
+BLOCK|KIND|queue_recv|attempts=100 fail=0 unexpected_ret=0 false_ok=0 early=0 wait_errors=0 resource_errors=0 state_errors=0 mask_errors=0 elapsed_min=2 elapsed_max=2
+BLOCK|CHECK|queue_send|PASS
+BLOCK|KIND|queue_send|attempts=100 fail=0 unexpected_ret=0 false_ok=0 early=0 wait_errors=0 resource_errors=0 state_errors=0 mask_errors=0 elapsed_min=2 elapsed_max=2
+BLOCK|CHECK|event|PASS
+BLOCK|KIND|event|attempts=100 fail=0 unexpected_ret=0 false_ok=0 early=0 wait_errors=0 resource_errors=0 state_errors=0 mask_errors=0 elapsed_min=2 elapsed_max=2
+BLOCK|CHECK|notify|PASS
+BLOCK|KIND|notify|attempts=100 fail=0 unexpected_ret=0 false_ok=0 early=0 wait_errors=0 resource_errors=0 state_errors=0 mask_errors=0 elapsed_min=2 elapsed_max=2
+BLOCK|CHECK|highirq_stop|PASS
+BLOCK|CHECK|highirq_snapshot|PASS
+BLOCK|HIGHIRQ|entries=22488 natural=22488 nonzero_samples=46 errors=0 restored=1 mismatch=0x00000000 pending_before=0 pending_stop=0 pending_restored=0
+BLOCK|CHECK|highirq_real_load|PASS
+BLOCK|CHECK|sem_cleanup|PASS
+BLOCK|CHECK|empty_queue_cleanup|PASS
+BLOCK|CHECK|full_queue_cleanup|PASS
+BLOCK|CHECK|event_cleanup|PASS
+BLOCK|CHECK|all_attempts_completed|PASS
+BLOCK|SUMMARY|pass=416 fail=100 attempts=500
+BLOCK|DONE|status=1

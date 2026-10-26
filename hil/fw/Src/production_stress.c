@@ -2,13 +2,15 @@
  * @file production_stress.c
  * @brief Reproducible mixed IPC acquisition, processing, alarm and control test.
  *
- * Sixteen static workers use priorities 5 through 20. Two real timer ISRs and
+ * Sixteen static workers use priorities 5 through 20. Two syscall timer ISRs and
  * four synthetic acquisition tasks send to the same bounded queue; four tasks
  * consume it. Validation recomputes the expected payload and uses a bounded
  * sequence window, allowing consumers to finish out of dequeue order. Event
  * bits are level flags, not counted messages; different CLEAR consumers own
  * disjoint masks because this kernel clears each waiter immediately in priority
  * order. Shared statistics and list inspection are protected by critical sections.
+ * Priority-zero TIM2 adds hardware-only interference and three active IRQ levels.
+ * Mask leaks are checked at thread safe points, never inferred from ISR samples.
  */
 #include "production_stress.h"
 
@@ -16,6 +18,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "stm32f4xx_hal.h"
 
 #include "production_irq.h"
 #include "rtos.h"
@@ -104,6 +108,8 @@ typedef struct stress_state {
     uint32_t control_response_max;
     uint32_t control_deadline_misses;
     uint32_t watchdog_misses;
+    uint32_t mask_safe_checks;
+    uint32_t mask_leaks;
     uint32_t errors;
     uint32_t checksum_errors;
     uint32_t injected;
@@ -190,6 +196,24 @@ static void stress_record_failure(const char *name, int32_t actual, int32_t expe
     RTOS_PORT_EXIT_CRITICAL();
 }
 
+/* Called only from top-level worker/controller loops outside any owned lock.
+ * A high-priority hardware ISR seeing BASEPRI != 0 is a different observation. */
+static void stress_mask_safe_point(void)
+{
+    uint32_t mask = __get_BASEPRI() | __get_PRIMASK()
+        | rtos_port_get_critical_nesting();
+
+    RTOS_PORT_ENTER_CRITICAL();
+    shared_state.mask_safe_checks++;
+    if (mask != 0U) {
+        shared_state.mask_leaks++;
+    }
+    RTOS_PORT_EXIT_CRITICAL();
+    if (mask != 0U) {
+        stress_record_failure("THREAD_MASK_LEAK", (int32_t)mask, 0);
+    }
+}
+
 /* Synchronous UART output must not hold a higher priority than the control loop.
  * Only the controller logs; workers publish errors through shared_state instead. */
 static void stress_log(const char *format, ...)
@@ -258,6 +282,7 @@ static uint32_t stress_stopping(uint32_t producer)
 
 static void stress_heartbeat(uint32_t id)
 {
+    stress_mask_safe_point();
     RTOS_PORT_ENTER_CRITICAL();
     shared_state.heartbeats[id]++;
     RTOS_PORT_EXIT_CRITICAL();
@@ -862,6 +887,7 @@ static void stress_run_phase(uint32_t phase, uint32_t duration)
     stress_log("STRESS|PHASE|phase=%lu ticks=%lu\r\n", (unsigned long)phase,
                  (unsigned long)duration);
     while ((rtos_sched_get_tick_count() - start) < duration) {
+        stress_mask_safe_point();
         stress_observe();
         stress_watchdog_check();
         uint32_t elapsed = rtos_sched_get_tick_count() - start;
@@ -1016,6 +1042,34 @@ static void stress_verify_messages(const production_irq_snapshot_t *irq)
                  "both_shared_semaphore_consumers_serviced");
 }
 
+static void stress_verify_highirq(const production_highirq_snapshot_t *irq)
+{
+    stress_log("STRESS|HIGHIRQ|entries=%lu natural=%lu nested=%lu triple=%lu "
+        "forced_requests=%lu forced_observed=%lu nonzero_samples=%lu errors=%lu "
+        "running=%lu restored=%lu mismatch=0x%lX stop_pending=%lu/%lu "
+        "restore_pending=%lu sr=0x%lX reload_polls=%lu/%lu reload_timeouts=%lu\r\n",
+        (unsigned long)irq->entries,
+        (unsigned long)irq->natural_updates, (unsigned long)irq->nested_entries,
+        (unsigned long)irq->triple_nested_entries, (unsigned long)irq->forced_requests,
+        (unsigned long)irq->forced_observed, (unsigned long)irq->nonzero_basepri_samples,
+        (unsigned long)irq->errors, (unsigned long)irq->is_running,
+        (unsigned long)irq->restored, (unsigned long)irq->restore_mismatch,
+        (unsigned long)irq->stop_pending_before, (unsigned long)irq->stop_pending_after,
+        (unsigned long)irq->restore_pending_after, (unsigned long)irq->restore_sr_actual,
+        (unsigned long)irq->configure_reload_polls, (unsigned long)irq->restore_reload_polls,
+        (unsigned long)irq->reload_timeouts);
+    stress_check((irq->entries != 0U) && (irq->natural_updates != 0U),
+        "priority_zero_hardware_load");
+    stress_check((irq->triple_nested_entries != 0U) && (irq->forced_requests != 0U)
+        && (irq->forced_requests == irq->forced_observed), "three_active_irq_levels");
+    stress_check((irq->errors == 0U) && (irq->is_running == 0U) && (irq->restored == 1U),
+        "highirq_context_and_restoration");
+    stress_log("STRESS|MASK|safe_checks=%lu leaks=%lu\r\n",
+        (unsigned long)shared_state.mask_safe_checks, (unsigned long)shared_state.mask_leaks);
+    stress_check((shared_state.mask_safe_checks != 0U) && (shared_state.mask_leaks == 0U),
+        "all_thread_safe_points_unmasked");
+}
+
 static void stress_verify_coverage(const production_irq_snapshot_t *irq)
 {
     stress_log("STRESS|COVERAGE|queue_recv_waiters=%lu queue_send_waiters=%lu "
@@ -1168,6 +1222,7 @@ void production_stress_task(void *arg)
     stress_verify_workers();
     stress_verify_messages(&irq);
     stress_verify_coverage(&irq);
+    stress_verify_highirq(&irq.highirq);
     stress_verify_empty_lists();
     stress_cleanup();
     stress_verify_heap(&baseline);

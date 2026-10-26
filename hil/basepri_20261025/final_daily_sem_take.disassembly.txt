@@ -1,0 +1,178 @@
+
+Debug\f446_rtos.elf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+0800782c <rtos_sem_take>:
+ 800782c:	2800      	cmp	r0, #0
+ 800782e:	f000 80c4 	beq.w	80079ba <rtos_sem_take+0x18e>
+ 8007832:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
+ 8007836:	460e      	mov	r6, r1
+ 8007838:	4605      	mov	r5, r0
+ 800783a:	f3ef 8305 	mrs	r3, IPSR
+ 800783e:	b92b      	cbnz	r3, 800784c <rtos_sem_take+0x20>
+ 8007840:	7803      	ldrb	r3, [r0, #0]
+ 8007842:	b973      	cbnz	r3, 8007862 <rtos_sem_take+0x36>
+ 8007844:	f04f 30ff 	mov.w	r0, #4294967295
+ 8007848:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
+ 800784c:	f003 fcd0 	bl	800b1f0 <rtos_port_isr_priority>
+ 8007850:	284f      	cmp	r0, #79	; 0x4f
+ 8007852:	f240 8088 	bls.w	8007966 <rtos_sem_take+0x13a>
+ 8007856:	782b      	ldrb	r3, [r5, #0]
+ 8007858:	2b00      	cmp	r3, #0
+ 800785a:	d0f3      	beq.n	8007844 <rtos_sem_take+0x18>
+ 800785c:	2e00      	cmp	r6, #0
+ 800785e:	f040 8088 	bne.w	8007972 <rtos_sem_take+0x146>
+ 8007862:	f3ef 8310 	mrs	r3, PRIMASK
+ 8007866:	b672      	cpsid	i
+ 8007868:	2250      	movs	r2, #80	; 0x50
+ 800786a:	f3ef 8111 	mrs	r1, BASEPRI
+ 800786e:	f382 8812 	msr	BASEPRI_MAX, r2
+ 8007872:	f3bf 8f6f 	isb	sy
+ 8007876:	4f60      	ldr	r7, [pc, #384]	; (80079f8 <rtos_sem_take+0x1cc>)
+ 8007878:	6838      	ldr	r0, [r7, #0]
+ 800787a:	1c42      	adds	r2, r0, #1
+ 800787c:	d06c      	beq.n	8007958 <rtos_sem_take+0x12c>
+ 800787e:	2800      	cmp	r0, #0
+ 8007880:	d047      	beq.n	8007912 <rtos_sem_take+0xe6>
+ 8007882:	3001      	adds	r0, #1
+ 8007884:	6038      	str	r0, [r7, #0]
+ 8007886:	f383 8810 	msr	PRIMASK, r3
+ 800788a:	686b      	ldr	r3, [r5, #4]
+ 800788c:	2b00      	cmp	r3, #0
+ 800788e:	d148      	bne.n	8007922 <rtos_sem_take+0xf6>
+ 8007890:	2e00      	cmp	r6, #0
+ 8007892:	f000 8095 	beq.w	80079c0 <rtos_sem_take+0x194>
+ 8007896:	4959      	ldr	r1, [pc, #356]	; (80079fc <rtos_sem_take+0x1d0>)
+ 8007898:	780a      	ldrb	r2, [r1, #0]
+ 800789a:	2a01      	cmp	r2, #1
+ 800789c:	fa5f f882 	uxtb.w	r8, r2
+ 80078a0:	d171      	bne.n	8007986 <rtos_sem_take+0x15a>
+ 80078a2:	f8d1 4090 	ldr.w	r4, [r1, #144]	; 0x90
+ 80078a6:	2c00      	cmp	r4, #0
+ 80078a8:	d06d      	beq.n	8007986 <rtos_sem_take+0x15a>
+ 80078aa:	e9c4 330e 	strd	r3, r3, [r4, #56]	; 0x38
+ 80078ae:	f884 3030 	strb.w	r3, [r4, #48]	; 0x30
+ 80078b2:	6263      	str	r3, [r4, #36]	; 0x24
+ 80078b4:	f884 3060 	strb.w	r3, [r4, #96]	; 0x60
+ 80078b8:	68e3      	ldr	r3, [r4, #12]
+ 80078ba:	6563      	str	r3, [r4, #84]	; 0x54
+ 80078bc:	f105 000c 	add.w	r0, r5, #12
+ 80078c0:	f105 0310 	add.w	r3, r5, #16
+ 80078c4:	64e0      	str	r0, [r4, #76]	; 0x4c
+ 80078c6:	6523      	str	r3, [r4, #80]	; 0x50
+ 80078c8:	f104 0124 	add.w	r1, r4, #36	; 0x24
+ 80078cc:	65e5      	str	r5, [r4, #92]	; 0x5c
+ 80078ce:	62a4      	str	r4, [r4, #40]	; 0x28
+ 80078d0:	6365      	str	r5, [r4, #52]	; 0x34
+ 80078d2:	f000 faaf 	bl	8007e34 <rtos_internal_wait_append>
+ 80078d6:	68e3      	ldr	r3, [r4, #12]
+ 80078d8:	fa08 f803 	lsl.w	r8, r8, r3
+ 80078dc:	692b      	ldr	r3, [r5, #16]
+ 80078de:	ea48 0303 	orr.w	r3, r8, r3
+ 80078e2:	4631      	mov	r1, r6
+ 80078e4:	612b      	str	r3, [r5, #16]
+ 80078e6:	4620      	mov	r0, r4
+ 80078e8:	f7ff fe0e 	bl	8007508 <rtos_sched_block>
+ 80078ec:	f7ff fca4 	bl	8007238 <rtos_sched_schedule>
+ 80078f0:	f3ef 8310 	mrs	r3, PRIMASK
+ 80078f4:	b672      	cpsid	i
+ 80078f6:	6838      	ldr	r0, [r7, #0]
+ 80078f8:	2800      	cmp	r0, #0
+ 80078fa:	d028      	beq.n	800794e <rtos_sem_take+0x122>
+ 80078fc:	3801      	subs	r0, #1
+ 80078fe:	6038      	str	r0, [r7, #0]
+ 8007900:	b150      	cbz	r0, 8007918 <rtos_sem_take+0xec>
+ 8007902:	f383 8810 	msr	PRIMASK, r3
+ 8007906:	f3bf 8f6f 	isb	sy
+ 800790a:	f994 0060 	ldrsb.w	r0, [r4, #96]	; 0x60
+ 800790e:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
+ 8007912:	4a3b      	ldr	r2, [pc, #236]	; (8007a00 <rtos_sem_take+0x1d4>)
+ 8007914:	6011      	str	r1, [r2, #0]
+ 8007916:	e7b4      	b.n	8007882 <rtos_sem_take+0x56>
+ 8007918:	4a39      	ldr	r2, [pc, #228]	; (8007a00 <rtos_sem_take+0x1d4>)
+ 800791a:	6812      	ldr	r2, [r2, #0]
+ 800791c:	f382 8811 	msr	BASEPRI, r2
+ 8007920:	e7ef      	b.n	8007902 <rtos_sem_take+0xd6>
+ 8007922:	686b      	ldr	r3, [r5, #4]
+ 8007924:	3b01      	subs	r3, #1
+ 8007926:	606b      	str	r3, [r5, #4]
+ 8007928:	f3ef 8310 	mrs	r3, PRIMASK
+ 800792c:	b672      	cpsid	i
+ 800792e:	683c      	ldr	r4, [r7, #0]
+ 8007930:	b314      	cbz	r4, 8007978 <rtos_sem_take+0x14c>
+ 8007932:	3c01      	subs	r4, #1
+ 8007934:	603c      	str	r4, [r7, #0]
+ 8007936:	b91c      	cbnz	r4, 8007940 <rtos_sem_take+0x114>
+ 8007938:	4a31      	ldr	r2, [pc, #196]	; (8007a00 <rtos_sem_take+0x1d4>)
+ 800793a:	6812      	ldr	r2, [r2, #0]
+ 800793c:	f382 8811 	msr	BASEPRI, r2
+ 8007940:	f383 8810 	msr	PRIMASK, r3
+ 8007944:	f3bf 8f6f 	isb	sy
+ 8007948:	2000      	movs	r0, #0
+ 800794a:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
+ 800794e:	f383 8810 	msr	PRIMASK, r3
+ 8007952:	f003 fc3f 	bl	800b1d4 <rtos_port_critical_nesting_error>
+ 8007956:	e7d8      	b.n	800790a <rtos_sem_take+0xde>
+ 8007958:	f381 8811 	msr	BASEPRI, r1
+ 800795c:	f383 8810 	msr	PRIMASK, r3
+ 8007960:	f003 fc38 	bl	800b1d4 <rtos_port_critical_nesting_error>
+ 8007964:	e791      	b.n	800788a <rtos_sem_take+0x5e>
+ 8007966:	4927      	ldr	r1, [pc, #156]	; (8007a04 <rtos_sem_take+0x1d8>)
+ 8007968:	4827      	ldr	r0, [pc, #156]	; (8007a08 <rtos_sem_take+0x1dc>)
+ 800796a:	2234      	movs	r2, #52	; 0x34
+ 800796c:	f7fa fd9c 	bl	80024a8 <rtos_assert_fail>
+ 8007970:	e771      	b.n	8007856 <rtos_sem_take+0x2a>
+ 8007972:	f06f 0003 	mvn.w	r0, #3
+ 8007976:	e7ca      	b.n	800790e <rtos_sem_take+0xe2>
+ 8007978:	f383 8810 	msr	PRIMASK, r3
+ 800797c:	4620      	mov	r0, r4
+ 800797e:	f003 fc29 	bl	800b1d4 <rtos_port_critical_nesting_error>
+ 8007982:	4620      	mov	r0, r4
+ 8007984:	e7c3      	b.n	800790e <rtos_sem_take+0xe2>
+ 8007986:	f3ef 8310 	mrs	r3, PRIMASK
+ 800798a:	b672      	cpsid	i
+ 800798c:	6838      	ldr	r0, [r7, #0]
+ 800798e:	b168      	cbz	r0, 80079ac <rtos_sem_take+0x180>
+ 8007990:	3801      	subs	r0, #1
+ 8007992:	6038      	str	r0, [r7, #0]
+ 8007994:	b918      	cbnz	r0, 800799e <rtos_sem_take+0x172>
+ 8007996:	4a1a      	ldr	r2, [pc, #104]	; (8007a00 <rtos_sem_take+0x1d4>)
+ 8007998:	6812      	ldr	r2, [r2, #0]
+ 800799a:	f382 8811 	msr	BASEPRI, r2
+ 800799e:	f383 8810 	msr	PRIMASK, r3
+ 80079a2:	f3bf 8f6f 	isb	sy
+ 80079a6:	f06f 0008 	mvn.w	r0, #8
+ 80079aa:	e7b0      	b.n	800790e <rtos_sem_take+0xe2>
+ 80079ac:	f383 8810 	msr	PRIMASK, r3
+ 80079b0:	f003 fc10 	bl	800b1d4 <rtos_port_critical_nesting_error>
+ 80079b4:	f06f 0008 	mvn.w	r0, #8
+ 80079b8:	e7a9      	b.n	800790e <rtos_sem_take+0xe2>
+ 80079ba:	f06f 0005 	mvn.w	r0, #5
+ 80079be:	4770      	bx	lr
+ 80079c0:	f3ef 8210 	mrs	r2, PRIMASK
+ 80079c4:	b672      	cpsid	i
+ 80079c6:	683b      	ldr	r3, [r7, #0]
+ 80079c8:	b16b      	cbz	r3, 80079e6 <rtos_sem_take+0x1ba>
+ 80079ca:	3b01      	subs	r3, #1
+ 80079cc:	603b      	str	r3, [r7, #0]
+ 80079ce:	b91b      	cbnz	r3, 80079d8 <rtos_sem_take+0x1ac>
+ 80079d0:	4b0b      	ldr	r3, [pc, #44]	; (8007a00 <rtos_sem_take+0x1d4>)
+ 80079d2:	681b      	ldr	r3, [r3, #0]
+ 80079d4:	f383 8811 	msr	BASEPRI, r3
+ 80079d8:	f382 8810 	msr	PRIMASK, r2
+ 80079dc:	f3bf 8f6f 	isb	sy
+ 80079e0:	f06f 0002 	mvn.w	r0, #2
+ 80079e4:	e793      	b.n	800790e <rtos_sem_take+0xe2>
+ 80079e6:	f382 8810 	msr	PRIMASK, r2
+ 80079ea:	4630      	mov	r0, r6
+ 80079ec:	f003 fbf2 	bl	800b1d4 <rtos_port_critical_nesting_error>
+ 80079f0:	f06f 0002 	mvn.w	r0, #2
+ 80079f4:	e78b      	b.n	800790e <rtos_sem_take+0xe2>
+ 80079f6:	bf00      	nop
+ 80079f8:	2001dbc0 	.word	0x2001dbc0
+ 80079fc:	20010568 	.word	0x20010568
+ 8007a00:	2001dbc4 	.word	0x2001dbc4
+ 8007a04:	08031804 	.word	0x08031804
+ 8007a08:	08031820 	.word	0x08031820

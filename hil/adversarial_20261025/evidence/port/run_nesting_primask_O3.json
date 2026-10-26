@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "nesting_primask_O3",
+    "started":  "2026-10-26T00:16:04.9051712+08:00",
+    "finished":  "2026-10-26T00:16:07.1278835+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "55DFB32A3E40D533C906BC08FF30287AE12C082428C988693D74DEEB39239C06",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "NEST\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

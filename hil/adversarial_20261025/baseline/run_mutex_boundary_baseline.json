@@ -1,0 +1,17 @@
+﻿{
+    "tag":  "mutex_boundary_baseline",
+    "started":  "2026-10-26T00:08:48.4827986+08:00",
+    "finished":  "2026-10-26T00:08:51.8354370+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "88B58C07F6D7A40CC4FD704C169F215A5D48540099C22FD8927F0B8E0FFE726B",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AMB\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+                          "AMB|FAIL|name=recursive_overflow_status actual=0 expected=1",
+                          "AMB|FAIL|name=recursive_overflow_count actual=0 expected=4294967295",
+                          "AMB|FAIL|name=cycle_inherits_high actual=15 expected=4"
+                      ]
+}

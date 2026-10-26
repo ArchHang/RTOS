@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "nesting_basepri_O0",
+    "started":  "2026-10-25T23:22:18.4081411+08:00",
+    "finished":  "2026-10-25T23:22:20.6710846+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "D20001DAE18CE8F3593F4624ABCD315D05A1BABBB9E60E9282F3BFBFDF72E33B",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "NEST\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

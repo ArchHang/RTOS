@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'lowlevel' OK -- context-switch return paths and real S16..S31 preservation checks; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  46336	    120	  55928	 102384	  18ff0	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

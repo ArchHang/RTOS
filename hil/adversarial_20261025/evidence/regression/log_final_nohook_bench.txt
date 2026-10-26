@@ -1,0 +1,21 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+BM|META|target|f446_rtos (custom RTOS) 168MHz -O2
+BM|0|critical_pair|N=1|avg=40|min=40|max=40
+BM|1|yield_switch|N=1|avg=238|min=238|max=238
+BM|2|sem_roundtrip|N=1|avg=1693|min=1693|max=1693
+BM|3|sem_wake_latency|N=1000|avg=489|min=488|max=795
+BM|4|queue_send_wake|N=5000|avg=579|min=575|max=876
+BM|5|task_create_del|N=1|avg=6456|min=6456|max=6456
+BM|6|delay1_period|N=1|avg=168000|min=168000|max=168000
+BM|7|isr_wake_latency|N=100|avg=553|min=549|max=619
+BM|DONE|benchmark complete

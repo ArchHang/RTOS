@@ -1,0 +1,26 @@
+[
+  {
+    "from": "hil/logs/build_basepri_1.txt",
+    "to": "hil/adversarial_20261025/evidence/port/build_detail_last_basepri.txt",
+    "sha256": "D3E48F9BAED30C644C7DAD3B9E8EB60F757B56EFB236F030AA7620EC8BD27F06",
+    "preserved": true
+  },
+  {
+    "from": "hil/logs/build_basepri_blocking_1.txt",
+    "to": "hil/adversarial_20261025/evidence/port/build_detail_last_basepri_blocking.txt",
+    "sha256": "3CB0DE9FAE441CE331C4AD9B12BFC61AA99E3A704443EFC16D32F83498F5C71B",
+    "preserved": true
+  },
+  {
+    "from": "hil/logs/build_basepri_guard_1.txt",
+    "to": "hil/adversarial_20261025/evidence/port/build_detail_last_basepri_guard.txt",
+    "sha256": "CE4EF20785877C0B70BFC57D5DC745BE9D516EA3CEBC52738CD3449722F98F96",
+    "preserved": true
+  },
+  {
+    "from": "hil/logs/build_basepri_nesting_1.txt",
+    "to": "hil/adversarial_20261025/evidence/port/build_detail_last_basepri_nesting.txt",
+    "sha256": "90399A6E396753831E41666B2B949E3D9DB66DC3C7E197EB349C7573DEAD1D8D",
+    "preserved": true
+  }
+]

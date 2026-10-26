@@ -1,0 +1,32 @@
+﻿[
+    {
+        "tag":  "final_audit",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "AT|SCHEDTASK|SUMMARY|pass=25 fail=0; AT|IPC|SUMMARY|pass=15 fail=0; AT|MEMTIMER|SUMMARY|pass=23|fail=0; AT|USBPORT|SUMMARY|pass=54|fail=0"
+    },
+    {
+        "tag":  "final_selftest",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "ST|SUMMARY|pass=432 fail=0 info=10 total=442|END"
+    },
+    {
+        "tag":  "final_boundary",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "BT|SUMMARY|pass=103 fail=0"
+    },
+    {
+        "tag":  "final_lowlevel",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "BM|0|critical_pair|N=1|avg=40|min=40|max=40; LC|SUMMARY|pass=24 fail=0; PC|SUMMARY|pass=22 fail=0"
+    },
+    {
+        "tag":  "final_nohook_bench",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "BM|0|critical_pair|N=1|avg=40|min=40|max=40"
+    }
+]

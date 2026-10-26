@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'bench' OK -- micro benchmarks BM0..BM7 (benchmark.c); warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  37400	    120	  41992	  79512	  13698	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

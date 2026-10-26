@@ -8,6 +8,8 @@
  * The fixture rejects occupied timers/DAC IRQ use rather than taking them over.
  * ISR statistics use short kernel critical sections. Preemption is deliberately
  * allowed between IPC calls, but never inside an unprotected counter update.
+ * Independent TIM2 priority-zero load preempts these handlers without using the
+ * RTOS. Its counters use their own saved-PRIMASK snapshots and lifetime control.
  */
 #include "production_irq.h"
 
@@ -208,6 +210,14 @@ rtos_status_t production_irq_start(const production_irq_config_t *config)
         __set_PRIMASK(primask);
         return RTOS_ERR_ALREADY;
     }
+    status = production_highirq_start();
+    if (status != RTOS_OK) {
+        /* TIM6/TIM7 have only had their clocks enabled, not been configured. */
+        RCC->APB1ENR = (RCC->APB1ENR & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
+        __DSB();
+        __set_PRIMASK(primask);
+        return status;
+    }
     irq_config = *config;
     memset(&irq_snapshot, 0, sizeof(irq_snapshot));
     irq_depth = 0U;
@@ -255,6 +265,10 @@ rtos_status_t production_irq_stop(void)
         irq_snapshot.api_error_count++;
         status = RTOS_ERR_PARAM;
     }
+    if (production_highirq_stop() != RTOS_OK) {
+        irq_snapshot.api_error_count++;
+        status = RTOS_ERR_PARAM;
+    }
     for (uint32_t index = 0U; index < 2U; index++) {
         if (restore_timer_state(index) == RTOS_FALSE) {
             irq_snapshot.api_error_count++;
@@ -283,12 +297,13 @@ rtos_status_t production_irq_snapshot(production_irq_snapshot_t *snapshot)
     RTOS_PORT_ENTER_CRITICAL();
     *snapshot = irq_snapshot;
     RTOS_PORT_EXIT_CRITICAL();
-    return RTOS_OK;
+    return production_highirq_snapshot(&snapshot->highirq);
 }
 
 rtos_status_t production_irq_status(void)
 {
     rtos_status_t status = RTOS_OK;
+    production_highirq_snapshot_t highirq;
 
     if (__get_IPSR() != 0U) {
         return RTOS_ERR_ISR;
@@ -300,6 +315,12 @@ rtos_status_t production_irq_status(void)
         status = RTOS_ERR_PARAM;
     }
     RTOS_PORT_EXIT_CRITICAL();
+    if (status == RTOS_OK) {
+        status = production_highirq_snapshot(&highirq);
+        if ((status == RTOS_OK) && (highirq.errors != 0U)) {
+            status = RTOS_ERR_PARAM;
+        }
+    }
     return status;
 }
 
@@ -405,6 +426,9 @@ static void handle_timer_irq(uint32_t index)
 
     if (should_force == RTOS_TRUE) {
         request_forced_irq();
+    }
+    if ((index == 1U) && (irq_depth >= 2U)) {
+        production_highirq_force_nested();
     }
     if (should_deliver == RTOS_TRUE) {
         deliver_irq_ipc(index);

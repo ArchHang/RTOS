@@ -1,0 +1,1128 @@
+﻿===== am_primask_a1_O2 (60878 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\adversarial_20261025\evidence\matrix_final\log_am_primask_a1_O2.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+AM|META|public_api_only=1 private_tcb_writes=0 depths=2,3,6 owners_base=15..20 high=4
+AM|CASE|id=1 kind=0 depth=2
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=high_granted actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=2 kind=0 depth=3
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=high_granted actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=3 kind=0 depth=6
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=3 base=18 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=4 base=19 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=5 base=20 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=3 base=18 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=4 base=19 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=5 base=20 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=18 expected=18
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=19 expected=19
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=20 expected=20
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=high_granted actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=4 kind=1 depth=2
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=timeout_completed actual=1 expected=1
+AM|PASS|name=timeout_result actual=1 expected=1
+AM|CHAIN|phase=timeout_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=5 kind=1 depth=3
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=timeout_completed actual=1 expected=1
+AM|PASS|name=timeout_result actual=1 expected=1
+AM|CHAIN|phase=timeout_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=2 base=17 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=6 kind=1 depth=6
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=3 base=18 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=4 base=19 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=5 base=20 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=3 base=18 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=4 base=19 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=5 base=20 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=timeout_completed actual=1 expected=1
+AM|PASS|name=timeout_result actual=1 expected=1
+AM|CHAIN|phase=timeout_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=2 base=17 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=3 base=18 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=4 base=19 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|CHAIN|phase=timeout_withdrawal index=5 base=20 effective=15 expected=15
+AM|PASS|name=timeout_withdrawal actual=15 expected=15
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=18 expected=18
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=19 expected=19
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=20 expected=20
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=7 kind=2 depth=2
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=suspend_high actual=1 expected=1
+AM|CHAIN|phase=suspend_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|PASS|name=resume_high actual=1 expected=1
+AM|PASS|name=resume_completed actual=1 expected=1
+AM|PASS|name=resume_canceled_result actual=1 expected=1
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=8 kind=2 depth=3
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=suspend_high actual=1 expected=1
+AM|CHAIN|phase=suspend_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=2 base=17 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|PASS|name=resume_high actual=1 expected=1
+AM|PASS|name=resume_completed actual=1 expected=1
+AM|PASS|name=resume_canceled_result actual=1 expected=1
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=9 kind=2 depth=6
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=3 base=18 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=4 base=19 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=5 base=20 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=3 base=18 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=4 base=19 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=5 base=20 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=suspend_high actual=1 expected=1
+AM|CHAIN|phase=suspend_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=2 base=17 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=3 base=18 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=4 base=19 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|CHAIN|phase=suspend_withdrawal index=5 base=20 effective=15 expected=15
+AM|PASS|name=suspend_withdrawal actual=15 expected=15
+AM|PASS|name=resume_high actual=1 expected=1
+AM|PASS|name=resume_completed actual=1 expected=1
+AM|PASS|name=resume_canceled_result actual=1 expected=1
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=18 expected=18
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=19 expected=19
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=20 expected=20
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=10 kind=3 depth=2
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=delete_high actual=1 expected=1
+AM|CHAIN|phase=delete_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=11 kind=3 depth=3
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=delete_high actual=1 expected=1
+AM|CHAIN|phase=delete_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=2 base=17 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=12 kind=3 depth=6
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=3 base=18 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=4 base=19 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=5 base=20 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=3 base=18 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=4 base=19 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=5 base=20 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=delete_high actual=1 expected=1
+AM|CHAIN|phase=delete_withdrawal index=0 base=15 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=1 base=16 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=2 base=17 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=3 base=18 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=4 base=19 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|CHAIN|phase=delete_withdrawal index=5 base=20 effective=15 expected=15
+AM|PASS|name=delete_withdrawal actual=15 expected=15
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=18 expected=18
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=19 expected=19
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=20 expected=20
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=13 kind=4 depth=2
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=high_granted actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=14 kind=4 depth=3
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=high_granted actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|CASE|id=15 kind=4 depth=6
+AM|PASS|name=case_initialized actual=1 expected=1
+AM|PASS|name=owners_really_blocked actual=1 expected=1
+AM|CHAIN|phase=initial_chain index=0 base=15 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=1 base=16 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=2 base=17 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=3 base=18 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=4 base=19 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|CHAIN|phase=initial_chain index=5 base=20 effective=15 expected=15
+AM|PASS|name=initial_chain actual=15 expected=15
+AM|PASS|name=high_created actual=1 expected=1
+AM|PASS|name=high_really_blocked actual=1 expected=1
+AM|CHAIN|phase=high_inheritance index=0 base=15 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=1 base=16 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=2 base=17 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=3 base=18 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=4 base=19 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|CHAIN|phase=high_inheritance index=5 base=20 effective=4 expected=4
+AM|PASS|name=high_inheritance actual=4 expected=4
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=3 base=18 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=4 base=19 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|CHAIN|phase=changed_waiter index=5 base=20 effective=6 expected=6
+AM|PASS|name=changed_waiter actual=6 expected=6
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=3 base=18 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=4 base=19 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|CHAIN|phase=changed_waiter index=5 base=20 effective=3 expected=3
+AM|PASS|name=changed_waiter actual=3 expected=3
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=3 base=18 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=4 base=19 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|CHAIN|phase=changed_waiter index=5 base=20 effective=15 expected=15
+AM|PASS|name=changed_waiter actual=15 expected=15
+AM|PASS|name=change_high_priority actual=1 expected=1
+AM|CHAIN|phase=changed_waiter index=0 base=15 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=1 base=16 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=2 base=17 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=3 base=18 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=4 base=19 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|CHAIN|phase=changed_waiter index=5 base=20 effective=4 expected=4
+AM|PASS|name=changed_waiter actual=4 expected=4
+AM|PASS|name=release_gate actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=completion_token actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=15 expected=15
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=16 expected=16
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=17 expected=17
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=18 expected=18
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=19 expected=19
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=owner_completed actual=1 expected=1
+AM|PASS|name=owner_own_result actual=1 expected=1
+AM|PASS|name=owner_dependency_result actual=1 expected=1
+AM|PASS|name=owner_give_result actual=1 expected=1
+AM|PASS|name=owner_base_restored actual=20 expected=20
+AM|PASS|name=mutex_unowned actual=1 expected=1
+AM|PASS|name=high_granted actual=1 expected=1
+AM|PASS|name=final_basepri actual=0 expected=0
+AM|PASS|name=final_primask actual=0 expected=0
+AM|PASS|name=final_critical_count actual=0 expected=0
+AM|PASS|name=cleanup_high actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_owner actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_mutex actual=1 expected=1
+AM|PASS|name=cleanup_done actual=1 expected=1
+AM|PASS|name=cleanup_gate actual=1 expected=1
+AM|PASS|name=cleanup_ready actual=1 expected=1
+AM|SUMMARY|pass=910 fail=0 cases=15
+AM|DONE|status=0
+

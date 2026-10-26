@@ -1,0 +1,444 @@
+/**
+ * @file adversarial_registry.c
+ * @brief Exercise the PI graph capacity and deleted multi-lock owner handoffs.
+ *
+ * The controller observes private objects under exclusion, but workers change
+ * kernel state only through public APIs. All scenario waits are finite. A
+ * saturated registry handoff leaves eight distinct current owners plus the
+ * detached old owner, exercising the graph's ninth scratch entry without an
+ * instrumentation write or synthetic TCB/lock state.
+ */
+#include "audit_regressions.h"
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "stm32f4xx_hal.h"
+
+#include "rtos.h"
+#include "rtos_internal.h"
+
+#define AR_LOCK_COUNT (8U)
+#define AR_WORKER_COUNT (9U)
+#define AR_STACK_WORDS (256U)
+#define AR_WAIT_TICKS (10000U)
+
+_Static_assert(RTOS_CONFIG_MAX_MUTEXES == AR_LOCK_COUNT,
+    "This fixture requires the production eight-entry mutex registry");
+
+typedef struct ar_result {
+    rtos_status_t take;
+    rtos_status_t second_take;
+    rtos_status_t gate;
+    rtos_status_t give;
+    uint32_t owned_on_return;
+    uint32_t finished;
+} ar_result_t;
+
+static rtos_mutex_t locks[AR_LOCK_COUNT];
+static rtos_sem_t gates[AR_WORKER_COUNT];
+static rtos_sem_t ready_sem;
+static rtos_sem_t done_sem;
+static rtos_tcb_t workers[AR_WORKER_COUNT];
+static rtos_stack_t worker_stacks[AR_WORKER_COUNT][AR_STACK_WORDS]
+    __attribute__((aligned(8)));
+static ar_result_t results[AR_WORKER_COUNT];
+static uint32_t created_mask;
+static uint32_t initialized_locks;
+static uint32_t initialized_gates;
+static uint32_t initialized_ready;
+static uint32_t initialized_done;
+static uint32_t active_case;
+static uint32_t pass_count;
+static uint32_t fail_count;
+
+static void expect_value(const char *name, uint32_t actual, uint32_t expected)
+{
+    const char *outcome = actual == expected ? "PASS" : "FAIL";
+
+    if (actual == expected) {
+        pass_count++;
+    } else {
+        fail_count++;
+    }
+    (void)printf("AR|%s|case=%lu id=%lu name=%s actual=%lu expected=%lu\r\n",
+        outcome, (unsigned long)active_case, (unsigned long)(pass_count + fail_count),
+        name, (unsigned long)actual, (unsigned long)expected);
+}
+
+static void park_worker(void)
+{
+    (void)rtos_task_suspend(NULL);
+    for (;;) {
+        rtos_task_delay(1000U);
+    }
+}
+
+static uint32_t wait_blocked(uint32_t index, const void *object)
+{
+    for (uint32_t elapsed = 0U; elapsed < AR_WAIT_TICKS; elapsed++) {
+        RTOS_PORT_ENTER_CRITICAL();
+        uint32_t blocked = ((workers[index].state == RTOS_TASK_BLOCKED)
+            || (workers[index].state == RTOS_TASK_DELAYED))
+            && (workers[index].blocked_on == object);
+        RTOS_PORT_EXIT_CRITICAL();
+        if (blocked != 0U) {
+            return 1U;
+        }
+        rtos_task_delay(1U);
+    }
+    return 0U;
+}
+
+static void publish_result(uint32_t index, const ar_result_t *result)
+{
+    RTOS_PORT_ENTER_CRITICAL();
+    results[index] = *result;
+    results[index].finished = 1U;
+    RTOS_PORT_EXIT_CRITICAL();
+    (void)rtos_sem_give(&done_sem);
+}
+
+static void worker_entry(void *arg)
+{
+    uint32_t index = (uint32_t)(uintptr_t)arg;
+    uint32_t lock_index = active_case == 1U ? (index == 8U ? 0U : index)
+        : (index == 2U || index == 4U ? 1U : 0U);
+    ar_result_t result = {RTOS_ERR_PARAM, RTOS_ERR_PARAM, RTOS_ERR_PARAM,
+        RTOS_ERR_PARAM, 0U, 0U};
+
+    result.take = rtos_mutex_take(&locks[lock_index], AR_WAIT_TICKS);
+    if (result.take == RTOS_OK) {
+        RTOS_PORT_ENTER_CRITICAL();
+        result.owned_on_return = locks[lock_index].owner == &workers[index];
+        RTOS_PORT_EXIT_CRITICAL();
+        if (active_case == 2U && index == 0U) {
+            result.second_take = rtos_mutex_take(&locks[1], AR_WAIT_TICKS);
+        }
+        (void)rtos_sem_give(&ready_sem);
+        result.gate = rtos_sem_take(&gates[index], AR_WAIT_TICKS);
+        if (active_case == 2U && index == 0U && result.second_take == RTOS_OK) {
+            (void)rtos_mutex_give(&locks[1]);
+        }
+        result.give = rtos_mutex_give(&locks[lock_index]);
+    }
+    publish_result(index, &result);
+    park_worker();
+}
+
+static uint32_t create_worker(uint32_t index, rtos_prio_t priority)
+{
+    rtos_status_t status = rtos_task_create_static(&workers[index], worker_stacks[index],
+        AR_STACK_WORDS, worker_entry, (void *)(uintptr_t)index, priority, "ar-worker");
+
+    expect_value("worker_created", status == RTOS_OK, 1U);
+    if (status != RTOS_OK) {
+        return 0U;
+    }
+    created_mask |= 1UL << index;
+    return 1U;
+}
+
+static uint32_t initialize_case(uint32_t lock_count)
+{
+    created_mask = 0U;
+    initialized_locks = 0U;
+    initialized_gates = 0U;
+    initialized_ready = 0U;
+    initialized_done = 0U;
+    memset(results, 0, sizeof(results));
+    expect_value("registry_initially_empty", rtos_internal_mutex_registry_count(), 0U);
+    if (rtos_internal_mutex_registry_count() != 0U) {
+        return 0U;
+    }
+    if (rtos_sem_init(&ready_sem, 0U, AR_WORKER_COUNT) != RTOS_OK) {
+        return 0U;
+    }
+    initialized_ready = 1U;
+    if (rtos_sem_init(&done_sem, 0U, AR_WORKER_COUNT) != RTOS_OK) {
+        return 0U;
+    }
+    initialized_done = 1U;
+    for (uint32_t index = 0U; index < AR_WORKER_COUNT; index++) {
+        if (rtos_sem_init(&gates[index], 0U, 1U) != RTOS_OK) {
+            return 0U;
+        }
+        initialized_gates++;
+    }
+    for (uint32_t index = 0U; index < lock_count; index++) {
+        if (rtos_mutex_init(&locks[index]) != RTOS_OK) {
+            return 0U;
+        }
+        initialized_locks++;
+    }
+    expect_value("registry_initialized", rtos_internal_mutex_registry_count(), lock_count);
+    return 1U;
+}
+
+static void cleanup_case(void)
+{
+    /* Prevent awakened workers from running while their peers are dismantled. */
+    rtos_sched_suspend();
+    for (uint32_t index = 0U; index < AR_WORKER_COUNT; index++) {
+        if ((created_mask & (1UL << index)) != 0U) {
+            expect_value("cleanup_worker", rtos_task_delete(&workers[index]) == RTOS_OK, 1U);
+        }
+    }
+    for (uint32_t index = 0U; index < initialized_locks; index++) {
+        expect_value("cleanup_mutex", rtos_mutex_deinit(&locks[index]) == RTOS_OK, 1U);
+    }
+    for (uint32_t index = 0U; index < initialized_gates; index++) {
+        expect_value("cleanup_gate", rtos_sem_deinit(&gates[index]) == RTOS_OK, 1U);
+    }
+    if (initialized_ready != 0U) {
+        expect_value("cleanup_ready", rtos_sem_deinit(&ready_sem) == RTOS_OK, 1U);
+    }
+    if (initialized_done != 0U) {
+        expect_value("cleanup_done", rtos_sem_deinit(&done_sem) == RTOS_OK, 1U);
+    }
+    rtos_sched_resume();
+    expect_value("registry_slots_recovered", rtos_internal_mutex_registry_count(), 0U);
+    expect_value("critical_nesting_restored", rtos_port_get_critical_nesting(), 0U);
+    expect_value("basepri_restored", __get_BASEPRI(), 0U);
+    expect_value("primask_restored", __get_PRIMASK(), 0U);
+}
+
+static uint32_t wait_acquired(uint32_t index)
+{
+    uint32_t token = rtos_sem_take(&ready_sem, AR_WAIT_TICKS) == RTOS_OK;
+
+    expect_value("acquisition_token", token, 1U);
+    if (token == 0U) {
+        return 0U;
+    }
+    uint32_t blocked = wait_blocked(index, &gates[index]);
+    expect_value("owner_waiting_on_own_gate", blocked, 1U);
+    return blocked;
+}
+
+static void check_result(uint32_t index, rtos_prio_t expected_priority)
+{
+    ar_result_t result;
+    rtos_prio_t priority;
+
+    RTOS_PORT_ENTER_CRITICAL();
+    result = results[index];
+    priority = workers[index].priority;
+    RTOS_PORT_EXIT_CRITICAL();
+    expect_value("worker_finished", result.finished, 1U);
+    expect_value("worker_take_success", result.take == RTOS_OK, 1U);
+    expect_value("worker_true_owner", result.owned_on_return, 1U);
+    expect_value("worker_gate_success", result.gate == RTOS_OK, 1U);
+    expect_value("worker_give_success", result.give == RTOS_OK, 1U);
+    expect_value("worker_base_restored", priority, expected_priority);
+}
+
+static uint32_t release_worker(uint32_t index)
+{
+    uint32_t released = rtos_sem_give(&gates[index]) == RTOS_OK;
+
+    expect_value("release_worker_gate", released, 1U);
+    return released;
+}
+
+static void consume_completion(void)
+{
+    expect_value("completion_token", rtos_sem_take(&done_sem, AR_WAIT_TICKS) == RTOS_OK, 1U);
+}
+
+static void check_saturated_graph(void)
+{
+    uint32_t distinct = 0U;
+    uint32_t old_owns = 0U;
+    uint32_t new_owner;
+    rtos_prio_t old_priority;
+    rtos_prio_t new_priority;
+
+    RTOS_PORT_ENTER_CRITICAL();
+    for (uint32_t index = 0U; index < AR_LOCK_COUNT; index++) {
+        rtos_tcb_t *expected = &workers[index == 0U ? 8U : index];
+        distinct += locks[index].owner == expected ? 1U : 0U;
+        old_owns += locks[index].owner == &workers[0] ? 1U : 0U;
+    }
+    new_owner = locks[0].owner == &workers[8] ? 8U : UINT32_MAX;
+    old_priority = workers[0].priority;
+    new_priority = workers[8].priority;
+    RTOS_PORT_EXIT_CRITICAL();
+    (void)printf("AR|GRAPH|phase=m_plus_one registered=%lu distinct_current_owners=%lu "
+        "detached_owner=0 old_base=15 old_effective=%lu new_owner=%lu "
+        "new_effective=%lu old_owns=%lu\r\n",
+        (unsigned long)rtos_internal_mutex_registry_count(), (unsigned long)distinct,
+        (unsigned long)old_priority, (unsigned long)new_owner,
+        (unsigned long)new_priority, (unsigned long)old_owns);
+    expect_value("graph_eight_current_owners", distinct, AR_LOCK_COUNT);
+    expect_value("graph_old_owner_detached", old_owns, 0U);
+    expect_value("graph_old_base_restored", old_priority, 15U);
+    expect_value("graph_ninth_owner_holds_lock", new_owner, 8U);
+    expect_value("graph_new_owner_priority", new_priority, 4U);
+}
+
+static void saturated_handoff(void)
+{
+    active_case = 1U;
+    (void)printf("AR|CASE|id=1 name=saturated_handoff\r\n");
+    uint32_t initialized = initialize_case(AR_LOCK_COUNT);
+    expect_value("case_initialized", initialized, 1U);
+    if (initialized == 0U) {
+        cleanup_case();
+        return;
+    }
+    for (uint32_t index = 0U; index < AR_LOCK_COUNT; index++) {
+        if (create_worker(index, 15U + index) == 0U || wait_acquired(index) == 0U) {
+            cleanup_case();
+            return;
+        }
+    }
+    if (create_worker(8U, 4U) == 0U) {
+        cleanup_case();
+        return;
+    }
+    uint32_t blocked = wait_blocked(8U, &locks[0]);
+    expect_value("ninth_worker_really_waiting", blocked, 1U);
+    expect_value("old_owner_inherits_waiter", rtos_task_get_priority(&workers[0]), 4U);
+    if (blocked != 0U && release_worker(0U) != 0U && wait_acquired(8U) != 0U) {
+        check_saturated_graph();
+        for (uint32_t index = 1U; index < AR_WORKER_COUNT; index++) {
+            (void)release_worker(index);
+        }
+        for (uint32_t index = 0U; index < AR_WORKER_COUNT; index++) {
+            consume_completion();
+        }
+        for (uint32_t index = 0U; index < AR_WORKER_COUNT; index++) {
+            check_result(index, index == 8U ? 4U : 15U + index);
+        }
+        for (uint32_t index = 0U; index < AR_LOCK_COUNT; index++) {
+            expect_value("saturated_mutex_released", locks[index].owner == NULL, 1U);
+            expect_value("saturated_wait_list_empty", locks[index].wait_head == NULL, 1U);
+        }
+    }
+    cleanup_case();
+}
+
+static void check_handoff(const char *phase, uint32_t lock_index,
+    uint32_t expected_owner, uint32_t expected_waiters, rtos_prio_t expected_priority)
+{
+    uint32_t owner = UINT32_MAX;
+    uint32_t waiters = 0U;
+    rtos_prio_t priority = UINT32_MAX;
+
+    RTOS_PORT_ENTER_CRITICAL();
+    for (uint32_t index = 0U; index < 5U; index++) {
+        if (locks[lock_index].owner == &workers[index]) {
+            owner = index;
+            priority = workers[index].priority;
+        }
+    }
+    for (rtos_wait_node_t *node = locks[lock_index].wait_head;
+        node != NULL && waiters <= AR_WORKER_COUNT; node = node->next) {
+        waiters++;
+    }
+    RTOS_PORT_EXIT_CRITICAL();
+    (void)printf("AR|HANDOFF|phase=%s lock=%lu owner=%lu waiters=%lu effective=%lu "
+        "expected_owner=%lu expected_effective=%lu\r\n", phase, (unsigned long)lock_index,
+        (unsigned long)owner, (unsigned long)waiters, (unsigned long)priority,
+        (unsigned long)expected_owner, (unsigned long)expected_priority);
+    expect_value("handoff_correct_owner", owner, expected_owner);
+    expect_value("handoff_remaining_waiters", waiters, expected_waiters);
+    expect_value("handoff_effective_priority", priority, expected_priority);
+}
+
+static uint32_t construct_deleted_owner(void)
+{
+    static const rtos_prio_t priorities[] = {22U, 4U, 5U, 6U, 7U};
+
+    if (create_worker(0U, priorities[0]) == 0U || wait_acquired(0U) == 0U) {
+        return 0U;
+    }
+    expect_value("deleted_owner_first_lock", locks[0].owner == &workers[0], 1U);
+    expect_value("deleted_owner_second_lock", locks[1].owner == &workers[0], 1U);
+    for (uint32_t index = 1U; index < 5U; index++) {
+        if (create_worker(index, priorities[index]) == 0U) {
+            return 0U;
+        }
+        uint32_t lock_index = (index == 2U || index == 4U) ? 1U : 0U;
+        uint32_t blocked = wait_blocked(index, &locks[lock_index]);
+        expect_value("multi_lock_waiter_really_waiting", blocked, 1U);
+        if (blocked == 0U) {
+            return 0U;
+        }
+    }
+    expect_value("deleted_owner_inherits_highest", rtos_task_get_priority(&workers[0]), 4U);
+    return 1U;
+}
+
+static void release_handoff_chain(uint32_t first, uint32_t second, uint32_t lock_index)
+{
+    if (release_worker(first) == 0U || wait_acquired(second) == 0U) {
+        return;
+    }
+    check_handoff("released", lock_index, second, 0U, 3U + second);
+    (void)release_worker(second);
+    consume_completion();
+    consume_completion();
+    check_result(first, 19U + first);
+    check_result(second, 3U + second);
+    expect_value("multi_lock_finally_unowned", locks[lock_index].owner == NULL, 1U);
+    expect_value("multi_lock_final_wait_list_empty", locks[lock_index].wait_head == NULL, 1U);
+}
+
+static void deleted_multi_owner(void)
+{
+    active_case = 2U;
+    (void)printf("AR|CASE|id=2 name=deleted_multi_owner\r\n");
+    uint32_t initialized = initialize_case(2U);
+    expect_value("case_initialized", initialized, 1U);
+    if (initialized != 0U && construct_deleted_owner() != 0U) {
+        uint32_t deleted = rtos_task_delete(&workers[0]) == RTOS_OK;
+        expect_value("delete_multi_lock_owner", deleted, 1U);
+        if (deleted != 0U) {
+            created_mask &= ~1UL;
+            uint32_t acquired = wait_acquired(1U) && wait_acquired(2U);
+            expect_value("both_deleted_owner_handoffs_completed", acquired, 1U);
+            if (acquired != 0U) {
+                expect_value("new_first_base_lowered",
+                    rtos_task_set_priority(&workers[1], 20U) == RTOS_OK, 1U);
+                expect_value("new_second_base_lowered",
+                    rtos_task_set_priority(&workers[2], 21U) == RTOS_OK, 1U);
+                check_handoff("deleted", 0U, 1U, 1U, 6U);
+                check_handoff("deleted", 1U, 2U, 1U, 7U);
+                expect_value("registry_retained_after_owner_delete",
+                    rtos_internal_mutex_registry_count(), 2U);
+                release_handoff_chain(1U, 3U, 0U);
+                check_handoff("other_chain_retained", 1U, 2U, 1U, 7U);
+                release_handoff_chain(2U, 4U, 1U);
+            }
+        }
+    }
+    cleanup_case();
+}
+
+/** @brief Report the finite registry-capacity fixture configuration.
+ *  @return No value; called before the scheduler starts. */
+void audit_pre_start(void)
+{
+    (void)printf("AR|META|owners=8 capacity=8 worker_limit=9 public_api_only=1 "
+        "private_tcb_writes=0 finite_wait_ticks=%lu\r\n", (unsigned long)AR_WAIT_TICKS);
+}
+
+/** @brief Run both finite registry scenarios and emit AR|DONE.
+ *  @param arg [in] Unused task argument; may be NULL.
+ *  @return Never returns; sleeps after reporting all checks. */
+void audit_regressions_task(void *arg)
+{
+    (void)arg;
+    saturated_handoff();
+    deleted_multi_owner();
+    (void)printf("AR|SUMMARY|pass=%lu fail=%lu checks=%lu cases=2\r\n",
+        (unsigned long)pass_count, (unsigned long)fail_count,
+        (unsigned long)(pass_count + fail_count));
+    (void)printf("AR|DONE|status=%lu\r\n", fail_count == 0U ? 0UL : 1UL);
+    for (;;) {
+        rtos_task_delay(1000U);
+    }
+}

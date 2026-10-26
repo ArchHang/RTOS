@@ -1,0 +1,26 @@
+﻿[
+    {
+        "tag":  "final_production_cap1",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    {
+        "tag":  "final_production_cap8",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    {
+        "tag":  "final_production_cap32",
+        "passed":  true,
+        "negative":  false,
+        "summary":  "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    {
+        "tag":  "final_production_negative",
+        "passed":  true,
+        "negative":  true,
+        "summary":  "STRESS|SUMMARY|pass=163 fail=3 worker_errors=1"
+    }
+]

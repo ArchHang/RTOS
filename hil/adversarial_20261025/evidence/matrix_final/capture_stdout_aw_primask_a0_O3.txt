@@ -1,0 +1,90 @@
+﻿===== aw_primask_a0_O3 (5062 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\adversarial_20261025\evidence\matrix_final\log_aw_primask_a0_O3.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+AW|META|rounds=8 workers=4 syscall_irq=TIM7 priority=5 highirq=TIM2 priority=0 finite_waits=1
+AW|PHASE|name=queue_receivers round=0 pass=28 fail=0
+AW|PHASE|name=queue_senders round=0 pass=58 fail=0
+AW|PHASE|name=semaphore_waiters round=0 pass=91 fail=0
+AW|PHASE|name=event_consumption round=0 pass=117 fail=0
+AW|PHASE|name=notify_increment round=0 pass=128 fail=0
+AW|PHASE|name=event_notify_independence round=0 pass=145 fail=0
+AW|PHASE|name=queue_object_delete round=0 pass=157 fail=0
+AW|PHASE|name=queue_timeout_late_send round=0 pass=173 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=0 pass=201 fail=0
+AW|PHASE|name=queue_receivers round=1 pass=227 fail=0
+AW|PHASE|name=queue_senders round=1 pass=257 fail=0
+AW|PHASE|name=semaphore_waiters round=1 pass=290 fail=0
+AW|PHASE|name=event_consumption round=1 pass=316 fail=0
+AW|PHASE|name=notify_increment round=1 pass=327 fail=0
+AW|PHASE|name=event_notify_independence round=1 pass=344 fail=0
+AW|PHASE|name=queue_object_delete round=1 pass=356 fail=0
+AW|PHASE|name=queue_timeout_late_send round=1 pass=372 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=1 pass=400 fail=0
+AW|PHASE|name=queue_receivers round=2 pass=426 fail=0
+AW|PHASE|name=queue_senders round=2 pass=456 fail=0
+AW|PHASE|name=semaphore_waiters round=2 pass=489 fail=0
+AW|PHASE|name=event_consumption round=2 pass=515 fail=0
+AW|PHASE|name=notify_increment round=2 pass=526 fail=0
+AW|PHASE|name=event_notify_independence round=2 pass=543 fail=0
+AW|PHASE|name=queue_object_delete round=2 pass=555 fail=0
+AW|PHASE|name=queue_timeout_late_send round=2 pass=571 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=2 pass=599 fail=0
+AW|PHASE|name=queue_receivers round=3 pass=625 fail=0
+AW|PHASE|name=queue_senders round=3 pass=655 fail=0
+AW|PHASE|name=semaphore_waiters round=3 pass=688 fail=0
+AW|PHASE|name=event_consumption round=3 pass=714 fail=0
+AW|PHASE|name=notify_increment round=3 pass=725 fail=0
+AW|PHASE|name=event_notify_independence round=3 pass=742 fail=0
+AW|PHASE|name=queue_object_delete round=3 pass=754 fail=0
+AW|PHASE|name=queue_timeout_late_send round=3 pass=770 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=3 pass=798 fail=0
+AW|PHASE|name=queue_receivers round=4 pass=824 fail=0
+AW|PHASE|name=queue_senders round=4 pass=854 fail=0
+AW|PHASE|name=semaphore_waiters round=4 pass=887 fail=0
+AW|PHASE|name=event_consumption round=4 pass=913 fail=0
+AW|PHASE|name=notify_increment round=4 pass=924 fail=0
+AW|PHASE|name=event_notify_independence round=4 pass=941 fail=0
+AW|PHASE|name=queue_object_delete round=4 pass=953 fail=0
+AW|PHASE|name=queue_timeout_late_send round=4 pass=969 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=4 pass=997 fail=0
+AW|PHASE|name=queue_receivers round=5 pass=1023 fail=0
+AW|PHASE|name=queue_senders round=5 pass=1053 fail=0
+AW|PHASE|name=semaphore_waiters round=5 pass=1086 fail=0
+AW|PHASE|name=event_consumption round=5 pass=1112 fail=0
+AW|PHASE|name=notify_increment round=5 pass=1123 fail=0
+AW|PHASE|name=event_notify_independence round=5 pass=1140 fail=0
+AW|PHASE|name=queue_object_delete round=5 pass=1152 fail=0
+AW|PHASE|name=queue_timeout_late_send round=5 pass=1168 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=5 pass=1196 fail=0
+AW|PHASE|name=queue_receivers round=6 pass=1222 fail=0
+AW|PHASE|name=queue_senders round=6 pass=1252 fail=0
+AW|PHASE|name=semaphore_waiters round=6 pass=1285 fail=0
+AW|PHASE|name=event_consumption round=6 pass=1311 fail=0
+AW|PHASE|name=notify_increment round=6 pass=1322 fail=0
+AW|PHASE|name=event_notify_independence round=6 pass=1339 fail=0
+AW|PHASE|name=queue_object_delete round=6 pass=1351 fail=0
+AW|PHASE|name=queue_timeout_late_send round=6 pass=1367 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=6 pass=1395 fail=0
+AW|PHASE|name=queue_receivers round=7 pass=1421 fail=0
+AW|PHASE|name=queue_senders round=7 pass=1451 fail=0
+AW|PHASE|name=semaphore_waiters round=7 pass=1484 fail=0
+AW|PHASE|name=event_consumption round=7 pass=1510 fail=0
+AW|PHASE|name=notify_increment round=7 pass=1521 fail=0
+AW|PHASE|name=event_notify_independence round=7 pass=1538 fail=0
+AW|PHASE|name=queue_object_delete round=7 pass=1550 fail=0
+AW|PHASE|name=queue_timeout_late_send round=7 pass=1566 fail=0
+AW|PHASE|name=mutex_timeout_inheritance round=7 pass=1594 fail=0
+AW|HIGHIRQ|entries=10551 nonzero_samples=0 errors=0 restored=1
+AW|PHASE|name=final_cleanup round=8 pass=1600 fail=0
+AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120
+AW|DONE|status=0
+

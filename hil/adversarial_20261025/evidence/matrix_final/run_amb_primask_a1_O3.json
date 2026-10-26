@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "amb_primask_a1_O3",
+    "started":  "2026-10-26T00:28:59.1125664+08:00",
+    "finished":  "2026-10-26T00:29:02.5147580+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "EDB2AF3A921912F7F181AF8054BE6D078243227448E9A3F705769ADDC199AE57",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AMB\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

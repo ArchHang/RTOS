@@ -1,0 +1,15 @@
+﻿{
+    "restored":  true,
+    "main_unchanged":  true,
+    "kernel_preserved":  true,
+    "build_files_restored":  true,
+    "new_test_symbols_absent":  true,
+    "daily_flashed":  true,
+    "variant_artifacts_removed":  true,
+    "daily_booted":  true,
+    "daily_tag":  "final_daily",
+    "main_sha256":  "32C1E6F3D50C754A8E09DB169982551AE1CB4828760662AB106BDEE482012874",
+    "started":  "2026-10-26T00:48:55.3647067+08:00",
+    "template_pairs":  8,
+    "completed":  "2026-10-26T00:49:04.7773689+08:00"
+}

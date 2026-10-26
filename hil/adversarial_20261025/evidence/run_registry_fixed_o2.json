@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "registry_fixed_o2",
+    "started":  "2026-10-26T00:23:32.6090008+08:00",
+    "finished":  "2026-10-26T00:23:36.2162038+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "720658401D14487035EFD62803437F8585FEC7BB736C717E5E0BF12716AE6C4A",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AR\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'basepri_guard' OK -- real IRQ syscall-priority assertions and invalid critical nesting; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  36904	    120	  61512	  98536	  180e8	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

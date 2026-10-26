@@ -1,5 +1,5 @@
 # hil\repro_all.ps1
-# One-button reproduction of every archived RTOS test suite on real hardware.
+# One-button regression, including deterministic interrupt/mask boundaries.
 #
 #   bench     : BM0..BM7 micro benchmarks            (docs\rtos_performance_report.md)
 #   boundary  : 103 contract-boundary assertions      (docs\rtos_testing_report.md §2)
@@ -10,7 +10,7 @@
 #   powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1
 #   powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1 -Only bench,boundary
 param(
-    [string] $Only = 'audit,bench,boundary,selftest,scenario',
+    [string] $Only = 'audit,port,adversarial,bench,boundary,selftest,scenario',
     [string] $Tag  = 'repro'
 )
 $ErrorActionPreference = 'Stop'
@@ -45,7 +45,27 @@ if ($want -contains 'audit') {
     $lines | Select-String '\|SUMMARY|\|FAIL' | ForEach-Object { Write-Host $_.Line.Trim() }
 }
 
+# Keep port fault-injection and blocking-return tests in the normal regression
+# path. Otherwise the former blind spot would return when only this entry runs.
+if ($want -contains 'port') {
+    $portEvidence = Join-Path $logs ("${Tag}_port_" + (Get-Date).ToString('yyyyMMdd_HHmmss'))
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
+        (Join-Path $hil 'basepri_20261025/run_matrix.ps1') -Suite all -OutDir $portEvidence
+    if ($LASTEXITCODE -ne 0) { throw 'Port/ISR/blocking-return regression failed' }
+}
+
 # ------------------------------------------------------------------ bench ----
+if ($want -contains 'adversarial') {
+    $adversarialEvidence = Join-Path $logs ("${Tag}_adversarial_" + (Get-Date).ToString('yyyyMMdd_HHmmss'))
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
+        (Join-Path $hil 'adversarial_20261025/run_matrix.ps1') -OutDir $adversarialEvidence
+    if ($LASTEXITCODE -ne 0) { throw 'Complex mutex/wait/lifetime regression failed' }
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
+        (Join-Path $hil 'adversarial_20261025/run_matrix.ps1') -RegistryOnly `
+        -ExpectedRegistryChecks 259 -OutDir (Join-Path $adversarialEvidence 'registry')
+    if ($LASTEXITCODE -ne 0) { throw 'Maximum mutex graph/multi-lock deletion regression failed' }
+}
+
 if ($want -contains 'bench') {
     $lines = Invoke-Hil -Variant bench -Scenario 0 -Name "${Tag}_bench" -Seconds 45 -Terminator 'BM\|DONE' -ReplyOn ''
     $lines | Select-String '^BM\|' | ForEach-Object { Write-Host $_.Line.Trim() }

@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'adversarial_lifetime' OK -- legal ISR deinitialization in the object liveness-check window; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  37800	    120	  41904	  79824	  137d0	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

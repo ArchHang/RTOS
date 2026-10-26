@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "final_production_cap8",
+    "started":  "2026-10-25T23:03:58.1879832+08:00",
+    "finished":  "2026-10-25T23:04:31.7359997+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "6577E333167286564DDE34427F755C487FFA48AF7E420B83E837060586FDE188",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "STRESS\\|DONE\\|",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

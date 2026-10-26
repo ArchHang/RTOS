@@ -1,0 +1,4 @@
+﻿variant changed -> forced recompile of main.c and variant sources
+built 'basepri' OK -- deterministic critical-state preemption and interrupt-mask regression; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  42328	    120	  43048	  85496	  14df8	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

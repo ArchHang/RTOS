@@ -1,0 +1,2977 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "generated_utc": "2026-10-26T15:55:30.252258+00:00",
+  "hardware_accessed_by_verifier": false,
+  "mode": "strict",
+  "batch_directory": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025",
+  "matrix_directory": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final",
+  "raw_validator_sha256": "9AFE41ACC36726438E64F5AC7C8408AD5EBF077F4E974872964AAB62DE7959A2",
+  "coverage": {
+    "expected_adversarial_images": 48,
+    "validated_adversarial_images": 48,
+    "adversarial_pass_checks": 32124,
+    "expected_registry_images": 12,
+    "validated_registry_images": 12,
+    "registry_pass_checks": 3108,
+    "expected_port_images": 74,
+    "expected_strict_compilations": 97,
+    "real_failing_baselines": 3,
+    "mixed_wait_control_checks": 1600
+  },
+  "errors": [],
+  "pending": [],
+  "captures": {
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\baseline\\mutex_chain_baseline": {
+      "sha256": "E548DC622EF5751DE916A7464C1DA50C933FE88A9E014FFA5FA2F79B7BBD8DA6",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.631,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "97267C5A23BA710814084CFD1C0D25F31174D522DC2C3B1CC08118A55F198082",
+      "flash_sha256": "9D8ED119E62244AA76A1DC7AFB0343CE8504FC50514239DC0A7D4F66F6A17F5D"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\baseline\\object_lifetime_baseline": {
+      "sha256": "42620D6A3A2D59463150FC48C7C59623791D3059039D687CFB0B6CD86CDA7B6E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.882,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "BF922CF3AF765A5BA42FC0B796F66ED28189C3F34F6ECEC650093B0BA1329FDC",
+      "flash_sha256": "8D8B8E7998896FC8283AE971634E8427840EA907A2C0FE07694BA68A507BF34B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\baseline\\mutex_boundary_baseline": {
+      "sha256": "88B58C07F6D7A40CC4FD704C169F215A5D48540099C22FD8927F0B8E0FFE726B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.353,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "62B9CC2E0B355321F4593A221E56813E8ED26101C5567C1222D99416D194EB2D",
+      "flash_sha256": "E77F2B473E214E317A55B70DF7F1FD63CD3FB1C14D7578FC3463517505406A3C"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\baseline\\wait_mix_baseline": {
+      "sha256": "CBAF958958B4048F9DE636D124CB5AC91A755B91273B26BF2D6A7BD21A38151F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.669,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "8C7ABEDF6FA9C5B9DE742E6DE233AC1E9E0BD8051B49DFFD18BFEE18D76E4892",
+      "flash_sha256": "56609DC1124BB8BDDBED0B882F3EC8483A88BB23F400A9F31D629A06B858C980"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_basepri_a1_O0": {
+      "sha256": "99B8C2BEEE7866E76879EE0EED4042C9DEA767C780816A05B2AB77C8022B1175",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.997,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "29C2310FC48DE19263CFA4D32420A81590AE2E5E4F455F864A5E81CF531B4450"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_basepri_a1_O2": {
+      "sha256": "152D9798DD3A997691D3AD55112B2595B7248C37B27524471C463941E33C640A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.424,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "86C667EADAA7FE737B3B8EA6C9F93AE235366D0A89ACB4414A620FA0A61B1636"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_basepri_a1_O3": {
+      "sha256": "2BC7E9C92EE40CD5530FD465F22BE62115D0B78AB6012D1963DF9DA575FEA9F6",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.524,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "203F92E820973FDB8D9AC32F50C8E0A056CB4E53B7B28857DF985B0DB47E960E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_basepri_a0_O0": {
+      "sha256": "8923831F5F3C52F11C447A65E6CC254E485905C723CF09E6DC5B69D5D8230D5B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.517,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "33889F38DD2B868929DA6D66225045FE0155A8A85CB9B4F49FD855A0F306336C"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_basepri_a0_O2": {
+      "sha256": "916086BFF155B990AB8D4F81A9237BCB387834BF0A28D68A763CD80EF6374067",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.416,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "086DF7BC2B652BC319483A55C8E1D275306E223F06E4B4FA1C0CD4153D9152DE"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_basepri_a0_O3": {
+      "sha256": "458BBC0E4651364DB8B55527E67F274D6F3170BEEED0CB67C8860CB13621AA03",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.491,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "3274FECE54F73CE22381AB6519EBAE9150E670D786737B447522C4E560295A57"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_primask_a1_O0": {
+      "sha256": "77C6834E3F02907298AC643F551A9151D19E80386EF3355E4DA5E75A00B6374F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.971,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "E4FFFBF0226A0B07990C5998744BA6F1534259170A4305C4080568F43D132995"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_primask_a1_O2": {
+      "sha256": "993CBD508D4A0E5786DE3841EB1110282117E26298794A19BC71204151FD7D0C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.463,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "67558B85E081A806F7CB88AA1DDB6285D1F585F7598FB2332C34071E1FD4837D"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_primask_a1_O3": {
+      "sha256": "3676DBE32B33BE36A3B86E012602FE873AEB4EBD4B9BBD4DE9570925F84F6CA6",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.528,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "9F1C4EA7AF0DE3EB0CC994B3C179F732D19F0B5402414368AE48450F10CD4E31"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_primask_a0_O0": {
+      "sha256": "87C16A134332CE139009470E2D6F6A4010AC8CD97B5C9506F272DF5FE3F26D95",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.498,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "41F33E2FFB5F1F5DEC3A513B56A4980AE4C8FF3855FA716CC77F9CED6D9043B2"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_primask_a0_O2": {
+      "sha256": "7DCF700223DF0E79EBCFE55B5A04487763809DDD717F197E8B76252DE969C024",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.431,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "EC1FC79067B3FCF28CD8C119D52879DA0917B6DE8AB5E11F1AC716DF48F538F8"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\am_primask_a0_O3": {
+      "sha256": "ACDE642BC6CCB93E8D9A20E00A3975348C053D6C491387D93BAC154221F1D9A0",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 7.491,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ECED11BE28737F94F9838166B443C0DA8691363A13A360D9F04341BA77722B74",
+      "flash_sha256": "02FB964FE7E90C5AE2BE9D572F1E12A9C90BA9EA6DABF54759F64A33A4C77460"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_basepri_a1_O0": {
+      "sha256": "6D3091D857029FCE6E7057E1D0BF76E05EDD6120CFF937FC8A3914201BD1525F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.208,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "8E09F829001053CA7A61C00C16F1BA4755FE79E3E36623B4AED5E7C9258B59E1",
+      "flash_sha256": "45929F7D27CEA8828430EF5FC9209FC8DF4D0D58DEEB4D27165F13E74C328861"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_basepri_a1_O2": {
+      "sha256": "A42CC3FED7D4600F38C60FB351581F0FFD08649120B5F7EF50154D962F1E1049",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.635,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "A2750FFCB67C3718F603F6FFC86CCC2A2D2FA65F50827C1BCCF48BDDBB067169",
+      "flash_sha256": "0AF3F3266A5E6D52329A5EB317673A5B7713D63E8222F80CEF97181357BFEE36"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_basepri_a1_O3": {
+      "sha256": "561F75B62D06CB22F37BB68605528B74877ACF2AD13E5EC58C159F145DFCDD0B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.985,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "867CE3768AF5320950B7FF1305389211CF2E9E989A8C19DB6503F5DA2356B599",
+      "flash_sha256": "34D1ADE8C25F29105FE6CBCC7531F5B19B519236576B73E74A977DC9F0E3CC99"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_basepri_a0_O0": {
+      "sha256": "9259334C770BCE0CBCC276EAC645331B2349A8BE771316F526CAAE4788A574A3",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.941,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "D10B4A822D3F21EBFC9CFC2DF17146AFF65F085777D1789AFE9A37A40DE099F3",
+      "flash_sha256": "2B49E9EADE6BDDFF9D0137F53832EEA2EE4EAAF964A16854CF9E85DB5359A999"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_basepri_a0_O2": {
+      "sha256": "F907CC150A26D77D12E2684BE910C3722DA0463A424045FF51FD606A73C939E3",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.585,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "81F08ED3D10D7ADE73DEE5C9506359AA62166556E5A37C391AE5DA1E454A0E8C",
+      "flash_sha256": "F1221FE9FB4A8D1AD0AC0A11B35958D642F22C1EBEC4F9F84C73B0A0E72135FF"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_basepri_a0_O3": {
+      "sha256": "3255BDBE4760F95987DB938548EED4EA051317F9DA31D9A2AD834B2F0B60BB4C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.99,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "5E3D5C58EDF7D4B1B5156A67CDD3AAFE9F55B03C51870658F80A46AC3F982C75",
+      "flash_sha256": "397947D967EA67A1ECC2AC028C78EDE86A5CBE12D6C2897D5197FAF7038CA4C6"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_primask_a1_O0": {
+      "sha256": "66E27265DD51BBAF34F78C0B0539812CDAC552EA60AF7A254378AEE9F8614242",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.24,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "93759B658B72BD66EAC6376524348CDEC3280F60A0096ACDCC00875525516D49",
+      "flash_sha256": "EEF7797DF908CD62EF473FE4F3BFC6221ED099D9CB46F0EB5AEA309240611380"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_primask_a1_O2": {
+      "sha256": "AC5B5FD8AD76C14BECCF41F53945DFCC5039E7F06E8A8C9C916B708675BD45D9",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.561,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1401CF020F593E5B3FFA90642D9B6510189A5211D8668292BF334D3EBE21E898",
+      "flash_sha256": "F653374406509C7A9A6E211EC7B8B0E6265B8E4EC1B406866471D65C4F0AB03F"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_primask_a1_O3": {
+      "sha256": "AB67FC24336E91D3CF79D06FB3215441CCC795A14B3D52E1C5916B123D6D42E2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.011,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1401CF020F593E5B3FFA90642D9B6510189A5211D8668292BF334D3EBE21E898",
+      "flash_sha256": "02C388B0E6B606F4298240B723EDE670B3E85B35CB2CDBED5CC201F024D927A0"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_primask_a0_O0": {
+      "sha256": "8E01E61194C611630E906258FE4F00010248D8EDCE9C361D8EBDDF6FA4F3D0F2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.713,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "93759B658B72BD66EAC6376524348CDEC3280F60A0096ACDCC00875525516D49",
+      "flash_sha256": "A6D0036718137FDE444E5F3A9EC65CC6E99A09CF4A09C4A28ABEDEDBB9FB3E08"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_primask_a0_O2": {
+      "sha256": "BDF4BEF5BFD7ACDFBB7871BF49411E5CC2EDAE55C744F1FB343CAAA6BD3CCD4F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.58,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1401CF020F593E5B3FFA90642D9B6510189A5211D8668292BF334D3EBE21E898",
+      "flash_sha256": "BA629F99EC1F512F0FE90F11D1FEE6233E9ABB50F3433279B71D2612BA3EF05E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\aw_primask_a0_O3": {
+      "sha256": "7C5F5843B1643CF1108EFCF3099FF6B0E90381746A75E57A39750D9FB5543B32",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.964,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1401CF020F593E5B3FFA90642D9B6510189A5211D8668292BF334D3EBE21E898",
+      "flash_sha256": "AE09DD4E6DFE6CDA7DB84FD642069496D97CE432757BAEB4F994BA503374E70A"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_basepri_a1_O0": {
+      "sha256": "DBE08DFDA95D71233F482131F930526009FFB8E24B8F99DED5FA4F7F9D33EF2B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 4.059,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "EA6A735E6CED6BB9D45A5443A45BB8A52979AD2AE0FCE116C0A816E75909884E",
+      "flash_sha256": "97DC185C32371F98DEEF7A3BFB632EAA44BBA5D1B4C52F7D7749A04075842E7D"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_basepri_a1_O2": {
+      "sha256": "DBEE53F65D9049C95C8E4AE42ACA869B39EC40FF8D63F381DE5068F7F4BF41AF",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.472,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "5B4FA7300E6156A26CC803F6F899F4E95DF0141B3540E18664007B9002B0A406",
+      "flash_sha256": "8A5E8DC2ABFFE6862CDDF5EA8F066CC6EC146F3F822594D83D0CC29C4A2DAA94"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_basepri_a1_O3": {
+      "sha256": "7838D2AC20A32EA47B6A4F2C46DB90C6A9CE82651E3F49995C88978528CB8924",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.55,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "5B4FA7300E6156A26CC803F6F899F4E95DF0141B3540E18664007B9002B0A406",
+      "flash_sha256": "F97CAAA91F583C1EC967EC997B24EEF4236428758A5B55BFBD4D0471333F51FC"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_basepri_a0_O0": {
+      "sha256": "43F030ED6613610A49C86762992159FAD65597CDE79229898CEAF23F75F98CDF",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.535,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "CF6DA9C6CF83A3AE7CB662CEBD262A109876EBFBDA0920AAA6967417736C088D",
+      "flash_sha256": "5DA8F4924EA4B35637B837C286D94ABF00E6FE1A78C4848DB5469AEA3429CB95"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_basepri_a0_O2": {
+      "sha256": "4A1C14AD0652594D2F70DAD353911963EF02492485FF111A1F40786ED08F0C2D",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.441,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "5B4FA7300E6156A26CC803F6F899F4E95DF0141B3540E18664007B9002B0A406",
+      "flash_sha256": "3AC52C23CCFBA355CFBADF5430F643A808F44D95F440371699C31D7E4C223300"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_basepri_a0_O3": {
+      "sha256": "3126B518D743C113E11974DF40AFB6E9C685104F32AB68C42E4D9E8D49A1B08F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.5,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "FD3768C01191234332CE918CC899A80F0189CC995B0E84FBB9FC678CACD4963B",
+      "flash_sha256": "21A5407486916F8EC676A4D91602BC7E3BCD55828366CCC7024FDDF1E5BC7248"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_primask_a1_O0": {
+      "sha256": "C5F71C69928194DFCCCCC18AEE623CFBE414F8357E5AB995F9131808EEC03A47",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.995,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "EA6A735E6CED6BB9D45A5443A45BB8A52979AD2AE0FCE116C0A816E75909884E",
+      "flash_sha256": "2FF6540E1BAEB4C9CE80AFB0D78D660744CAEA5E90F93D53974A0EC2E4959EE5"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_primask_a1_O2": {
+      "sha256": "C2186E6E07CCD5B2661B249D85EFAB06B88191C40D89ADBF56445A0D951BBE84",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.457,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "29805372DE0B0366A3DA1462FE8AB41C5D518E1BF034A8BE196F6B29D57CF187",
+      "flash_sha256": "E7FE4DBEA19BEE34FAEAF24C1893D8F5CD444F3A34F6F1ECE2F5AE15D800D5D7"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_primask_a1_O3": {
+      "sha256": "6AD3E14FB5DEC3CD654576EA39E6C3584F701E18FCAF70021BFDC404704430EC",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.479,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "7453A08B68E6F86839DAFECABCDA1ACAAE0882A032640DCCD4C9E93CEEA3EB58",
+      "flash_sha256": "93A3D325D4633849C40BA929D2BEBFC728531F29D60206A7090D4D9435B426AB"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_primask_a0_O0": {
+      "sha256": "B0063AE9BEE6E9FB27C754B51F3FAF83AC140AD5CC08975BB579CFF910A3618C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.507,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "48AB242216EDB9170CABF2FFD825868D27BFBA7D48616C67D731428BDF405FC8",
+      "flash_sha256": "A912F0DA727766E19EFD951EEFAE4249D752B5291CCA1D529C283DEB96B55F08"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_primask_a0_O2": {
+      "sha256": "79F9A1BB8AE5E221FA50E71885BC51A08A597AE48F9E037B4B94926B8073C509",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.38,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "7453A08B68E6F86839DAFECABCDA1ACAAE0882A032640DCCD4C9E93CEEA3EB58",
+      "flash_sha256": "F36517653723A0517E3C2D22C8CA1E887D1E6AB5FC728153FDADC6C14D688895"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\of_primask_a0_O3": {
+      "sha256": "F19FB73754036669B9806764FE9B425A7416608ED997D16A7B01CAE093874016",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.472,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "7453A08B68E6F86839DAFECABCDA1ACAAE0882A032640DCCD4C9E93CEEA3EB58",
+      "flash_sha256": "74C9AD3A011CD34C8B8C6DDEE73F39E00920CF154AA94ECA5A36F5D21B8D11DE"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_basepri_a1_O0": {
+      "sha256": "34E56EE5FD66D492AB3EB07DA372268D1D58B807CAA0985B7FD4B7A4E1FB3616",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.897,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "41A2D9E0B56CA33C3412CF1ABF433BF8DA9FC06FF5F549D27B0E70D27803446C"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_basepri_a1_O2": {
+      "sha256": "836EC0B2CA0E15C3DCE1E4FAE3D93AE9933A4C3B8B4E7CFE0BEC25009B7796A9",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.366,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "8448DC1319FF5B5F75CF5A4AE5A0F83E841A66D413DE6C4243870DFB85C93422"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_basepri_a1_O3": {
+      "sha256": "B9BEEBFE473507AEE42D3F87D7DBF47DC79078B7D54B420A81987D9E17B1E194",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.404,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "8725C26266D4742D6F18BA6F8ED348E2967E6D398E87C15577F8AFE33F95F671"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_basepri_a0_O0": {
+      "sha256": "6FEE6950F24A9E81EC3EF16D4D4A8B00566BBB74CD949675BF199937FDA6A1EB",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.42,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "3E72692772F0899E6BE702DCC9ADDC014762C2FDB3D18681B1D0BFA870392F4F"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_basepri_a0_O2": {
+      "sha256": "83E53CE9432530A4E79B3910C1AAC0A40F7350659A88580161572616D09C367A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.338,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "77FD347B6CF5FE32B3A388ECDE1C53041FDDC29BBD12FBCDFA5D4140B38A2288"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_basepri_a0_O3": {
+      "sha256": "46379E8CDCF6691F5DFDB8395A88ACD410AE63BCDF681DF593B3A56998128739",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.362,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "C11A14474D840F1DC793ADCE506DE720DEA6B42049E44F2CFC1C2EAFEBBC0FFC"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_primask_a1_O0": {
+      "sha256": "F51BAB3D654FD68A32D6C654EFBADB896B95F76714F80588C9D588365A04F688",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.877,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "7DF3D10A9117AD3EA2E8B1012AE0C595E3FB548FD3E24D545D2973632D137D05"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_primask_a1_O2": {
+      "sha256": "E047D337E277C83D476CCD1E88AA883CF6844F7193E3265518C89A54C07AE2E3",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.36,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "16D08AE56281724A74664FB1A07093D4A4C4206F530EAD425936B2A3E030F49D"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_primask_a1_O3": {
+      "sha256": "EDB2AF3A921912F7F181AF8054BE6D078243227448E9A3F705769ADDC199AE57",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.402,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "C0218EEC7C18451C23112ED560218201FB2EDF4D929391BA27354CA381B904F1"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_primask_a0_O0": {
+      "sha256": "9CD566D972BE71AEA217EA66362AD4E56E13FC39DDA1FDF7E38584CEC74CE614",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.396,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "91E24D81EDF44949B53680A8FCFB8022EB625454D792829A875D76052339D946"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_primask_a0_O2": {
+      "sha256": "63C29AEAB8E0F175082968E408E7B22A68126EFF373E29D4C9DDF462D63238BA",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.313,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "A4C5FE3AE44E021EA98479A1650C567DEEB60D36781C1E760DC1586D822C106F"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\matrix_final\\amb_primask_a0_O3": {
+      "sha256": "4CE6BFEE7714C7C332BE42C82D10977C0D3068D5BCD859EB501040C8D2A7D12C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.342,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "46C976AD21C93845C35B39AA226A6CBB28F2BF4ECDE48D5E1FE24A5A6F4D8A13",
+      "flash_sha256": "1C49C70B50B9F58DBCE56ACFD692B51B0ECB561B643C65E1E37B93A67D92C577"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_basepri_a1_O0": {
+      "sha256": "7B1EBE88BE1072018404EF1746BAADEB2EF40DF645BD4F004892E3978256195B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 4.148,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "671DEB2CB20C4319221B821DCA0699B8FED6B9610EC678771B9D41D05F1F0B5E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_basepri_a1_O2": {
+      "sha256": "720658401D14487035EFD62803437F8585FEC7BB736C717E5E0BF12716AE6C4A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.588,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "BBD86ADC78F59F399903D133E5291437C9EB9CA57F15F433C750FCDB1C645082"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_basepri_a1_O3": {
+      "sha256": "3A13B6A0ED10380468933B3B06DABC75A2972B5EED8B0BFC7A19AB934D22B95F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.669,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "74EA221F9AAA22D6C9F6CAF21365234CCB646EA29A71FE0FD7227E18D42C9B1B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_basepri_a0_O0": {
+      "sha256": "33323ECCD17CDD9DFC283707F34A40260075C59F933D3675F22726BCFA2A0EAB",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.65,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "DCD35284F00E33591AA1B8F0A7D00E58F2E7ADC422003D05CA14C4F356B5F98A"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_basepri_a0_O2": {
+      "sha256": "48B6372A06EB5ACB5C03ED34CFB3995617A8B1818475AF0ABD1E34B11863925E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.578,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "886D48DDC7FF3E6BE841BDD5F5153ED102CCE9DE07AAC1B3B2914F5DD3567C56"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_basepri_a0_O3": {
+      "sha256": "E8C231506ADD575618822DC8BC5CCB140780FE78466FF08196D9BC36DB1C79CA",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.646,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "CF10BA75DBFB6972EB9A7EAA8450513BA3872CF8DCDE211F5041F3AF7FFC007E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_primask_a1_O0": {
+      "sha256": "948A48A6232041A6C18EB77A4EC43DC149E6E4938B83D41FECBD33880206BDA0",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 4.108,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "FCADE09BC1607C5CB875345F9A0CD0D561E119C7C12A08763D6FDBA80DF58A95"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_primask_a1_O2": {
+      "sha256": "B30D6912F1485A579F89225F8F565294B80AB4126927942C0FA6B710907A3CF6",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.575,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "B18079D49C2466D4C34B98CBE8CD914EC926FF372217BF4433799E01B8A53200"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_primask_a1_O3": {
+      "sha256": "DBF88754EE418C6432CEBCD5B9338D86F59E1AED7571279C9E7D44E7C210E70F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.67,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "A41662666D38FB14D9633125A6A80CD93693927BABCF1DF01148CDC12BD5A77B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_primask_a0_O0": {
+      "sha256": "8D4FE440C6408622D8C8FEC73DCF90012CFA21F89A74522A8D8A915806FF2876",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.613,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "9CA3C224661C7E61DDA5D3D3B5D7BB0C4CD2869B0EF9DF55924CA14A75E9B1AE"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_primask_a0_O2": {
+      "sha256": "3264E7219BB3207331EDF5983D456F82722E8EC4036E3ACE6232FC6DEBA68F27",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.536,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "E84FAECE8026FFA39ACA1FE8F32341B5B2E3043C78EEF62AF3CCD11E4DC95518"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\registry\\registry_primask_a0_O3": {
+      "sha256": "DB6794F7E5A5C4B5320290997E744D72B3412914F80D52607DEF646BD238531A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.596,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "4481807A882548ABE5B700426F9D8784808F455AACAA6B4E2A033B0B3010BD1C",
+      "flash_sha256": "85EDF39F78ACAABD13AE2B3F97802B86CAC32E35B21130AD9DA7C465DF9AEC6E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_basepri_a1_O0": {
+      "sha256": "1574BF10C3C7B8291B7D70E675FFCFCB2E6A6FC135D6B7522E32203ED3CA49F1",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 14.312,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "71E9ABE39F337F7D48BE66289CCA068811B1A0A2CE11506E8412155C2A86DD94",
+      "flash_sha256": "CE8BBDE577D7446BBA8C13C3958915BA9F10ED462204D96CEC497426273ABFA2"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_basepri_a1_O2": {
+      "sha256": "E786134D7D1C88A71F88CF3D1BFFBE152C62E4CD460D24357827C5615B6EECC9",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.194,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "0FE7DDD0DD93F0C290415048048E423904F0F82EEC677A2A5EF47B7F9D6B0EB3",
+      "flash_sha256": "139414F7DF72F674F8FB626224B3F5A930695E64B8BAF211BCA580A3BB82A492"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_basepri_a1_O3": {
+      "sha256": "74305E74FFB4B5812A6725D12599840DB8640928FEDCFDB15F5AD9CC4E327914",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.104,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "85D9CB29FB473616E2DAEF496A02F9A89C8D38648EA2C45E1EC2AAA8360CC6E4",
+      "flash_sha256": "BDFB182F662C2E047CF1831AA6A665B28F763F1309D613AC3ECFE20C53D57D80"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_basepri_a0_O0": {
+      "sha256": "82716DECDD3ADC37853690013C8446F493C8F736142315308DF20E7E37039D22",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 13.854,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "D4ACAA7F1942739C3087D8D4ADC0AB1C5B16C4797E9DFD37156ECC3EAC8A6AB8",
+      "flash_sha256": "9AD39BC2C25EB89FE91F76C0362D7B4E52DA7D2F67B038321087E764E36784AD"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_basepri_a0_O2": {
+      "sha256": "A7FD8EACB397D22D5D4A6AD265F872C5C0E691F81B05CA0B6E54E80F4549370F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.186,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "0DAE3441DC1554CF365612A2BA17FA79A791E7FF36812B7201757E3A67078EBB",
+      "flash_sha256": "7B05261F37B9F7BCC0560C01F692CAE4583BD956325F445D24029D82B57C9EE5"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_basepri_a0_O3": {
+      "sha256": "AFA03D6E94E648115A3CEE07BC0B55108A7AD2404779723561B54AD379A4A8F2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.074,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "40D4CE6CEAF19899A8D774DC036F88FBE624E792FC7CEB6F091F76AA40F1F678",
+      "flash_sha256": "B74CEB227CDB5970A4A780FB22BB4703B9C0383EFD8E3E36EFB7AD9CEF2C7D48"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_primask_a1_O0": {
+      "sha256": "BE608253EA10AF0300F96D0BF45768F13C26C4CB61829889B12BA954FE026AE2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 14.224,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "ED393A80181340503A17C6472FF1E7B093A9D0E61D5716C18AE494DE9BC5504D",
+      "flash_sha256": "830330783E34377CE5BDCEEA2FE533053BC5AA27004C2F73D28896FBC02DFB1E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_primask_a1_O2": {
+      "sha256": "9A56F690CE928F9C475AB91B01EFEC02371FF66E7D48DC737FC7F8DAF9338061",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.093,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "56FFC0FCF027E9996CB64E71FFB4B8D9E0016A70E8AD70854EAE475B4182FA8A",
+      "flash_sha256": "25309595D63944824F0A84FFBFEE4F9A1AD93B14FF7CE8AA189D5AC30BCC02BE"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_primask_a1_O3": {
+      "sha256": "C8338FDCD2EF7982FC1C1B00408E062F04E807738E27BF4DEC41759A16FE3C3E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.024,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "D47F648BB6616AB9984D5887F921323B4F5BAD1026DBE6828786B34A6922C71B",
+      "flash_sha256": "1E5323105B34DEBB6E1392D803279FE4E8F57E190258AE217F71637AA2DE46E0"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_primask_a0_O0": {
+      "sha256": "CAF4A954CCC081A18AA769CD8EA72C90804CF6913A3DFA5A06FEA2CBE0A07538",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 13.71,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "6107695C95FB52595D4BB7C1B648C598DDD85D96E39284F113A792B82C26724F",
+      "flash_sha256": "FAAA499905B03F902303399553323E7805F67D6B9909B31F8CCD546F7CC6CC75"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_primask_a0_O2": {
+      "sha256": "2440E530B44F4DBCFB8B8382074A418EA91AF4CED047ECDF29D9E78C8E29CECD",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 12.063,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "B2FB0F03E40D1A188D7EE08699B801D906C90C835C883DB8E3F68317F06468C0",
+      "flash_sha256": "7D86BA0B4FF02A6CBFA6D59B2F0E73685889B5B7C4AECF18319675AB77AEF4E2"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\matrix_primask_a0_O3": {
+      "sha256": "9FD32F56FC02E2EA73E9731647DAFF4771ECF7E672324F3EA150753068E892EC",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 11.987,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "6091A1FC13AF69F71F1D8F9C8A30A10621A4EE49432FFDAA7CCEB9E2CD900437",
+      "flash_sha256": "D69E6419143B2F3FEAAEA9DED84F1D859D34DACD294B49A7A40523169B22F791"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_basepri_a1_O0": {
+      "sha256": "324BA2CA878D40D7C728B2872A70CB9934F633CCE5864173DEC04091DDEF1858",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.623,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "692B9BF8293F63AB135F2F5AB37140B74F75B6796EFC3806D4CE4DEBE3F6589B",
+      "flash_sha256": "DBECBD186FE051DF96B5CE119CE428DB581AE28F3A367C8D814CAA965DAC02AF"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_basepri_a1_O2": {
+      "sha256": "3B1F36A0037B2B7D6F3E6BBB7D770D9AA999055492B21612EBDD39E29EA33BB5",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.108,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "453523555E05800F6DBE5722516888EE670EFB1D135756A3B0AA79CDCDECB635",
+      "flash_sha256": "8E2C7802FAFFBBAB608E8704A6A66677398121D6F42474FC29885CA40519B792"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_basepri_a1_O3": {
+      "sha256": "2C90C4F0846DD6950A8FC109DD8435C61B855E4AE68DB7EDADB167F1121B8CB2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.124,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "453523555E05800F6DBE5722516888EE670EFB1D135756A3B0AA79CDCDECB635",
+      "flash_sha256": "267203F22B0DEF1C02A9BCEC039B8327820FC549BE483379567FA9A61FF09E17"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_basepri_a0_O0": {
+      "sha256": "6AACB1C2494722A6EFFBDD97F45D68A91B0842E8FE6DE6FC727AD3463147B90E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.162,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "E1EF2F576307C68D2DEB67F8056094734342A25639EE52406CB97644E85E46DE",
+      "flash_sha256": "C4DE8A8B70E98F46C80D9C71043BCC38F139FC44E2730518FB8C9DF647480D6D"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_basepri_a0_O2": {
+      "sha256": "2413B6242F0F055A2903B1B317ECC27847FFEAE935B9FE72E5B478C071E0248C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.055,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "12FBAC637CB108717F583C5E16453E22D456E6422AB246FA411E3E4DBE007A7B",
+      "flash_sha256": "DCDFF0AC619B408A7648E1AAE4FB85AAE5FD5FC569529585FB47DBB3F5FDBDFF"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_basepri_a0_O3": {
+      "sha256": "74744E74FA7217E5CB748A5F0BBBC0F4E806606E069AB40EC484F0D27D4BDA30",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.091,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "6308E91A3517ED2A119761EC58BB9B772E43F4FDB75098088988DFE449684B47",
+      "flash_sha256": "4CCC40ADF7A9734F289A35B5EC3CF9A8DB7520E74412EE9E1FDEF3410A04500E"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_primask_a1_O0": {
+      "sha256": "B2C121C97A8AE5B21CE554EE7E23EA400716F66B5C8A3219A63690100037F75B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.648,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "76505138D51CEF6482A38B62D4B7FA2FC206061F004389B73003877EAAA78902",
+      "flash_sha256": "47B602446313E594C908A811C115FFFD58ECC82F0F8E4DD00673D89D41F206EA"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_primask_a1_O2": {
+      "sha256": "E62798A8EBB484D9678B9BC541B78613C74B86094B0C8BE619560BC850382C21",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.062,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "3877A0388B73922F8FAC30C213B1A9D6C8AF965353A184DBCAE9453F76134C0D",
+      "flash_sha256": "095B95AB603CBBECB88291D273B0C5BA7166200C8952767763F01DF2CCC819ED"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_primask_a1_O3": {
+      "sha256": "7595963E564AE554B09CDC66A0EBE0245306237130D988994E15637ED09CA7AA",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.094,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "3877A0388B73922F8FAC30C213B1A9D6C8AF965353A184DBCAE9453F76134C0D",
+      "flash_sha256": "D7691DB8EF699A2E70DD496A6C4C32660A3D3F89C69F4E7F8426219AB269FF73"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_primask_a0_O0": {
+      "sha256": "208D3CBDD4F90B567C36C3549C5B5DFED2B38D611B621387F165E255D663860A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.156,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "76505138D51CEF6482A38B62D4B7FA2FC206061F004389B73003877EAAA78902",
+      "flash_sha256": "EFD5E40D6622CFEA3E1D5A665920E2133BDF0FCEDB594E4DD44F1A8DC0739BDA"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_primask_a0_O2": {
+      "sha256": "CE028363F957A1002EBC6BBDF36E76CFD5D9CE9693F0D4E0EB9200F75218D2BC",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.036,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "3877A0388B73922F8FAC30C213B1A9D6C8AF965353A184DBCAE9453F76134C0D",
+      "flash_sha256": "AC0EC7EE166A8F32DB748A39975CBDC65C35B5EC544074B73DDF9F87159A7DEE"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\blocking_primask_a0_O3": {
+      "sha256": "B0478E4FDC3C51FE6B41B30CD44AE6C67EE0E2A3A5ABF56A8870E2454A6E6E9E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.065,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "3877A0388B73922F8FAC30C213B1A9D6C8AF965353A184DBCAE9453F76134C0D",
+      "flash_sha256": "5AFFC2CFE41727D78B738F0D9414E58F168BCB10A61FCF8954A70FC9F411956C"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\nesting_basepri_O0": {
+      "sha256": "93860003F5760ECF60314F1480338025A8B7EAEB5FC9F83E84CA4F62C2E7F325",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.284,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C538B9A28E95CCB8EB9D9163B234BE919A6C1ADC577FEE2591A5C293DE70F940",
+      "flash_sha256": "755585E22E0DFF2B5F50E0B847BC08BB36A0FB14DBA9AD051E95E73CBC0F3534"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\nesting_basepri_O2": {
+      "sha256": "78BCD8085AF444A5DE748F3DB13726665FD8839165CB5A5768266A0A64280397",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.196,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C538B9A28E95CCB8EB9D9163B234BE919A6C1ADC577FEE2591A5C293DE70F940",
+      "flash_sha256": "FC4B37295DFBBC196AB2D1C7A2CA378F759F9AD41851E94EB8D9D79A0E291FCA"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\nesting_basepri_O3": {
+      "sha256": "BA77BBC41A13A2F0CA450835DE106CC4F36D75181EF50F6D8862CF84FD8CEB48",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.224,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C538B9A28E95CCB8EB9D9163B234BE919A6C1ADC577FEE2591A5C293DE70F940",
+      "flash_sha256": "EE39900BDBBEC7FB0A7BB560C321B302500417141A98E5C11694B623B005A710"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\nesting_primask_O0": {
+      "sha256": "4E129C905C37B611D257676991A8EA76564793F59ACD6CA97F25C469CABBE22F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.267,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C538B9A28E95CCB8EB9D9163B234BE919A6C1ADC577FEE2591A5C293DE70F940",
+      "flash_sha256": "F1DD9506791D1D3309340053CD3EA1DEB1172BCF173B62DF2AEA55DFDE1720C2"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\nesting_primask_O2": {
+      "sha256": "90310DC7E4CEEDD337CE0D8A2D4871C1A54F9CB25DE17D74D49821FA90D75526",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.96,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C538B9A28E95CCB8EB9D9163B234BE919A6C1ADC577FEE2591A5C293DE70F940",
+      "flash_sha256": "231640B1D5F03FD1045A0A52378866D87EE4D2C26A0A06ACACC8429977150FB1"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\nesting_primask_O3": {
+      "sha256": "55DFB32A3E40D533C906BC08FF30287AE12C082428C988693D74DEEB39239C06",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.223,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C538B9A28E95CCB8EB9D9163B234BE919A6C1ADC577FEE2591A5C293DE70F940",
+      "flash_sha256": "724CBC9961E2F4B6FF8DF17B84562863835BD209487E936859F1CAA31DB44AA5"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c1_p0": {
+      "sha256": "B6A5FFD050A70DDCC1AA7E0E27DD9FDD62C612A5E38756B497B5881728FAAB5F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.892,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1CBE71BE71A52A757446093037A0DB6B9687E37554A5D0DB29AFD76BFAC96ADD",
+      "flash_sha256": "4858A899DEC659A05D5A2DB5B6E7CBD0D02E6E18833014D5EACBE5B850F85526"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c2_p0": {
+      "sha256": "9498FE0AE04CF7F82370CE187B51D123B7B4C96241ADB8C47CC335C04EF114DC",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.915,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "AFD1B6A117BC7BD1E2253C50FA0A354F5243F5E36601FF26D86878AC46C91709",
+      "flash_sha256": "02A152435AE759446F0B78F5D31977509B621B07EC546D313ECC14D4DCBDE508"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c3_p0": {
+      "sha256": "87DF4A1C0C868FAAEE94A6BF6F47D69263C05ECBB95C2E10CCFA9B7863D7632D",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.931,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "E1F03E05BD7869151C3037941413A033C6E9DB6738CEE6228142A8AE5C28543A",
+      "flash_sha256": "FB59B96C722339D1FFC636F34F0B0324A57CC5611582103037444B6234E3CA5B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c4_p0": {
+      "sha256": "100BE08D9B20888B797BA742EA63E903332B4E1DDE04FE37770CC5F771C19849",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.895,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "3A9426D30A0CEA436D08E991A7EFC5F66B9BFAA408CDDAD40D39F044F2E92469",
+      "flash_sha256": "46B34F85964ABAD2B29717427C4D13A9EAFAEAF9847C3DBDCE74B9956F63A44A"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c5_p0": {
+      "sha256": "0D2D9F89B9536F70F2220FA4CEF3DCE5254FACF92A39281A6F14AF12D83EA3C7",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.897,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "DF22B516D594B0000BCFA19F46B8CDCEC9052915A1AD60463C8553751E96B1EB",
+      "flash_sha256": "53C0F0133F13E32073C0654D0F8E91AD2AAD5F2DE9A433CF2A9134D19B899038"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c6_p0": {
+      "sha256": "BAC13F040C6377C1C33B8610CB0DFA9556BF6645D44D6DBCB8634593F7BBD50A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.891,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "34BC38C195319D55200CFF2F09EC582A2F3B99D4D05061EE546C5516EA14871D",
+      "flash_sha256": "DFB4E8CE9B6C84DE47999FF5E4F3354DD383761F7F0596A989653E3F946602F4"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c7_p0": {
+      "sha256": "8B936D29AEB1059C68E99818367EB34118F2B33BCCDDAF397AF3D59E382A41C2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.926,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "FDE0617A4CAF15C44B34AA7F1E777B56F90B8C5721103068B5D12EC954E2A9FD",
+      "flash_sha256": "FC26314F60C9AF3134AD37D99D2A9D9735C0525E566EB1F302515B32336940EC"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c8_p0": {
+      "sha256": "F2092DF5AADD9FA6CE292E3D16B183C17574BB42F6026198DBBDE7040392A5A0",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.936,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "900AD350961FB7B73643EDBEA6411623353D52787400495BA88216C2438F7049",
+      "flash_sha256": "66B47E6B0CE6D166F04F5DFA0A01B59AC22039240B6FC3663DDAB6054E612567"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c9_p0": {
+      "sha256": "03E23ED846928AF95E7F6F9703421E24C20962D6EB1B27D470C74D24F58A380A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.909,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "D0AF34CF0343D3B2473E8A50A7CEB68965B90CA7BFFEDF100586B298DF7F7FA5",
+      "flash_sha256": "59A8C5A7885CB1AAACEB07625D1B0F6235C0816EA8E4346E7937273FD84BB75B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c10_p0": {
+      "sha256": "187FBE5DCF4C313BAEE06DD14847B2B10F306A19789DF8D9420F3CA636429419",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.939,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1A4CBF94C24ABF6E1D932080ABE4B966C4F17DC48AEFF410E2FAB36141DF3A82",
+      "flash_sha256": "D4BC2A49AA90C7A7801C9EAD84DBB51D1474070749F34AB5C1540BA5310D6029"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c11_p0": {
+      "sha256": "FA384BB2454AF74D40D1362F1B877AEB7AC137E6264FC4297FC57ED92F173CAA",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.911,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "5E565E375B5B3083C0D8084686DCD6DF35CB13597C373CF9A1009A0E24E8291C",
+      "flash_sha256": "582C6B3FDE63B7CE95CE83D40D41880BF50EB1C75E51FB67BD28A94A3B5F46E3"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c12_p0": {
+      "sha256": "F05B967CB6A6A83D45BDCB4262E92415351B0ED8FE56C44AFF7CF59078B13C59",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.926,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "EDDCB6297C11FFD8E500F2524B7ED4C0A794611392090BA00ADDD902CFB13566",
+      "flash_sha256": "2BD60133C4E4E3F931B59D5E503F9B2B115D7F4F597E39254C647E95E35C917F"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c13_p0": {
+      "sha256": "D56BA0482BB889D4F1EDE875D407D460F69848A22DD8846A3F38D606D269DB3A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.903,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "B7EC2CE181B455BA35660C8C47E99DF8E1F6FECF8170E519C8BCF243CDF9021D",
+      "flash_sha256": "5B96E1837C414BDD19531986758FE3F30552183C23D4FC27B341CB0443446B6C"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c14_p0": {
+      "sha256": "E06B9F9674F923EA7F1393943F5FAB875CB3378BAE9261189EF63E80707B5FF4",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.915,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C90E88617673F9A65251F71CE838B4F93A1689800D0188C59B7C081E36DA74B1",
+      "flash_sha256": "07CDCF90E73FE822C2ADF3CF5F627D84606F1BAC9DC4C3A720AE053888873EA5"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c1_p4": {
+      "sha256": "2A205B8C33F157EC74D60012CCE00C46728CC8FAB02EF483496175CBA49AEE8C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.909,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "DD8E4556D8E826E02BF86FD0AF0BB01C24F9431C126F70A2293B0C475916A48C",
+      "flash_sha256": "857CFE11AE51B0F5D5F69A33FA9A37A94BE13701E17067CCBBCCA545AB608C43"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c2_p4": {
+      "sha256": "AD22B097EBFB0928AA24A4EC7D1D981A67F022098EBE1B261DD5F4686FEA25C0",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.932,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "FCB51BFEFD6D310D28F2B4C8760FC4242F0978A4DF237D55311842FCF9D89017",
+      "flash_sha256": "A3E17C383F7FA50A0D4C9D0F1F0B1E7AE7DBC5DCFCDE308D0FD90217AD586651"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c3_p4": {
+      "sha256": "DF5F293FDB3A6D23C144884197E45D1AFA925915410F7A79ED05FB2AC2A5C50D",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.921,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "8012FF8742534F2564A71857BB6978AB42627B00D642EBEC17669F53416842C8",
+      "flash_sha256": "7D2818BBE83C63AF165124C3AC3D7F9A7EEA015F64F03CD3B831C91F119BC0E1"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c4_p4": {
+      "sha256": "CBC13BE9FD71D6BAFCCD00104E42BCDE501286B4F74945536B1527211258E7DB",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.925,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "63C2458140155DEAAFB35B7A0A9EC27A59AC9D007651CCD623F7BC98039DF2EA",
+      "flash_sha256": "02A152435AE759446F0B78F5D31977509B621B07EC546D313ECC14D4DCBDE508"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c5_p4": {
+      "sha256": "32389CD08ACF0EB7412A728355BA44F5DB44196E86167B575B3989E404833E10",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.926,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "10674C08B5E48BBEB737CA277DAE3A26431B13B5CB855BD3779F3412BDFA36B3",
+      "flash_sha256": "DA2C7854FACFBB6B81762B6666EDA22B693C70746264CB965441CBA81E827AD9"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c6_p4": {
+      "sha256": "D40801C6E445AED6FEA53AD5DFC80B4B1E98C25DE28A004AE23164E04C65D432",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.966,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "CB84F52E0C6953DF746D0169879CDE4A964113465898C829C63D86D6A5D8E083",
+      "flash_sha256": "26639C68603F103C063A50E355132DD502C01FF6F9F2A9D4224B10743D554FA2"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c7_p4": {
+      "sha256": "696E41D366CD29998A7FFF56B43AE72C7AA04BE6B2E08FAF636FAEAE9556F6BB",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.938,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "2E8735D83FE6FFB1993008B9FE2CD876E7935BF3381D0683326D9DF76A87062A",
+      "flash_sha256": "84652C8FA42B53702F2E00FCC94149825A643FD789B918CD91C11F6FF993348B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c8_p4": {
+      "sha256": "CE8BD92BEA5193D8E62E7ABBD2D0ACBBDCC824CC523DA4E8DCC22D073C09597E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.943,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "78AFFA082785D67CE7F6B16FA5954C6865154B73FF1F37A69EAAD0CEBE031FAB",
+      "flash_sha256": "FCA6DD946FD0712DE2256EB407751ACC080249512DE22841BB4EB2CE80B845FF"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c9_p4": {
+      "sha256": "7302C4E43386A3902DCE174BE37BE7E1A3B9FC8E6C18B469667F1A7753E5A025",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.912,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "395A276FDBCB4383540A9EED4B5FF2A10DBF4366819A45432309FE5A8BE7052F",
+      "flash_sha256": "AA7CC6A26A6CB121FC5B6088A225B788920FC1CB90954A0642AFCA628B207711"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c10_p4": {
+      "sha256": "AC95B251A6AA35DB13D807029FE1EFB569C931651D4B1DA1F7485233118A072E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.924,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "93C5F165D9E1E24301C72C644A9CB3E26105BE0C5303D17AC1CB82280FEFC9FE",
+      "flash_sha256": "33FE7685CC60113F34E417FC96FB5F6DFD9FBBBADF9195A50E7DB78291100D03"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c11_p4": {
+      "sha256": "F7928092C4D2BBB5B2EB0BE5433BF15355E49E49C48EB1508A0E30EE41D049F1",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.931,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "F85769D72CF0A1A702CA8D8B43B4104FFCF6E98426CCAF1C8BBCBB3132335391",
+      "flash_sha256": "F2AEC70637694B4384A16CE690B57AB99B7C519FFF444FAED4B60926B0E18AD7"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c12_p4": {
+      "sha256": "1C138AAF1BADC3EA7E4F300E42429EB1DCFEF8783FF5DEB20C1D9C4EBFBB8962",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.906,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "7B9849FB1F9559E8B0A4D2747D748D689DD8F266898C50FA3EF9B6DB74D3F448",
+      "flash_sha256": "E03785537B341A193CA7599D3D0CDAA58EA0F2718A7E92096322D6A8C6A062FB"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c13_p4": {
+      "sha256": "80EB0B70EE6F61E8732BF4DE5B13350157EBA9F40D3E0A72B17B4D44B3C826BB",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.909,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "207C97D45A13F96B0B70243EE9871399EBB31F058382D56E858D9A5EFFBB9419",
+      "flash_sha256": "7E9FAD1E8D15A2F1CC0DA2F2702D5EC18D0BCDC80BFC8E0E1D874840469C18E3"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c14_p4": {
+      "sha256": "6849C85D5EA455C8281538D2B93BD4FF04FD5476AA9B7551F309DAC5399DCDB1",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.93,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "F051EB740CB9CF3D5F95B3E61991A894766ECCFEA1E4D9519F7D09CE5D4508FC",
+      "flash_sha256": "2E90FD2B04ACF01864C4E8748B2C7B64E6BEB5AC6498721CCB0C20C16EB7176F"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c1_p5": {
+      "sha256": "AE20DE51391EBA78082154BDF689249F5D5F90579A607557D43E06929AD2F5FE",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.918,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1181F90AED4E0FA97C03CC299B70A2354D33B9CE93A3BFD68E3E2791D9C91119",
+      "flash_sha256": "24638D13E323E5AA0519B94ED309E05CEB5E9A2595FDED1FB94DCF0D908D92D1"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c2_p5": {
+      "sha256": "28C4CD82F5036518391EE1DD4B6484249A56C46FDFA1770555D1B6872242963B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.887,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "B22BA3681DECCEF74FD16CB96EA56B415E8B20A586AAB2625AAA14756112BBB4",
+      "flash_sha256": "22EA6A4B219110C4B2919C21D318C11C0C60E398C60249DB552A1258D65AC681"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c3_p5": {
+      "sha256": "89A4047C71FACF37A5E47865E36E772532C1E0C43389B7DF0F91D46C99E1E91B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.911,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "CF3B38A052EA1F77FC664E3EE305F998A3D9828E538BF98B45B36034F824E61E",
+      "flash_sha256": "F6E35A5DF09869697778ED545B964F5CEA658E94DC92A1518AADA76F7A3D3C56"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c4_p5": {
+      "sha256": "C15EAD5F40F9C3C69713D1676A701308B6F51BFE564F6D1378D779FF27CB6190",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.938,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "DB8AFA28988646D32A7FA25D0A0D58EC87C0A773255242B07CDE1E3C8AE07E8F",
+      "flash_sha256": "68B4E50D83513A01E643BB88CA79896E60B8D1413F2D01AD62ED59BA492B218B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c5_p5": {
+      "sha256": "7A891DD8606F20E4111319013BEA657E17B47FE04E9024760E7AAD5B1B51A76B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.909,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "9AF4F838170211A83138BA77F0B85037BDDD2F62CCB1C5E422947522CBBDD73A",
+      "flash_sha256": "0E17F973D92572220602B196732687A894AD1590C69A4A2CE8DB8F570581E4F2"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c6_p5": {
+      "sha256": "CD9C5AF5E0E1D15C4B2B2100FA4AEC258A3E17A8F2D019887234EF2568A90F06",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.905,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "480A6C25A17090BD14D6672A2395940D486C90B64FF39487BFCD76DB0AB5CA8A",
+      "flash_sha256": "4E00D1232E1B585C8971473B4B11C772DF1DA6CE12EC6206644E323A0A2668D4"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c7_p5": {
+      "sha256": "7647A21E1C3819FB6EB09C017EE9B44CAD91B721ACF0DFBD249074A7578817CD",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.939,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "320CFBC9327F4E0F306BD9B9528B5CCF9A9B78930A993C9194270A2D31BBD677",
+      "flash_sha256": "72814EBE39B29830FC3D63250ADE3A4C12EEC40580121C96112BFC802F824075"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c8_p5": {
+      "sha256": "08D528C96C018C45FCAED1D2B11877CC164FAC3414DEF33A0E4036A4D60C3C5A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.927,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "FFABEE74030FA65FC614B5A1819FA4876FA03890345D24E0AA08FACB28C7D99B",
+      "flash_sha256": "2477EADFCA4752F5FA7ADCD353BAC53F616BDE5E807F67DA6B67D8B67F1FEE23"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c9_p5": {
+      "sha256": "1C9E26B604AB3FE648A8F7CF08D873C3224466995973CA35A74761A9A9CF07D2",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.923,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "711D7833F7234D9EFBADB4BB9B5E702C1FFB6F02F27C4F44774260CE3C3892E1",
+      "flash_sha256": "EC1FC79067B3FCF28CD8C119D52879DA0917B6DE8AB5E11F1AC716DF48F538F8"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c10_p5": {
+      "sha256": "DCA20583C0E1DAF5FD47638AE479A2E6F77E26E68220BE4717EDCF5E18A660DE",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.926,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "3267EC8B9B26DE2B189954D7AD0410F57245FC53E8D1C1153FACDD5B436C1EDB",
+      "flash_sha256": "13FEBAB83CFD3CB176614624F58EABF09D03A7D1482FF9137F9527CCFC3D10A3"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c11_p5": {
+      "sha256": "69A3DE8352BEFCBA1F42083021864B38AE571552483844B22D02207897CE078E",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.931,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C07AD088A6DEB5483C871700DEF6A85E4C5A38FF03E4781BC827D96E7AC93B09",
+      "flash_sha256": "F36B5EEF55878BA4B69F637972C12CB0FAE85DC26B87FB7446F93B7A6B769F01"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c12_p5": {
+      "sha256": "29196BFD7822DC1CC9AFB9C8746EC88D158164EE907C04926267C6D2DF4EEFC5",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.88,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "C38296ED56CC4CF5C5A6DCC045D4A99FA18A332CE07AF775E28C0D3A929CF5E5",
+      "flash_sha256": "5647A65337B2FCADE035E1157CAFE8C2038954B714D2FC35A9C1F156876CD8F4"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c13_p5": {
+      "sha256": "D5990373DDA54821420EE1FBD58510E67586688EAF781E0E0BDA2B1D40583255",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.886,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "13DF5C552F347679FFFB4618875CB258B7A3F9AFEB929179E20C1A733EB439EB",
+      "flash_sha256": "A2AEA320B667010ADA3F8A38B2DAE2E94ED13394771C0F1606B34FA001F14EE1"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c14_p5": {
+      "sha256": "0B920FA9E5EDFFC9F40062CB359C37FB81168331F6A3B388A8C4D43C4BBD9FE3",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.897,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "549D30BD112859E9C530C894409464B384DFEE92942FDB8C48C6BBB3EDE79478",
+      "flash_sha256": "A44B809BEB0D9728F66402E834C04E0D3885082AEBE32562F305081C10EB56C4"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c15_p0": {
+      "sha256": "CC803DDBCDFDD36BC76AFA41544ACE4B749A785C28EC9080A827AFA29E460B28",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.898,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "0972725249150939FA894C843B3ED33263566B633216FB762BEA4BCB0B3DF2F0",
+      "flash_sha256": "515B488FA84E6380D76BD53B99BB3F5AFFD24B7C32702D7FC86E9C3112A12673"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\port\\guard_c16_p0": {
+      "sha256": "5F428FF70A4407E37462347005001F2CEB550A493870E29F4CA5251FC541DF9B",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 1.906,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "6CF1AAFB060AC97D5C5ACA5008BD61EF571FD805B847DD3CB6C3D1A620D1722E",
+      "flash_sha256": "1E0FF2E941CD230651D57AC95AD3919738560EA5A5481BDC82CE420FB36C66FA"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_audit": {
+      "sha256": "1512926BB35E12E8695BCFC0865F5ABE30C2C12B1AB8941513C9793AF8804D0C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 4.741,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "FB927867CA8C48AA9A92C58116ACB92F74FB096BFCE1385225A3CAFD5ED3CDD2",
+      "flash_sha256": "A3CF3B8291967AC73C84F899A52519DFCDCB962B23EF9747AB22F5EAADC8A456"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_selftest": {
+      "sha256": "16A7D13D7316DCD42044DC0AC99474061191D48B9662A447D97F8D29258ED310",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 16.295,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "AE84AB4E066EA055E28C9E1631135BA46CECC9F5C403C4ED20A8447E38DE62DB",
+      "flash_sha256": "04203FBC0D7A5819CE5A574C05CCB3B60E5E4E324C06FC48385661C6D4DFD474"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_boundary": {
+      "sha256": "74BD223156C68FAF8FDAEE52CAFA5AFAC600A0A0CAC0EC2F5EE4E1164C33B36F",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.526,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1969BA293E418362E873E318DD45D1BBE3E86B7185DA584F46E51E640B06C6EA",
+      "flash_sha256": "5EDB14C59125F0FB4302F3A608EE3FA439B835AF50683B6976934E322E64AF56"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_lowlevel": {
+      "sha256": "2A689B482978DAAA99B5700224A79974B3961677FD752452ADE9D227FAE168C3",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 3.387,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "E4550C5ECFCD4EE628507CB468918131C3778520B96CD265C1B22B2D56140470",
+      "flash_sha256": "81E6A99551D9170B0F565D108BCCEA831F25B7C6F85BD493260C439D2049FAC0"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_nohook_bench": {
+      "sha256": "1692BDE667EF32CD0EC5C706042B82E74D7426CAB01343196551369816FC6367",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 2.892,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "D213D1EAFA131D3564887EFC777FE534471532A6F38066EF3E44080F21AE7322",
+      "flash_sha256": "C4EDC46C6F599A99E308F03B888ED0209541682B4AA11D643D9AFBF71F083A00"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_production_cap1": {
+      "sha256": "011A7CA6BD3E0EC55A7809B752F967C71E69A74B4D950B6A9B3D041A40221E21",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 33.567,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "1D407207DE126BB28C69C6AAB05E8340B467D0C47031EEDBECD9C402F60EEA7C",
+      "flash_sha256": "F3AF51FF1F241042538B767FB4C916EA8F6F36A380C4FD9C4A0E6101AA4F0BAB"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_production_cap8": {
+      "sha256": "762885B2FF860B9AABD9A928F77C0E1CD7C63CB1C7F7D337922C15C528C7A68A",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 33.608,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "CD40B3BB7BC0E423106F0CA22BDD98199F87209FC52AE1A6261EE9E22BEF3D47",
+      "flash_sha256": "1E6B4C6EF5EE96B9E7D209ED1AA775CEC83646F729C7B4086784890C672F8A73"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_production_cap32": {
+      "sha256": "2E0E99937A4130360776083091D166C371BACA40A6D58B9F1A4D764ACDF16510",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 33.612,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "9B10E61D4778C2CF0E7D6CCADB742ED979FA52F6ED28159ABE0101354D234B04",
+      "flash_sha256": "86A73429C18B5C5F40A681CD7D0FB6A78CE7A4A6F260A204B43AE1AD6FE8D1DD"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\regression\\final_production_negative": {
+      "sha256": "80712B22106C496ACB460BCB399A86C093B6E2199FA28166DB1C40CC5B9C72B5",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 9.634,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "B5F589ED6915B7178DD6F0ECC00A896AA0E251AC1692DC50150E29BB16BDEF7E",
+      "flash_sha256": "06837CB635CE62E2244A1D21C930832150C662B4D8E0D798CF36BCAE2062813F"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\soak\\final_production_soak900": {
+      "sha256": "FF61059088A6777DC80CCE66ECD6626DEBD887F5024B345DB1B369101A536026",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 903.609,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "86F7114C83FB1F5CBF35C77AC96CEE5F074B2F89F42D3A728D432BD4519674FE",
+      "flash_sha256": "4BB50374E98CFF0160EDF2A16DEE970F8CB4B90D953B6CE2DE4F8E122BD7B76B"
+    },
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\adversarial_20261025\\evidence\\daily\\final_daily": {
+      "sha256": "4AAEC8B4E62FA8E1AF34408BB70C58E75DBF95EED6AE7F87F284731374AE2B5C",
+      "port": "COM3",
+      "baud": 115200,
+      "flashed": true,
+      "duration_seconds": 6.018,
+      "elf_hash_checked": true,
+      "exit_isb_checked": false,
+      "log_sha256": "D25EAE6CEDC0950F64DE48EBB794891545E813E05D217ECA3C64F0BF4E57E534",
+      "flash_sha256": "68DD776BF58694284C9589070A511E1B917CC8AA3E8687E370D632D6EDD022F9"
+    }
+  },
+  "details": {
+    "baseline:mutex_chain_baseline": {
+      "pass": 801,
+      "fail": 109,
+      "summary": "AM|SUMMARY|pass=801 fail=109 cases=15"
+    },
+    "baseline:object_lifetime_baseline": {
+      "pass": 8,
+      "fail": 72,
+      "summary": "OF|SUMMARY|pass=8 fail=72 cases=80"
+    },
+    "baseline:mutex_boundary_baseline": {
+      "pass": 84,
+      "fail": 3,
+      "summary": "AMB|SUMMARY|pass=84 fail=3"
+    },
+    "baseline:wait_mix_baseline": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120"
+    },
+    "matrix:am_basepri_a1_O0": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_basepri_a1_O2": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_basepri_a1_O3": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_basepri_a0_O0": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_basepri_a0_O2": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_basepri_a0_O3": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_primask_a1_O0": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_primask_a1_O2": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_primask_a1_O3": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_primask_a0_O0": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_primask_a0_O2": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:am_primask_a0_O3": {
+      "pass": 910,
+      "fail": 0,
+      "summary": "AM|SUMMARY|pass=910 fail=0 cases=15",
+      "source_files": 130
+    },
+    "matrix:aw_basepri_a1_O0": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_basepri_a1_O2": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_basepri_a1_O3": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_basepri_a0_O0": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_basepri_a0_O2": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_basepri_a0_O3": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_primask_a1_O0": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_primask_a1_O2": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_primask_a1_O3": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_primask_a0_O0": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_primask_a0_O2": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:aw_primask_a0_O3": {
+      "pass": 1600,
+      "fail": 0,
+      "summary": "AW|SUMMARY|pass=1600 fail=0 rounds=8 phases=73 irq_requests=120",
+      "source_files": 130
+    },
+    "matrix:of_basepri_a1_O0": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_basepri_a1_O2": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_basepri_a1_O3": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_basepri_a0_O0": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_basepri_a0_O2": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_basepri_a0_O3": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_primask_a1_O0": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_primask_a1_O2": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_primask_a1_O3": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_primask_a0_O0": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_primask_a0_O2": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:of_primask_a0_O3": {
+      "pass": 80,
+      "fail": 0,
+      "summary": "OF|SUMMARY|pass=80 fail=0 cases=80",
+      "source_files": 130
+    },
+    "matrix:amb_basepri_a1_O0": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_basepri_a1_O2": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_basepri_a1_O3": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_basepri_a0_O0": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_basepri_a0_O2": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_basepri_a0_O3": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_primask_a1_O0": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_primask_a1_O2": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_primask_a1_O3": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_primask_a0_O0": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_primask_a0_O2": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix:amb_primask_a0_O3": {
+      "pass": 87,
+      "fail": 0,
+      "summary": "AMB|SUMMARY|pass=87 fail=0",
+      "source_files": 130
+    },
+    "matrix_index": {
+      "expected": 48,
+      "indexed": 48
+    },
+    "registry:registry_basepri_a1_O0": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_basepri_a1_O2": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_basepri_a1_O3": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_basepri_a0_O0": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_basepri_a0_O2": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_basepri_a0_O3": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_primask_a1_O0": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_primask_a1_O2": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_primask_a1_O3": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_primask_a0_O0": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_primask_a0_O2": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry:registry_primask_a0_O3": {
+      "pass": 259,
+      "fail": 0,
+      "cases": 2,
+      "summary": "AR|SUMMARY|pass=259 fail=0 checks=259 cases=2",
+      "max_registered_mutexes": 8,
+      "max_scratch_owners_observed": 9
+    },
+    "registry_index": {
+      "expected": 12,
+      "indexed": 12,
+      "expected_checks_per_image": 259
+    },
+    "port:matrix_basepri_a1_O0": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 43351,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=622 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_basepri_a1_O2": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 14283,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=622 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_basepri_a1_O3": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 11508,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=622 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_basepri_a0_O0": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 43355,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=622 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_basepri_a0_O2": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 14278,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=622 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_basepri_a0_O3": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 11503,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=622 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_primask_a1_O0": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 41915,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=620 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_primask_a1_O2": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 12910,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=620 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_primask_a1_O3": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 10709,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=620 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_primask_a0_O0": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 41920,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=620 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_primask_a0_O2": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 12911,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=620 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:matrix_primask_a0_O3": {
+      "cases": 600,
+      "matrix_failures": 0,
+      "async_pairs": 1000000,
+      "async_irqs": 10706,
+      "mask_leaks": 0,
+      "summary": "BP|SUMMARY|pass=620 fail=0 cases=600 matrix_fail=0"
+    },
+    "port:blocking_basepri_a1_O0": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_basepri_a1_O2": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_basepri_a1_O3": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_basepri_a0_O0": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_basepri_a0_O2": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_basepri_a0_O3": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_primask_a1_O0": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_primask_a1_O2": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_primask_a1_O3": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_primask_a0_O0": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_primask_a0_O2": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:blocking_primask_a0_O3": {
+      "attempts": 500,
+      "false_ok": 0,
+      "kinds": [
+        "event",
+        "notify",
+        "queue_recv",
+        "queue_send",
+        "sem"
+      ],
+      "summary": "BLOCK|SUMMARY|pass=516 fail=0 attempts=500"
+    },
+    "port:nesting_basepri_O0": {
+      "cases": 20,
+      "assertions_enabled": false
+    },
+    "port:nesting_basepri_O2": {
+      "cases": 20,
+      "assertions_enabled": false
+    },
+    "port:nesting_basepri_O3": {
+      "cases": 20,
+      "assertions_enabled": false
+    },
+    "port:nesting_primask_O0": {
+      "cases": 20,
+      "assertions_enabled": false
+    },
+    "port:nesting_primask_O2": {
+      "cases": 20,
+      "assertions_enabled": false
+    },
+    "port:nesting_primask_O3": {
+      "cases": 20,
+      "assertions_enabled": false
+    },
+    "port:guard_c1_p0": {
+      "case": 1,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c2_p0": {
+      "case": 2,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c3_p0": {
+      "case": 3,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c4_p0": {
+      "case": 4,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c5_p0": {
+      "case": 5,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c6_p0": {
+      "case": 6,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c7_p0": {
+      "case": 7,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c8_p0": {
+      "case": 8,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c9_p0": {
+      "case": 9,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c10_p0": {
+      "case": 10,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c11_p0": {
+      "case": 11,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c12_p0": {
+      "case": 12,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c13_p0": {
+      "case": 13,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c14_p0": {
+      "case": 14,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c1_p4": {
+      "case": 1,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c2_p4": {
+      "case": 2,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c3_p4": {
+      "case": 3,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c4_p4": {
+      "case": 4,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c5_p4": {
+      "case": 5,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c6_p4": {
+      "case": 6,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c7_p4": {
+      "case": 7,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c8_p4": {
+      "case": 8,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c9_p4": {
+      "case": 9,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c10_p4": {
+      "case": 10,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c11_p4": {
+      "case": 11,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c12_p4": {
+      "case": 12,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c13_p4": {
+      "case": 13,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c14_p4": {
+      "case": 14,
+      "priority": 4,
+      "expected_assertion": true
+    },
+    "port:guard_c1_p5": {
+      "case": 1,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c2_p5": {
+      "case": 2,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c3_p5": {
+      "case": 3,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c4_p5": {
+      "case": 4,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c5_p5": {
+      "case": 5,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c6_p5": {
+      "case": 6,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c7_p5": {
+      "case": 7,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c8_p5": {
+      "case": 8,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c9_p5": {
+      "case": 9,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c10_p5": {
+      "case": 10,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c11_p5": {
+      "case": 11,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c12_p5": {
+      "case": 12,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c13_p5": {
+      "case": 13,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c14_p5": {
+      "case": 14,
+      "priority": 5,
+      "expected_assertion": false
+    },
+    "port:guard_c15_p0": {
+      "case": 15,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port:guard_c16_p0": {
+      "case": 16,
+      "priority": 0,
+      "expected_assertion": true
+    },
+    "port_matrix": {
+      "expected": 74,
+      "indexed": 74
+    },
+    "strict_compile": {
+      "compilations": 97,
+      "stack_usage_files": 96,
+      "pi_graph_frames": [
+        {
+          "tag": "m0_a0_O0_rtos_mutex",
+          "frame_bytes": 112
+        },
+        {
+          "tag": "m0_a0_O2_rtos_mutex",
+          "frame_bytes": 128
+        },
+        {
+          "tag": "m0_a0_O3_rtos_mutex",
+          "frame_bytes": 160
+        },
+        {
+          "tag": "m0_a1_O0_rtos_mutex",
+          "frame_bytes": 112
+        },
+        {
+          "tag": "m0_a1_O2_rtos_mutex",
+          "frame_bytes": 128
+        },
+        {
+          "tag": "m0_a1_O3_rtos_mutex",
+          "frame_bytes": 136
+        },
+        {
+          "tag": "m1_a0_O0_rtos_mutex",
+          "frame_bytes": 112
+        },
+        {
+          "tag": "m1_a0_O2_rtos_mutex",
+          "frame_bytes": 128
+        },
+        {
+          "tag": "m1_a0_O3_rtos_mutex",
+          "frame_bytes": 160
+        },
+        {
+          "tag": "m1_a1_O0_rtos_mutex",
+          "frame_bytes": 112
+        },
+        {
+          "tag": "m1_a1_O2_rtos_mutex",
+          "frame_bytes": 128
+        },
+        {
+          "tag": "m1_a1_O3_rtos_mutex",
+          "frame_bytes": 136
+        }
+      ],
+      "cm7_hardware_test": false
+    },
+    "regression:final_audit": {
+      "pass": 117,
+      "fail": 0
+    },
+    "regression:final_selftest": {
+      "pass": 432,
+      "fail": 0,
+      "info": 10,
+      "total": 442
+    },
+    "regression:final_boundary": {
+      "pass": 103,
+      "fail": 0
+    },
+    "regression:final_lowlevel": {
+      "context_pass": 24,
+      "perf_probe_pass": 22,
+      "fail": 0
+    },
+    "regression:final_nohook_bench": {
+      "critical_pair_cycles": 40,
+      "benchmarks": {
+        "0": {
+          "name": "critical_pair",
+          "N": 1,
+          "avg": 40,
+          "min": 40,
+          "max": 40
+        },
+        "1": {
+          "name": "yield_switch",
+          "N": 1,
+          "avg": 238,
+          "min": 238,
+          "max": 238
+        },
+        "2": {
+          "name": "sem_roundtrip",
+          "N": 1,
+          "avg": 1693,
+          "min": 1693,
+          "max": 1693
+        },
+        "3": {
+          "name": "sem_wake_latency",
+          "N": 1000,
+          "avg": 489,
+          "min": 488,
+          "max": 795
+        },
+        "4": {
+          "name": "queue_send_wake",
+          "N": 5000,
+          "avg": 579,
+          "min": 575,
+          "max": 876
+        },
+        "5": {
+          "name": "task_create_del",
+          "N": 1,
+          "avg": 6456,
+          "min": 6456,
+          "max": 6456
+        },
+        "6": {
+          "name": "delay1_period",
+          "N": 1,
+          "avg": 168000,
+          "min": 168000,
+          "max": 168000
+        },
+        "7": {
+          "name": "isr_wake_latency",
+          "N": 100,
+          "avg": 553,
+          "min": 549,
+          "max": 619
+        }
+      },
+      "scope": "same dated F446 O2 image measurement; not WCET"
+    },
+    "functional_index": {
+      "captures": 5
+    },
+    "regression:final_production_cap1": {
+      "seconds": 30,
+      "queue_capacity": 1,
+      "seed": 1,
+      "negative_control": false,
+      "successful_messages": 65557,
+      "consumed_messages": 65557,
+      "semaphore": {
+        "accepted": 60201,
+        "taken0": 30085,
+        "taken1": 30084,
+        "pending": 32,
+        "overflow": 12996
+      },
+      "coverage": {
+        "queue_recv_waiters": 4,
+        "queue_send_waiters": 4,
+        "sem_waiters": 2,
+        "lease_waiters": 2,
+        "event_waiters": 3,
+        "mutex_waiters": 4,
+        "pi_observed": 1574,
+        "high_full": 9674,
+        "recovery_empty": 9800
+      },
+      "high_irq": {
+        "entries": 557411,
+        "natural": 556834,
+        "nested": 19583,
+        "triple": 682,
+        "forced_requests": 582,
+        "forced_observed": 582,
+        "nonzero_samples": 45975,
+        "errors": 0,
+        "running": 0,
+        "restored": 1,
+        "mismatch": 0,
+        "stop_pending": "0/0",
+        "restore_pending": 0,
+        "sr": 0,
+        "reload_polls": "2/2",
+        "reload_timeouts": 0
+      },
+      "safe_mask_checks": 222255,
+      "non_delivery_irq_entries": 0,
+      "summary": "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    "regression:final_production_cap8": {
+      "seconds": 30,
+      "queue_capacity": 8,
+      "seed": 305419896,
+      "negative_control": false,
+      "successful_messages": 65942,
+      "consumed_messages": 65942,
+      "semaphore": {
+        "accepted": 60200,
+        "taken0": 30085,
+        "taken1": 30084,
+        "pending": 31,
+        "overflow": 12996
+      },
+      "coverage": {
+        "queue_recv_waiters": 4,
+        "queue_send_waiters": 4,
+        "sem_waiters": 2,
+        "lease_waiters": 2,
+        "event_waiters": 3,
+        "mutex_waiters": 4,
+        "pi_observed": 1562,
+        "high_full": 9479,
+        "recovery_empty": 9779
+      },
+      "high_irq": {
+        "entries": 557405,
+        "natural": 556832,
+        "nested": 19984,
+        "triple": 675,
+        "forced_requests": 577,
+        "forced_observed": 577,
+        "nonzero_samples": 46228,
+        "errors": 0,
+        "running": 0,
+        "restored": 1,
+        "mismatch": 0,
+        "stop_pending": "0/0",
+        "restore_pending": 0,
+        "sr": 0,
+        "reload_polls": "2/2",
+        "reload_timeouts": 0
+      },
+      "safe_mask_checks": 222525,
+      "non_delivery_irq_entries": 0,
+      "summary": "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    "regression:final_production_cap32": {
+      "seconds": 30,
+      "queue_capacity": 32,
+      "seed": 2779096485,
+      "negative_control": false,
+      "successful_messages": 65960,
+      "consumed_messages": 65960,
+      "semaphore": {
+        "accepted": 60201,
+        "taken0": 30085,
+        "taken1": 30084,
+        "pending": 32,
+        "overflow": 12995
+      },
+      "coverage": {
+        "queue_recv_waiters": 4,
+        "queue_send_waiters": 4,
+        "sem_waiters": 2,
+        "lease_waiters": 2,
+        "event_waiters": 3,
+        "mutex_waiters": 4,
+        "pi_observed": 1650,
+        "high_full": 9471,
+        "recovery_empty": 9772
+      },
+      "high_irq": {
+        "entries": 557392,
+        "natural": 556830,
+        "nested": 19544,
+        "triple": 665,
+        "forced_requests": 568,
+        "forced_observed": 568,
+        "nonzero_samples": 46043,
+        "errors": 0,
+        "running": 0,
+        "restored": 1,
+        "mismatch": 0,
+        "stop_pending": "0/0",
+        "restore_pending": 0,
+        "sr": 0,
+        "reload_polls": "2/2",
+        "reload_timeouts": 0
+      },
+      "safe_mask_checks": 222517,
+      "non_delivery_irq_entries": 0,
+      "summary": "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    "regression:final_production_negative": {
+      "seconds": 6,
+      "queue_capacity": 8,
+      "seed": 1,
+      "negative_control": true,
+      "successful_messages": 13385,
+      "consumed_messages": 13386,
+      "semaphore": {
+        "accepted": 12268,
+        "taken0": 6118,
+        "taken1": 6117,
+        "pending": 33,
+        "overflow": 2586
+      },
+      "coverage": {
+        "queue_recv_waiters": 4,
+        "queue_send_waiters": 4,
+        "sem_waiters": 2,
+        "lease_waiters": 2,
+        "event_waiters": 3,
+        "mutex_waiters": 3,
+        "pi_observed": 330,
+        "high_full": 1827,
+        "recovery_empty": 1967
+      },
+      "high_irq": {
+        "entries": 113131,
+        "natural": 113012,
+        "nested": 4070,
+        "triple": 143,
+        "forced_requests": 120,
+        "forced_observed": 120,
+        "nonzero_samples": 9426,
+        "errors": 0,
+        "running": 0,
+        "restored": 1,
+        "mismatch": 0,
+        "stop_pending": "0/0",
+        "restore_pending": 0,
+        "sr": 0,
+        "reload_polls": "2/2",
+        "reload_timeouts": 0
+      },
+      "safe_mask_checks": 45089,
+      "non_delivery_irq_entries": 0,
+      "summary": "STRESS|SUMMARY|pass=163 fail=3 worker_errors=1"
+    },
+    "production_index": {
+      "captures": 4
+    },
+    "regression:final_production_soak900": {
+      "seconds": 900,
+      "queue_capacity": 8,
+      "seed": 3735928559,
+      "negative_control": false,
+      "successful_messages": 1973927,
+      "consumed_messages": 1973927,
+      "semaphore": {
+        "accepted": 1800201,
+        "taken0": 900085,
+        "taken1": 900084,
+        "pending": 32,
+        "overflow": 390868
+      },
+      "coverage": {
+        "queue_recv_waiters": 4,
+        "queue_send_waiters": 4,
+        "sem_waiters": 2,
+        "lease_waiters": 2,
+        "event_waiters": 3,
+        "mutex_waiters": 4,
+        "pi_observed": 47468,
+        "high_full": 284761,
+        "recovery_empty": 293123
+      },
+      "high_irq": {
+        "entries": 16684964,
+        "natural": 16667936,
+        "nested": 597111,
+        "triple": 20206,
+        "forced_requests": 17173,
+        "forced_observed": 17173,
+        "nonzero_samples": 1380921,
+        "errors": 0,
+        "running": 0,
+        "restored": 1,
+        "mismatch": 0,
+        "stop_pending": "0/0",
+        "restore_pending": 0,
+        "sr": 0,
+        "reload_polls": "2/2",
+        "reload_timeouts": 0
+      },
+      "safe_mask_checks": 6658682,
+      "non_delivery_irq_entries": 1,
+      "summary": "STRESS|SUMMARY|pass=165 fail=0 worker_errors=0"
+    },
+    "soak_index": {
+      "captures": 1
+    },
+    "final_sources": {
+      "files": 138,
+      "main_sha256": "32C1E6F3D50C754A8E09DB169982551AE1CB4828760662AB106BDEE482012874"
+    },
+    "restoration": {
+      "restored": true,
+      "main_sha256": "32C1E6F3D50C754A8E09DB169982551AE1CB4828760662AB106BDEE482012874",
+      "template_pairs": 8
+    },
+    "cleanup": {
+      "historical_deleted_files": 277,
+      "historical_deleted_bytes": 13668514,
+      "historical_planned_bytes_legacy_field": 0,
+      "final_deleted_files": 200,
+      "final_deleted_bytes": 1008343,
+      "unique_targets_absent": 477,
+      "tracked_paths_deleted": 0,
+      "git_index_version": 2,
+      "retained_identical_build_logs": 5,
+      "retained_identical_stack_records": 96
+    }
+  },
+  "limits": [
+    "Finite tests do not prove absence of all bugs.",
+    "F446 Cortex-M4 hardware; Cortex-M7 compilation only.",
+    "USB contracts do not establish physical USB bus functionality.",
+    "Recursion overflow uses explicit boundary injection; cycle and handoff use public APIs.",
+    "25 existing unused main.c demo declarations are allowed per audit image; fixtures compile with -Werror.",
+    "Compiler stack frames do not establish total call-chain or interrupt WCET bounds."
+  ]
+}
