@@ -18,6 +18,15 @@ extern "C" {
 
 /* ============================== 阻塞许可守卫 ============================== */
 
+/* Dedicated HIL builds may interrupt the pre-exclusion liveness window. */
+#if defined(RTOS_HIL_OBJECT_LIFETIME)
+void rtos_hil_object_access_hook(const void *object, uint32_t site);
+#define RTOS_INTERNAL_OBJECT_ACCESS_HOOK(object, site) \
+    rtos_hil_object_access_hook((object), (site))
+#else
+#define RTOS_INTERNAL_OBJECT_ACCESS_HOOK(object, site) ((void)0)
+#endif
+
 /**
  * @brief 判断当前是否允许把任务置入阻塞态。
  *

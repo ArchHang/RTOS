@@ -153,7 +153,14 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         return RTOS_ERR_ISR;
     }
 
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(queue, 3U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (queue->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
 
     /* 情况1: 队列有接收等待者 -> 零拷贝直传(跳过入队，仅 1 次拷贝)
      * 接收者仅在队列空时阻塞，故 recv_wait_head!=NULL 必有 count==0，
@@ -226,6 +233,10 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
      *     这优于错误返回 RTOS_ERR_TIMEOUT(任务并未超时, 只是槽位被偷)。 */
     for (;;) {
         RTOS_PORT_ENTER_CRITICAL();
+        if (queue->is_initialized == 0U) {
+            RTOS_PORT_EXIT_CRITICAL();
+            return RTOS_ERR_PARAM;
+        }
         if (queue->count < queue->capacity) {
             queue_storage_push(queue, item, (uint8_t)to_front);
             queue->count++;
@@ -268,7 +279,14 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         return RTOS_ERR_ISR;
     }
 
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(queue, 4U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (queue->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
 
     /* 情况1: 队列有消息 -> 直接出队 */
     if (queue->count > 0U) {
@@ -319,6 +337,10 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
     /* 重试出队: 若消息被偷则重新阻塞, 而非返回错误 */
     for (;;) {
         RTOS_PORT_ENTER_CRITICAL();
+        if (queue->is_initialized == 0U) {
+            RTOS_PORT_EXIT_CRITICAL();
+            return RTOS_ERR_PARAM;
+        }
         if (queue->count > 0U) {
             queue_storage_pop(queue, item);
             queue->count--;

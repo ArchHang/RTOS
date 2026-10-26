@@ -10,7 +10,11 @@
  *          RTOS_CONFIG_HEAP_SIZE 字节, 不依赖 C 标准库 malloc。
  *
  *          线程安全: 内部使用临界区(BASEPRI)保护空闲链表,
- *          可在任务上下文与中断上下文(短时)中调用。建议仅在任务上下文使用。
+ *          分配、释放及最大单块查询仅允许任务上下文或系统调用级中断调用。
+ *          BASEPRI 配置下, 中断优先级数值必须 >=
+ *          RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY(默认 NVIC 优先级 5~15)。
+ *          优先级 0~4 的中断禁止调用这些操作; 关闭断言后仍须遵守此契约。
+ *          遍历耗时与堆形状有关, 建议仅在任务上下文使用。
  *
  *          块布局(已对齐):
  *            ┌──────────┐
@@ -36,6 +40,7 @@ extern "C" {
  * @brief 初始化堆。
  * @details 使用内部静态缓冲区(RTOS_CONFIG_HEAP_SIZE 字节)构建空闲链表。
  *          必须在 rtos_init() 中调用一次, 之后 rtos_heap_alloc/free 可用。
+ *          仅供启动阶段调用, 不允许与运行中的堆操作并发。
  *          重复调用会被忽略(返回 RTOS_OK)。
  */
 rtos_status_t rtos_heap_init(void);
@@ -45,7 +50,8 @@ rtos_status_t rtos_heap_init(void);
  * @param size 请求字节数, 内部向上对齐到 8 字节边界。
  * @return 成功返回 8 字节对齐的指针; 失败(堆空/size=0)返回 NULL。
  *
- * @note 线程安全, 可在任务上下文调用。中断中调用需谨慎(临界区开销)。
+ * @note 线程安全, ISR 调用须满足本模块的系统调用优先级约束。
+ *       临界区包含 O(n) 遍历, 建议在任务上下文调用。
  */
 void *rtos_heap_alloc(uint32_t size);
 
@@ -53,6 +59,7 @@ void *rtos_heap_alloc(uint32_t size);
  * @brief 释放 rtos_heap_alloc 返回的指针。
  * @param ptr 之前分配的指针, NULL 时无操作。
  * @note 释放后会与相邻空闲块合并以减少碎片。
+ *       ISR 调用须满足本模块的系统调用优先级约束。
  */
 void rtos_heap_free(void *ptr);
 
@@ -77,7 +84,8 @@ uint32_t rtos_heap_get_free(void);
  *          (见 rtos_task_create 的边界修复说明)。
  *
  * @note 本函数在临界区内遍历块链, 复杂度 O(空闲块数), 与 rtos_heap_alloc
- *       同级; 仅供创建/校验等非热路径使用。
+ *       同级; 仅供创建/校验等非热路径使用。ISR 调用须满足本模块的
+ *       系统调用优先级约束, 关闭断言不放宽该约束。
  */
 uint32_t rtos_heap_get_max_alloc(void);
 

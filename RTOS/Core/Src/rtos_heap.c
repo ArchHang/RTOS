@@ -34,6 +34,7 @@
 #include "rtos_heap.h"
 #include "rtos_port.h"
 #include "rtos_config.h"
+#include "rtos_task.h" /* rtos_assert_fail declaration for ISR API guards */
 #include <string.h>
 
 /* ============================== 内部常量与类型 ============================== */
@@ -200,6 +201,7 @@ rtos_status_t rtos_heap_init(void)
 
 void *rtos_heap_alloc(uint32_t size)
 {
+    RTOS_ASSERT_ISR_OK();
     if (!s_inited || (size == 0U)) {
         return NULL;
     }
@@ -255,6 +257,7 @@ void rtos_heap_free(void *ptr)
     if (ptr == NULL) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     if (!s_inited) {
         return;
     }
@@ -298,6 +301,7 @@ uint32_t rtos_heap_get_free(void)
 
 uint32_t rtos_heap_get_max_alloc(void)
 {
+    RTOS_ASSERT_ISR_OK();
     if (!s_inited) {
         return 0U;
     }

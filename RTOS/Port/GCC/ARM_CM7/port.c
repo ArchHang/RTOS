@@ -156,8 +156,16 @@ volatile uint32_t rtos_port_crit_nest = 0U;
 volatile uint32_t rtos_port_saved_mask = 0U;
 
 /* ============================== 临界区实现 ============================== */
-/* [perf P-1] enter/exit/in_isr 已移至 rtos_port.h 的 static inline,
- * 消除每对临界区 ~10 周期的函数调用开销; exit 侧去掉 isb。 */
+/* enter/exit/in_isr remain inline. PRIMASK protects only publication/restoration
+ * of the shared critical metadata; BASEPRI protects the caller's body.
+ * Priority 0..4 IRQs may interrupt the body but must not access kernel objects.
+ * NMI/HardFault must not reenter the critical primitive. */
+
+void rtos_port_critical_nesting_error(uint32_t nesting)
+{
+    RTOS_ASSERT((nesting > 0U) && (nesting < UINT32_MAX));
+    (void)nesting;
+}
 
 void rtos_port_disable_interrupts(void)
 {
@@ -362,6 +370,9 @@ __attribute__((naked)) void rtos_port_pend_sv_handler(void)
         " stmdb r0!, {r3, lr}                 \n" /* 保存 R3(对齐) + LR(EXC_RETURN) */
         "                                     \n"
 #if RTOS_CONFIG_USE_BASEPRI
+        /* Correctly configured lowest-priority PendSV cannot activate with
+         * a nonzero implemented BASEPRI (or PRIMASK=1). The MSP slot below
+         * saves PendSV's temporary mask, not per-task critical state. */
         " mrs  r2, basepri                    \n" /* r2 = 进入前的屏蔽值 */
         " movs r3, %[mask]                    \n" /* r3 = 内核中断阈值 */
         " msr  basepri_max, r3                \n" /* 保留已有的更强屏蔽 */

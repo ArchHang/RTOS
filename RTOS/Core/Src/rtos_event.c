@@ -77,7 +77,14 @@ rtos_event_bits_t rtos_event_set(rtos_event_t *event, rtos_event_bits_t bits)
     }
     RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
 
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(event, 5U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (event->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return 0U;
+    }
     event->bits |= bits;
 
     /* 遍历等待链表，唤醒满足条件的等待者 */
@@ -122,7 +129,14 @@ rtos_event_bits_t rtos_event_clear(rtos_event_t *event, rtos_event_bits_t bits)
         return 0U;
     }
     RTOS_ASSERT_ISR_OK();
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(event, 6U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (event->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return 0U;
+    }
     event->bits &= ~bits;
     rtos_event_bits_t result = event->bits;
     RTOS_PORT_EXIT_CRITICAL();
@@ -145,7 +159,14 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
         return 0U;
     }
 
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(event, 7U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (event->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return 0U;
+    }
 
     /* 先检查是否已满足 */
     if (event_check(event->bits, wait_bits, mode) == RTOS_TRUE) {

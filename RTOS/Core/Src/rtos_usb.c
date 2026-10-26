@@ -120,6 +120,7 @@ static rtos_tick_t usb_ms_to_ticks(uint32_t ms)
 
 static rtos_usb_sem_t *alloc_sem_slot(void)
 {
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_SEM_COUNT; i++) {
         if (s_sem_pool[i].in_use == 0U) {
@@ -134,6 +135,7 @@ static rtos_usb_sem_t *alloc_sem_slot(void)
 
 static rtos_usb_mutex_t *alloc_mutex_slot(void)
 {
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_MUTEX_COUNT; i++) {
         if (s_mutex_pool[i].in_use == 0U) {
@@ -148,6 +150,7 @@ static rtos_usb_mutex_t *alloc_mutex_slot(void)
 
 static rtos_usb_mq_t *alloc_mq_slot(void)
 {
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_MQ_COUNT; i++) {
         if (s_mq_pool[i].in_use == 0U) {
@@ -162,6 +165,7 @@ static rtos_usb_mq_t *alloc_mq_slot(void)
 
 static rtos_usb_thread_t *alloc_thread_slot(void)
 {
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_THREAD_COUNT; i++) {
         /* A returning/self-deleting static task cannot free its own stack.
@@ -184,6 +188,7 @@ static rtos_usb_thread_t *alloc_thread_slot(void)
 
 static rtos_usb_timer_t *alloc_timer_slot(uint32_t start_index)
 {
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = start_index; i < RTOS_CONFIG_USB_OSAL_TIMER_COUNT; i++) {
         if (s_timer_pool[i].in_use == 0U) {
@@ -225,6 +230,7 @@ rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handle
         return RTOS_ERR_NULL;
     }
 
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_ISR_TABLE_SIZE; i++) {
         if ((s_isr_table[i].used != 0U) && (s_isr_table[i].irqn == irqn)) {
@@ -250,6 +256,7 @@ rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handle
 
 void rtos_usb_irq_dispatch(uint32_t irqn)
 {
+    RTOS_ASSERT_ISR_OK();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_ISR_TABLE_SIZE; i++) {
         if ((s_isr_table[i].used != 0U) && (s_isr_table[i].irqn == irqn)) {
             s_isr_table[i].handler(s_isr_table[i].arg);
@@ -310,6 +317,7 @@ void rtos_usb_sem_reset(rtos_usb_sem_t *sem)
     if (sem == NULL) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     /* 将计数清零: 在临界区内操作, 唤醒所有等待者(它们会因 count=0 而继续阻塞)。
      * 注意: 本 RTOS 的 rtos_sem 没有 reset API, 这里手动清零 count。
      * 等待者不会丢失(它们仍在等待链表上), 只是不会因这次 reset 而被唤醒。 */
@@ -799,6 +807,7 @@ static void rtos_usb_cdc_event_handler(uint8_t busid, uint8_t event)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     switch (event) {
@@ -892,6 +901,7 @@ static void rtos_usb_cdc_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     if (nbytes > 0U) {
@@ -945,6 +955,7 @@ static void rtos_usb_cdc_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     /* ZLP 处理: 当发送长度是 MPS 整数倍且非零时, 需补发零长度包。
@@ -974,6 +985,7 @@ static void rtos_usb_hid_in_done(uint8_t busid, uint8_t ep, uint32_t nbytes)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     if (dev->hid_tx_busy) {
@@ -993,6 +1005,7 @@ static void rtos_usb_hid_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     if (nbytes > HID_MPS) {
@@ -1155,6 +1168,7 @@ void rtos_usb_cdc_isr(uint8_t busid)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     USBD_IRQHandler(busid);
 }
 
@@ -1252,6 +1266,7 @@ int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     if ((busid >= CONFIG_USBDEV_MAX_BUS) || (buf == NULL) || (len == 0U)) {
         return 0;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
     rtos_tick_t timeout = usb_ms_to_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();
@@ -1306,6 +1321,7 @@ uint32_t rtos_usb_cdc_available(uint8_t busid)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return 0U;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     RTOS_PORT_ENTER_CRITICAL();
@@ -1321,6 +1337,7 @@ void rtos_usb_cdc_flush_rx(uint8_t busid)
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
 
     RTOS_PORT_ENTER_CRITICAL();
@@ -1400,6 +1417,7 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     if ((busid >= CONFIG_USBDEV_MAX_BUS) || (buf == NULL) || (len == 0U)) {
         return 0;
     }
+    RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
     rtos_tick_t timeout = usb_ms_to_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();

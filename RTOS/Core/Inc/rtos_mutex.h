@@ -41,7 +41,8 @@ rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex);
  * @brief 获取互斥锁(可递归)。
  * @param mutex    互斥锁。
  * @param timeout  超时。RTOS_WAIT_FOREVER 为永久等待。
- * @return RTOS_OK / RTOS_ERR_TIMEOUT。
+ * @return RTOS_OK / RTOS_ERR_TIMEOUT；递归计数达到 UINT32_MAX 时返回
+ *         RTOS_ERR_OVERFLOW 并保留原有所有权和计数。
  * @note   不可在中断中调用。
  */
 rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout);

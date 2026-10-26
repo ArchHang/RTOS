@@ -37,6 +37,10 @@
  * @note    查询接口仅可在任务上下文调用(内部使用临界区)。快速接口
  *          rtos_perf_get_cpu_usage / rtos_perf_get_switch_rate 可在 ISR 调用,
  *          但返回的是上次窗口快照值。
+ *          完整查询、重置及内存池注册操作会访问共享状态, 禁止优先级数值
+ *          小于 RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY 的中断调用
+ *          (默认 NVIC 优先级 0~4)。入口优先级断言用于捕获违约;
+ *          关闭 RTOS_CONFIG_ASSERT_ENABLED 不放宽上下文及优先级契约。
  */
 #ifndef RTOS_PERF_H_
 #define RTOS_PERF_H_
@@ -111,6 +115,7 @@ typedef struct {
 /**
  * @brief 初始化性能监视器。
  * @details 在 rtos_init() 中自动调用, 用户无需手动调用。使能 DWT, 清零计数器。
+ *          仅供启动阶段调用, 不允许与运行中的查询或内核钩子并发。
  * @return RTOS_OK 或错误码。
  */
 rtos_status_t rtos_perf_init(void);
@@ -214,7 +219,10 @@ void rtos_perf_on_task_created(rtos_tcb_t *tcb);
 /** @brief 任务删除钩子: 从注册表移除。 */
 void rtos_perf_on_task_deleted(rtos_tcb_t *tcb);
 
-/** @brief 内存池注册(在 rtos_mempool_init 中自动调用)。 */
+/** @brief 内存池注册(在 rtos_mempool_init 中自动调用)。
+ *  @note  ISR 调用必须满足系统调用优先级约束, 关闭断言后仍须遵守。
+ *  @param pool 待注册的有效内存池; NULL 时无操作。
+ */
 void rtos_perf_register_pool(rtos_mempool_t *pool);
 
 /** @brief 内核启动后首次切换钩子: 初始化窗口基准。 */

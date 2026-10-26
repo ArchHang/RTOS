@@ -44,6 +44,26 @@ extern uint32_t SystemCoreClock;
 extern volatile uint32_t rtos_port_crit_nest;
 extern volatile uint32_t rtos_port_saved_mask;
 
+/** @brief Report an unpaired exit or an overflowing critical nesting count.
+ *  @param nesting Invalid count; assertions disabled means leave state unchanged. */
+void rtos_port_critical_nesting_error(uint32_t nesting);
+
+/* Fault-injection boundaries exist only in the dedicated HIL firmware. */
+#if defined(RTOS_HIL_CRITICAL_TEST)
+#define RTOS_PORT_TEST_ENTER_MASKED (1U)
+#define RTOS_PORT_TEST_ENTER_SAVED (2U)
+#define RTOS_PORT_TEST_ENTER_COUNTED (3U)
+#define RTOS_PORT_TEST_EXIT_COUNTED (4U)
+#define RTOS_PORT_TEST_EXIT_RESTORED (5U)
+
+/** @brief Inject a pending hardware IRQ at a critical-state transition.
+ *  @param stage One of RTOS_PORT_TEST_*; never present in production builds. */
+void rtos_port_critical_test_hook(uint32_t stage);
+#define RTOS_PORT_CRITICAL_TEST_HOOK(stage) rtos_port_critical_test_hook(stage)
+#else
+#define RTOS_PORT_CRITICAL_TEST_HOOK(stage) ((void)0)
+#endif
+
 /**
  * @brief 进入临界区: 屏蔽 RTOS 系统调用级中断(内联, 支持嵌套)。
  * @details 使用 BASEPRI_MAX 屏蔽优先级数值 >= MAX_SYSCALL_INTERRUPT_PRIORITY
@@ -51,10 +71,19 @@ extern volatile uint32_t rtos_port_saved_mask;
  *          保证实时性。
  *          保留调用方更严格的屏蔽状态；最外层退出时恢复原值。
  *          PRIMASK 配置同样保存并恢复进入前的全局中断状态。
+ *          计数/保存槽位的更新由短暂 PRIMASK 事务保护，随后恢复调用方
+ *          PRIMASK；BASEPRI 模式的临界区主体仍可被高优先级中断抢占。
+ * @note   高优先级中断仍不得访问内核对象。NMI/HardFault 不得调用本原语。
  */
 static inline void rtos_port_enter_critical(void)
 {
     uint32_t previous_mask;
+    uint32_t previous_primask;
+
+    /* C cannot read/write CPU mask registers. Save PRIMASK before CPSID so
+     * even a caller that already disabled IRQs retains its exact state. */
+    __asm__ __volatile__(" mrs %0, primask \n"
+                         " cpsid i        \n" : "=r"(previous_primask) :: "memory");
 #if RTOS_CONFIG_USE_BASEPRI
     /* BASEPRI_MAX can only strengthen masking. Preserve the caller's mask
      * at the outermost entry, including masks stricter than the RTOS limit. */
@@ -64,16 +93,29 @@ static inline void rtos_port_enter_critical(void)
                    : "r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
                    : "memory");
 #else
-    __asm volatile(" mrs %0, primask \n"
-                   " cpsid i        \n" : "=r"(previous_mask) :: "memory");
+    previous_mask = previous_primask;
 #endif
-    /* Legal RTOS callers are masked before accessing the shared counter.
-     * Read its volatile value once; repeated reads cannot add protection. */
+    RTOS_PORT_CRITICAL_TEST_HOOK(RTOS_PORT_TEST_ENTER_MASKED);
+    /* BASEPRI alone cannot protect this shared transaction from priorities
+     * above the syscall threshold. PRIMASK covers the entire publication. */
     uint32_t nesting = rtos_port_crit_nest;
+    if (nesting == UINT32_MAX) {
+#if RTOS_CONFIG_USE_BASEPRI
+        __asm__ __volatile__(" msr basepri, %0 \n" :: "r"(previous_mask) : "memory");
+#endif
+        __asm__ __volatile__(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+        rtos_port_critical_nesting_error(nesting);
+        return;
+    }
     if (nesting == 0U) {
         rtos_port_saved_mask = previous_mask;
+        RTOS_PORT_CRITICAL_TEST_HOOK(RTOS_PORT_TEST_ENTER_SAVED);
     }
     rtos_port_crit_nest = nesting + 1U;
+    RTOS_PORT_CRITICAL_TEST_HOOK(RTOS_PORT_TEST_ENTER_COUNTED);
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm__ __volatile__(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+#endif
 }
 
 /**
@@ -81,8 +123,21 @@ static inline void rtos_port_enter_critical(void)
  */
 static inline void rtos_port_exit_critical(void)
 {
-    uint32_t nesting = rtos_port_crit_nest - 1U;
+    uint32_t previous_primask;
+
+    /* Keep zero publication and saved-mask restoration indivisible even to
+     * high-priority IRQs. The critical body itself is never covered here. */
+    __asm__ __volatile__(" mrs %0, primask \n"
+                         " cpsid i        \n" : "=r"(previous_primask) :: "memory");
+    uint32_t nesting = rtos_port_crit_nest;
+    if (nesting == 0U) {
+        __asm__ __volatile__(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+        rtos_port_critical_nesting_error(nesting);
+        return;
+    }
+    nesting--;
     rtos_port_crit_nest = nesting;
+    RTOS_PORT_CRITICAL_TEST_HOOK(RTOS_PORT_TEST_EXIT_COUNTED);
     if (nesting == 0U) {
 #if RTOS_CONFIG_USE_BASEPRI
         __asm volatile(" msr basepri, %0 \n" :: "r"(rtos_port_saved_mask) : "memory");
@@ -90,6 +145,15 @@ static inline void rtos_port_exit_critical(void)
         __asm volatile(" msr primask, %0 \n" :: "r"(rtos_port_saved_mask) : "memory");
 #endif
     }
+    RTOS_PORT_CRITICAL_TEST_HOOK(RTOS_PORT_TEST_EXIT_RESTORED);
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm__ __volatile__(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+#endif
+    /* A blocking API must not read its initial wait_result before pending
+     * PendSV runs. Cortex-M4 may retire two instructions after unmasking;
+     * ISB makes recognition precede the caller's next load (Arm AN321 4.7).
+     * This is also required by the PRIMASK-only configuration. */
+    __asm__ __volatile__(" isb \n" ::: "memory");
 }
 
 /**

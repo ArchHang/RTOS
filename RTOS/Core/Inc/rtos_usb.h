@@ -71,6 +71,12 @@
  *              2. 调用 rtos_usb_register_isr(IRQn, handler, arg) 注册处理函数
  *              3. 在 USB IRQHandler 中调用 rtos_usb_irq_dispatch(IRQn)
  *            或使用 CDC 封装时直接在 IRQHandler 中调用 rtos_usb_cdc_isr(busid)。
+ *            对象槽分配、共享状态读写和 IRQ 分发在入口处检查调用者优先级,
+ *            以免先修改状态、再由下层 IPC API 报告优先级错误。
+ *            关闭 RTOS_CONFIG_ASSERT_ENABLED 后仍须遵守同一优先级契约,
+ *            不表示高优先级 0~4 ISR 可以操作内核对象。
+ *            纯超时换算及 is_connected 等单字段快照不进入临界区,
+ *            不受该系统调用优先级限制; 多次快照不保证彼此一致。
  *
  *          安全性:
  *            - 所有 create 返回 NULL 表示池满(不崩溃, 调用方应检查)

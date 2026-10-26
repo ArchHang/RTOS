@@ -58,7 +58,14 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
         return RTOS_ERR_ISR; /* 中断中不允许阻塞 */
     }
 
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(sem, 2U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (sem->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
 
     /* 有可用资源: 计数减一，直接返回 */
     if (sem->count > 0U) {
@@ -125,7 +132,14 @@ rtos_status_t rtos_sem_give(rtos_sem_t *sem)
         return RTOS_ERR_PARAM;
     }
 
+    RTOS_INTERNAL_OBJECT_ACCESS_HOOK(sem, 1U);
     RTOS_PORT_ENTER_CRITICAL();
+    /* An allowed ISR may deinitialize the still-live storage after the fast
+     * precheck. Revalidate with exclusion before any state access or wait. */
+    if (sem->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
 
     /* 优先唤醒等待者(若有) */
     woken = rtos_internal_wake_highest_bm(&sem->wait_head, &sem->wait_bitmap);

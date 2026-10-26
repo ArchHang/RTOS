@@ -98,7 +98,9 @@
 #define RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW (2)
 
 /** @brief 是否启用断言。调试阶段建议启用，发布时关闭以节省开销。 */
+#ifndef RTOS_CONFIG_ASSERT_ENABLED
 #define RTOS_CONFIG_ASSERT_ENABLED (1)
+#endif
 
 /** @brief 断言失败处理宏。可重定向到自定义处理器。 */
 #if RTOS_CONFIG_ASSERT_ENABLED
@@ -231,7 +233,9 @@
 /** @brief 是否使用 BASEPRI 屏蔽中断(1)或 PRIMASK 全屏蔽(0)。
  *         Cortex-M3/M4/M7 推荐使用 BASEPRI，保留高优先级中断响应能力。
  *         Cortex-M0/M0+ 无 BASEPRI 寄存器，必须设为 0(用 PRIMASK)。 */
+#ifndef RTOS_CONFIG_USE_BASEPRI
 #define RTOS_CONFIG_USE_BASEPRI (1)
+#endif
 
 /** @brief BASEPRI 屏蔽阈值。优先级数值 >= 此值的中断被屏蔽。
  *         STM32 系列均使用 4 位优先级(0~15)，0 为最高。设为 5 可屏蔽 5~15，

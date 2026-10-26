@@ -268,6 +268,7 @@ void rtos_perf_register_pool(rtos_mempool_t *pool)
     if (pool == NULL) {
         return;
     }
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     if (s_pool_count < RTOS_CONFIG_PERF_POOL_REGISTRY_SIZE) {
         /* 防重复注册: 检查是否已存在 */
@@ -324,6 +325,7 @@ rtos_status_t rtos_perf_init(void)
 
 void rtos_perf_reset(void)
 {
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     uint32_t now = rtos_perf_get_cycles();
     rtos_kernel.perf_window_switch_base = rtos_kernel.perf_switch_total;
@@ -351,6 +353,7 @@ rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats)
         return RTOS_ERR_NULL;
     }
 
+    RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
 
     uint32_t now_cycle = rtos_perf_get_cycles();
@@ -444,6 +447,7 @@ rtos_status_t rtos_perf_get_memory(rtos_perf_memory_t *stats)
         return RTOS_ERR_NULL;
     }
 
+    RTOS_ASSERT_ISR_OK();
     memset(stats, 0, sizeof(*stats));
     stats->task_pool_capacity = RTOS_CONFIG_MAX_TASKS;
 
@@ -533,6 +537,7 @@ rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats)
         return RTOS_ERR_NULL;
     }
 
+    RTOS_ASSERT_ISR_OK();
     if (tcb == NULL) {
         tcb = rtos_kernel.current_tcb;
     }
@@ -603,6 +608,7 @@ rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t ma
     if (max_count == 0U) {
         return RTOS_ERR_PARAM;
     }
+    RTOS_ASSERT_ISR_OK();
 
     /* 整个遍历持临界区: 注册表写入方(on_task_created/deleted 的
      * swap-with-last 重排)与任务删除(随后的 rtos_heap_free)均在任务
