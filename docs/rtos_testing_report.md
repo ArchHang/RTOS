@@ -1,9 +1,18 @@
 # RTOS 测试报告（功能回归 + 边界 + HIL 复现审计）
 
+> **2026-10-26 补充**：多级继承、ISR 销毁窗口和递归计数溢出的复现与修复，
+> 60 个复杂配置镜像、74 个端口镜像及新一轮 900 秒压力结果见
+> [复杂并发测试报告](rtos_adversarial_20261026.md)。本轮 selftest 为 432 PASS / 0 FAIL / 10 INFO，
+> boundary 为 103 PASS / 0 FAIL；下方表格保留原始批次，不作为当前总验收口径。
+
+> **2026-10-25 补充**：本页其余计数保留原批次口径。后续发现的共享屏蔽槽位竞态、
+> 出口 ISB／阻塞返回缺口、最终配置矩阵及三层 IRQ 结果见
+> [BASEPRI 修复与回归报告](rtos_basepri_fix_20261025.md)。正常交接数量不能证明不存在这些缺陷。
+
 > 工程: `E:\STM32_Project\CubeIDE\f446_rtos`（自研 RTOS, Cortex-M4F @168MHz）
 > 方式: 硬件在环 (HIL) — NUCLEO-F446RE, USART2 @115200-8N1, SWD 烧录与监听脚本原子执行
 > 工具链: GNU Tools for STM32 11.3.rel1, `-O2`
-> 最新结果: **selftest 431 PASS / 0 FAIL / 11 INFO / 442**；**boundary 103 PASS / 0 FAIL**
+> 本页原始批次结果: **selftest 431 PASS / 0 FAIL / 11 INFO / 442**；**boundary 103 PASS / 0 FAIL**
 > 一键复现: `hil\repro_all.ps1 -Only selftest,boundary`；原始日志 `hil\logs\current\`
 
 ---

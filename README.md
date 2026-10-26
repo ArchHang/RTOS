@@ -6,6 +6,12 @@
 
 **2026-10-13 验证汇总**：已完成内核及 USB 处理路径修复、底层性能优化和 16 任务／双硬件中断综合压力测试。五轮正常压力测试逐条验证 2,433,735 条成功接纳消息，161 项验收检查在每轮均通过；包含 15 分钟持续运行和单包损坏检出对照。日常固件已恢复。详细改动、性能收益与退步、验证范围及证据入口见[本次交付汇总](docs/rtos_release_20261013.md)。物理 USB 总线传输未包含在本轮验证中。
 
+**2026-10-25 临界区修复**：进出临界区时以短暂 PRIMASK 事务保护共享计数、保存槽位和屏蔽恢复，并在退出恢复屏蔽后执行 ISB，保证已请求的 PendSV 先于阻塞 API 的后续结果读取被识别。默认 BASEPRI 模式的主体仍允许优先级 0–4 的纯硬件 ISR 抢占；这些 ISR 仍不得调用操作内核对象的 API，关闭断言也不放宽契约。缺陷复现、此前测试缺口及新增验证范围见 [BASEPRI 修复报告](docs/rtos_basepri_fix_20261025.md)。
+
+**2026-10-26 复杂并发加固**：补充锁链、循环依赖、任务删除、ISR 销毁窗口及多等待者交接测试；修复传递优先级继承、对象状态检查窗口和递归计数溢出。复现方法、配置矩阵、业务压力及清理记录见[复杂并发测试报告](docs/rtos_adversarial_20261026.md)。
+
+本批已复现缺陷、修复行为、验证结果和保留状态统一整理在[缺陷修复汇总](docs/rtos_fix_summary_20261026.md)。
+
 ```
 +------------------------------------------------------------------+
 | 用户任务        rtos_task_delay / rtos_sem_take / rtos_queue_send |
@@ -38,13 +44,14 @@
 - **延时管理**：当前使用一条按唤醒 tick 排序的双向链，表头缓存表尾；摘除 O(1)，追加命中快路径时 O(1)，中间插入 O(n)。tick 比较采用带符号差值，有限等待范围见[当前边界](#当前边界与已知限制)；
 - **决策/执行分离**：调度决策收口在 `rtos_sched.c`，切换执行统一由 PendSV 完成——决策在临界区内、切换在临界区外，天然合并多次切换请求。
 - **挂起与切换保护**：调度挂起支持嵌套，挂起期间冻结内核 tick 并拒绝新阻塞；PendSV 提交切换前重新检查候选任务的状态。
+- **临界区事务保护**：默认 BASEPRI 配置下，BASEPRI 屏蔽 syscall 域中断，PRIMASK 仅在进出事务中保护共享元数据；调用者更强的 BASEPRI 及原 PRIMASK 状态得到保留。出口 ISB 同步解屏蔽与后续执行，避免阻塞结果被提前读取。NMI/HardFault 不得调用临界区原语或操作内核对象；详见[设计手册第 4.5 节](docs/rtos_design.md#45-临界区-进出与屏障)。
 
 ### IPC（五种机制，语义各有分工）
 
 | 机制 | 文件 | 语义要点 |
 |---|---|---|
 | 信号量 | `rtos_sem.c` | 二值/计数；存在等待者时计数为零，give 优先把令牌交给等待者，避免重复计数 |
-| 互斥锁 | `rtos_mutex.c` | 按有序等待链队首重算继承优先级；支持递归获取、删除持锁任务时移交；继承不沿持锁链传递；ISR 禁用 |
+| 互斥锁 | `rtos_mutex.c` | 有界求解锁依赖图，传播并撤销继承；递归溢出返回错误，删除持锁任务时移交；ISR 禁用，循环死锁仍需应用避免 |
 | 消息队列 | `rtos_queue.c` | 环形缓冲 + 拷贝传递；ISR 投递非阻塞 |
 | 事件组 | `rtos_event.c` | ANY/ALL 等待 + CLEAR_ON_EXIT + 满足位回传（信箱模式） |
 | 任务通知 | `rtos_task.c` | 通知值内嵌 TCB，无需独立 IPC 对象或对象等待链；有限超时仍使用内核延时链 |
@@ -187,13 +194,16 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 | 文档 | 内容 |
 |---|---|
+| [rtos_fix_summary_20261026.md](docs/rtos_fix_summary_20261026.md) | **当前修复总览**：五项已复现缺陷、契约加固、最终验证及提交范围 |
 | [rtos_design.md](docs/rtos_design.md) | **当前架构与实现手册**（16 章）：调度不变式 / PendSV 与 FPU 栈帧 / IPC 契约与寿命 / USB 适配 / 统计边界 / API 上下文矩阵 / 资源预算与业务关停 |
 | [rtos_performance_report.md](docs/rtos_performance_report.md) | **性能测试报告**：微基准 BM0–BM7 + 系统级场景 S1–S5 + 与 FreeRTOS V10.3.1 的逐项对照；含布局敏感性与已作废结论的更正记录 |
 | [rtos_testing_report.md](docs/rtos_testing_report.md) | **历史测试汇总**：基础功能与边界夹具、早期审计取证、方法教训及覆盖缺口；后续终验见下列带日期的报告 |
+| [rtos_basepri_fix_20261025.md](docs/rtos_basepri_fix_20261025.md) | **BASEPRI 临界区修复**：确定性交错复现、出口 ISB 与阻塞返回同步、优先级契约守卫及新增综合 IRQ 验证范围 |
+| [rtos_adversarial_20261026.md](docs/rtos_adversarial_20261026.md) | **复杂并发回归**：传递继承、销毁窗口、递归边界、60 配置与 900 秒业务压力 |
 | [hardfault_debug.md](docs/hardfault_debug.md) | HardFault 寄存器级诊断手册（CFSR 逐位 / 栈帧归因 / 任务 vs ISR 判定） |
 | [freertos_design.md](docs/freertos_design.md) | FreeRTOS V10.4.6 逐段核对的源码剖析（23 章）+ 互斥锁 / 竞争 / 崩溃排障大全 |
 | [compilation_pipeline.md](docs/compilation_pipeline.md) | 编译链接原理（从预处理到 map 文件） |
-| [rtos_release_20261013.md](docs/rtos_release_20261013.md) | **当前交付汇总**：改动分类、真实验证结果、证据范围和复现条件 |
+| [rtos_release_20261013.md](docs/rtos_release_20261013.md) | **2026-10-13 交付汇总**：该批改动分类、真实验证结果、证据范围和复现条件 |
 | [rtos_audit_20261012.md](docs/rtos_audit_20261012.md) | 源码审计、调度／IPC／定时器／USB 修复与专项回归 |
 | [rtos_optimization_20261012.md](docs/rtos_optimization_20261012.md) | 第一阶段性能试验、保留方案、撤回方案与测量局限 |
 | [rtos_lowlevel_optimization_20261012.md](docs/rtos_lowlevel_optimization_20261012.md) | 当前底层实现、PendSV／信号量优化和上下文／FPU 检查 |
@@ -207,7 +217,7 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 - **有限等待范围仍为 `1..0x7FFFFFFF` tick**（1kHz 下最大约 24.8 天）：当前调度器只有一个 `delay_head`，维护一条双向延时链；未实现 current / overflow 双延时链。`rtos_sched_block()` 将更大的等待值设为永久等待，`0xFFFFFFFF` 是 `RTOS_WAIT_FOREVER`。软件定时器拒绝超过有限范围的周期，USB 毫秒转换饱和到该上界；`delay_until` 调用方也应遵守有限周期范围，详见[设计手册的延时与定时器章节](docs/rtos_design.md)；
 - **tick 回绕与有限范围是两个问题**：当前采用有符号差值比较来处理限定范围内的跨回绕等待；不能据此声称支持任意 32 位有限延时；
 - **延时链中间插入为 O(n)**，表尾快路径需新唤醒点不早于当前表尾，周期任务并非必然命中；
-- **优先级继承为一跳**（链式反转未解，与 FreeRTOS 相同）；
+- **继承不提供死锁检测**：当前会沿锁依赖传递及撤销捐赠；循环锁依赖仍须采用统一加锁顺序或有限超时，图重算成本随锁和等待者数量增长；
 - **通用堆释放时仅尝试合并紧邻的高地址空闲块**，不会向低地址查找或循环合并整段连续空闲块，长期分配仍需关注碎片。
 
 完整债务清单与 FreeRTOS 逐项对照见 [freertos_design.md 第十二章](docs/freertos_design.md)。

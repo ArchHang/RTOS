@@ -1,7 +1,7 @@
 # 自研 RTOS 架构与实现设计手册
 
 > **核对平台**：STM32F446RE，单核 Cortex-M4F（ARMv7E-M），GCC `arm-none-eabi`。默认 168 MHz、1 kHz tick；其他处理器、时钟和配置需要独立适配与验证。
-> **文档基准**：2026-10-13 本工程 `RTOS/` 当前代码，包含源码审计修复、两轮性能优化及综合压力测试后的保留实现。变更与验证总览见 [发布汇总](rtos_release_20261013.md)，缺陷复现见 [审计报告](rtos_audit_20261012.md)，综合负载结果见 [生产压力测试报告](rtos_production_stress_20261013.md)。本文解释当前机制；不同阶段的性能数字保留在带日期报告中。4.2 中明确标注的历史图只用于追溯，不能当作当前端口流程。
+> **文档基准**：2026-10-26 本工程 `RTOS/` 当前代码，包含源码审计修复、两轮性能优化、综合压力测试、临界区事务加固，以及传递优先级继承、对象销毁窗口和递归计数边界修复。原交付总览见 [2026-10-13 发布汇总](rtos_release_20261013.md)，后续复现及验证范围见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)和[复杂并发测试报告](rtos_adversarial_20261026.md)；早期缺陷与综合负载见 [审计报告](rtos_audit_20261012.md)、[生产压力测试报告](rtos_production_stress_20261013.md)。本文解释当前机制；不同阶段的性能数字保留在带日期报告中。4.2 中明确标注的历史图只用于追溯，不能当作当前端口流程。
 > **文档目标**：说明内核的职责划分、共享状态、不变式、上下文切换协议和对象生命周期，使工程师能够沿调用链阅读源码、评估资源及审查修改。
 > **代码位置**：内核 `RTOS/Core/`、移植层 `RTOS/Port/GCC/ARM_CM7/port.c`
 > **配套文档**：[2026-10-12 底层优化报告](rtos_lowlevel_optimization_20261012.md)（当前实现与实板对照）、[第一轮性能优化报告](rtos_optimization_20261012.md)（历史阶段）、[rtos_performance_report.md](rtos_performance_report.md)（历史微基准 + 系统级场景 + 与 FreeRTOS 的实测对比）、[rtos_testing_report.md](rtos_testing_report.md)（功能回归/边界测试/HIL 复现审计）、[hardfault_debug.md](hardfault_debug.md)（故障诊断）、[compilation_pipeline.md](compilation_pipeline.md)（编译原理）、[freertos_design.md](freertos_design.md)（FreeRTOS 设计分析与排障，与本文互为镜像参照）
@@ -99,7 +99,7 @@ flowchart TB
 > ① 等待链有**两套并存约定**（信号量 FIFO 位图链 / 队列、事件组、互斥锁有序链）。位图选优先级是 O(1)，但信号量多等待者定位与清位仍需扫描，整体最坏 O(n)，见 1.3 不变式 III、2.3、6.3；
 > ② 延时链由"单向 + 摘除 O(n)"改为**双向 + 表尾缓存**（插入 O(1) 快路径、摘除 O(1)），见 3.4；
 > ③ PendSV 由"双层 C 调用 + `isb`"改为**汇编直存 + 单层 `bl`**，见 4.2；
-> ④ 临界区由"out-of-line 函数 + exit 侧 `isb`"改为**头文件内联**，见 4.5；
+> ④ 临界区使用**头文件内联 + 短 PRIMASK 元数据事务**，出口保留 `isb`；早期删掉出口屏障的优化结论已由此次阻塞返回复现纠正，见 4.5；
 > ⑤ 已知限制 L1/L2/L4 已修复，见第十五章；
 > ⑥ 第十六章给出 API 上下文、存储寿命、资源预算与验证入口；历史性能记录见独立报告。
 
@@ -836,7 +836,7 @@ process_delayed_tasks():
               rtos_internal_wait_remove_sync_bitmap(list_head, &wait_node)
                                                  ← O(1) 摘链；位图链额外扫描确认清位
               tcb->wait_node.list_head = NULL
-          rtos_internal_mutex_waiter_left(tcb)  ← 若等的是互斥锁, 重估持有者优先级(7.4)
+          rtos_internal_mutex_waiter_left(tcb)  ← 若等的是互斥锁, 重估完整捐赠依赖(7.5)
           tcb->blocked_on = NULL
       tcb->state = RTOS_TASK_READY
       ready_list_push_tail(tcb)                 ← 进入就绪表, 排队等运行
@@ -870,7 +870,7 @@ return cur->wait_result;   /* cur 也随任务寄存器恢复；结果为 RTOS_E
 
 ### 附: 互斥锁超时与继承重算
 
-若 T 等的是 mutex，阶段三还多一步连锁反应：T 的等待曾让持锁者的优先级被提升（优先级继承），T 超时离开后这次提升失去依据。`rtos_internal_mutex_waiter_left(T)` 拿 `wait_node.wait_obj` 到全局锁注册表（s_mutex_registry）里匹配，确认"T 等的确实是一把活着的锁"后调 `mutex_recompute_inheritance` 重算持锁者有效优先级（综合其全部持有锁的有序等待链首与 `base_priority`，7.4、7.6 详述）。信号量/队列等对象的 wait_obj 在注册表里匹配不到，自动忽略——**同一个超时路径，只有锁需要善后**。
+若 T 等的是 mutex，阶段三还多一步连锁反应：T 的等待曾让持锁者及其依赖链上的持有者被提升，T 超时离开后这次捐赠失去依据。`rtos_internal_mutex_waiter_left(T)` 拿 `wait_node.wait_obj` 到全局锁注册表（s_mutex_registry）里匹配，命中后从各节点 `base_priority` 开始对完整锁依赖做有界松弛，撤销已经失效的传递捐赠（7.3、7.5 详述）。信号量/队列等对象的 wait_obj 在注册表里匹配不到，自动忽略；地址匹配仍以对象存储有效、没有被并发复用为前提。
 
 另一个相关边界：notify_wait 超时瞬间的通知去留——超时已置 TIMEOUT 但 T 尚未运行期间通知到达，notify_state 仍为 PENDING 被保留，下次 notify_wait 立即取走、不丢失（5.7 详述）。
 
@@ -891,7 +891,7 @@ return cur->wait_result;   /* cur 也随任务寄存器恢复；结果为 RTOS_E
 | 阻塞 | `rtos_event_wait` | **0**（该接口返回位掩码，无法报错误码） |
 | 非阻塞 | `RTOS_NO_WAIT`、计数充足、队列未满… | 不受影响 |
 
-统一守卫 `rtos_internal_block_permitted()`（`rtos_internal.h`，`static inline`，检查 RUNNING 且 current_tcb 非 NULL，不自行进入临界区）必须在**修改任何阻塞状态之前**判定：否则会留下"已入链却无人唤醒"的半初始化 `wait_node`。`rtos_mutex_take` 的判定还必须早于 `mutex_try_inherit()`——否则会留下一次无人恢复的优先级提升（恢复动作在释放路径上，而释放者可能正是被挡住的调用者）。
+统一守卫 `rtos_internal_block_permitted()`（`rtos_internal.h`，`static inline`，检查 RUNNING 且 current_tcb 非 NULL，不自行进入临界区）必须在**修改任何阻塞状态之前**判定：否则会留下"已入链却无人唤醒"的半初始化 `wait_node`。`rtos_mutex_take` 先确认允许阻塞并成功发布等待关系，再执行全图继承重算；被拒绝的阻塞调用不能留下额外的继承提升。
 
 > **与临界区的分工**（4.5）：临界区屏蔽 syscall 域中断，必须尽量短；挂起影响任务调度与 RTOS tick，仍允许 ISR。长业务流程不能直接套在关中断临界区里，需要拆分工作并设计同步；具体最长持有时间取决于调用路径和配置，当前测量不能当作 WCET 保证。
 
@@ -1008,6 +1008,8 @@ rtos_port_pend_sv_handler:         ; naked，运行于 Handler 模式/MSP
 
 `push {r2,r3}` / `pop {r2,r3}` 在 **MSP 上额外占 8 B**，用于保存进入前的 mask 并维持 C 调用对齐；它不属于任务栈的 72 B / 208 B 固定现场。提交函数自身的编译器栈帧、更高优先级 ISR 的调用链和嵌套异常也消耗 MSP，应另行预算。任务软件现场写入 PSP 指向的内存，PendSV 内的 C 提交调用运行在 MSP，两份栈的职责不同。
 
+**BASEPRI 不需要成为每任务现场**：在本工程规定的最低 PendSV 优先级 `0xF0` 下，任何实现后的非零 BASEPRI 都会屏蔽 PendSV，PRIMASK=1 也会阻止其激活。因此，合法配置下进入 PendSV 时这些屏蔽状态为零；MSP 上保存的是 PendSV 自己增强屏蔽前的值。任务持有临界区时不能被 PendSV 切出，所以移植层继续使用全局嵌套计数，不需要为本次修复增加 TCB 字段或改变栈帧 ABI。反过来，BASEPRI 若泄漏为 `0x50`，首先会阻止 PendSV/SysTick 激活，不能解释成它会自行经过已被屏蔽的 PendSV 传播至新任务。
+
 C 提交函数的主要逻辑如下（省略测试专用注入钩子）：
 
 ```c
@@ -1117,13 +1119,21 @@ rtos_port_svc_handler:                      (naked, 运行于 Handler 模式/MSP
 
 ## 4.5 临界区: 进出与屏障
 
-2026-10-12 的实现先读取调用者屏蔽值，用 `BASEPRI_MAX` 加强屏蔽，最外层保存原值；嵌套归零时恢复原值，而非固定清零。因此已存在的更强 BASEPRI、PRIMASK 关中断状态不会被 RTOS 临界区削弱。以下代码对应当前 `rtos_port.h`；本节后面的周期数字记录旧版性能优化。
+当前实现继续使用 `BASEPRI_MAX` 保留调用者更强的屏蔽，最外层保存原值，嵌套归零时恢复。2026-10-25 增加了短暂 PRIMASK 事务：先保存 PRIMASK 并执行 `cpsid i`，使可配置中断不能打断共享 `rtos_port_saved_mask` / `rtos_port_crit_nest` 的发布和恢复，再还原调用者原有 PRIMASK。默认 BASEPRI 模式下，临界区主体并非全局关中断，优先级 0–4 的纯硬件 ISR 仍可运行。
+
+**退出还承担阻塞返回的同步责任**：最终恢复屏蔽后统一执行带 `memory` clobber 的 ISB，使已挂起且允许执行的 PendSV 在后续线程指令前被识别。这个要求同时适用于 BASEPRI 和 PRIMASK 配置；仅保证元数据不被交错破坏，并不足以保证阻塞 API 返回正确。
+
+以下代码说明当前生产路径，省略专用 HIL 注入钩子；完整实现见 `rtos_port.h`。本节保留的周期数字均为旧版性能背景，当前加固的实测及代价见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)。
 
 ```c
-/* 二者均为 rtos_port.h 中的 static inline；exit 侧无屏障 */
+/* 两个函数均为头文件 static inline；所有系统寄存器 asm 均约束 memory。 */
 static inline void rtos_port_enter_critical(void)
 {
     uint32_t previous_mask;
+    uint32_t previous_primask;
+
+    __asm volatile(" mrs %0, primask \n"
+                   " cpsid i        \n" : "=r"(previous_primask) :: "memory");
 #if RTOS_CONFIG_USE_BASEPRI
     __asm volatile(" mrs %0, basepri      \n"
                    " msr basepri_max, %1 \n"
@@ -1131,19 +1141,39 @@ static inline void rtos_port_enter_critical(void)
                    : "r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
                    : "memory");
 #else
-    __asm volatile(" mrs %0, primask \n"
-                   " cpsid i        \n" : "=r"(previous_mask) :: "memory");
+    previous_mask = previous_primask;
 #endif
     uint32_t nesting = rtos_port_crit_nest;
+    if (nesting == UINT32_MAX) {
+#if RTOS_CONFIG_USE_BASEPRI
+        __asm volatile(" msr basepri, %0 \n" :: "r"(previous_mask) : "memory");
+#endif
+        __asm volatile(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+        rtos_port_critical_nesting_error(nesting);
+        return;
+    }
     if (nesting == 0U) {
         rtos_port_saved_mask = previous_mask;
     }
     rtos_port_crit_nest = nesting + 1U;
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm volatile(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+#endif
 }
 
 static inline void rtos_port_exit_critical(void)
 {
-    uint32_t nesting = rtos_port_crit_nest - 1U;
+    uint32_t previous_primask;
+
+    __asm volatile(" mrs %0, primask \n"
+                   " cpsid i        \n" : "=r"(previous_primask) :: "memory");
+    uint32_t nesting = rtos_port_crit_nest;
+    if (nesting == 0U) {
+        __asm volatile(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+        rtos_port_critical_nesting_error(nesting);
+        return;
+    }
+    nesting--;
     rtos_port_crit_nest = nesting;
     if (nesting == 0U) {
 #if RTOS_CONFIG_USE_BASEPRI
@@ -1152,20 +1182,30 @@ static inline void rtos_port_exit_critical(void)
         __asm volatile(" msr primask, %0 \n" :: "r"(rtos_port_saved_mask) : "memory");
 #endif
     }
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm volatile(" msr primask, %0 \n" :: "r"(previous_primask) : "memory");
+#endif
+    __asm volatile(" isb \n" ::: "memory");
 }
 ```
 
-**本轮局部计数优化的约束**：每次 enter/exit 对 `volatile` 嵌套计数只读取一次，用局部 `nesting` 同时计算新值和判断最外层边界，再写回一次。enter 必须先完成屏蔽和进入屏障，随后才能读共享计数；合法 RTOS ISR 在这段读写期间被屏蔽，优先级 0~4 的 ISR 禁止调用内核，所以不会丢失另一个合法调用者的计数更新。嵌套进入仍执行屏蔽指令与原有屏障，最外层退出仍恢复保存的原始 mask。enter/exit 必须成对；此优化没有增加全局 RAM 或改变 API。
+**事务边界比单条计数读写更重要**：每次 enter/exit 仍只读一次 `volatile` 计数，并用局部 `nesting` 计算和判断。enter 的“保存原 mask → 发布非零计数”和 exit 的“发布零计数 → 恢复原 mask”现在各在同一 PRIMASK 事务中完成。旧实现仅依赖 BASEPRI 和调用契约，若高优先级 ISR 重入底层临界区，可能在这两个窗口把继承的 `0x50` 写回全局保存槽，最终使线程退出后仍带屏蔽。短 PRIMASK 修复封住元数据交错，但没有扩大高优先级 ISR 可调用的对象 API 范围。
 
-- **默认使用 BASEPRI，PRIMASK 为替代配置**：默认允许优先级 0~4 的硬实时中断（电机环等）抢占内核临界区；替代配置保存 PRIMASK、关全局中断，并在最外层退出时恢复原值；
-- **当前屏障配置**：默认 BASEPRI enter 保留 ISB，使后续指令在增强屏蔽后执行；exit 恢复原屏蔽值，没有额外 ISB。PRIMASK 替代路径则使用保存原值、`cpsid i`、最外层还原。该说明描述本移植的现状，不能推广成“DSB 在任何系统寄存器操作中都无用”；设备访问、缓存/MPU 配置及其他处理器移植须按各自架构要求分析。
-- **历史性能背景**：早期测量中临界区进出对由 55 周期降到 23 周期，对照 FreeRTOS 为 47 周期；这些数字用于说明当时内联与屏障调整的成本，不是当前配置的最坏执行时间或跨工程保证。
-- **共享计数的调用契约**：ISR 与任务共用 `rtos_port_crit_nest`。默认优先级 0–4 的 ISR 不能调用内核，否则会绕过内核屏蔽，破坏共享状态操作的串行化。违约检测由断言提供，关闭断言后契约仍然适用；enter/exit 必须成对，不能在未进入时执行退出或跨上下文配对。
+**为什么不能再省略出口 ISB**：阻塞 API 在临界区内把 `wait_result` 设为初始 OK、登记等待并挂起 PendSV，然后在退出后读取真正的唤醒结果。Arm AN321 第 4.7 节说明，Cortex-M3/M4 开中断后，在异常处理程序进入前仍可能先执行两条指令；若要求挂起异常先于后续操作被识别，必须使用 ISB，MSR 开中断同样适用。无出口 ISB 的原子事务版本已在 F446 复现：空信号量没有 giver，TCB 已记录超时，API 却返回提前读入寄存器的初始 OK。该值随后随任务现场保存，超时恢复并不会重新加载它；这不是 `volatile`、缓存刷新或插入几条无关指令能提供的保证。详见 [Arm AN321](https://documentation-service.arm.com/static/5efefb97dbdee951c1cd5aaf) 第 28–31 页与[本次复现报告](rtos_basepri_fix_20261025.md)。
+
+这条契约还涉及 queue、mutex、event、notify、delay 等阻塞路径；某一编译布局未复现不代表接口不需要同步。当前实现把 ISB 放在公共退出原语，避免逐个 API 依赖偶然的分支或访存延迟。它只让当前已允许的异常被识别，不会越过调用者原有的非零 BASEPRI/PRIMASK，也不会让 ISR 能够阻塞；应用仍不得在自持临界区或额外关中断状态下调用阻塞操作。
+
+- **默认使用 BASEPRI，PRIMASK 为替代配置**：默认仅在进出事务中短暂关闭可配置中断，随后精确恢复原 PRIMASK；主体由 BASEPRI 保护，调用者原先未关总中断时，优先级 0–4 可抢占主体。替代配置则让 PRIMASK 保持到最外层退出，届时恢复最初保存的值。两种模式都不能无条件 `cpsie i`，否则会意外打开调用者已经关闭的中断。
+- **当前屏障配置**：默认 BASEPRI enter 保留 ISB，使后续指令在增强屏蔽后执行；exit 先恢复原 BASEPRI，再恢复事务前的 PRIMASK，最后执行 ISB。PRIMASK 替代路径在最外层还原后同样经过出口 ISB。`memory` clobber 限制编译器跨边界重排，ISB 则提供所需的异常识别同步；两者都不能替代元数据互斥。请求 PendSV 的现有 DSB/ISB 保证请求发出，不能代替稍后解除屏蔽时的出口同步。设备访问、缓存/MPU 配置及其他处理器移植仍须按各自架构要求分析。
+- **历史性能背景与结论更正**：早期测量中临界区进出对由 55 周期降到 23 周期，对照 FreeRTOS 为 47 周期；这些数字属于当时内联及删除出口 ISB 的历史组合，不能用于证明删屏障正确。此次空信号量超时复现推翻了“出口无需 ISB”的泛化结论，当前以正确性要求保留 ISB；最新成本和验证范围见带日期报告，历史数字不是当前配置的最坏执行时间或跨工程保证。
+- **共享计数的调用契约**：ISR 与任务共用 `rtos_port_crit_nest`；最低优先级 PendSV 在主体内仍被屏蔽，不能切走尚持临界区的任务，因此不需要给每个 TCB 保存此计数。enter/exit 必须由同一调用上下文严格配对，不能阻塞、跨上下文配对或在未进入时退出。NMI/HardFault 不受 PRIMASK 保护，禁止重入本原语，也不能调用操作内核对象的 API。
+- **计数错误处理**：计数为零的退出及 `UINT32_MAX` 时的进入不会执行回绕更新；先恢复本次事务临时改变的 CPU 屏蔽，再交给 `rtos_port_critical_nesting_error`。断言开启时捕获错误，关闭时保持原状态返回。这是防止进一步损坏，不是从错误配对或已损坏计数恢复业务执行的机制。
+- **ISR 优先级守卫**：需访问受保护内核状态的 API 仍禁止优先级 0–4 ISR 调用。G-3 仅在 `RTOS_CONFIG_ASSERT_ENABLED=1` 时生效；关闭时不产生检查，也不会自动返回优先级错误码。本次对 heap/perf/USB 的相关入口补齐或前移检查，避免已改共享状态才由下层 IPC 检出违约；不能将短 PRIMASK 元数据保护视为对违规 API 并发访问的支持。
 - **内联化的收益**：早期实现是 `port.c` 里的 out-of-line 函数 + TU 内 static 计数，每次 enter/exit 都要付函数调用序言/尾声；改为头文件 `static inline` + 全局 `rtos_port_crit_nest` 后，每对节省约 10 周期。计数改放移植层也顺带解决了"跨 TU 访问"的问题——内联函数必须能看到定义，而 `static` 变量做不到。
 - **一次被实测否决的进一步优化**：曾尝试"嵌套时跳过冗余的 `msr` + `isb`"（用计数判断，仅在 0→1 时真正写 BASEPRI）。实测**净负收益**并已回退：`give_no_waiter` 91→99、`give_w01` 1246→1277 周期。原因是 `rtos_port_crit_nest` 为 `volatile`，判断+自增+分支引入的读-改-写访存开销超过了省下的写入；且信号量 give 路径本身并不嵌套，收益面根本不存在。该结论已写入源码注释，避免后续重复尝试。
 - **`rtos_port_context_switch()`**（挂起 PendSV）：先记 perf 时间戳（仅当 `RTOS_CONFIG_PERF_HOTPATH_STATS` 打开，默认关），再 `SCB->ICSR = PENDSVSET`，当前路径保留 DSB/ISB。不要把临界区入口的屏障配置直接复制到请求切换路径；二者操作对象和用途不同。
 
-源码定位：[rtos_port.h](../RTOS/Core/Inc/rtos_port.h) 55–93 行、[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 219–231 行；屏蔽寄存器的硬件语义见 [ST PM0214](https://www.st.com/resource/en/programming_manual/dm00046982-stm32-cortex-m4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf) 第 2.1.3 节。本章固定帧和指令说明只解释当前 Cortex-M4F 实现，不能据此认定所有 Cortex-M7 型号、编译 ABI、存储系统配置都已完成验证。
+源码定位：[rtos_port.h](../RTOS/Core/Inc/rtos_port.h) 的 `rtos_port_enter_critical/exit_critical`、[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 的 `rtos_port_critical_nesting_error` 与 `rtos_port_context_switch`；屏蔽寄存器的硬件语义见 [ST PM0214](https://www.st.com/resource/en/programming_manual/dm00046982-stm32-cortex-m4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf) 第 2.1.3 节。本章固定帧和指令说明只解释当前 Cortex-M4F 实现，不能据此认定所有 Cortex-M7 型号、编译 ABI、存储系统配置都已完成验证。
 
 ---
 
@@ -1175,7 +1215,7 @@ static inline void rtos_port_exit_critical(void)
 
 | 中断域 | 逻辑 / 寄存器优先级 | BASEPRI 内核临界区中的行为 | 应用责任 |
 |---|---|---|---|
-| 高优先级非 RTOS 中断 | 0–4 / 0x00–0x40 | 仍可抢占 | 不调用修改内核结构的 API；与任务共享数据需另设计协议 |
+| 高优先级非 RTOS 中断 | 0–4 / 0x00–0x40 | 可抢占主体；进出元数据的短 PRIMASK 事务中暂缓 | 不调用需内核临界区保护的 API；与任务共享数据需另设计协议 |
 | syscall 域外设中断 | 5–15 / 0x50–0xF0 | 被屏蔽，允许后响应 | 只使用支持 ISR 的非阻塞路径；控制复制和扫描成本 |
 | SysTick、PendSV | 当前均配置为逻辑 15 | 被屏蔽；同级挂起按异常规则处理 | SysTick 推进逻辑时间，PendSV 承接现场切换 |
 
@@ -1206,6 +1246,8 @@ sequenceDiagram
 </details>
 
 “ISR 已唤醒任务”只表示任务取得就绪资格，实际响应仍受中断嵌套、屏蔽窗口、更高优先级任务和切换恢复影响。工程移植必须一起核对 NVIC 优先级分组、CMSIS 位数、编码后的阈值以及 SVC/PendSV/SysTick 配置。关闭断言不会使违规优先级变安全；PRIMASK 配置虽然屏蔽可配置中断，也不扩展各 API 的 ISR 使用契约。
+
+高优先级 ISR 在抢占临界区主体时读到非零 BASEPRI 是正常现象，不能把一次 `BASEPRI != 0` 采样直接当作屏蔽泄漏。应在完整最外层退出后的线程安全观察点核对原 mask、计数和 PRIMASK，并同时观察 tick 与任务进展。专用复现夹具用高优先级 IRQ 重入底层屏蔽原语以检验元数据事务，不据此宣称这类 ISR 可以操作 sem/queue/event 等内核对象。
 
 内核 tick 是成功执行 `rtos_sched_tick` 的逻辑计数，非硬件经过时间的自动积分。调度器挂起期间不推进它；SysTick 长时间被屏蔽时，多次周期可能合并为一个 pending 异常，当前没有 elapsed-tick 补偿。外设 FIFO、DMA 和设备协议还各有容量/时限，NVIC 保留 pending 不保证所有原始数据都被保存。应按最长保护窗口和外设缓冲设计中断及背压策略。
 
@@ -1300,9 +1342,10 @@ flowchart TD
 7. perf_on_task_deleted(tcb) ← 线性定位后以末项替换移除；完整 O(观察任务数)
 8. mutex_release_all(tcb):                     ← 释放其持有的所有互斥锁
    遍历 s_mutex_registry, owner == tcb 的每把锁:
-     restore_priority(owner)
+     mutex->owner = NULL
      woken = wake_highest(&mutex->wait_head)   ← 移交给最高优先级等待者
      woken ? (owner=woken, recursion=1) : (owner=NULL)
+     mutex_refresh_priority_graph(tcb)        ← 在完成移交的新依赖上重算
    ★必须在释放 TCB 内存之前执行——否则 mutex->owner 指向已释放 TCB,
      其余等待者永久死锁
 9. (可选) delete_hook
@@ -1498,12 +1541,12 @@ rtos_task_set_priority(tcb, prio):
            必须维持优先级继承带来的提升, 否则等待者再也无法抢占持锁者
   ③ if was_ready: ready_list_add(tcb)            ← 挂到 ready_heads[新优先级]
   ④ rtos_internal_requeue_wait_lists(tcb)        ← 重挂"对象等待链"
-  ⑤ mutex_waiter_requeued(tcb)                 ← 同步所等锁持有者的继承
+  ⑤ mutex_waiter_requeued(tcb)                 ← 若正等 mutex，全图重算传递继承
   ⑥ 调度器 RUNNING 时重算 sched_schedule()     ← 提升或降低均需处理
   EXIT_CRITICAL
 ```
 
-**第 ④ 步是本节的核心**，也是两套链纪律（1.3 不变式 III）必须分别处理的唯一位置：
+第 ⑤ 步使用从 base 起算的有界全图求解，使等待者的优先级提升与撤销继续传播到上游持有者，详见 7.3、7.6。第 ④ 步负责两套链纪律（1.3 不变式 III）按新有效优先级重新入链：
 
 ```c
 void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb)
@@ -1547,7 +1590,7 @@ void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb)
 
 > 相关缺陷（均已修复，保留在此作为反面教材）：
 > **PI-2** 优先级变化后不重挂等待链 → 对象释放时仍按旧优先级取牺牲者 → **唤醒顺序倒置**（低优先级先得资源）；
-> **PI-1** 释放锁时无条件把持有者降回 `base_priority` → 若它仍持有别的锁且有人在等，继承被提前丢弃 → 持续到它释放第二把锁为止的**确定性优先级反转**。修复方式是改为重算"全部持有锁的综合有效优先级"（`rtos_internal_mutex_compute_effective_priority`）。
+> **PI-1** 释放锁时无条件把持有者降回 `base_priority` → 若它仍持有别的锁且有人在等，继承被提前丢弃 → 持续到它释放第二把锁为止的**确定性优先级反转**。早期修复综合全部已持锁的直接等待者；当前最终释放路径进一步以 `mutex_refresh_priority_graph` 重算完整传递依赖，不能将早期单节点查询描述为现有全部算法。
 
 ---
 
@@ -1731,182 +1774,106 @@ static rtos_mutex_t *s_mutex_registry[RTOS_CONFIG_MAX_MUTEXES];
 ## 7.2 rtos_mutex_take(mutex, timeout) 逐步流程
 
 ```
-1. 校验; ISR → ERR_ISR (中断没有"拥有者"语义, 从 API 层堵死)
-2. ENTER_CRITICAL; cur = current_tcb
-3. ── 情形A: 锁自由 ──
-   owner = cur; recursion_count = 1
-   EXIT; return OK
-4. ── 情形B: 递归重入 ──
-   owner == cur → recursion_count++; EXIT; return OK
-5. timeout == NO_WAIT → ERR_TIMEOUT
-6. ── 情形C: 他人持有 → 阻塞 + 优先级继承 ──
-   block_permitted 失败 → ERR_SCHED；此时不得先提升拥有者
-   mutex_try_inherit(mutex, cur->priority):
-     if owner->priority > cur->priority:          ← owner 数值更大=更低优先级
-         was_ready = owner 处于 READY/RUNNING?
-         was_ready → ready_list_remove(owner)    ← 必须先摘出
-         owner->priority = cur->priority          ← 提升到等待者级别
-         was_ready → ready_list_push_tail(owner)  ← 挂进更高优先级的链表+置位图
-         requeue_wait_lists(owner)                ← 对象等待链也必须按新优先级维护
-     若 owner 正阻塞在别处，不改就绪表，但仍重挂其对象等待链
+1. 校验 NULL、initialized 与上下文；ISR → ERR_ISR
+2. ENTER_CRITICAL；再次校验 initialized；cur = current_tcb
+3. ── 情形 A：锁自由 ──
+   owner = cur；recursion_count = 1
+   EXIT；return OK
+4. ── 情形 B：同一任务递归重入 ──
+   recursion_count == UINT32_MAX → EXIT；return ERR_OVERFLOW
+   否则 recursion_count++；EXIT；return OK
+5. timeout == NO_WAIT → EXIT；return ERR_TIMEOUT
+6. ── 情形 C：他人持有，需要等待 ──
+   block_permitted 失败 → EXIT；return ERR_SCHED
    block_current_on(mutex, &mutex->wait_head, timeout)
-   → 与 6.2 的 6-8 步完全相同: 挂链/出就绪/决策/EXIT/切出
+     → 发布等待关系、登记超时、退出就绪表并选择候选任务
+   阻塞登记成功后 mutex_refresh_priority_graph(NULL)
+     → 根据完整等待依赖重新求解继承；必要时刷新调度候选
+   EXIT → 真正切出
 7. --- 唤醒后 ---
    return cur->wait_result
-   (OK 的场合: 所有权已在 give 里预移交, 此刻已持有锁——见下)
+   OK 表示 give/release_all 已预移交所有权，无需重新竞争
 ```
 
-`base_priority` 属于 TCB，不在 mutex 中保存单个“原优先级”。恢复时必须综合拥有者仍持有的全部锁。`take/give` 依赖有效的当前任务，应在调度器启动后的任务中调用；仅处于 Thread 模式不足以使启动前取锁合法。
+`base_priority` 属于 TCB，不在 mutex 中保存单个“原优先级”。任务可能同时持多把锁，自己又等待另一把锁，因此恢复值必须取决于完整依赖，而非一次 take 保存的旧数值。`take/give` 依赖有效的当前任务，应在调度器启动后的任务中调用；仅处于 Thread 模式不足以使启动前取锁合法。
 
-**优先级继承解决的问题**（优先级反转）：
+临界区外的 initialized 检查用于快速拒绝；临界区内再检才保护后续状态读改和等待登记。即使合法 ISR 在两次检查之间 deinit，对象也不能继续被获取或等待。两次检查都要求地址仍指向有效存储，不是允许与调用方并发释放内存的协议，详见 16.3。
+
+## 7.3 全图求解：传递继承与撤销
+
+优先级数值越小表示优先级越高。直接继承使等待 H 的低优先级持锁者 L 得到 H 的有效优先级，避免中等优先级任务阻止 L 运行。若 L 同时等待另一个持锁者，捐赠还必须沿依赖继续传播。
+
+```mermaid
+flowchart LR
+    H["H：priority 4"] -->|等待锁 A| L["L：持锁 A，base 15"]
+    L -->|等待锁 B| D["D：持锁 B，base 16"]
+    D -->|继承到 priority 4| R["更快完成临界资源操作"]
+```
+
+`mutex_refresh_priority_graph(detached_owner)` 在调用者已持有内核临界区时执行：
+
+1. 从互斥锁注册表收集不同持有者；可附加刚释放最后一把锁的旧持有者。节点容量为 `RTOS_CONFIG_MAX_MUTEXES + 1`。
+2. 每个临时有效优先级均初始化为对应任务的 **`base_priority`**，而非上一次继承结果。
+3. 遍历全部注册锁及其全部等待节点。若等待者也是图中持有者，用其临时求解值捐赠；否则用该等待者当前有效优先级。对每条等待者→持有者关系取数值最小值。
+4. 最多执行图节点数轮松弛；某一轮没有变化则提前停止。每轮可继续推进依赖，不使用递归调用传播。
+5. 求解完成后才统一应用结果。`mutex_set_owner_priority` 重挂就绪链及任务所在的对象等待链；有效优先级变化且调度器运行时重新调度。
+
+从 base 起算使已经撤销的外部捐赠不会在依赖环内相互保留。即使环仍存在，撤销后的有效优先级也应恢复为当前基础优先级和剩余等待关系决定的值。计算阶段扫描全部等待者，不依赖仍按旧有效优先级排列的链首来猜测新解；求解结果发布后，等待链重新保持优先级顺序。
+
+**此机制不解决死锁**。A 持锁 L1 等 L2、B 持锁 L2 等 L1 时，继承可以提高二者优先级，却不能让二者获得对方的锁。应用仍需锁顺序、有限超时和异常收尾协议。当前实板覆盖深度 2、3、6 的链及有限双节点环，不能据此宣称任意业务依赖已经验证；证据见 [复杂依赖回归记录](rtos_adversarial_20261026.md)。
+
+## 7.4 rtos_mutex_give(mutex)：在最终所有权拓扑上重算
 
 ```
-无继承:  H(高) 等锁 → L(低) 持锁 → M(中) 抢占 L → H 被 M 间接阻塞(时间不可控)
-有继承:  H 等锁 → L 被提升到 H 级 → M 无法抢占 L → L 尽快放锁 → H 立即运行
-```
-
-## 7.3 rtos_mutex_give(mutex) 逐步流程 (顺序是正确性核心)
-
-```
-1. 校验; ISR → ERR_ISR
-2. ENTER_CRITICAL; cur = current_tcb
-3. owner != cur → ERR_PARAM               ← 只有持有者能释放
-4. recursion_count--; > 0 → 仍持有, EXIT; return OK
-5. ── 真正释放 ──
-   ★第一步: 先摘掉本锁所有权，再重算 old_owner 的优先级
+1. 校验；ISR → ERR_ISR
+2. ENTER_CRITICAL；再次校验 initialized；cur = current_tcb
+3. owner != cur 或 recursion_count == 0 → EXIT；return ERR_PARAM
+4. recursion_count--；仍大于 0 → EXIT；return OK
+5. 最终释放：
+   old_owner = cur
    mutex->owner = NULL
-   mutex_restore_priority(cur):
-     effective = compute_effective_priority(cur)  ← 全部仍持有锁的等待链首与 base 取最小值
-     priority 未变 → 无事
-     否则: 摘出就绪表 → priority = effective → 放回对应优先级链
-   ★第二步: 再唤醒最高优先级等待者
-   woken = wake_highest(&wait_head)        ← 同 6.2 的唤醒五连(unblock 可能触发 schedule)
-   ★第三步: 所有权预移交
-   woken != NULL:
-       owner = woken; recursion_count = 1
-       → 被唤醒任务运行时【已经持有锁】, 它的 take 直接返回 OK,
-         不存在 "owner=NULL 窗口被第三方 take 窃取" 的竞争
-   woken == NULL:
-       owner = NULL; 锁自由
-6. EXIT_CRITICAL; return OK
+   woken = wake_highest(&mutex->wait_head)
+   woken != NULL → owner = woken；recursion_count = 1
+   woken == NULL → owner = NULL；锁自由
+6. mutex_refresh_priority_graph(old_owner)
+   → 用最终依赖重算新旧持有者及上游任务，刷新调度候选
+7. EXIT_CRITICAL；return OK
 ```
 
-**为什么必须"先恢复、再唤醒"**：调度决策需要看到 old_owner 释放本锁后的有效优先级。若仍把本锁算作它持有，继承重算会保留来自本锁等待者的提升；若先唤醒再重算，unblock 选择候选时也仍看到旧优先级。先摘本锁所有权、综合其余持有锁恢复优先级，再唤醒，才能让本次决策基于正确的就绪关系，同时保留其他锁要求的继承提升。
+**顺序要求是先完成所有权变化，再重算最终依赖**。撤销旧 owner 后，最高优先级等待者被摘链、唤醒并登记为新 owner；然后重算包含旧 owner 的全图。若只在移交前恢复旧 owner，就不能根据新 owner 与剩余等待者的关系更新全部继承。唤醒内部可能产生调度候选，但实际切换发生在临界区外，图重算会在退出前刷新必要的候选。
 
-**为什么所有权预移交是安全的**：摘旧 owner、恢复旧优先级、唤醒新任务并写入新 owner 都处于同一临界区，第三方取锁不能插入这组修改。临界区退出后，在新拥有者实际得到 CPU 前，其他任务或 ISR 仍可能运行；此时锁已属于新拥有者，第三方不能把它当成空闲锁抢走。等待调用恢复后仅检查 `wait_result`，无需再次竞争所有权。
+**预移交避免第三方抢锁**：上述撤销、唤醒、登记新 owner 和图重算处于同一临界区，其他使用 RTOS 的任务或 ISR 不能插入修改。退出后，锁已经属于被唤醒任务；即使它还没有运行，第三方也不能把锁当成空闲资源。恢复的 take 读取 TCB 中的结果即可，不再进行二次争抢。
 
-## 7.4 等待者中途退出的善后: mutex_waiter_left
+## 7.5 等待者退出、对象销毁与任务删除
 
-三个场景会让等待者"不经过 give"离开等待链表：
+| 依赖变化 | 触发路径 | 继承与所有权处理 |
+|---|---|---|
+| 等待者超时、挂起或删除 | 等待节点摘除后通知 `mutex_waiter_left` | 地址匹配注册锁后执行全图重算，撤销其全部传递捐赠 |
+| 锁被 deinit | 清 owner、唤醒等待者 `ERR_DELETED`、注销锁 | 在最终注册表与所有权上重算旧持有者及其他节点 |
+| 持锁任务被删除 | `mutex_release_all` 扫描注册锁 | 每把命中锁先撤销旧 owner、唤醒并预移交最高等待者，再按新拓扑重算 |
+| 等待者优先级变化 | `mutex_waiter_requeued` | 重挂后刷新全图，使捐赠提升和撤销都能传递 |
 
-| 场景 | 触发点 | 善后 |
-|------|--------|------|
-| 超时 | process_delayed_tasks | wait_remove + `mutex_waiter_left(tcb)` |
-| 挂起 | task_suspend 第 4 步 | 同上 |
-| 删除 | task_delete 第 5 步 | 同上 |
+`mutex_waiter_left` 通过等待对象地址查注册表，非 mutex 的 sem/queue/event 会被忽略。地址匹配不能识别已经释放或被新对象复用的陈旧指针，应用必须保证对象存储寿命和正确 deinit 协议。不能在存活使用者仍可能访问时释放或重置对象。
 
-```
-mutex_waiter_left(waiter):
-  obj = waiter->wait_node.wait_obj
-  扫描 s_mutex_registry: 注册表里 == obj ?
-    是 → mutex_recompute_inheritance(mutex):
-           遍历注册表中 owner 仍持有的全部锁，每把只取有序等待链首
-           owner->priority = min(base_priority, 各非空等待链首的有效优先级)
-           在就绪表则摘出重挂
-           若仍在对象等待链上则按新优先级重挂该节点
-    否 → 非 mutex 对象(sem/queue/event 的 wait_obj), 自动忽略
-```
-
-**用指针身份匹配的隐患**：理论上若一个已销毁信号量的地址恰好被新互斥锁复用且已注册，匹配会误命中。工程上"等待中的对象仍被复用"意味着用户已 use-after-free，防御成本远大于收益——设计上接受此边界。
-
-## 7.5 任务删除时的锁大扫除: mutex_release_all
-
-```
-task_delete 第 8 步调用(此时任务状态已 DELETED, 不在就绪表):
-遍历 s_mutex_registry:
-  mutex->owner == 被删任务:
-      mutex->owner = NULL                ← 先摘所有权，重算时不再计入本锁
-      restore_priority(owner)            ← 恢复(但任务已不在就绪表, 只改字段)
-      woken = wake_highest(...)
-      woken ? 移交所有权 : owner = NULL
-```
-
-若不做这一步，mutex->owner 会指向已删除任务，等待者可能永久等待。释放流程扫描 M 把注册锁，每把被释放的锁还会重算其余锁的继承，最坏 O(M²)，并包含必要的等待链重挂；不是对每把锁再遍历 W 个等待者。
+删除任务时若不处理已持锁，owner 会指向被删除任务。内核自动移交使等待者能继续运行，但不回滚被删除任务已经修改的设备或数据，也没有“持有者死亡后业务状态已恢复”的事务协议。生产业务必须另行处理半完成状态。
 
 ## 7.6 rtos_task_set_priority 与继承的交互
 
-```
-set_priority(tcb, prio):
-  was_ready → 摘出就绪表
-  base_priority = prio
-  ★priority = mutex_compute_effective_priority(tcb)
-      ← 不能直接 priority = prio! 若任务持锁且有更高优先级等待者,
-        直接覆盖会丢弃继承提升, 等待者永远抢不到持锁者
-      遍历注册表: owner==tcb 的每把锁只取非空 wait_head, 与 base 取最小值
-  was_ready → 放回
-  requeue_wait_lists(tcb) ← 若正在等待，按新有效优先级重排对象等待链
-  mutex_waiter_requeued(tcb) ← 若正等 mutex，重算该锁持有者的继承
-  schedule() ← 升降都可能引发切换
-```
+`rtos_task_set_priority` 修改的是基础优先级。当前入口先通过 `rtos_internal_mutex_compute_effective_priority(tcb)` 综合其直接持有锁的有序链首，暂时维护该任务的有效优先级并重挂所在等待链；若它正在等待某把 mutex，随后 `rtos_internal_mutex_waiter_requeued` 执行全图重算，传播这一依赖变化，最后刷新调度决策。全过程在同一内核临界区内。
 
-**本轮只查看等待链首的依据**：互斥锁等待链始终按任务的有效 `priority` 排序，数值最小者在链首；初次阻塞按优先级插入，等待任务优先级变化时先重挂等待链，再通知其所等待互斥锁的持有者重算继承。超时、挂起、删除和成功唤醒只摘节点，保持剩余节点的顺序。这些操作及继承重算都在内核临界区中完成，因此每把锁的链首已经代表该锁全部等待者的最高有效优先级。
+直接查询函数仍只看每把已持锁的链首，不能将其与全图求解器混同：前者利用当前等待链按有效优先级有序的性质，后者从 base 重新计算跨锁依赖，并扫描全部等待者。文档中的“每把锁只读链首”不适用于最终 give、等待者撤销或全图重算的成本。
 
-`compute_effective_priority` 仍从 `base_priority` 出发，检查注册表中该任务持有的**每一把锁**，保留多锁继承和逐把释放后的正确恢复。若注册表有 M 把锁，重算为 O(M)，不再逐一遍历各锁等待者；并未增加元数据 RAM 或改变 API，也没有增加跨多把锁的传递式优先级继承能力。
+## 7.7 开销与设计边界
 
-## 7.7 设计分析
+注册表容量由 `RTOS_CONFIG_MAX_MUTEXES` 限制，满时 init 明确失败。全图重算使用局部暂存数组，不新增动态堆分配或递归传播，但计算与优先级发布均占用内核临界区。成本随注册锁数、不同持有者、等待者和松弛轮数增长，另有对象链重挂成本，不能再把阻塞 take 或最终 give 描述为仅一次 O(1) 提升。
 
-![互斥锁优先级继承的四个阶段](images/rtos_design_12.png)
+令 M 为注册锁数，V 为图中不同持有者数（含可选旧持有者），ΣW 为注册锁的等待者总数。当前数组查找为 O(V)，最多 V 轮松弛，图求解的保守上界为 O(V²(M+ΣW))；应用优先级变化时还需计算各任务的对象链重挂成本。任务删除可对多个被移交锁重复重算。小配置使规模有界，但不等于已获得产品最坏响应时间。
 
-<details><summary>图形源码（mermaid）</summary>
+在本轮默认 `MAX_MUTEXES=8` 的构建中，编译器 `.su` 为 `mutex_refresh_priority_graph` 报告 **O0 112 B、O2 128 B、O3 136～160 B 的静态栈帧**；O3 断言开启时为 136 B、关闭时为 160 B，BASEPRI/PRIMASK 两种配置下该表一致。逐配置证据见 [回归记录](rtos_adversarial_20261026.md)。这不包含调用者、被调用函数和异常/中断上下文，不是完整调用链的栈上界；更改编译器、优化级别或 mutex 容量后应重新核查。BASEPRI 模式下这段临界区延后 syscall 域 ISR，高优先级非 RTOS ISR 仍可抢占；关键响应时间必须结合实际配置和 IRQ 负载评估。
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant L as 任务 L (base prio 10)
-    participant M as 互斥锁 mutex
-    participant H as 任务 H (prio 2)
-
-    Note over L,M: 阶段① 正常持有
-    L->>M: mutex_take() 成功 (owner = L)
-
-    Note over H,M: 阶段② 提升 (H 阻塞触发)
-    H->>M: mutex_take() — 已被占用
-    M->>M: owner->priority = min(L.base, H.prio) = 2
-    M->>H: H 入等待链 (有序插入)
-    Note over L: L 被临时提升到 prio 2<br/>★这是优先级继承的核心
-
-    Note over L: L 以 prio 2 运行, 不被中优先级任务抢占
-
-    Note over L,M: 阶段③ 释放 + 所有权预移交
-    L->>M: mutex_give()
-    M->>M: mutex->owner = NULL
-    M->>M: L 恢复 = compute_effective_priority(L)
-    M->>H: 取链首 H，摘等待链并置 READY
-    M->>M: mutex->owner = H，recursion_count = 1
-    Note over M: 整组操作在同一临界区内<br/>退出时所有权已经移交
-
-    Note over H: 阶段④ H 醒来即已持有锁<br/>无需重新 take — 竞争窗口归零
-```
-
-</details>
-
-**优点**：直接等待者触发拥有者提升；释放与等待者离开时重算继承；支持递归和预移交所有权；超时、挂起、删除共享清理机制。
-
-**缺点/已知限制**：
-
-1. ~~多锁 give 丢弃其他锁的继承~~ → ✅ **已修复**（PI-1）：释放时不再无条件降回 `base_priority`，
-   而是调用 `rtos_internal_mutex_compute_effective_priority(owner)` **重算"全部持有锁的综合有效优先级"**。
-   原缺陷场景：A 持 L1、L2，H1 等 L1、H2 等 L2；give L1 后若直接恢复 base，
-   A 仍持 L2 却丢掉 H2 带来的提升 → 持续到 A 释放 L2 为止的**确定性优先级反转**。
-   代价是最终 give 需扫描 M 把注册锁重算，即使本锁无等待者也会执行；持锁者若正在对象链上，还包含重挂成本。
-2. 当前未实现跨多把锁的传递式优先级继承（L10）；
-3. 注册表查找 O(M)、容量由配置限制，满时显式失败，不是静默失去继承；
-4. waiter_left 用等待对象地址扫描注册表匹配，是 O(M)；不增加额外类型标签。
-
-**业务一致性边界**：删除任务时移交其持有的锁，保护的是内核 owner 指针和等待者进展，不会回滚该任务已经修改的设备或数据，也没有“拥有者死亡后状态已恢复”的事务协议。业务仍需规定锁顺序、限制持锁时间，并在有序停止任务时处理半完成状态。源码见 [rtos_mutex.c](../RTOS/Core/Src/rtos_mutex.c) 的 `mutex_set_owner_priority`、`rtos_internal_mutex_compute_effective_priority` 与 `rtos_internal_mutex_release_all`。
+本轮实板已覆盖传递捐赠、超时/挂起/删除撤销、等待者调优先级、所有权移交、有限循环依赖及递归上界，详见 [回归记录](rtos_adversarial_20261026.md)。这些有限证据不能替代业务锁顺序、持锁时间约束和存储寿命协议。
 
 ---
-
 # 第八章 消息队列: 四条路径与单次拷贝直传
 
 ## 8.1 数据结构与环形缓冲
@@ -2392,7 +2359,7 @@ sched_commit_context_switch → perf_on_context_switch(prev, next):   /* 热统�
 
 `rtos_perf_reset` 仅重置窗口基准，不清除累计运行周期、切换次数或历史 latency max。`sched_latency_avg_us/count` 按窗口差值计算，`sched_latency_max_us` 取累计最大值；不能把 reset 后的 max 自动标注为新窗口最大值。
 
-按头文件调用契约，完整查询在任务上下文执行；实现没有统一的 ISR 拒绝守卫，不能据此扩展推荐使用范围。`get_all_tasks` 在整个遍历及栈扫描期间持临界区，避免期间任务删除释放 TCB；开销随观察任务数和栈容量增长。`get_cpu_usage/get_switch_rate` 才是 ISR 只读快速快照，数值由之前的 system 查询刷新，不会主动采样。
+按头文件调用契约，完整查询在任务上下文执行；当前 `get_system/get_memory/get_task/get_all_tasks/reset/register_pool` 还在访问共享状态前执行 `RTOS_ASSERT_ISR_OK`，用于尽早捕获高于 syscall 阈值的 ISR 违约。这是优先级断言，不是统一拒绝所有 ISR 的运行时返回接口；关闭断言也不扩展推荐使用范围。`get_all_tasks` 在整个遍历及栈扫描期间持临界区，避免期间任务删除释放 TCB；开销随观察任务数和栈容量增长。`get_cpu_usage/get_switch_rate` 是不进临界区的 ISR 只读快速快照，数值由之前的 system 查询刷新，不会主动采样。
 
 ## 12.5 观察容量、内存与栈水位
 
@@ -2754,18 +2721,18 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 |------|--------|-----------|------|
 | find_highest_priority | O(1)，RBIT + CLZ（整体含零输入判定） | — | 每次调度 |
 | 就绪表 push/remove/rotate | O(1) | 含于调用者 | 高频 |
-| enter/exit_critical | O(1)，保存原 mask、嵌套计数和进入屏障 | 持有时间取决于被保护操作 | 结构修改与一致快照 |
+| enter/exit_critical | O(1)，保存原 mask、嵌套计数、PRIMASK 事务和进出屏障 | 持有时间取决于被保护操作 | 结构修改与一致快照；阻塞返回同步 |
 | PendSV 切换核心 | O(1) 上下文保存/恢复；FPU、统计开关影响成本 | 提交 current/next 至安装 PSP 的窗口屏蔽 syscall ISR | 每次切换 |
 | **延时链插入** | **O(1) 快路径**(表尾缓存) / O(D) 慢路径(乱序) | 含插入搜索 | delay 与有限对象超时 |
 | **延时链摘除** | **O(1)**(双向 + 表尾缓存交接) | 含于调用者 | 提前唤醒/到期/中止 |
 | sem take 快路径 | O(1) | 低 | 最高频 IPC |
 | sem take 阻塞入链 | O(W) 尾插；另含延时链插入 | 含入链搜索 | 无可用计数且允许阻塞 |
 | sem give 唤醒路径 | 单等待者 O(1)；多等待者定位/清位最坏 O(W) | 含扫描、摘链和调度决策 | 有等待者的释放 |
-| mutex take 直接继承 | 提升字段及就绪重挂 O(1)；阻塞拥有者的对象重挂 O(W) | 含拥有者重挂 | 更高优先级任务开始等待 |
-| mutex 阻塞登记 | 有序等待链插入 O(W)，另含延时链插入；不在此路径扫描全部已持锁 | 含入链和直接继承 | 锁被其他任务持有 |
-| mutex 跨已持锁有效优先级重算 | O(M)，每把锁只读有序链首；应用新值时可能另含对象重挂 O(W) | 含注册表扫描和重挂 | 最终 give、deinit、等待者离开、set_priority |
-| mutex waiter_left | 对象地址匹配 O(M)，命中后再执行 O(M) 重算及必要重挂 | 含于超时/中止路径 | 等待者因超时、挂起、删除离链 |
-| mutex release_all | 最坏 O(M²)，还含各被释放锁的唤醒 | 同左 | 删除持锁任务 |
+| mutex 无竞争/正常递归 take | O(1)；递归上界拒绝也为 O(1) | 含 owner/计数读改 | 空闲锁或同一任务重入 |
+| mutex 阻塞登记 | 有序插入 O(W)及延时链插入，再执行全图继承求解 | 含入链、图求解与优先级重挂 | 锁被其他任务持有 |
+| mutex 全图继承重算 | 最多 V 轮，数组查找 O(V)，求解保守 O(V²(M+ΣW))；另含变化节点对象重挂，V≤M+1、ΣW为注册锁等待者总数 | 含全图计算、发布与调度刷新；当前 O2 求解函数帧 128 B | 阻塞 take、最终 give、deinit、等待者离开/调优先级 |
+| mutex waiter_left | 对象地址匹配 O(M)，命中后执行全图重算 | 含于超时/中止路径 | 等待者因超时、挂起、删除离链 |
+| mutex release_all | 注册表扫描及各命中锁的唤醒/移交；每次移交后重算全图 | 同左 | 删除持锁任务 |
 | queue 空队直传 | O(B)，正常等待者链首选择 O(1) | 含复制和唤醒 | 已有接收等待者 |
 | queue 阻塞入链 | O(W)，按有效优先级有序插入；另含延时链插入 | 含入链搜索 | 满队发送/空队接收 |
 | event set | O(W)，逐个判条件、即时清位及唤醒 | 含全部等待者遍历 | 更新条件状态 |
@@ -2774,9 +2741,9 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | mempool alloc/free | alloc O(1)；free 最坏 O(块数)，拒绝重复释放 | free 含有界扫描 | 高(USB) |
 | 定时器到期派发 | 链首检查 O(1)；重插 O(T)；回调及命令批次成本另计 | 仅摘链/控制/重插段，回调在外 | 到期和控制命令 |
 | task_registered / 对象 init 存活等待检查 | O(N)，独立任务登记链扫描 | 含身份查找 | 任务修改、sem/queue/event 重初始化 |
-| **rtos_task_set_priority** | 登记 O(N)、重算 O(M)、对象重挂 O(W)；另查锁等待链，最坏 O(M+ΣW)，ΣW为注册锁等待者总数 | 含登记、继承和相关等待链扫描 | 业务改基础优先级 |
+| **rtos_task_set_priority** | 登记 O(N)、直接有效值查询 O(M)、对象重挂 O(W)；若正等 mutex，还含注册表/等待链匹配及全图重算 | 含登记、继承和相关等待链扫描 | 业务改基础优先级 |
 
-> **复杂度与测量要分别解读**：位图选择、就绪表、单等待者唤醒等有 O(1) 快路径，但多等待者信号量、有序入链/重挂、对象重新初始化守卫、任务登记、堆扫描、内存池重复释放检查和定时器重插仍有线性成本。23 周期临界区、16 条 PendSV 等历史数据不描述当前加固后的完整路径；当前实测见 [底层优化报告](rtos_lowlevel_optimization_20261012.md)。关键中断/任务的最坏响应时间必须结合配置、消息大小、等待者数和外部 ISR 负载重新评估。
+> **复杂度与测量要分别解读**：位图选择、就绪表、单等待者唤醒等有 O(1) 快路径，但多等待者信号量、有序入链/重挂、对象重新初始化守卫、任务登记、堆扫描、内存池重复释放检查和定时器重插仍有线性成本。23 周期临界区、16 条 PendSV 等历史数据不描述当前加固后的完整路径；早期对照见 [底层优化报告](rtos_lowlevel_optimization_20261012.md)，此次临界区加固的实测见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)。关键中断/任务的最坏响应时间必须结合配置、消息大小、等待者数和外部 ISR 负载重新评估。
 
 **容量与复杂度不能互相替代**：当前 MAX_MUTEXES 真正限制注册表容量；MAX_TASKS 只参与部分诊断标签和观察容量计算，不限制任务 create；MAX_SEMAPHORES/MAX_QUEUES/MAX_EVENT_GROUPS 未在对应内核路径形成数量限制。固定配置下的数据规模有上界，也不等于所有受规模影响的路径都具备相同恒定时延。实际生效配置与预算见第十六章。
 
@@ -2795,7 +2762,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | **L7** | 堆不后向合并，free 只合并下一块一次 | 交错分配释放或连续多块空闲 | 总空闲量不等于单次可分配上界 | 当前设计限制；若引入边界标记/循环合并需重新验证账目与临界区成本 |
 | ~~**L8**~~ | notify_wait 超时后 blocked_on 残留 | 超时唤醒 | 状态不洁 | 当前超时与恢复路径已清理；见现有 FIX 自测 |
 | **L9** | 硬容量、诊断容量与未消费配置宏不同 | 扩大任务或对象规模 | mutex 注册满会失败；perf 表满仍允许创建但不再观察；MAX_TASKS 不是任务硬上限 | MAX_MUTEXES 与观察表大小实际生效；MAX_SEMAPHORES/MAX_QUEUES/MAX_EVENT_GROUPS 未形成内核数量限制，详见第十六章 |
-| L10 | 链式继承不传递 | A→B→C 三层锁 | 深嵌套反转残留 | 当前实现限制，不能据此概括其他 RTOS |
+| ~~L10~~ | ~~链式继承不传递~~ | A→B→C 多级锁及依赖撤销 | 深层持有者未继承或提升残留 | 已实板复现并修复：从 base 有界松弛求解全图；链式检查 801/109→910/0。继承不解决死锁，临界区与栈成本见第七章 |
 | **L11** | 信号量 FIFO 位图链入链、唤醒、清位最坏 O(n) | 大量任务阻塞在同一信号量 | 临界区随等待者数增长 | 表尾可优化尾插；要优化唤醒/清位还需要每优先级链首或计数，当前未实现 |
 | **L12** | 有序链插入/重挂 O(n) | 大量任务阻塞在同一队列、事件组或互斥锁 | 临界区随等待者数增长 | 当前设计取舍，不能宣称整体 IPC 常数时间 |
 | **L13** | `rtos_kernel.critical_nesting` 为死字段 | — | 误读该字段会得到恒 0 | 卫生问题：计数实际在 `rtos_port_crit_nest`；建议后续删除该字段 |
@@ -2839,7 +2806,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 ## 16.2 上下文与返回语义矩阵
 
-以下“合法 ISR”指中断在内核 syscall 保护域内，本工程 BASEPRI=0x50、4 位 NVIC 优先级时为数值 5–15。优先级 0–4 不得调用修改内核结构的 API。`RTOS_ASSERT_ISR_OK` 只有在断言开启时检查优先级，关闭断言不会扩大允许上下文。
+以下“合法 ISR”指中断在内核 syscall 保护域内，本工程 BASEPRI=0x50、4 位 NVIC 优先级时为数值 5–15。优先级 0–4 不得调用需内核临界区保护的 API，包括只读但需一致遍历的堆及完整统计查询。`RTOS_ASSERT_ISR_OK` 只有在断言开启时检查优先级，关闭断言不会扩大允许上下文。NMI/HardFault 不得调用临界区原语或操作内核对象的 API。
 
 | API | 任务上下文 | 合法 ISR 的当前路径 | 返回值/边界 |
 |---|---|---|---|
@@ -2855,7 +2822,9 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | `timer_create` | 建立调用方提供的对象 | 当前实现有优先级断言和临界区，可建立对象 | period 仅 `1..0x7FFFFFFF`；活跃/回调中的对象不可重建 |
 | `timer_start/stop/change_period/delete` | 通常发送命令，队列空位等待预算为 100 tick | 只非阻塞投递命令，入口有优先级断言 | `OK` 通常仅为命令接受；不是完整调用墙钟耗时上界 |
 | `mempool_alloc/free` | 非阻塞分配/释放 | 当前有优先级断言和临界区 | alloc 空池为 NULL；free 双重释放为 `ERR_ALREADY` |
-| `heap_alloc/free` | 适合低频分配/释放 | 没有显式 ISR 拒绝，也没有优先级断言；仅临界区保护 | 推荐任务上下文；高优先级 ISR 调用仍违约；alloc 可能线性扫描 |
+| `heap_alloc/free/get_max_alloc` | 适合低频分配/释放及预算查询 | 当前有入口优先级断言和临界区 | 推荐任务上下文；高优先级 ISR 调用仍违约；alloc/max_alloc 可能线性扫描 |
+| `perf` 完整查询/重置 | 按头文件在任务中执行 | 优先级断言捕获超界 ISR，不作为统一 ISR 拒绝接口 | 注册表遍历和栈水印扫描成本随规模增长 |
+| USB 槽分配、共享 RX 操作及 IRQ 分发 | 按各接口上下文契约调用 | 在共享状态操作或协议栈回调前检查优先级 | 不保证物理总线传输已经验证；阻塞读写的任务约束另见 USB 章节 |
 
 初始化与销毁不是一律禁止 ISR：sem、queue、event、mutex 的 `init/deinit` 当前均执行 `RTOS_ASSERT_ISR_OK` 后进入临界区；与 mutex `take/give` 的直接拒绝不同。生产集成宜由管理任务集中处理对象生命周期，避免 ISR 执行全任务登记扫描或唤醒整条等待链。mutex 的 take/give 还依赖有效的 `current_tcb`，应在调度器启动后的任务中使用，不能仅凭“Thread 模式”将启动前调用视为合法。
 
@@ -2863,7 +2832,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 ISR 的 API 选择应遵循“快速捕获必要状态—投递短描述符或通知—由任务处理长业务”的分工。API 名称没有 `FromISR` 后缀不表示所有超时值都可以使用，临界区存在也不表示任意 NVIC 优先级都安全。
 
-源码 guard 复核位置：`rtos_sem.c:51/57/123`、`rtos_queue.c:146/152/261/267`、`rtos_event.c:78/124/138/144`、`rtos_mutex.c:146/204`、`rtos_mem.c:49/80/111`、`rtos_timer.c:199/220/231/275`。堆实现 `rtos_heap.c:201/253` 没有同类断言。
+源码 guard 复核位置：`rtos_sem.c` 的 take/give、`rtos_queue.c` 的 send/recv、`rtos_event.c` 的 wait/set/clear、`rtos_mutex.c` 的上下文检查、`rtos_mem.c` 的 alloc/free 和 `rtos_timer.c` 的命令入口。本次补齐的 heap/perf/USB 入口见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)；内部钩子仍由调用方保证上下文，不能由这张矩阵推断所有函数都有同类断言。
 
 ## 16.3 对象与存储的寿命责任
 
@@ -2880,6 +2849,8 @@ ISR 的 API 选择应遵循“快速捕获必要状态—投递短描述符或�
 动态任务自删的延期回收见 `defer_free_tcb/process_pending_free`（`rtos_task.c:91/102`）。任务创建时复制名称，而定时器创建仅保存 `name` 指针（`rtos_timer.c:297`），这两者的调用方寿命责任不同。
 
 `is_initialized` 是对象状态标志，不是防止地址复用的完整句柄身份。当前存活任务登记可以拒绝未登记 TCB，以及发现仍挂在对象上的等待者；它不能让一个已释放指针永久安全。如果同一地址被新对象重新使用，旧句柄不能继续作为新对象的授权句柄。
+
+sem take/give、queue send/recv、event wait/set/clear 与 mutex take/give 在临界区外预检 initialized，并在首次进入临界区后再次检查，随后才读改状态或登记等待。外部预检不能阻止合法 ISR 在进入临界区前 deinit；内部再检负责拒绝这种仍有有效存储、但已失效的对象，状态型 API 返回 `ERR_PARAM`，event 返回 0。本轮使用真实 TIM7 IRQ 确定性覆盖该窗口，见 [对象生命周期回归](rtos_adversarial_20261026.md)。这项检查不提供内存回收保护：调用方和 ISR 仍可能访问期间，禁止释放或复用对象及相关缓冲区。
 
 sem、queue、event 的 `init` 允许首次传入未清零存储；有存活等待者时拒绝重置。空闲但仍有其他使用者的对象是否允许重置，必须由应用协调，不能将“当前没有等待者”解释为“所有使用者已经退出”。mutex 还通过注册表保护重复登记和存活拥有者。
 
@@ -2959,11 +2930,14 @@ flowchart TB
 |---|---|---|---|
 | 源码/编译 | ABI 偏移、条件编译、头文件与配置是否成立 | 内核与端口；配置矩阵记录 | 编译通过不代表该配置的调度语义已上板 |
 | 功能/边界 | 参数、超时、销毁、等待链重挂是否符合契约 | [selftest.c](../Core/Src/selftest.c)、[boundary_test.c](../hil/fw/Src/boundary_test.c) | 构造 tick 验证不是连续运行几十天 |
-| 竞态与上下文 | 启动窗口、候选失效、寄存器/FPU 和屏蔽值是否保持 | [audit_regressions.c](../hil/fw/Src/audit_regressions.c)、[lowlevel_checks.c](../hil/fw/Src/lowlevel_checks.c)、[lowlevel_fpu_probe.c](../hil/fw/Port/ARM/lowlevel_fpu_probe.c) | 只证明所执行的上下文与交错，仍需对新改动补触发条件 |
+| 竞态与上下文 | 启动窗口、候选失效、寄存器/FPU 和屏蔽值是否保持 | [audit_regressions.c](../hil/fw/Src/audit_regressions.c)、[lowlevel_checks.c](../hil/fw/Src/lowlevel_checks.c)、[lowlevel_fpu_probe.c](../hil/fw/Port/ARM/lowlevel_fpu_probe.c)、[basepri_regressions.c](../hil/fw/Src/basepri_regressions.c) | 只证明所执行的上下文与交错，仍需对新改动补触发条件 |
 | 综合压力 | 混合 IPC、IRQ 嵌套、背压、数据守恒与关停 | [综合压力报告](rtos_production_stress_20261013.md) | 合成业务不等于真实设备端到端链路 |
 | 测试器对照 | 输入损坏是否被真实检测，结束判据是否可信 | 故意损坏单条消息的负向批次 | 预期失败单独分类，不计入正常 PASS |
+| 优先级契约 | 高优先级 ISR 是否在共享状态访问前被预期断言捕获 | [basepri_guard.c](../hil/fw/Src/basepri_guard.c) | 每镜像一个终止用例；测试专用断言包装不返回被断言 API；不能当作断言关闭时的拒绝保证 |
 
-当前记录包括 117 项专项回归的三次复位、432 PASS 与 10 INFO 的基础自测、103 项边界检查，以及默认/统计配置的上下文检查；综合压力有五轮正常运行、805 次检查、2,433,735 条成功接纳消息和 900 秒持续运行。详细配置、失败尝试和排除项以[发布汇总](rtos_release_20261013.md)、[底层报告](rtos_lowlevel_optimization_20261012.md)及原始证据为准，本次文档加工没有新增板载执行结果。
+2026-10-13 批次记录包括 117 项专项回归的三次复位、432 PASS 与 10 INFO 的基础自测、103 项边界检查，以及默认/统计配置的上下文检查；综合压力有五轮正常运行、805 次检查、2,433,735 条成功接纳消息和 900 秒持续运行。这些旧数据及其排除项以[发布汇总](rtos_release_20261013.md)、[底层报告](rtos_lowlevel_optimization_20261012.md)及原始证据为准。
+
+此前综合负载的 API 中断为优先级 6/7，不能覆盖优先级 0–4 对临界区元数据事务的抢占。此次确定性交错、断言负向用例，以及新增高优先级纯硬件 IRQ 和三层嵌套的综合验证范围、实际运行配置及结果，统一见 [2026-10-25 BASEPRI 修复报告](rtos_basepri_fix_20261025.md)。有限矩阵与压力运行证明的是已执行路径，不能承诺检出所有 BUG，也不替代具体产品的时限、外设和故障注入验证。
 
 排障时先记录实际状态，再追踪负责改变它的路径：
 
