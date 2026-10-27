@@ -3,6 +3,10 @@
 > **核对平台**：STM32F446RE，单核 Cortex-M4F（ARMv7E-M），GCC `arm-none-eabi`。默认 168 MHz、1 kHz tick；其他处理器、时钟和配置需要独立适配与验证。
 > **文档基准**：2026-10-27 本工程 `RTOS/` 当前代码，包含源码审计修复、两轮性能优化、综合压力测试、临界区事务加固，以及传递优先级继承、对象销毁窗口和递归计数边界修复。原交付总览见 [2026-10-13 发布汇总](rtos_release_20261013.md)，后续复现及验证范围见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)和[复杂并发测试报告](rtos_adversarial_20261026.md)；早期缺陷与综合负载见 [审计报告](rtos_audit_20261012.md)、[生产压力测试报告](rtos_production_stress_20261013.md)。本文解释当前机制；不同阶段的性能数字保留在带日期报告中。4.2 中明确标注的历史图只用于追溯，不能当作当前端口流程。
 > **文档目标**：说明内核的职责划分、共享状态、不变式、上下文切换协议和对象生命周期，使工程师能够沿调用链阅读源码、评估资源及审查修改。
+> **可选扩展**：2026-10-27 新增静态借用消息通道，默认关闭，见 8.6 与
+> [独立设计说明](rtos_channel_design.md)。该扩展独立于此前源码重组；保留现有队列、TCB 和调度协议。
+> **诊断扩展**：可裁剪的有界故障记录与等待原因解释，默认关闭，不增加 TCB 字段。
+> 见 16.9 与[诊断设计](rtos_diagnostics_design.md)。
 > **代码位置**：机制 `RTOS/Core/`；对象 `RTOS/IPC/`；内存 `RTOS/Memory/`；服务 `RTOS/Services/`；USB `RTOS/USB/`；端口 `RTOS/Port/GCC/ARM_CM4F_CM7F/port.c`。文件职责与迁移清单见[源码导览](../RTOS/README.md)。
 > **配套文档**：[2026-10-12 底层优化报告](rtos_lowlevel_optimization_20261012.md)（当前实现与实板对照）、[第一轮性能优化报告](rtos_optimization_20261012.md)（历史阶段）、[rtos_performance_report.md](rtos_performance_report.md)（历史微基准 + 系统级场景 + 与 FreeRTOS 的实测对比）、[rtos_testing_report.md](rtos_testing_report.md)（功能回归/边界测试/HIL 复现审计）、[hardfault_debug.md](hardfault_debug.md)（故障诊断）、[compilation_pipeline.md](compilation_pipeline.md)（编译原理）、[freertos_design.md](freertos_design.md)（FreeRTOS 设计分析与排障，与本文互为镜像参照）
 
@@ -2033,6 +2037,48 @@ sequenceDiagram
 
 ---
 
+## 8.6 共享内存借用通道：将缓冲所有权纳入 IPC
+
+复制队列适合小消息；内存池加指针队列可避免大块复制，但应用仍要自行处理重复归还、
+旧描述符、生产者失败、DMA 完成与关停等情况。新增的
+[rtos_channel.h](../RTOS/Core/Inc/rtos_channel.h) 和
+[rtos_channel.c](../RTOS/IPC/rtos_channel.c) 将固定块、发布 FIFO 与能力校验集成在一个对象中。
+这不是行业首创的零复制机制；目标是提供可审计的业务交接协议。
+
+```mermaid
+stateDiagram-v2
+    FREE --> WRITING: acquire / 可写票据
+    WRITING --> QUEUED: publish / 写票据失效
+    WRITING --> FREE: cancel
+    QUEUED --> READING: receive / 新读票据
+    READING --> FREE: release
+```
+
+每个槽位只处于一种状态，始终满足 `capacity = free + writing + queued + reading`。
+通道只移动索引和描述符，不复制 payload；生产者直接填写借出的地址，消费者原址只读。
+每次借出预留两个不回绕的 64 位票据，读写阶段分离；实例号防止同地址重建后接纳旧能力。
+计数耗尽返回错误，不能通过回绕重新使用旧身份。票据用于检测 API 交接误用，无法撤销 C 裸指针，
+也不构成 MPU 隔离。
+
+`acquire/receive` 支持阻塞，重试共用一个有限预算；已经等待过的有限调用到期后，即使资源刚好可用，
+也返回 TIMEOUT。唤醒只使任务 READY，不预留块。资源变化广播唤醒等待者，避免某个 READY 等待者
+随后被删除或挂起而吞掉唯一通知，代价是最多 O(W) 的唤醒工作；不承诺分配公平性。
+关闭后禁止新 `acquire/publish`，已发布消息可排空，持有者仍可 `cancel/release`。
+只有关闭且全部块归还才能 `deinit`。任务或 ISR 持有的块不会被强制回收。
+
+`RTOS_CONFIG_USE_CHANNEL` 默认 0；启用后默认最多 8 个活跃通道、每通道 256 块。
+`init/close/deinit/get_stats` 仅限任务或允许的启动上下文，其余非阻塞操作允许合法 syscall ISR；
+非法高优先级 ISR 在断言关闭时仍被运行时检查拒绝。控制块、payload 和 slots 的完整声明范围
+构成不相交的有序区间，身份和重叠检查为 O(log(A+1))，A 为活跃通道数；
+初始化/注销保留有序插入/压缩成本，初始化还随块数变化。
+
+数据由 CPU 直接在共享块上生成和处理，核心不依赖 DMA、HAL 或芯片寄存器。
+应用必须保证元数据独占、视图有效且不覆写未归还能力，并使用内核协议同步所有权移交。
+删除持有能力的任务不会自动回收其块；管理者应先停止所有访问，再使用保存的能力归还。
+完整 API 示例、资源预算、安全边界和竞品参照见[通道设计](rtos_channel_design.md)，
+当前纯共享内存算法、移植边界与配置矩阵见[优化报告](rtos_channel_shared_20261027.md)。
+上一版验证保留在[历史报告](rtos_channel_validation_20261027.md)，其中 DMA 仅为旧外设集成夹具。
+
 # 第九章 事件标志组
 
 事件组表达条件状态，不保存同一位被重复置位的次数。若业务要求每次发生都恰好消费一次，应采用计数或带序号的消息协议。等待模式和事件数据是两个独立参数：`CLEAR_ON_EXIT` 的 bit24 位于 **mode**，不会占用 event->bits 的 bit24。
@@ -2733,6 +2779,8 @@ SysTick 的 RTOS 时基配置和首任务接管发生在 `rtos_start()` → `rto
 | mutex release_all | 注册表扫描及各命中锁的唤醒/移交；每次移交后重算全图 | 同左 | 删除持锁任务 |
 | queue 空队直传 | O(B)，正常等待者链首选择 O(1) | 含复制和唤醒 | 已有接收等待者 |
 | queue 阻塞入链 | O(W)，按有效优先级有序插入；另含延时链插入 | 含入链搜索 | 满队发送/空队接收 |
+| channel 热路径（可选） | O(log(A+1)) 身份/区域二分；槽位操作 O(1)，无 payload 复制；A 为活跃通道数 | 含固定描述符和票据提交 | 借出、发布、接收与归还 |
+| channel 有等待者交接 | 另含 O(W) 广播；阻塞入链另含有序插入与延时链成本 | 含唤醒和调度请求 | 资源变化；观测 IRQ 延迟见通道报告 |
 | event set | O(W)，逐个判条件、即时清位及唤醒 | 含全部等待者遍历 | 更新条件状态 |
 | tick 处理 | O(到期数)+各节点对象清理成本；信号量清位可能 O(W) | 同左，互斥锁还需重算继承 | 每 tick |
 | 堆 alloc / max_alloc / free | O(K) 扫描 / O(K) 扫描 / O(1) 标记及一次前向合并 | 与实际扫描物理块数相关 | 分配、预算查询、释放 |
@@ -2797,6 +2845,7 @@ SysTick 的 RTOS 时基配置和首任务接管发生在 `rtos_start()` → `rto
 | 表示若干同类可用资源或累计完成次数 | 计数信号量 | 无拥有者，不实施优先级继承；达到 `max_count` 后 `give` 返回溢出 |
 | 保护跨多个语句的共享状态 | 互斥锁 | 任务拥有、支持递归；只允许拥有者 `give`；取锁和释放锁禁止 ISR |
 | 传递定长、需要保存顺序的消息 | 消息队列 | 按值复制；消息字节数影响临界区耗时；发送者/接收者的阻塞缓冲必须保持有效 |
+| 原址传递采样帧或报文共享块 | 可选借用通道 | 单所有者票据、固定块、成功 publish 后停止写入；不撤销裸指针，不自动回收其他上下文持有的块 |
 | 等待多个条件任一成立或全部成立 | 事件组 | 位状态会合并重复置位；消费式清位影响同次 `set` 的后续等待者 |
 | 到期触发非硬实时后台工作 | 软件定时器 | 共享服务任务串行执行回调；控制命令接受成功不等于已经执行 |
 
@@ -2989,10 +3038,33 @@ USB 两层 OSAL 合并，设备会话与 MSC 存储后端独立；两个相同�
 | 复杂度 | 仍按完整 API 路径核算；信号量 FIFO 位图链的定位/清位最坏 O(W) | 根据文件拆分或旧“分组扫描”注释误认为整个唤醒路径已变为 O(1) |
 
 本工程 CubeIDE Debug/Release 均以整个 `RTOS/` 为源码入口；手工移植工程仍须更新自己的文件清单与头文件路径。
-HIL 的 [build_layout.ps1](../hil/build_layout.ps1) 统一维护 **15 个规则目录、57 个编译单元（16 个自研 RTOS C 单元）**，
+HIL 的 [build_layout.ps1](../hil/build_layout.ps1) 统一维护 **15 个规则目录、59 个编译单元（18 个自研 RTOS C 单元）**，
 [build_fw.ps1](../hil/build_fw.ps1) 与 [restore_project.ps1](../hil/restore_project.ps1) 共用此清单和权威模板。
 编译选项变化会使相应旧对象失效；恢复会还原日常规则、源码与链接清单，并移除 HIL 副本及变体 stamp。
 新增或移动单元时须同时审查 IDE 输入、模板、对象清单及独立编译矩阵，不能只修改本机 Debug 生成文件。
 
 结构比较覆盖 263 个函数定义、63 项状态/类型等声明及 16 个公共头；它为机械搬移提供证据，不能替代运行验证。
 后续复测应创建新批次，记录编译器、配置、实际构建输入和结束条件；带日期验收器固定的是该批覆盖，不是自动检测所有缺陷的通用证明。
+
+## 16.9 有界故障记录与等待原因解释
+
+`rtos_diag.c` 在现有保护域内观察内核，不拥有就绪链、对象等待链或借用资源。
+`RTOS_CONFIG_USE_DIAGNOSTICS` 默认为 0；关闭时内核宏不求值参数，不产生诊断调用或记录缓冲。
+Debug 可按需开启并配置 `RTOS_CONFIG_DIAGNOSTIC_CAPACITY`，Release 可关闭以去除记录开销。
+
+记录协议区分 `WAIT → WAKE → RUN → RETURN`：任务被唤醒仅意味着进入就绪态，
+实际上下文提交和 API 最终结果需要另外观察。通道的 OK 唤醒只通知重新检查资源，
+恢复时可能已经超出总预算；事件组超时也可能带有非零部分 bits。
+`cause`、`wake_result`、`return_result` 分别保存这几层语义，避免把合法结果误判为内核错误。
+
+环形记录区为静态有界存储，满时覆盖旧历史；每槽最后写入原生字宽提交标志。
+线程冻结后逐条复制和有界分析，不在长内核临界区遍历整个历史。
+每次 WAIT 的序号标识一次 episode；记录中的地址只是标签，查询不解引用旧对象或旧 TCB。
+起点被覆盖、在等待期间重置、写入中断或阶段证据不完整时，解释返回 UNKNOWN/INCOMPLETE。
+已经返回的 episode 不因应用随后自挂起或删除而被改写成未完成等待。
+
+CPU 故障入口使用专门的无锁冻结函数，保留原有 `g_fault` 诊断框架。
+它仅允许最终停机的故障处理器调用，不允许 NMI 或返回正常写者；不提供掉电持久化、
+SMP、内存损坏后的完整性保证或自动死锁判决。
+完整 API、复杂度、计数耗尽策略和实测入口见[诊断设计](rtos_diagnostics_design.md)。
+最终 35 份烧录捕获、复杂业务回归、SWD 故障复核及 ON/OFF 成本见[验证报告](rtos_diagnostics_validation_20261027.md)。

@@ -2,7 +2,7 @@
 
 一个从零设计、配有[设计文档](docs/rtos_design.md)的可移植抢占式 RTOS：`RTOS/Core/` 提供内核机制，`RTOS/IPC/`、`Memory/`、`Services/` 和 `USB/` 按职责组织功能，`RTOS/Port/` 提供处理器移植层；应用侧附带 USB 设备栈（CDC 虚拟串口 + MSC U 盘 + HID 三合一复合设备）、端侧 AI 推理（int8 量化 CNN 说话人识别）与 HardFault 诊断示例，并配有 FreeRTOS V10.4.6 的[对照分析](docs/freertos_design.md)。
 
-**当前验证平台**：STM32F446RET6（Cortex-M4F @ 168MHz，STM32CubeIDE + GCC）。内核代码不含任何 ST 头文件引用；换一颗 Cortex-M3/M4/M7 芯片只需替换移植层与目标 SDK 工程，见[移植指南](#移植到其他芯片)。
+**当前验证平台**：STM32F446RET6（Cortex-M4F @ 168MHz，STM32CubeIDE + GCC）。内核机制、共享通道与诊断算法通过 port 接口使用处理器能力；当前端口及演示 BSP 已在 F446 上验证。其他处理器仍须适配 SDK、中断、FPU 和缓存契约，见[移植指南](#移植到其他芯片)。
 
 **2026-10-13 验证汇总**：已完成内核及 USB 处理路径修复、底层性能优化和 16 任务／双硬件中断综合压力测试。五轮正常压力测试逐条验证 2,433,735 条成功接纳消息，161 项验收检查在每轮均通过；包含 15 分钟持续运行和单包损坏检出对照。日常固件已恢复。详细改动、性能收益与退步、验证范围及证据入口见[本次交付汇总](docs/rtos_release_20261013.md)。物理 USB 总线传输未包含在本轮验证中。
 
@@ -12,10 +12,25 @@
 
 本批已复现缺陷、修复行为、验证结果和保留状态统一整理在[缺陷修复汇总](docs/rtos_fix_summary_20261026.md)。源码目录按职责重组后的文件归属、阅读顺序及迁移要求见[源码导览](RTOS/README.md)，过程与验收状态见[源码重组记录](docs/rtos_source_reorganization_20261027.md)；历史报告保留测试当时的路径。
 
+**2026-10-27 数据通道扩展**：新增可选的[静态借用通道](docs/rtos_channel_design.md)：
+生产者直接填写借出的块，消费者原址读取；用实例号、代次票据、四态资源账本和关闭排空协议
+减少指针队列业务中重复编写的所有权管理代码。默认关闭，不改变现有调度路径。
+零复制和固定池已是成熟技术，本项目的价值是将这些检查与生命周期协议集成进一个接口。
+当前核心通过 CPU 直接访问共享块，不依赖 DMA、HAL 或芯片寄存器；有序区间索引将身份与范围
+校验降为 O(log(A+1))。算法、RAM 代价和无 DMA 的实板对照见
+[共享内存优化报告](docs/rtos_channel_shared_20261027.md)。上一版的
+[功能验证报告](docs/rtos_channel_validation_20261027.md)保留当时的结果，其中 DMA 仅为独立外设测试夹具。
+
+**2026-10-27 诊断扩展**：新增可裁剪的有界记录、故障冻结与等待原因解释，默认关闭。
+最终 35 份上板捕获、故障 SRAM 复核及性能成本见[诊断验证报告](docs/rtos_diagnostics_validation_20261027.md)。
+完整记录会显著增加高频阻塞交换的耗时，Release 应编译关闭。
+本次功能、源码、测试与发布范围统一见[交付报告](docs/rtos_release_20261027.md)；
+业务进展监督与独立健康探针目前为[待实现设计](docs/rtos_runtime_supervision_proposal.md)。
+
 ```mermaid
 flowchart TB
     app["用户任务 / 公共 API：RTOS/Core/Inc"]
-    features["IPC：sem / mutex / queue / event<br/>Memory：heap / mempool<br/>Services：timer / perf　USB：OSAL / device / MSC"]
+    features["IPC：sem / mutex / queue / event / channel<br/>Memory：heap / mempool<br/>Services：timer / perf / diag　USB：OSAL / device / MSC"]
     core["Core/Src<br/>kernel 初始化　task 生命周期与通知<br/>wait 共用等待协议　sched 就绪 / 延时 / 调度"]
     port["Port/GCC/ARM_CM4F_CM7F/port.c<br/>PendSV / SVC / SysTick / 寄存器现场"]
     app --> features
@@ -41,13 +56,14 @@ flowchart TB
 - **挂起与切换保护**：调度挂起支持嵌套，挂起期间冻结内核 tick 并拒绝新阻塞；PendSV 提交切换前重新检查候选任务的状态。
 - **临界区事务保护**：默认 BASEPRI 配置下，BASEPRI 屏蔽 syscall 域中断，PRIMASK 仅在进出事务中保护共享元数据；调用者更强的 BASEPRI 及原 PRIMASK 状态得到保留。出口 ISB 同步解屏蔽与后续执行，避免阻塞结果被提前读取。NMI/HardFault 不得调用临界区原语或操作内核对象；详见[设计手册第 4.5 节](docs/rtos_design.md#45-临界区-进出与屏障)。
 
-### IPC（五种机制，语义各有分工）
+### IPC（六种机制，包含可选共享通道）
 
 | 机制 | 文件 | 语义要点 |
 |---|---|---|
 | 信号量 | `rtos_sem.c` | 二值/计数；存在等待者时计数为零，give 优先把令牌交给等待者，避免重复计数 |
 | 互斥锁 | `rtos_mutex.c` | 有界求解锁依赖图，传播并撤销继承；递归溢出返回错误，删除持锁任务时移交；ISR 禁用，循环死锁仍需应用避免 |
 | 消息队列 | `rtos_queue.c` | 环形缓冲 + 拷贝传递；ISR 投递非阻塞 |
+| 借用通道（可选） | `rtos_channel.c` | 静态零复制、代次票据、缓冲区所有权、关闭排空与资源账本 |
 | 事件组 | `rtos_event.c` | ANY/ALL 等待 + CLEAR_ON_EXIT + 满足位回传（信箱模式） |
 | 任务通知 | `rtos_task.c` | 通知值内嵌 TCB，无需独立 IPC 对象或对象等待链；有限超时仍使用内核延时链 |
 
@@ -60,6 +76,7 @@ flowchart TB
 
 ### 可观测性（调试即功能）
 
+- **可选有界故障记录与等待解释**：`RTOS_CONFIG_USE_DIAGNOSTICS=1` 时记录等待、唤醒、上下文提交与 API 实际返回；冻结后区分超时、资源通知、对象销毁和任务取消。默认关闭，预处理移除内核观察点与缓冲；见[诊断设计](docs/rtos_diagnostics_design.md)与[实测报告](docs/rtos_diagnostics_validation_20261027.md)。
 - **性能监视器**（`rtos_perf.c`，DWT 周期级精度）：CPU 占用率、每任务运行时间、切换频率、调度延迟、栈高水位（0xA5 染料法）；
 - **栈溢出双检测**：栈底 magic 字 + 边界检查两档；
 - **HardFault 诊断与九类故障示例**：保留 BusFault、INVSTATE、UNDEFINSTR、DIVBYZERO、非对齐、栈边界及 ISR 故障示例；当前 `task_uart` 中的命令派发被注释，需启用 `ft_dispatch` 后按菜单触发，见 [hardfault_debug.md](docs/hardfault_debug.md)。
@@ -152,11 +169,11 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 │   ├── README.md             # 源码导览、阅读顺序与构建迁移说明
 │   ├── Core/
 │   │   ├── Inc/              # 兼容既有公共 API、类型和配置头
-│   │   ├── Private/          # rtos_internal.h：内核模块间协议
+│   │   ├── Private/          # 内核协作协议与可裁剪诊断观察点
 │   │   └── Src/rtos_{kernel,sched,task,wait}.c
-│   ├── IPC/                  # sem / mutex / queue / event
+│   ├── IPC/                  # sem / mutex / queue / event / channel
 │   ├── Memory/               # heap / mempool；公共 rtos_mem.h 名称保留
-│   ├── Services/             # timer / perf
+│   ├── Services/             # timer / perf / diag
 │   ├── USB/                  # OSAL / 复合设备 CDC+HID / MSC 后端
 │   ├── Port/GCC/ARM_CM4F_CM7F/ # port.c：PendSV/SVC/屏蔽与上下文
 │   └── lib/third/CherryUSB/   # 裁剪版 CDC/MSC/HID/DWC2 设备栈
@@ -184,6 +201,9 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 | `RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE` | 18 | 默认 `MAX_TASKS + 2`；超过容量的任务仍可创建，但注册表观测不完整 |
 | `RTOS_CONFIG_USE_TIMERS` | 1 | 软件定时器（关 = 零开销） |
 | `RTOS_CONFIG_USE_PERF_MONITOR` | 1 | 性能监视器（DWT 周期级） |
+| `RTOS_CONFIG_USE_CHANNEL` | 0 | 静态共享缓冲、实例与代次票据；所有翻译单元统一配置 |
+| `RTOS_CONFIG_USE_DIAGNOSTICS` | 0 | 有界记录与等待解释；Debug 按需启用，Release 编译关闭 |
+| `RTOS_CONFIG_DIAGNOSTIC_CAPACITY` | 64 | 8..1024 的 2 次幂；M4 每槽 40 字节，须核对整机 RAM |
 | `RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW` | 2 | 栈溢出检测（0/1/2 三档） |
 | `RTOS_CONFIG_USE_USB` | 1 | USB 子系统总开关 |
 | `RTOS_CONFIG_USB_USE_MSC` / `_USE_HID` | 1 / 1 | 复合设备裁剪（全关 = 仅 CDC） |
@@ -193,6 +213,12 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 | 文档 | 内容 |
 |---|---|
+| [rtos_release_20261027.md](docs/rtos_release_20261027.md) | **本次交付汇总**：共享通道、算法优化、诊断、实测边界及提交范围 |
+| [rtos_channel_design.md](docs/rtos_channel_design.md) | 共享缓冲、借用票据、错误清理、关闭与重建契约 |
+| [rtos_channel_shared_20261027.md](docs/rtos_channel_shared_20261027.md) | 无 DMA 的区间索引优化、性能对照及健壮性证据 |
+| [rtos_diagnostics_design.md](docs/rtos_diagnostics_design.md) | 有界提交协议、冻结读取、等待解释和计数边界 |
+| [rtos_diagnostics_validation_20261027.md](docs/rtos_diagnostics_validation_20261027.md) | 诊断实板、宿主与编译验证，开启/关闭成本及恢复状态 |
+| [rtos_runtime_supervision_proposal.md](docs/rtos_runtime_supervision_proposal.md) | **待实现**：运行正确性监督、独立探针与业务看门狗契约 |
 | [rtos_fix_summary_20261026.md](docs/rtos_fix_summary_20261026.md) | **当前修复总览**：五项已复现缺陷、契约加固、最终验证及提交范围 |
 | [源码导览](RTOS/README.md) | 当前目录职责、模块边界、阅读顺序和手工构建迁移 |
 | [rtos_source_reorganization_20261027.md](docs/rtos_source_reorganization_20261027.md) | 源码重组映射、兼容与构建检查、测试迁移错误及最终验收状态 |
