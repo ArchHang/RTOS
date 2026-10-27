@@ -8,5 +8,17 @@ hil/**/*.csv -text -whitespace
 hil/templates/** -whitespace
 hil/archive_tests/** -whitespace
 
+# Preserve the refactor batch's original fixture and isolated IDE snapshots.
+hil/refactor_20261027/evidence/preflight/before_guard_mapping_fix/basepri_guard.c.recorded -text -whitespace
+hil/refactor_20261027/evidence/ide/*.xml -text -whitespace
+hil/refactor_20261027/evidence/ide/generated/** -text -whitespace
+
+# These offline validators are identified by exact SHA256 in the evidence.
+hil/basepri_20261025/verify_evidence.py -text
+hil/adversarial_20261025/verify_evidence.py -text
+hil/refactor_20261027/verify_layout.py -text
+# The dated validator's EOF padding is part of its recorded digest.
+hil/refactor_20261027/verify_results.py -text whitespace=-blank-at-eof
+
 # Keep published Markdown consistent across Windows and Unix checkouts.
 *.md text eol=lf

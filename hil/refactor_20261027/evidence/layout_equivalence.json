@@ -1,0 +1,1069 @@
+{
+  "status": "PASS",
+  "baseline": "6602f8fa1b9acb9b12ba27e17f2ffc4fbcb8b03f",
+  "production_translation_units": 16,
+  "function_definitions_compared": 263,
+  "top_level_declarations_before": 64,
+  "top_level_declarations_compared": 63,
+  "internal_prototypes_relocated": 1,
+  "public_headers_compared": 16,
+  "protected_files_compared": 33,
+  "allowed_change": "Two identical USB millisecond wrappers replaced by existing inline",
+  "limitations": "Token comparison does not prove preprocessor, runtime or timing equivalence",
+  "errors": [],
+  "definitions": [
+    {
+      "name": "rtos_init",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "rtos_start",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "rtos_get_version",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "rtos_idle_hook",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "rtos_stack_overflow_hook",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "rtos_task_delete_hook",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "rtos_assert_fail",
+      "path": "RTOS/Core/Src/rtos_kernel.c"
+    },
+    {
+      "name": "find_highest_priority",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "ready_list_push_tail",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "ready_list_remove",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "ready_list_rotate",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "sched_tick_after",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "delay_list_insert",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "delay_list_remove",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "process_delayed_tasks",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_init",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_start",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_schedule",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_add_ready",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_remove_ready",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_block",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_unblock",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_remove_delayed",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_tick",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_suspend",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_resume",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_get_tick_count",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_get_state",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_commit_context_switch",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_sched_context_switch",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "rtos_internal_alloc_task_id",
+      "path": "RTOS/Core/Src/rtos_sched.c"
+    },
+    {
+      "name": "task_reserved",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "task_registered",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_internal_object_has_waiters",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "task_unregister",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "defer_free_tcb",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "process_pending_free",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_exit_handler",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "task_create_core",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_create_static",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_create",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_delete",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_yield",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_delay",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_delay_until",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_get_current",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_get_priority",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_set_priority",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_suspend",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_resume",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_notify",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_task_notify_wait",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_idle_task",
+      "path": "RTOS/Core/Src/rtos_task.c"
+    },
+    {
+      "name": "rtos_internal_wait_insert_by_prio",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_wait_append",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_wait_remove",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_wait_remove_sync_bitmap",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_block_current_on",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_wake_highest",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_wake_highest_bm",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_wake_all",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "rtos_internal_requeue_wait_lists",
+      "path": "RTOS/Core/Src/rtos_wait.c"
+    },
+    {
+      "name": "event_check",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "event_capture_timeout",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "rtos_event_init",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "rtos_event_set",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "rtos_event_clear",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "rtos_event_wait",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "rtos_event_get",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "rtos_event_deinit",
+      "path": "RTOS/IPC/rtos_event.c"
+    },
+    {
+      "name": "mutex_set_owner_priority",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "mutex_graph_index",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "mutex_graph_add_owner",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "mutex_graph_relax",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "mutex_refresh_priority_graph",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "mutex_restore_priority",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_mutex_init",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_mutex_take",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_mutex_give",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_mutex_deinit",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "mutex_recompute_inheritance",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_internal_mutex_waiter_left",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_internal_mutex_release_all",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_internal_mutex_compute_effective_priority",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_internal_mutex_waiter_requeued",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_internal_mutex_registry_count",
+      "path": "RTOS/IPC/rtos_mutex.c"
+    },
+    {
+      "name": "rtos_queue_init",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "queue_next_index",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "queue_prev_index",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "queue_storage_push",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "queue_storage_pop",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "queue_reject_waiter",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "queue_wake_sender_on_free_slot",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "rtos_queue_send",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "rtos_queue_recv",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "rtos_queue_get_count",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "rtos_queue_get_free",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "rtos_queue_deinit",
+      "path": "RTOS/IPC/rtos_queue.c"
+    },
+    {
+      "name": "rtos_sem_init",
+      "path": "RTOS/IPC/rtos_sem.c"
+    },
+    {
+      "name": "rtos_sem_take",
+      "path": "RTOS/IPC/rtos_sem.c"
+    },
+    {
+      "name": "rtos_sem_give",
+      "path": "RTOS/IPC/rtos_sem.c"
+    },
+    {
+      "name": "rtos_sem_get_count",
+      "path": "RTOS/IPC/rtos_sem.c"
+    },
+    {
+      "name": "rtos_sem_deinit",
+      "path": "RTOS/IPC/rtos_sem.c"
+    },
+    {
+      "name": "align_up",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "block_to_user",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "user_to_block",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "block_next",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "block_set_free",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "block_is_free",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "block_split",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "block_merge_next",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_init",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_alloc",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_free",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_get_free",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_get_max_alloc",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_get_alloc_count",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_heap_get_free_count",
+      "path": "RTOS/Memory/rtos_heap.c"
+    },
+    {
+      "name": "rtos_mempool_init",
+      "path": "RTOS/Memory/rtos_mempool.c"
+    },
+    {
+      "name": "rtos_mempool_alloc",
+      "path": "RTOS/Memory/rtos_mempool.c"
+    },
+    {
+      "name": "rtos_mempool_free",
+      "path": "RTOS/Memory/rtos_mempool.c"
+    },
+    {
+      "name": "rtos_mempool_get_free",
+      "path": "RTOS/Memory/rtos_mempool.c"
+    },
+    {
+      "name": "rtos_port_critical_nesting_error",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_disable_interrupts",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_enable_interrupts",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_get_interrupt_mask",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_set_interrupt_mask",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_get_critical_nesting",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_isr_priority",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_context_switch",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_init_stack",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_pend_sv_handler",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_get_first_sp",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_svc_handler",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_start_first_task",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_start_scheduler",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_port_sys_tick_handler",
+      "path": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c"
+    },
+    {
+      "name": "rtos_perf_get_cycles",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_init_cycles",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_cycles_to_us",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_on_pend_switch",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_on_context_switch",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_on_scheduler_start",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_on_task_created",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_on_task_deleted",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_register_pool",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_init",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_reset",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_get_system",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_get_memory",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "perf_measure_stack_used",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_get_task",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_task_registry_count",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_task_at",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_get_all_tasks",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_get_cpu_usage",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "rtos_perf_get_switch_rate",
+      "path": "RTOS/Services/rtos_perf.c"
+    },
+    {
+      "name": "timer_tick_diff",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_active_insert",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_active_remove",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_take_expired",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_run_callbacks",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_reinsert_periodic",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_get_next_remain",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_send_cmd",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_init",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_create",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_start",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_stop",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_change_period",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_delete",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "rtos_timer_service_task",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "timer_handle_cmd",
+      "path": "RTOS/Services/rtos_timer.c"
+    },
+    {
+      "name": "dwc2_get_user_fifo_config",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "s_device_descriptor_callback",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "s_config_descriptor_callback",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "s_device_quality_descriptor_callback",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "s_string_descriptor_callback",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_event_handler",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_bulk_out",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_bulk_in",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_hid_in_done",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_hid_out",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_init",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_isr",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_is_connected",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "usb_timeout_remaining",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_write",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_read",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_available",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_cdc_flush_rx",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_hid_write",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_hid_read",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_hid_write",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_hid_read",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_audit_begin",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_audit_event",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_audit_hid_rx",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "rtos_usb_audit_end",
+      "path": "RTOS/USB/rtos_usb_device.c"
+    },
+    {
+      "name": "usbd_msc_get_cap",
+      "path": "RTOS/USB/rtos_usb_msc.c"
+    },
+    {
+      "name": "usbd_msc_sector_read",
+      "path": "RTOS/USB/rtos_usb_msc.c"
+    },
+    {
+      "name": "usbd_msc_sector_write",
+      "path": "RTOS/USB/rtos_usb_msc.c"
+    },
+    {
+      "name": "rtos_usb_msc_get_stats",
+      "path": "RTOS/USB/rtos_usb_msc.c"
+    },
+    {
+      "name": "rtos_usb_msc_get_stats",
+      "path": "RTOS/USB/rtos_usb_msc.c"
+    },
+    {
+      "name": "alloc_sem_slot",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "alloc_mutex_slot",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "alloc_mq_slot",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "alloc_thread_slot",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "alloc_timer_slot",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_init",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_register_isr",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_irq_dispatch",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_sem_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_sem_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_sem_take",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_sem_give",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_sem_reset",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mutex_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mutex_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mutex_take",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mutex_give",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mq_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mq_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mq_send",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_mq_recv",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_thread_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_thread_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_thread_schedule_other",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_timer_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_timer_delete_checked",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_timer_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_timer_start",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_timer_stop",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_malloc",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_free",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_usb_msleep",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "rtos_status_to_osal",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_thread_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_thread_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_thread_schedule_other",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_sem_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_sem_create_counting",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_sem_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_sem_take",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_sem_give",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_sem_reset",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mutex_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mutex_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mutex_take",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mutex_give",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mq_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mq_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mq_send",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_mq_recv",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_timer_create",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_timer_delete",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_timer_start",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_timer_stop",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_malloc",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_free",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_msleep",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_enter_critical_section",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    },
+    {
+      "name": "usb_osal_leave_critical_section",
+      "path": "RTOS/USB/rtos_usb_osal.c"
+    }
+  ],
+  "main_sha256": "32c1e6f3d50c754a8e09db169982551ae1cb4828760662ab106bdee482012874"
+}

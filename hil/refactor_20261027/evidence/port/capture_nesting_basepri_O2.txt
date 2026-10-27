@@ -1,0 +1,35 @@
+﻿===== nesting_basepri_O2 (4601 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\refactor_20261027\evidence\port\log_nesting_basepri_O2.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+NEST|CASE|PASS|id=1 operation=underflow_exit in_bp=0x00 in_pm=0 out_bp=0x00 out_pm=0 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=2 operation=underflow_exit in_bp=0x00 in_pm=1 out_bp=0x00 out_pm=1 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=3 operation=underflow_exit in_bp=0x20 in_pm=0 out_bp=0x20 out_pm=0 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=4 operation=underflow_exit in_bp=0x20 in_pm=1 out_bp=0x20 out_pm=1 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=5 operation=underflow_exit in_bp=0x50 in_pm=0 out_bp=0x50 out_pm=0 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=6 operation=underflow_exit in_bp=0x50 in_pm=1 out_bp=0x50 out_pm=1 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=7 operation=underflow_exit in_bp=0x80 in_pm=0 out_bp=0x80 out_pm=0 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=8 operation=underflow_exit in_bp=0x80 in_pm=1 out_bp=0x80 out_pm=1 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=9 operation=underflow_exit in_bp=0xF0 in_pm=0 out_bp=0xF0 out_pm=0 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=10 operation=underflow_exit in_bp=0xF0 in_pm=1 out_bp=0xF0 out_pm=1 count=0x00000000 expected_count=0x00000000 slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=11 operation=overflow_enter in_bp=0x00 in_pm=0 out_bp=0x00 out_pm=0 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=12 operation=overflow_enter in_bp=0x00 in_pm=1 out_bp=0x00 out_pm=1 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=13 operation=overflow_enter in_bp=0x20 in_pm=0 out_bp=0x20 out_pm=0 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=14 operation=overflow_enter in_bp=0x20 in_pm=1 out_bp=0x20 out_pm=1 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=15 operation=overflow_enter in_bp=0x50 in_pm=0 out_bp=0x50 out_pm=0 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=16 operation=overflow_enter in_bp=0x50 in_pm=1 out_bp=0x50 out_pm=1 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=17 operation=overflow_enter in_bp=0x80 in_pm=0 out_bp=0x80 out_pm=0 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=18 operation=overflow_enter in_bp=0x80 in_pm=1 out_bp=0x80 out_pm=1 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=19 operation=overflow_enter in_bp=0xF0 in_pm=0 out_bp=0xF0 out_pm=0 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|CASE|PASS|id=20 operation=overflow_enter in_bp=0xF0 in_pm=1 out_bp=0xF0 out_pm=1 count=0xFFFFFFFF expected_count=0xFFFFFFFF slot=0xA5A55A5A expected_slot=0xA5A55A5A returned=1 repair=fixture_only
+NEST|SUMMARY|pass=20 fail=0 cases=20 asserts=0
+NEST|DONE|status=0
+

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "blocking_basepri_a1_O2",
+    "started":  "2026-10-27T10:48:36.9383360+08:00",
+    "finished":  "2026-10-27T10:48:40.0231312+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "C16C3BD7E659B33698332837F36BCAF8486D22E23F6AC44BE6BD32AFEDD5EA3C",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BLOCK\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

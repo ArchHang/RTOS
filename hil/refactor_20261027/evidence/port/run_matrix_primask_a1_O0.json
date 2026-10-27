@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "matrix_primask_a1_O0",
+    "started":  "2026-10-27T10:46:59.4743098+08:00",
+    "finished":  "2026-10-27T10:47:13.7001476+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "2BE7D1E202C5F3817AEEEA77836600E7343258CFA63C56ABDE7D9F7197626887",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BP\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

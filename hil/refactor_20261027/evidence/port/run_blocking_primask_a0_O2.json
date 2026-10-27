@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "blocking_primask_a0_O2",
+    "started":  "2026-10-27T10:49:27.8612941+08:00",
+    "finished":  "2026-10-27T10:49:30.9262339+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "6147ACD17986FB9461090CC9F0627331D4A87525BCE5ED8531C9C560A1A8D2CC",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BLOCK\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

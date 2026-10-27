@@ -1,0 +1,18 @@
+{
+  "configuration": "Debug",
+  "started": "2026-10-27T10:24:12.8000139+08:00",
+  "executable": "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\stm32cubeidec.exe",
+  "arguments": [
+    "--launcher.suppressErrors",
+    "-nosplash",
+    "-application",
+    "org.eclipse.cdt.managedbuilder.core.headlessbuild",
+    "-data",
+    "E:\\STM32_Project\\CubeIDE\\_rtos_ide_verify_20261027_102327\\workspace",
+    "-import",
+    "E:\\STM32_Project\\CubeIDE\\_rtos_ide_verify_20261027_102327\\source\\f446_rtos",
+    "-no-indexer",
+    "-cleanBuild",
+    "f446_rtos/Debug"
+  ]
+}

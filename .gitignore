@@ -30,3 +30,7 @@ hil/templates/subdir.mk.last_variant
 hil/logs/archive/
 # Local rollback copies are not authoritative source or published test evidence.
 hil/backup_precleanup/
+
+# Publish isolated IDE text evidence; binary extensions remain ignored.
+!hil/refactor_20261027/evidence/ide/generated/debug/
+!hil/refactor_20261027/evidence/ide/generated/release/

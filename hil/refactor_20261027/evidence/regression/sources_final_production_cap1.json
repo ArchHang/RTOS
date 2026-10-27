@@ -1,0 +1,642 @@
+﻿[
+    {
+        "path":  ".cproject",
+        "sha256":  "2CFBD4B871BD61E274EB762376ED68E1EA263FB9D7F29B107135E921142C58F7"
+    },
+    {
+        "path":  "Core/Inc/asm_test.h",
+        "sha256":  "5C119A67CBFBD601DE0E785DF2363ED0E11E63363729BC04E442E37394C11312"
+    },
+    {
+        "path":  "Core/Inc/benchmark.h",
+        "sha256":  "CA0E86144BBA059340DB9AB9EF74D47CB1C0CFC631228A34B22DCBEFF995E09F"
+    },
+    {
+        "path":  "Core/Inc/gpio.h",
+        "sha256":  "E2D62F964A0B7F238384ED6A20A181D09DF9647240A268DC547ACF5B35099F74"
+    },
+    {
+        "path":  "Core/Inc/main.h",
+        "sha256":  "861B62FA7C995DEE4997B007FA262205CF0015F7F33064C52A541E74848BAE05"
+    },
+    {
+        "path":  "Core/Inc/selftest.h",
+        "sha256":  "B860B57A6D213F5035ECE126358288150EBFA43B1B79B381B67E38412FE0D23D"
+    },
+    {
+        "path":  "Core/Inc/stm32f4xx_hal_conf.h",
+        "sha256":  "E81915B3CEAFA02F9EA9CC17BC3ED5B149E0BD602A22D0914AE6A36400154BFD"
+    },
+    {
+        "path":  "Core/Inc/stm32f4xx_it.h",
+        "sha256":  "51279DCB20E55E7B56E850A32A125365ADCCA08FE73F5CB393717601BC32A67B"
+    },
+    {
+        "path":  "Core/Inc/usart.h",
+        "sha256":  "2DDD1EAF81E3750B46DF7222F4C34AE295BCDAAAA1152E4BE4933D3A0CA90181"
+    },
+    {
+        "path":  "Core/Inc/usb_otg.h",
+        "sha256":  "DA31BA0D2FAA7990CA1C7E099ED4FA402C166AF33C2EDA9D061C0715FA9B1762"
+    },
+    {
+        "path":  "Core/Src/asm_test.c",
+        "sha256":  "115769459353846AB9D9BCBB3C2B629627E5F1ADEB1F2BA60B0D416939675013"
+    },
+    {
+        "path":  "Core/Src/benchmark.c",
+        "sha256":  "5973C3C2AF5E8720BC186CF8E9286EF42B002DD994E6C2E15E26C6C340443E61"
+    },
+    {
+        "path":  "Core/Src/gpio.c",
+        "sha256":  "31A95AB754D916B81F991D97D23895947A67DB99B027C571542F50C189F27003"
+    },
+    {
+        "path":  "Core/Src/main.c",
+        "sha256":  "32C1E6F3D50C754A8E09DB169982551AE1CB4828760662AB106BDEE482012874"
+    },
+    {
+        "path":  "Core/Src/selftest.c",
+        "sha256":  "C308E397B3ACD1C9ADC9ABC879E247BB1A67D81AEFB0DE8ED77F4ED7A802CBBC"
+    },
+    {
+        "path":  "Core/Src/stm32f4xx_hal_msp.c",
+        "sha256":  "F91975418674E4EB38D3825DB7D52ABFB948DC06C05C17613E4988A4A8F03695"
+    },
+    {
+        "path":  "Core/Src/stm32f4xx_it.c",
+        "sha256":  "3734BC5C55DED8E3425BFCFADA51DF25F08F3FD448A846F02DE4872727921959"
+    },
+    {
+        "path":  "Core/Src/syscalls.c",
+        "sha256":  "AB00C3DF1417D6249B5C9C13C4E7B926F1FEC9CD10961861D3F3C8D34983B913"
+    },
+    {
+        "path":  "Core/Src/sysmem.c",
+        "sha256":  "67F3125E749700183D510A14CB979E5ACEE05EBE29D1972ECEAA55AA4AC25366"
+    },
+    {
+        "path":  "Core/Src/system_stm32f4xx.c",
+        "sha256":  "A31929EAB936AC98DB060C18917118ACF79DC96E1F03ED4B57D614535DD06D70"
+    },
+    {
+        "path":  "Core/Src/usart.c",
+        "sha256":  "C281DC884BCB421826860567D12355404E35C99A12DB72D1F6B2E26320C7DA29"
+    },
+    {
+        "path":  "Core/Src/usb_otg.c",
+        "sha256":  "BC9FAAD623F6A338311BE1C4795EEB7A564E3D547DCCE706FC3D75EA6A3241FC"
+    },
+    {
+        "path":  "Core/Startup/startup_stm32f446retx.s",
+        "sha256":  "5C0526639E302FA4559FACF9F6229E5C330B984325A61FE68EB4BD6A0F461868"
+    },
+    {
+        "path":  "hil/build_fw.ps1",
+        "sha256":  "A0822ED2DBE46EDC243E9CFF90C62AA9CF9DDAEFFB255C3511C318306D1B0942"
+    },
+    {
+        "path":  "hil/build_layout.ps1",
+        "sha256":  "7CC9536380A321C911D4E6CD43DF504217381F60316BF5C90B904F02C9232397"
+    },
+    {
+        "path":  "hil/fw/Inc/adversarial_registry.h",
+        "sha256":  "A7A94B652663D8A63FEBDF98D02B73A7643EABDFD9F78B4037DB0FD5C9B3D7AD"
+    },
+    {
+        "path":  "hil/fw/Inc/audit_ipc.h",
+        "sha256":  "5D043EFDA16F08B2864867CEBDF1B3D6A2ACBF0C9223713BE235E0FB0FEF8862"
+    },
+    {
+        "path":  "hil/fw/Inc/audit_memory_timer.h",
+        "sha256":  "515F3258696E382844D3E0C4976F3F12901A9D947D388CBC77007F60656DC367"
+    },
+    {
+        "path":  "hil/fw/Inc/audit_regressions.h",
+        "sha256":  "50DF88F3876581C3CA64099AB14A3B9207E120859F415E19FDB4E2B87E4E181D"
+    },
+    {
+        "path":  "hil/fw/Inc/audit_usb_port.h",
+        "sha256":  "07FE533C548F3B277C658C34E3381B0039629D1EC5A63DC20566FBBAE46A7A84"
+    },
+    {
+        "path":  "hil/fw/Inc/basepri_regressions.h",
+        "sha256":  "8BB6C8BB6C0D7FEB3EF3A2D446690F95EBDDEAF3BF314429FA67485B57D0F762"
+    },
+    {
+        "path":  "hil/fw/Inc/boundary_test.h",
+        "sha256":  "8668F15AE820EB38FA71C839F9D439C2E4002B9359CB49DD840981ABEF4AA1EE"
+    },
+    {
+        "path":  "hil/fw/Inc/diag_scenarios.h",
+        "sha256":  "9092172657E3DF63304BF01C7E71E184E1299DE3FCFF0E76D7314C9B3D038789"
+    },
+    {
+        "path":  "hil/fw/Inc/flash_diag.h",
+        "sha256":  "9665602CF9CED3EA9CA5D2BA12A2FE4F060BB4D6CEEB917A843A26F68E27500A"
+    },
+    {
+        "path":  "hil/fw/Inc/kern_port.h",
+        "sha256":  "4F2698A801CF8F32C3107877841F791531A6958B6B84B7A7F8952B44318DE8A0"
+    },
+    {
+        "path":  "hil/fw/Inc/lowlevel_checks.h",
+        "sha256":  "4F77939D09A2D63DDAB37D75CA12DE76F95A6B30623C032A10EDDD0230D1ACC7"
+    },
+    {
+        "path":  "hil/fw/Inc/perf_probes.h",
+        "sha256":  "3C3D00FF7E37644DB6F795DD462CEEC42B90A0385C3CD6C27AA6229681C53E5B"
+    },
+    {
+        "path":  "hil/fw/Inc/production_highirq.h",
+        "sha256":  "ECCCCFCB820F7A7A2D2E463A5385B0AB4AEE9F3B71105B0252588B71AAB7B734"
+    },
+    {
+        "path":  "hil/fw/Inc/production_irq.h",
+        "sha256":  "FB803E97CD3C751FA05EA66D2BE1A48410045FEC031EA6E5214B1413EC5FCEA6"
+    },
+    {
+        "path":  "hil/fw/Inc/production_stress.h",
+        "sha256":  "29285AA9309F6EE0932FF82EF980E4B0DF2C74A4A600313184A39CDBF539CCB9"
+    },
+    {
+        "path":  "hil/fw/Inc/test_framework.h",
+        "sha256":  "E73D8E08BDA01DDC6AAB597C286B0DD7EF19515BBBB1EB2711680F58739A5C49"
+    },
+    {
+        "path":  "hil/fw/Inc/test_scenarios.h",
+        "sha256":  "3FAB8760F4ECB6AF8D94FC4E03FDDE55174775EDAC19DFC0D0F7FC4D66E090F7"
+    },
+    {
+        "path":  "hil/fw/Port/ARM/lowlevel_fpu_probe.c",
+        "sha256":  "71286BF7C05FE712020E3FDC6FEAFD12D7ABAFA6723EC8020CA0826CF566F7CC"
+    },
+    {
+        "path":  "hil/fw/Src/adversarial_lifetime.c",
+        "sha256":  "8B0DF5E1EF10478C817F6EAAF004128D0784EAF03332AE0A170F30B9AA582EF3"
+    },
+    {
+        "path":  "hil/fw/Src/adversarial_mutex.c",
+        "sha256":  "BF1BFA7F821551CC1C020A2347D58135256116C615FF593FCF31C4F4AFC29273"
+    },
+    {
+        "path":  "hil/fw/Src/adversarial_mutex_boundary.c",
+        "sha256":  "88DEA908861EAEDF3C90781900278E9E1B3EF69119A1420CB0ED967A3F7C03F6"
+    },
+    {
+        "path":  "hil/fw/Src/adversarial_registry.c",
+        "sha256":  "58E72001062155E48C8F5B49862F6861709AA12EF0B1E8B7A70F0AF9BD1E43FF"
+    },
+    {
+        "path":  "hil/fw/Src/adversarial_wait.c",
+        "sha256":  "D177F88A25A60722A94143A94F0F3DFDC61CB375C313393ABC780D209A5F808B"
+    },
+    {
+        "path":  "hil/fw/Src/audit_ipc.c",
+        "sha256":  "2704875912B41669B6772D20E360BCE94F4BBFA1EDC0933A7A2343FAD2897448"
+    },
+    {
+        "path":  "hil/fw/Src/audit_memory_timer.c",
+        "sha256":  "ED20893A4EDD605126186693598B3D2FE23F4E0008F17F82D9EB81DBADEAAB7E"
+    },
+    {
+        "path":  "hil/fw/Src/audit_regressions.c",
+        "sha256":  "A99FF26C18A982848E16D3EBFC0428F52FA4A5F69D70C1B46E59163B6BBC15DD"
+    },
+    {
+        "path":  "hil/fw/Src/audit_usb_port.c",
+        "sha256":  "31CABCBF05BB794217DD977C0149EA4D0CABD0AA581AECC8A835033453B79DF7"
+    },
+    {
+        "path":  "hil/fw/Src/basepri_blocking.c",
+        "sha256":  "1D06713366872C915154FFEEBCD6FD553B9BBB8C2DC990306BFC2BB56EC9C0E0"
+    },
+    {
+        "path":  "hil/fw/Src/basepri_guard.c",
+        "sha256":  "751B7E6CC2F5BCF5EFE5E6F609276BCF785B55B66BD68845AED9D742F260D5E0"
+    },
+    {
+        "path":  "hil/fw/Src/basepri_nesting.c",
+        "sha256":  "5B4E70E73507778B2C57E75DF2B96354C39044C257726B6F56B02FC1F0322AED"
+    },
+    {
+        "path":  "hil/fw/Src/basepri_regressions.c",
+        "sha256":  "B43FC1EC96450555B8744F28E5D780B3244E5810EAC843058565FEFF4672193B"
+    },
+    {
+        "path":  "hil/fw/Src/boundary_test.c",
+        "sha256":  "80E5E98DBA3D158E08D79BB008900812719EF4685EA776B6B91EBC5E66CF431C"
+    },
+    {
+        "path":  "hil/fw/Src/diag_scenarios.c",
+        "sha256":  "B765D6F45067DD7780A87CCD1B63E4E166D0C25552CEB4B4F0D73231D0FFB95B"
+    },
+    {
+        "path":  "hil/fw/Src/flash_diag.c",
+        "sha256":  "D1262F69788F289FBEAB039CE7F7EF5C49FFD1F190DCDE6B8B5F9432DBCB2CBC"
+    },
+    {
+        "path":  "hil/fw/Src/kern_port_rtos.c",
+        "sha256":  "DBA06E7E10F71FFCE672168CFF0EEB3EFD07E1F5001F24DE258E5F280F6A90F3"
+    },
+    {
+        "path":  "hil/fw/Src/lowlevel_checks.c",
+        "sha256":  "9B18DB61773EA8A04CB76D3562F484E78C3BB7FD2638C85ED2FDE308D9D60586"
+    },
+    {
+        "path":  "hil/fw/Src/perf_probes.c",
+        "sha256":  "D0EC29718AB6207F8CF05C4C6EE242C72965104CE3B071DD48B29F62BAF149F0"
+    },
+    {
+        "path":  "hil/fw/Src/production_highirq.c",
+        "sha256":  "DBBAD6C085C427E1E3D41DBA79BB657ED41D5B22E896E7F2A78E2A3AC8C7353E"
+    },
+    {
+        "path":  "hil/fw/Src/production_irq.c",
+        "sha256":  "2F7D221ADD1A88F0C49E336BC2C16E5F3515EC113DF451E7BD9D380A662F7BE5"
+    },
+    {
+        "path":  "hil/fw/Src/production_stress.c",
+        "sha256":  "1AED21F9B574A40B9CF4D9CF61E2B2BD4F9035B7DD32C2AC8A4ABE65FBB242E3"
+    },
+    {
+        "path":  "hil/fw/Src/test_framework.c",
+        "sha256":  "6C5FF9576342B13CA93DEE972DBF8BC629DF29CE856BE5CF08C3BB8F4B0D315E"
+    },
+    {
+        "path":  "hil/fw/Src/test_scenarios.c",
+        "sha256":  "539CE9FB26A60F876F5C49C01957AF952352D2D0317865301355694383F450EB"
+    },
+    {
+        "path":  "hil/refactor_20261027/compile_checks.ps1",
+        "sha256":  "A92411D85660B36A7894A680A8555EDD6B64C23029488DA0C7497B90C4F299C7"
+    },
+    {
+        "path":  "hil/refactor_20261027/evidence_helpers.ps1",
+        "sha256":  "D034EC790D928ABF744BFCCCE565FD64DA644D7FD0D1D90D9E4F5706F74747F9"
+    },
+    {
+        "path":  "hil/refactor_20261027/run_matrix.ps1",
+        "sha256":  "046EB1A3096AE176C02937366BA9991C77B81A3B1F43E6F9608DD993D1774594"
+    },
+    {
+        "path":  "hil/refactor_20261027/run_port_matrix.ps1",
+        "sha256":  "C24CA0984363B25EFC6C8056BC27EEC1C306CF679B0E7A1344AB3EBED01FFD5C"
+    },
+    {
+        "path":  "hil/refactor_20261027/run_regressions.ps1",
+        "sha256":  "D7CD120B2D774EE834F79CBB907E68D919433C40BB76E4A489891747AA7F07E3"
+    },
+    {
+        "path":  "hil/repro_all.ps1",
+        "sha256":  "5EEFD79558557DA610768E37C7B045276F828776525231DA415FCE01ECCB30E9"
+    },
+    {
+        "path":  "hil/restore_project.ps1",
+        "sha256":  "2C31B1971ECD0AC8CF822FE68E8D99BB13016C9690F47D73220B06360277435B"
+    },
+    {
+        "path":  "hil/run_hil.ps1",
+        "sha256":  "B4C617901EE41BE0483B911B5236541639E50F7AD452227478A7FD9D5F7C5BEC"
+    },
+    {
+        "path":  "hil/templates/AI_output_int8.mk",
+        "sha256":  "8549043819176C34270214F0C11B5388357CE27738311E02B5BA2EFBCABE7998"
+    },
+    {
+        "path":  "hil/templates/Core_Startup.mk",
+        "sha256":  "72AD1791551C8AAE96CCA969D9B2C734C679C135F8854BB179812B476C98140C"
+    },
+    {
+        "path":  "hil/templates/Drivers_STM32F4xx_HAL_Driver_Src.mk",
+        "sha256":  "C7AE09E8DFC2E5A19975E576A719E5771DB421551B9B1A38FC6626056A87B7AA"
+    },
+    {
+        "path":  "hil/templates/makefile.template",
+        "sha256":  "5C4FB69DAA4903C5E1014DBD5B8BE5D2FE5B2919C967257E377ACCB62D7055C4"
+    },
+    {
+        "path":  "hil/templates/objects.list.template",
+        "sha256":  "8677E395EA66548BE5721B2172E141F5A2C827861C8D721A4BB73BD8C3291A50"
+    },
+    {
+        "path":  "hil/templates/objects.mk.template",
+        "sha256":  "8EA67E394047EBA728E14CC2E05D3495C6E41824D255D01B6FC223CE82B813B4"
+    },
+    {
+        "path":  "hil/templates/RTOS_Core_Src.mk",
+        "sha256":  "F2A68BD3D0D595022986383ED80F7B47F419F888B578495D5A94E497FCC21345"
+    },
+    {
+        "path":  "hil/templates/RTOS_IPC.mk",
+        "sha256":  "C328D1DB59F3496CF099A6A1DD5B05ADC241F02819FB053683D433FEDD9B0909"
+    },
+    {
+        "path":  "hil/templates/RTOS_lib_third_CherryUSB_class_cdc.mk",
+        "sha256":  "3EFCF8EAA92E0C3C6076072512037CBD02F65195ECC0ABA6E27A0D12FDCA8254"
+    },
+    {
+        "path":  "hil/templates/RTOS_lib_third_CherryUSB_class_hid.mk",
+        "sha256":  "84174042D6A278304E091F6FE1808D589DBC3B495FF574E2D46733931C575675"
+    },
+    {
+        "path":  "hil/templates/RTOS_lib_third_CherryUSB_class_msc.mk",
+        "sha256":  "838C924DAD192CE680303C6D520A431AD82AA8FE15E7537FAF7678B201B382F4"
+    },
+    {
+        "path":  "hil/templates/RTOS_lib_third_CherryUSB_core.mk",
+        "sha256":  "286970E73D5CA7A474B83BE598893EA1693949B2BE5816357BB0A1FB446297E9"
+    },
+    {
+        "path":  "hil/templates/RTOS_lib_third_CherryUSB_port_dwc2.mk",
+        "sha256":  "9A3A023DEDA266EE103669A054DB1464EA691C45CB51A3A3C5877E205109AF4B"
+    },
+    {
+        "path":  "hil/templates/RTOS_Memory.mk",
+        "sha256":  "E62F936CCE3452D0A3E04B300E1B99A5DDC2430BD55FE7F2920C232C44000140"
+    },
+    {
+        "path":  "hil/templates/RTOS_Port_GCC_ARM_CM4F_CM7F.mk",
+        "sha256":  "A86C3ACC74A806A5A9F022089BC6AE77FA5E8E9CD5B9F15BCEE303BF0D4BAC0D"
+    },
+    {
+        "path":  "hil/templates/RTOS_Services.mk",
+        "sha256":  "B968F14296F2DA125FD96DD8DCCE9519AF100318A28C5A8B2EC6A95D0A377317"
+    },
+    {
+        "path":  "hil/templates/RTOS_USB.mk",
+        "sha256":  "7883FD3B5600EB7E417D567A29F347E854C40969BF1386602E6B35232CDF515A"
+    },
+    {
+        "path":  "hil/templates/sources.mk.template",
+        "sha256":  "8F17FFEECE568E30544DF61EF1675BC7F1419F31C324C8AB3BC3980CEDE9B205"
+    },
+    {
+        "path":  "hil/templates/subdir.mk.template",
+        "sha256":  "EFD48BC3A91096927614615D230B9D40E0C7673D8DE201D6E6FE5D0C48E5E2E5"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos.h",
+        "sha256":  "44E9D018A7CA852ADDD076F5836EAF469E04635F39BF66EC702E1112E060BA7E"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_config.h",
+        "sha256":  "B3643E39983DD4840FBA0851A5CB75ECDEDCC139B15ED1EDE4036B3633AE7506"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_event.h",
+        "sha256":  "A24EC8398B5E9DD4267AADD0FC8B669ED41349F129C4E9A4171868C01911F7DB"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_heap.h",
+        "sha256":  "C078D7B2C7BCBB4778749C7085FC96BCE9B94ECD93DBE01741955D820F781884"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_mem.h",
+        "sha256":  "8CBA9D3FC371D0AC4B66F6D3D0B9D32A7B785F142C1191396333FAF4D3639A39"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_mutex.h",
+        "sha256":  "A845C69AE3CDC169AED772D64C83098FB1C77C31C53B0BEE6A5CEF3379D5C749"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_perf.h",
+        "sha256":  "ACCC5190E82EE6073FF2FEE9A9956826F0E3B2241EFEA6A4BB80C4DD6B658AF6"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_port.h",
+        "sha256":  "0313723D15FCD0A52D61A7C2CA3FF38830774C53B9852D26C9C4F373BDC57986"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_queue.h",
+        "sha256":  "5149E1225B0535AC2F190002EF14726E9204BEF474FED84DE2FDADEC717DF317"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_sched.h",
+        "sha256":  "67B94A22F13102F6F3AB91CA07217FE0FF64F711F11C283D2C22992B6B8A3FA3"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_sem.h",
+        "sha256":  "C8ABC2108857DA5DB86CE14E686B78A66C3304F432C363657570A8FCB842C0AF"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_task.h",
+        "sha256":  "1E3085BBC09973E92861F1BB5E52EE0B0D86889077B450DAD3B1E70EED75B3A6"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_timer.h",
+        "sha256":  "734C4F1BF9CEC971E2DE8E30E3378A46598D39E83E97953598D9B0E05EB9D298"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_types.h",
+        "sha256":  "FBCA3F1834C6205A1A09CB12F0B7E7C9D059F818EFDB83CDF5DB9E1ADE6050EE"
+    },
+    {
+        "path":  "RTOS/Core/Inc/rtos_usb.h",
+        "sha256":  "2A644B90216B586F3EC87257821C5EE80637F0CACB9B9C5A6FDF5B407E6C292C"
+    },
+    {
+        "path":  "RTOS/Core/Inc/usb_config.h",
+        "sha256":  "AE3B02B57D215E1B05ABA9959821BF65943AA0179B6D77914608224E59484808"
+    },
+    {
+        "path":  "RTOS/Core/Private/rtos_internal.h",
+        "sha256":  "F661E722596FC76C8B54F5D305490CDADFB6174F1E82B1899873464119300ACE"
+    },
+    {
+        "path":  "RTOS/Core/Src/rtos_kernel.c",
+        "sha256":  "71CDA95E9E7CAFB609A4D28F50B96A6E3A49A07CBFF8A8F51662B09C92ED79AD"
+    },
+    {
+        "path":  "RTOS/Core/Src/rtos_sched.c",
+        "sha256":  "884534D72A7DFBA8FC79291B42078B735F74D66D5F18C502F23468A205C22077"
+    },
+    {
+        "path":  "RTOS/Core/Src/rtos_task.c",
+        "sha256":  "F5D5235FA9BEE78123596D83E7AE3BC2D91948C6E4542099FD7167FC0D01D8A2"
+    },
+    {
+        "path":  "RTOS/Core/Src/rtos_wait.c",
+        "sha256":  "9E8F7272981C6603B4319BFFC2A166E4606B26BC73974A3659B8EE7D00655AF5"
+    },
+    {
+        "path":  "RTOS/IPC/rtos_event.c",
+        "sha256":  "8B3E922413705522EAFF684B3D1C58A5F15AFF2B5A2545457B5F105B630D4196"
+    },
+    {
+        "path":  "RTOS/IPC/rtos_mutex.c",
+        "sha256":  "333DCC783FBE7EDECBDA6703C9109A819D9485556BBDDFBAEC78D02B0CDE2EF5"
+    },
+    {
+        "path":  "RTOS/IPC/rtos_queue.c",
+        "sha256":  "62D6DC18175753B1116B37CCB9B8DEE4E75CF9CCA65A39AF14359A8534CC6D92"
+    },
+    {
+        "path":  "RTOS/IPC/rtos_sem.c",
+        "sha256":  "1058A4EAEB9BF65AB83FB8DEF62A4767F3C7B7358DC3ACF8F76310882FDD5E59"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/cdc/usb_cdc.h",
+        "sha256":  "A8D25B954D5DBFD0D03659651C79AF342ABE8E5B993FEFA278CD8246FA64E476"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/cdc/usbd_cdc.h",
+        "sha256":  "556229FCBDC505D927D3D82F5423463B78A182B948B4C9E8A59B294EAEBCB06B"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/cdc/usbd_cdc_acm.c",
+        "sha256":  "CF483B1962B7C8D4C1047935D40C6EF14ED3D6E78DD72D6B22879FF682972879"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/cdc/usbd_cdc_acm.h",
+        "sha256":  "BFCC0101C13F537658AB09F480F22E65003385D25FAD7FB4D57DA33F7908E8DA"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/hid/usb_hid.h",
+        "sha256":  "3925B14520270D8B6913AA7FD015968FBF23493D7C28C9A7997E26FE0A1928FB"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/hid/usbd_hid.c",
+        "sha256":  "AC421271E0F2E4B0A47507BE66A9F0BFBEC896EAFF7D34C2FF7C2A16C7D3E312"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/hid/usbd_hid.h",
+        "sha256":  "C66EB3C05DF008F0AB96DF5C466A6648A4ACE95153D543F63039135EF8B4A9F4"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/msc/usb_msc.h",
+        "sha256":  "C7156BF55615113CD79EC9A6B33D81EB3B3B29A0FC410BDD4F98500EEF76476B"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/msc/usb_scsi.h",
+        "sha256":  "66C45017BDA142CBCAFE403D027F00A87880FF48EAF519CA0F4C67DAD4188BB8"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.c",
+        "sha256":  "B1151AC36D6244D85CDB6306BE6F3BF01A1ED76DC2A5C5B0933A5B027C014BEE"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+        "sha256":  "02BA26C9907BD6D4FEC6F52BB4D0897FEA28F4964B60262A0C60D3159EC47F18"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_dc.h",
+        "sha256":  "B086BEABB5DA7871E1311D2D48FC1EB910902352B6C647D98C87991DD8156932"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_dcache.h",
+        "sha256":  "69325427AD4C3A3A426793190BE6B7DA775FDFB044C73B409EF273D3746AAF70"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_def.h",
+        "sha256":  "DBFBEAC7E6541DCB486A4C521BCEB3D69EC8A1EDD4B3796AA24BAD230194E15A"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_errno.h",
+        "sha256":  "58CFB7DE877FEAA747FECEEDDC26C11E4C93485C8E9456058FA4ADB6CF7A9631"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_hc.h",
+        "sha256":  "359B3EA61FABFE683CC10E284AA45AC95A8C61898D83846002C93C99A1E63CC5"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_list.h",
+        "sha256":  "2BA9F6B76D7785B8D700BC46FA57D63902664CCF0608A0AB3CAB9A74E8A2C61D"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_log.h",
+        "sha256":  "F2EBBFF64EE9346E8C3FEDB01C75B826CAB0B347F61979B4853AA53D24DA236D"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_memcpy.h",
+        "sha256":  "660CA7AB49F88BE0354113EB86B3DF71617A797313E83497513252ECAF5901C5"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_mempool.h",
+        "sha256":  "4DC698C07E23FE2C42594AB03F1AB679D42BDEDC6513F0480123B42EFB394AFB"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+        "sha256":  "FDC134BFB481DE6706B2B99D65EBACCC98F580E7E3437A2E9AF8910B0A776DBC"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_otg.h",
+        "sha256":  "AE2C0F768468D12CA125E8D4DE305FD32F5DC2589FB700E82982E529E6C49B62"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_ringbuffer.h",
+        "sha256":  "992E142365FC6C1662ADCE2BCA1BD43049D30D36B34F50242D88CF88AB665798"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_util.h",
+        "sha256":  "C62FC34CE1ABF2D81219DBF4BFC77EACDD837DA60E737D6511A5261854CB0465"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/common/usb_version.h",
+        "sha256":  "90AAC36E7FED7687A25CBAB32129C8DF6C2B64591D7F1CB3FB6D2DBD1073D5F5"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/core/usbd_core.c",
+        "sha256":  "FFE65C6569C8CE52E33464E7AC5636AA0FA4A4AC52BF883F3483E944E6A2AF5B"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/core/usbd_core.h",
+        "sha256":  "7F2D455E2D32E9E0F66F8C88718C1E64AFD0B2F5F58E97BC6B513D0AFC5176E1"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/port/dwc2/usb_dc_dwc2.c",
+        "sha256":  "4D6AF696F51434947D200AE55AB4DC9F9D87E443709AA242C2F8DC1C02991D85"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_param.h",
+        "sha256":  "893902A4ED7AD4A963005037E66A3D20E694EEBB388429F8480BF44EC17F1A75"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_reg.h",
+        "sha256":  "02DC261AD23F64ECB27DF358928474091DBF8BE6D997ADEAFED631179D22BD6E"
+    },
+    {
+        "path":  "RTOS/lib/third/CherryUSB/port/dwc2/usb_glue_st.c",
+        "sha256":  "EA6E07536116E5FFC29BEA0A1E2A6DF8B53674C589B6BCC04263401BDD9B3A00"
+    },
+    {
+        "path":  "RTOS/Memory/rtos_heap.c",
+        "sha256":  "A921CAD9AD68228B43E6A2BA9C1DE0B6872F518F3FEDA42DC10CE0AD4B2704B7"
+    },
+    {
+        "path":  "RTOS/Memory/rtos_mempool.c",
+        "sha256":  "DCA8B20A084AABA983CDF3AF1CBE138BB939CCD3A9DEA6B52C971CE60D0B9676"
+    },
+    {
+        "path":  "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+        "sha256":  "D48BD6154DBADBBBDB52C34283D79A42AC90CD3B6261EE93F12BA8F2917354A5"
+    },
+    {
+        "path":  "RTOS/Services/rtos_perf.c",
+        "sha256":  "7CAC634F4DF772B29A63A149A35B8EEAAAD45BE47CED83197891B19B33FC7597"
+    },
+    {
+        "path":  "RTOS/Services/rtos_timer.c",
+        "sha256":  "CA6A6A02F36F2966AD3A6590AECA3C2FDBEDC28C8A0F2FBA66F062836F164CD3"
+    },
+    {
+        "path":  "RTOS/USB/rtos_usb_device.c",
+        "sha256":  "64BA99A6D5CE9CC769F6565E67D5840860E69919E0EAB0B7FF2A7F22795986BD"
+    },
+    {
+        "path":  "RTOS/USB/rtos_usb_msc.c",
+        "sha256":  "367F59978D6D86CC4AD840F1B11DC1AF89DE9B0A6D90AD8C320C8A96F8D90C7A"
+    },
+    {
+        "path":  "RTOS/USB/rtos_usb_osal.c",
+        "sha256":  "36C2FAB53BA8B60C5EA3EFA43F3018A9315BDA709547776AC1974FF8543DF6AE"
+    },
+    {
+        "path":  "STM32F446RETX_FLASH.ld",
+        "sha256":  "1ABCC98019258405AC9F91EFC942B0E1A0BBDBF48C86494C0CBD68640D303593"
+    },
+    {
+        "path":  "STM32F446RETX_RAM.ld",
+        "sha256":  "846E9FE62BFE56D2353AC2632AA62618219E3BF88B5FE1724BEC3EC3F436320E"
+    }
+]

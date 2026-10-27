@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "aw_primask_a0_O2",
+    "started":  "2026-10-27T10:41:35.7809566+08:00",
+    "finished":  "2026-10-27T10:41:38.3027435+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "EBC8A575488A51F7BEDE761959DD5CCA79B24DE48DF3FB5D8CCFD66787CEE9D8",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AW\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

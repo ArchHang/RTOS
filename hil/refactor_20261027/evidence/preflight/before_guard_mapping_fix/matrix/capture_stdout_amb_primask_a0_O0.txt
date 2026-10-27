@@ -1,0 +1,104 @@
+﻿===== amb_primask_a0_O0 (5459 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\refactor_20261027\evidence\matrix\log_amb_primask_a0_O0.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+AMB|META|recursion_boundary_injection=1 owner_handoff_public_api=1 finite_cycle_public_api=1
+AMB|PASS|name=recursion_init actual=1 expected=1
+AMB|PASS|name=unowned_give_rejected actual=1 expected=1
+AMB|PASS|name=recursion_owner_take actual=1 expected=1
+AMB|BOUNDARY|status=-7 count=0xFFFFFFFF owner_retained=1 injection=UINT32_MAX_previous_acquisitions repair=fixture_only
+AMB|PASS|name=recursive_overflow_status actual=1 expected=1
+AMB|PASS|name=recursive_overflow_count actual=4294967295 expected=4294967295
+AMB|PASS|name=recursive_overflow_owner actual=1 expected=1
+AMB|PASS|name=recursive_final_give actual=1 expected=1
+AMB|PASS|name=cleanup_mutex actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=handoff_init actual=1 expected=1
+AMB|PASS|name=handoff_waiters_really_blocked actual=1 expected=1
+AMB|PASS|name=delete_holding_owner actual=1 expected=1
+AMB|PASS|name=first_actually_acquired actual=1 expected=1
+AMB|PASS|name=new_owner_paused actual=1 expected=1
+AMB|PASS|name=deleted_owner_transferred actual=1 expected=1
+AMB|PASS|name=remaining_waiter_retained actual=1 expected=1
+AMB|PASS|name=lower_new_owner_base actual=1 expected=1
+AMB|PASS|name=remaining_waiter_inheritance actual=6 expected=6
+AMB|PASS|name=release_new_owner actual=1 expected=1
+AMB|PASS|name=handoff_completed actual=1 expected=1
+AMB|PASS|name=handoff_completed actual=1 expected=1
+AMB|PASS|name=handoff_finished actual=1 expected=1
+AMB|PASS|name=handoff_take_success actual=1 expected=1
+AMB|PASS|name=handoff_true_owner actual=1 expected=1
+AMB|PASS|name=handoff_give_success actual=1 expected=1
+AMB|PASS|name=handoff_finished actual=1 expected=1
+AMB|PASS|name=handoff_take_success actual=1 expected=1
+AMB|PASS|name=handoff_true_owner actual=1 expected=1
+AMB|PASS|name=handoff_give_success actual=1 expected=1
+AMB|PASS|name=first_acquisition_order actual=1 expected=1
+AMB|PASS|name=second_acquisition_order actual=2 expected=2
+AMB|PASS|name=new_owner_base_restored actual=22 expected=22
+AMB|PASS|name=handoff_mutex_unowned actual=1 expected=1
+AMB|PASS|name=cleanup_worker actual=1 expected=1
+AMB|PASS|name=cleanup_worker actual=1 expected=1
+AMB|PASS|name=cleanup_mutex actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cycle_init actual=1 expected=1
+AMB|PASS|name=cycle_owners_ready actual=1 expected=1
+AMB|PASS|name=start_cycle_first actual=1 expected=1
+AMB|PASS|name=cycle_first_blocked actual=1 expected=1
+AMB|PASS|name=start_cycle_second actual=1 expected=1
+AMB|PASS|name=cycle_second_blocked actual=1 expected=1
+AMB|PASS|name=cycle_high_created actual=1 expected=1
+AMB|PASS|name=cycle_high_blocked actual=1 expected=1
+AMB|PASS|name=cycle_inherits_high actual=4 expected=4
+AMB|PASS|name=cycle_inherits_high actual=4 expected=4
+AMB|PASS|name=cycle_high_times_out actual=1 expected=1
+AMB|PASS|name=cycle_high_result actual=1 expected=1
+AMB|PASS|name=cycle_withdraws_high actual=15 expected=15
+AMB|PASS|name=cycle_withdraws_high actual=15 expected=15
+AMB|PASS|name=finite_cycle_completes actual=1 expected=1
+AMB|PASS|name=finite_cycle_completes actual=1 expected=1
+AMB|PASS|name=cycle_finished actual=1 expected=1
+AMB|PASS|name=cycle_dependency_status actual=1 expected=1
+AMB|PASS|name=cycle_owner_releases actual=1 expected=1
+AMB|PASS|name=cycle_base_restored actual=15 expected=15
+AMB|PASS|name=cycle_mutex_unowned actual=1 expected=1
+AMB|PASS|name=cycle_finished actual=1 expected=1
+AMB|PASS|name=cycle_dependency_status actual=1 expected=1
+AMB|PASS|name=cycle_true_dependency_owner actual=1 expected=1
+AMB|PASS|name=cycle_dependency_releases actual=1 expected=1
+AMB|PASS|name=cycle_owner_releases actual=1 expected=1
+AMB|PASS|name=cycle_base_restored actual=16 expected=16
+AMB|PASS|name=cycle_mutex_unowned actual=1 expected=1
+AMB|PASS|name=cycle_broken_by_real_timeout actual=1 expected=1
+AMB|PASS|name=cleanup_high actual=1 expected=1
+AMB|PASS|name=cleanup_worker actual=1 expected=1
+AMB|PASS|name=cleanup_worker actual=1 expected=1
+AMB|PASS|name=cleanup_mutex actual=1 expected=1
+AMB|PASS|name=cleanup_mutex actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=cleanup_sem actual=1 expected=1
+AMB|PASS|name=final_basepri actual=0 expected=0
+AMB|PASS|name=final_primask actual=0 expected=0
+AMB|PASS|name=final_critical_count actual=0 expected=0
+AMB|SUMMARY|pass=87 fail=0
+AMB|DONE|status=0
+

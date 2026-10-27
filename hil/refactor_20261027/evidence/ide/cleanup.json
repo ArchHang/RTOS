@@ -1,0 +1,10 @@
+{
+  "finished": "2026-10-27T10:27:37.7921248+08:00",
+  "target": "E:\\STM32_Project\\CubeIDE\\_rtos_ide_verify_20261027_102327",
+  "resolved_target_checked": true,
+  "retained_evidence": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\refactor_20261027\\evidence\\ide",
+  "removed_files": 702,
+  "removed_bytes": 51317351.0,
+  "target_absent": true,
+  "original_project_deleted": false
+}

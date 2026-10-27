@@ -50,7 +50,7 @@ if ($want -contains 'audit') {
 if ($want -contains 'port') {
     $portEvidence = Join-Path $logs ("${Tag}_port_" + (Get-Date).ToString('yyyyMMdd_HHmmss'))
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
-        (Join-Path $hil 'basepri_20261025/run_matrix.ps1') -Suite all -OutDir $portEvidence
+        (Join-Path $hil 'refactor_20261027/run_port_matrix.ps1') -Suite all -OutDir $portEvidence
     if ($LASTEXITCODE -ne 0) { throw 'Port/ISR/blocking-return regression failed' }
 }
 
@@ -58,10 +58,10 @@ if ($want -contains 'port') {
 if ($want -contains 'adversarial') {
     $adversarialEvidence = Join-Path $logs ("${Tag}_adversarial_" + (Get-Date).ToString('yyyyMMdd_HHmmss'))
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
-        (Join-Path $hil 'adversarial_20261025/run_matrix.ps1') -OutDir $adversarialEvidence
+        (Join-Path $hil 'refactor_20261027/run_matrix.ps1') -OutDir $adversarialEvidence
     if ($LASTEXITCODE -ne 0) { throw 'Complex mutex/wait/lifetime regression failed' }
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
-        (Join-Path $hil 'adversarial_20261025/run_matrix.ps1') -RegistryOnly `
+        (Join-Path $hil 'refactor_20261027/run_matrix.ps1') -RegistryOnly `
         -ExpectedRegistryChecks 259 -OutDir (Join-Path $adversarialEvidence 'registry')
     if ($LASTEXITCODE -ne 0) { throw 'Maximum mutex graph/multi-lock deletion regression failed' }
 }

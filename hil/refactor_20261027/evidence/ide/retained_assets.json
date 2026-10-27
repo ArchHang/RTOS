@@ -1,0 +1,292 @@
+[
+  {
+    "path": "cleanup.json",
+    "sha256": "DF531507FB5ACEEA6C9630F02CD10F2132694752C7A8E50914217044E0B1843C",
+    "bytes": 395
+  },
+  {
+    "path": "compiler_version.txt",
+    "sha256": "38E025AFF417C4C5305EF5641F6883ECD3AF95A2B66971C7443D039F1AADBF42",
+    "bytes": 291
+  },
+  {
+    "path": "context.json",
+    "sha256": "91B56811262FC44171DD7D0039FEAEE6F7B271AA88FD1B9256E8EC93674DF5B6",
+    "bytes": 639
+  },
+  {
+    "path": "cproject_tested.xml",
+    "sha256": "2CFBD4B871BD61E274EB762376ED68E1EA263FB9D7F29B107135E921142C58F7",
+    "bytes": 29424
+  },
+  {
+    "path": "debug_command.json",
+    "sha256": "FDED116D33D67214B6BEF9AF13A1CCADE12E4395BBA5CB30320D2BF4DB0161E7",
+    "bytes": 582
+  },
+  {
+    "path": "debug_exit.json",
+    "sha256": "0C7BCF5CB73CE5E85A75580B0B1537518AF3697942E3DBE7DD282442763B3C68",
+    "bytes": 105
+  },
+  {
+    "path": "debug_headless.log",
+    "sha256": "EE9DCF4786F512DB942E057EFF883C50531B86F75A764DF28B249E2641797EF1",
+    "bytes": 51137
+  },
+  {
+    "path": "generated/debug/AI/output/int8/subdir.mk",
+    "sha256": "ADFDB768B126F874ED47CF30618F69CBCFE96F29CC0A16029DEE02BC856697F0",
+    "bytes": 2015
+  },
+  {
+    "path": "generated/debug/Core/Src/subdir.mk",
+    "sha256": "B5F08411AF867FFF9901D883EEC5FC939FA897EDBFCC7955B5777A684E48F50F",
+    "bytes": 3424
+  },
+  {
+    "path": "generated/debug/Core/Startup/subdir.mk",
+    "sha256": "E063AA816079E3C8898C5870609F30F857813A5977EA9C54FE1D765CD4382078",
+    "bytes": 1106
+  },
+  {
+    "path": "generated/debug/Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk",
+    "sha256": "824C655ADB55D22A94CCFE538259570EBC57393254FCB61A641E9A906075D22A",
+    "bytes": 9351
+  },
+  {
+    "path": "generated/debug/f446_rtos.elf",
+    "sha256": "684FF3CC539FACE27BC144062821180132B8C2814B23E95E781992E669B1437A",
+    "bytes": 2212996
+  },
+  {
+    "path": "generated/debug/f446_rtos.map",
+    "sha256": "A86C1DF71AAF43E3FB6E3588C81E7B3FFD95F013568801CC23B08797889D3CB5",
+    "bytes": 725439
+  },
+  {
+    "path": "generated/debug/makefile",
+    "sha256": "5385C1D9D4C4358CA14844CC5434DF1C535DE9B25B418AB3588F60D49754D6DE",
+    "bytes": 3555
+  },
+  {
+    "path": "generated/debug/objects.list",
+    "sha256": "D179872A1BCCC4C50B5CEB14B257C2ADD10917ACEA0B6B53E8119EC9DC749691",
+    "bytes": 2372
+  },
+  {
+    "path": "generated/debug/objects.mk",
+    "sha256": "46F1B51BF205812D898D21558F635626DE9316FB93006B8CAD2D7075B2FA3B5D",
+    "bytes": 285
+  },
+  {
+    "path": "generated/debug/RTOS/Core/Src/subdir.mk",
+    "sha256": "4C9052AE588B459528E291B2609A70D2D646485F3D8ABA1FA5D0AB186933CE85",
+    "bytes": 2278
+  },
+  {
+    "path": "generated/debug/RTOS/IPC/subdir.mk",
+    "sha256": "F3A9B5D39988A7DDA072E4D6D01E08A92C60D9C1AE577013849FF179219B2DF1",
+    "bytes": 2082
+  },
+  {
+    "path": "generated/debug/RTOS/lib/third/CherryUSB/class/cdc/subdir.mk",
+    "sha256": "5749088074201176B982C0B99B89AAD59E891AE880F652D02564CBA969C32096",
+    "bytes": 1996
+  },
+  {
+    "path": "generated/debug/RTOS/lib/third/CherryUSB/class/hid/subdir.mk",
+    "sha256": "606791DEFAEAD0E8CDA7592DD72A297B258C5A518D35C175F95B7FFED16BD000",
+    "bytes": 1968
+  },
+  {
+    "path": "generated/debug/RTOS/lib/third/CherryUSB/class/msc/subdir.mk",
+    "sha256": "4196D79B5202DE695FA7989205D2DE241AF6EB692BD30DC56A71F742944B2E64",
+    "bytes": 1968
+  },
+  {
+    "path": "generated/debug/RTOS/lib/third/CherryUSB/core/subdir.mk",
+    "sha256": "8BE726A419505F4855E6E27BB7ADE546F041740A87CA97B6014944A8E041C79E",
+    "bytes": 1891
+  },
+  {
+    "path": "generated/debug/RTOS/lib/third/CherryUSB/port/dwc2/subdir.mk",
+    "sha256": "9160E3F719045151BF72CA0A999699D35850E1CDD2BFC54574DFF78328957797",
+    "bytes": 2358
+  },
+  {
+    "path": "generated/debug/RTOS/Memory/subdir.mk",
+    "sha256": "EB643C1F92059B3C3EA8AD7A8208CC5A2CAC87A048013B19CEF5965C0C665BAB",
+    "bytes": 1809
+  },
+  {
+    "path": "generated/debug/RTOS/Port/GCC/ARM_CM4F_CM7F/subdir.mk",
+    "sha256": "DB4518D59482D493938465847A9B8E3EA6E3368AC1BC9EB887257944BACE74A6",
+    "bytes": 1817
+  },
+  {
+    "path": "generated/debug/RTOS/Services/subdir.mk",
+    "sha256": "282544E01C013309054FF807857051A4EE322512F12AC32F68B84D278A9723C5",
+    "bytes": 1839
+  },
+  {
+    "path": "generated/debug/RTOS/USB/subdir.mk",
+    "sha256": "1C49BFEE4EDBC7E3D3375BF0B26BB72E21FFE8D32F44930746220DD84E34FE55",
+    "bytes": 1986
+  },
+  {
+    "path": "generated/debug/sources.mk",
+    "sha256": "9BA182E3BDCD0B67C8B2009856BDA17B878367E62E5F27FF025E27C86B51FD48",
+    "bytes": 926
+  },
+  {
+    "path": "generated/release/AI/output/int8/subdir.mk",
+    "sha256": "0EC6DD8769AE84B76A0F4774F27A9411DCD8D159AAF3C9F80F8BDC840C4EF5C4",
+    "bytes": 2003
+  },
+  {
+    "path": "generated/release/Core/Src/subdir.mk",
+    "sha256": "507AE713AB9EA5352A43EFCD9E524BE263FCC2C7E9D6944826659A1148F3CC3E",
+    "bytes": 3412
+  },
+  {
+    "path": "generated/release/Core/Startup/subdir.mk",
+    "sha256": "3B70CD3AEF21BFC373D6195AA61101D3DDDD21D53E941AC811612EE5DA85DF27",
+    "bytes": 1094
+  },
+  {
+    "path": "generated/release/Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk",
+    "sha256": "085A498062255D0BCEC01850EDA703747CF761191B8BC3BF76904C31D773E3D4",
+    "bytes": 9339
+  },
+  {
+    "path": "generated/release/f446_rtos.elf",
+    "sha256": "AB9AB97EFEC103A6799FC974142DC86704DCF92ED21685BD706EB3DC6BA5F104",
+    "bytes": 240624
+  },
+  {
+    "path": "generated/release/f446_rtos.map",
+    "sha256": "95E28173DB2A8C35F743D5FF41E83B78B1C15F7CDA22463ED0774F698D2A3F69",
+    "bytes": 358347
+  },
+  {
+    "path": "generated/release/makefile",
+    "sha256": "5385C1D9D4C4358CA14844CC5434DF1C535DE9B25B418AB3588F60D49754D6DE",
+    "bytes": 3555
+  },
+  {
+    "path": "generated/release/objects.list",
+    "sha256": "D179872A1BCCC4C50B5CEB14B257C2ADD10917ACEA0B6B53E8119EC9DC749691",
+    "bytes": 2372
+  },
+  {
+    "path": "generated/release/objects.mk",
+    "sha256": "46F1B51BF205812D898D21558F635626DE9316FB93006B8CAD2D7075B2FA3B5D",
+    "bytes": 285
+  },
+  {
+    "path": "generated/release/RTOS/Core/Src/subdir.mk",
+    "sha256": "DBF310AE1224C9D860676D8854578444766F39DC96169CBFF7FB8CFC83966749",
+    "bytes": 2266
+  },
+  {
+    "path": "generated/release/RTOS/IPC/subdir.mk",
+    "sha256": "4FE36CAFDDA4DD79EAFE0E497E53B04C1A7941721B2C7DCBE9748BD2A26854D2",
+    "bytes": 2070
+  },
+  {
+    "path": "generated/release/RTOS/lib/third/CherryUSB/class/cdc/subdir.mk",
+    "sha256": "361CD7B82BD210FC0FD2B234850993D7F99EF03121485EE1EFC48C890686D3E7",
+    "bytes": 1984
+  },
+  {
+    "path": "generated/release/RTOS/lib/third/CherryUSB/class/hid/subdir.mk",
+    "sha256": "BE7C9FABAEBA7384C139FBCC5ECABAA5556441638C81B57F66A01F11A64CEAD0",
+    "bytes": 1956
+  },
+  {
+    "path": "generated/release/RTOS/lib/third/CherryUSB/class/msc/subdir.mk",
+    "sha256": "A24C23CC335F7CB28C79B814089AAA55D6CED2C526F44C8BB1F3115B393D6AB5",
+    "bytes": 1956
+  },
+  {
+    "path": "generated/release/RTOS/lib/third/CherryUSB/core/subdir.mk",
+    "sha256": "2F4EE01B737B926132F65A8C3BBE9E6F0EC361E2EAA596AED1E94D901D261491",
+    "bytes": 1879
+  },
+  {
+    "path": "generated/release/RTOS/lib/third/CherryUSB/port/dwc2/subdir.mk",
+    "sha256": "D018A0D0736A74163CDE5EB8C5699A88FF156936C92EB7B0853A1D9CBD4D8DE4",
+    "bytes": 2346
+  },
+  {
+    "path": "generated/release/RTOS/Memory/subdir.mk",
+    "sha256": "C5DB7C2A13C60E5FBEC2BC08D385EDD356C5E262438E71391718BFCBDFBDCC5A",
+    "bytes": 1797
+  },
+  {
+    "path": "generated/release/RTOS/Port/GCC/ARM_CM4F_CM7F/subdir.mk",
+    "sha256": "24A292C5523DFFDE7162F1BFFACF5333F4F137ABF0F2047AC9FC8E775E2762B5",
+    "bytes": 1805
+  },
+  {
+    "path": "generated/release/RTOS/Services/subdir.mk",
+    "sha256": "CD97E36FED008452E286F63BF15DEE7A60BBE6973A27F6EC42AE718A9530AA43",
+    "bytes": 1827
+  },
+  {
+    "path": "generated/release/RTOS/USB/subdir.mk",
+    "sha256": "3323F81455D7A09FA8F63C4DF8F2CA404A0EAAFFEBA9317EF0B5CC8484D83C80",
+    "bytes": 1974
+  },
+  {
+    "path": "generated/release/sources.mk",
+    "sha256": "9BA182E3BDCD0B67C8B2009856BDA17B878367E62E5F27FF025E27C86B51FD48",
+    "bytes": 926
+  },
+  {
+    "path": "project_tested.xml",
+    "sha256": "E979588AF4E2E52C874AF8A2B95114DDDFA6D6648606649896E5BD7CF7EB077C",
+    "bytes": 1215
+  },
+  {
+    "path": "README.md",
+    "sha256": "5D5CEEC83EA987AC07F3CA4E44CC075F32F72C2A595DA6BA77EA33A594D10CA8",
+    "bytes": 1693
+  },
+  {
+    "path": "release_command.json",
+    "sha256": "631AAD7EC86F74BD3BF4DBE44912F87C0270CBC246C9804F0A9254FDBC002BBB",
+    "bytes": 586
+  },
+  {
+    "path": "release_exit.json",
+    "sha256": "67AC596D2989DA02477F0DA6C0B2725FCD3F728FB37F9BB0007EBB97F34B5927",
+    "bytes": 107
+  },
+  {
+    "path": "release_headless.log",
+    "sha256": "5031686723783FA12E3FB285477AE9BFD6DC379064D81886980FB60F6EEEAF96",
+    "bytes": 50446
+  },
+  {
+    "path": "sources_after_check.json",
+    "sha256": "78F5B254CE552FAD60E89BEC84918592074CEB60CF1AC3FF3AFDB193C289667F",
+    "bytes": 123
+  },
+  {
+    "path": "sources_before.json",
+    "sha256": "7FECAE7291B1EF2DF261C6FDB093F0C466F05459BB526E968648930AA96569D1",
+    "bytes": 31281
+  },
+  {
+    "path": "summary.json",
+    "sha256": "43E631FEFAE9FF20537EE0DE545A66B5DE694347CAA14D9EF3DA49C39F00E047",
+    "bytes": 2972
+  },
+  {
+    "path": "tool_identity.json",
+    "sha256": "8ECA75EEED5CF23ED0B2281296CC9717B3AD461338213262D1722336983DBD88",
+    "bytes": 386
+  }
+]

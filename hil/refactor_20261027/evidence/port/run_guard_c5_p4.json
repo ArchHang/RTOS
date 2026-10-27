@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "guard_c5_p4",
+    "started":  "2026-10-27T10:51:18.8098262+08:00",
+    "finished":  "2026-10-27T10:51:20.7179287+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "D3E28063318E6AD987AED6054685E7A1811EB552C3EA596927A3F7727FB47E6D",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BP\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}
