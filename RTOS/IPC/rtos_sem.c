@@ -109,12 +109,14 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
     sem->wait_bitmap |= (1UL << cur->priority);
 
     rtos_sched_block(cur, timeout);
+    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_SEM, cur,
+        sem, timeout, 0U, RTOS_OK, 0U);
     rtos_sched_schedule();
     RTOS_PORT_EXIT_CRITICAL();
 
     /* 恢复本次调用时，callee-saved 的 cur 指针也随任务现场恢复。
      * 任务若已被删除就不会再运行该调用，不必重新读取全局 current_tcb。 */
-    return cur->wait_result; /* RTOS_OK=被 give 唤醒, RTOS_ERR_TIMEOUT=超时 */
+    return RTOS_INTERNAL_DIAG_RETURN_STATUS(RTOS_DIAG_OP_SEM, cur, cur->wait_result);
 }
 
 

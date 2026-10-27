@@ -278,6 +278,19 @@ uint32_t rtos_port_isr_priority(void);
 uint32_t rtos_port_get_interrupt_mask(void);
 
 /**
+ * @brief 读取原始 PRIMASK；用于判断调用者是否允许真正发生阻塞切换。
+ * @return bit0 为全局可配置异常屏蔽位，不改变任何屏蔽状态。
+ * @note C 无法直接读取处理器特殊寄存器，使用移植层约束操作数完成单条 MRS。
+ *       仅查询接口使用；未调用时不向任务切换或临界区热路径添加代码。
+ */
+static inline uint32_t rtos_port_get_global_interrupt_mask(void)
+{
+    uint32_t mask;
+    __asm__ __volatile__("mrs %[mask], primask" : [mask] "=r"(mask) : : "memory");
+    return mask;
+}
+
+/**
  * @brief 设置中断屏蔽级别。
  */
 void rtos_port_set_interrupt_mask(uint32_t mask);

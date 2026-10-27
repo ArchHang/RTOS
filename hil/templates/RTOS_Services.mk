@@ -2,14 +2,17 @@
 # Build directory: project-root/Debug; GNU Tools for STM32 11.3.rel1.
 
 C_SRCS += \
+../RTOS/Services/rtos_diag.c \
 ../RTOS/Services/rtos_perf.c \
 ../RTOS/Services/rtos_timer.c
 
 OBJS += \
+./RTOS/Services/rtos_diag.o \
 ./RTOS/Services/rtos_perf.o \
 ./RTOS/Services/rtos_timer.o
 
 C_DEPS += \
+./RTOS/Services/rtos_diag.d \
 ./RTOS/Services/rtos_perf.d \
 ./RTOS/Services/rtos_timer.d
 
@@ -19,6 +22,7 @@ RTOS/Services/%.o RTOS/Services/%.su RTOS/Services/%.cyclo: ../RTOS/Services/%.c
 clean: clean-RTOS-2f-Services
 
 clean-RTOS-2f-Services:
+	-$(RM) ./RTOS/Services/rtos_diag.cyclo ./RTOS/Services/rtos_diag.d ./RTOS/Services/rtos_diag.o ./RTOS/Services/rtos_diag.su
 	-$(RM) ./RTOS/Services/rtos_perf.cyclo ./RTOS/Services/rtos_perf.d ./RTOS/Services/rtos_perf.o ./RTOS/Services/rtos_perf.su ./RTOS/Services/rtos_timer.cyclo ./RTOS/Services/rtos_timer.d ./RTOS/Services/rtos_timer.o ./RTOS/Services/rtos_timer.su
 
 .PHONY: clean-RTOS-2f-Services

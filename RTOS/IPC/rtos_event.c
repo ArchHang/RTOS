@@ -227,6 +227,8 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
 
     rtos_internal_wait_insert_by_prio(&event->wait_head, &cur->wait_node);
     rtos_sched_block(cur, timeout);
+    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_EVENT, cur,
+        event, timeout, wait_bits, RTOS_OK, mode);
     rtos_sched_schedule();
     RTOS_PORT_EXIT_CRITICAL();
 
@@ -237,7 +239,8 @@ rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t wait_bi
      * task has left the event list, so the object may have been deinitialized
      * and reused before this task resumes. Never dereference event here.
      * Deinit/suspend keep transfer_buf at NULL and therefore return zero. */
-    return result;
+    return RTOS_INTERNAL_DIAG_RETURN_VALUE(RTOS_DIAG_OP_EVENT, cur,
+        result, cur->wait_result);
 }
 
 rtos_event_bits_t rtos_event_get(const rtos_event_t *event)

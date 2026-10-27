@@ -27,6 +27,9 @@
 #include "rtos_sched.h"   /* rtos_kernel.current_tcb (故障任务归因) */
 #include "rtos_task.h"    /* rtos_tcb_t 完整定义(name/stack_base/...) */
 #include "rtos_config.h"  /* RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW */
+#if RTOS_CONFIG_USE_DIAGNOSTICS
+#include "rtos_diag.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -387,11 +390,16 @@ static void report_task(uint32_t sp)
         fault_puthex32((uint32_t)tcb->stack_base - sp);
         fault_puts(" bytes below stack base\r\n");
     }
-    else
-    {
+    else if ((tcb->stack_size > (UINT32_MAX - (uint32_t)tcb->stack_base) / 4U) ||
+             (sp > (uint32_t)tcb->stack_base + tcb->stack_size * 4U)) {
+        fault_puts("INVALID    : SP or stack extent exceeds the task stack\r\n");
+    } else {
+        /* Downward-growing stack: SP-base is remaining space, not usage. */
+        uint32_t used = tcb->stack_size * 4U - (sp - (uint32_t)tcb->stack_base);
+
         fault_puts("Stack usage: ");
-        fault_puthex32(sp - (uint32_t)tcb->stack_base);
-        fault_puts(" bytes in use at fault\r\n");
+        fault_puthex32(used);
+        fault_puts(" bytes in use at fault (current frame, not peak)\r\n");
     }
 
 #if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW
@@ -471,6 +479,10 @@ static __attribute__((used)) void fault_report(uint32_t sp, uint32_t exc_return)
     /* 1. 立即快照故障寄存器(只读不清: 状态位写1才清除, 保留现场)。
      *    后续解析代码万一二次异常, 快照里证据仍在, 调试器可查 g_fault。 */
     g_fault.cfsr   = SCB->CFSR;    /* 0xE000ED28 */
+#if RTOS_CONFIG_USE_DIAGNOSTICS
+    /* Terminal capture: no kernel lock, TCB access, allocation or formatting. */
+    rtos_diag_fault_freeze(g_fault.cfsr, 0U);
+#endif
     g_fault.hfsr   = SCB->HFSR;    /* 0xE000ED2C */
     g_fault.shcsr  = SCB->SHCSR;   /* 0xE000ED24 */
     g_fault.ccr    = SCB->CCR;     /* 0xE000ED14 */
@@ -484,6 +496,9 @@ static __attribute__((used)) void fault_report(uint32_t sp, uint32_t exc_return)
     uint8_t from_thr = ((exc_return & (1UL << 3)) != 0U) ? 1U : 0U;
 
     fault_puts("\r\n\r\n==================== FAULT REPORT ====================\r\n\r\n");
+#if RTOS_CONFIG_USE_DIAGNOSTICS
+    fault_puts("DIAG history frozen in SRAM; inspect diag_slots with the debugger.\r\n");
+#endif
 
     report_context(exc_return, sp, g_fault.frame_valid);
 

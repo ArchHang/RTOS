@@ -38,10 +38,12 @@
 #include "rtos_mutex.h"
 #include "rtos_queue.h"
 #include "rtos_event.h"
+#include "rtos_channel.h"
 #include "rtos_timer.h"
 #include "rtos_mem.h"
 #include "rtos_heap.h"
 #include "rtos_perf.h"
+#include "rtos_diag.h"
 #include "rtos_usb.h"
 
 #ifdef __cplusplus

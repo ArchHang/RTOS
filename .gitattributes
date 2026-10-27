@@ -22,3 +22,21 @@ hil/refactor_20261027/verify_results.py -text whitespace=-blank-at-eof
 
 # Keep published Markdown consistent across Windows and Unix checkouts.
 *.md text eol=lf
+
+# New dated evidence includes hashed scripts and mock/source snapshots as well
+# as logs. Preserve their original bytes; the README is maintained prose.
+hil/channel_20261027/** -text -whitespace
+hil/channel_shared_20261027/** -text -whitespace
+hil/diagnostics_20261027/** -text -whitespace
+hil/channel_20261027/**/*.md text eol=lf
+hil/channel_shared_20261027/**/*.md text eol=lf
+hil/diagnostics_20261027/**/*.md text eol=lf
+
+# This compiled fixture's EOF padding is part of the captured input digest.
+hil/fw/Src/channel_fixture.c whitespace=-blank-at-eof
+
+# These measured inputs contain mixed LF/CRLF. Preserve the actual tested
+# bytes; uniform EOL reconstruction cannot recover their original SHA256.
+RTOS/IPC/rtos_event.c -text whitespace=cr-at-eol
+hil/fw/Src/kern_port_rtos.c -text whitespace=cr-at-eol
+hil/fw/Src/test_framework.c -text whitespace=cr-at-eol
