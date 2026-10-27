@@ -1,6 +1,6 @@
 # RTOS — 面向通用 Cortex-M 的自研嵌入式实时内核
 
-一个从零设计、配有[设计文档](docs/rtos_design.md)的可移植抢占式 RTOS：`RTOS/Core/` 提供调度、任务和 IPC 等服务，`RTOS/Port/` 提供处理器移植层；应用侧附带 USB 设备栈（CDC 虚拟串口 + MSC U 盘 + HID 三合一复合设备）、端侧 AI 推理（int8 量化 CNN 说话人识别）与 HardFault 诊断示例，并配有 FreeRTOS V10.4.6 的[对照分析](docs/freertos_design.md)。
+一个从零设计、配有[设计文档](docs/rtos_design.md)的可移植抢占式 RTOS：`RTOS/Core/` 提供内核机制，`RTOS/IPC/`、`Memory/`、`Services/` 和 `USB/` 按职责组织功能，`RTOS/Port/` 提供处理器移植层；应用侧附带 USB 设备栈（CDC 虚拟串口 + MSC U 盘 + HID 三合一复合设备）、端侧 AI 推理（int8 量化 CNN 说话人识别）与 HardFault 诊断示例，并配有 FreeRTOS V10.4.6 的[对照分析](docs/freertos_design.md)。
 
 **当前验证平台**：STM32F446RET6（Cortex-M4F @ 168MHz，STM32CubeIDE + GCC）。内核代码不含任何 ST 头文件引用；换一颗 Cortex-M3/M4/M7 芯片只需替换移植层与目标 SDK 工程，见[移植指南](#移植到其他芯片)。
 
@@ -10,24 +10,19 @@
 
 **2026-10-26 复杂并发加固**：补充锁链、循环依赖、任务删除、ISR 销毁窗口及多等待者交接测试；修复传递优先级继承、对象状态检查窗口和递归计数溢出。复现方法、配置矩阵、业务压力及清理记录见[复杂并发测试报告](docs/rtos_adversarial_20261026.md)。
 
-本批已复现缺陷、修复行为、验证结果和保留状态统一整理在[缺陷修复汇总](docs/rtos_fix_summary_20261026.md)。
+本批已复现缺陷、修复行为、验证结果和保留状态统一整理在[缺陷修复汇总](docs/rtos_fix_summary_20261026.md)。源码目录按职责重组后的文件归属、阅读顺序及迁移要求见[源码导览](RTOS/README.md)，过程与验收状态见[源码重组记录](docs/rtos_source_reorganization_20261027.md)；历史报告保留测试当时的路径。
 
-```
-+------------------------------------------------------------------+
-| 用户任务        rtos_task_delay / rtos_sem_take / rtos_queue_send |
-+------------------------------------------------------------------+
-| API 层                                                         |
-|   rtos_task.c   任务管理/删除/通知        rtos_sched.c  调度决策    |
-|   rtos_sem.c    二值/计数信号量           rtos_mutex.c  互斥锁+继承 |
-|   rtos_queue.c  消息队列                  rtos_event.c  事件组      |
-|   rtos_timer.c  软件定时器(守护任务)      rtos_heap.c   内存堆      |
-|   rtos_usb.c    USB子系统+OSAL适配        rtos_perf.c   性能监视    |
-+------------------------------------------------------------------+
-| 内部服务        rtos_internal.h —— 阻塞/唤醒/超时定位等调度服务     |
-+------------------------------------------------------------------+
-| 移植层          Port/GCC/ARM_CM7/port.c（兼容 M4F）                |
-|                 PendSV / SVC / SysTick / BASEPRI / 上下文切换      |
-+------------------------------------------------------------------+
+```mermaid
+flowchart TB
+    app["用户任务 / 公共 API：RTOS/Core/Inc"]
+    features["IPC：sem / mutex / queue / event<br/>Memory：heap / mempool<br/>Services：timer / perf　USB：OSAL / device / MSC"]
+    core["Core/Src<br/>kernel 初始化　task 生命周期与通知<br/>wait 共用等待协议　sched 就绪 / 延时 / 调度"]
+    port["Port/GCC/ARM_CM4F_CM7F/port.c<br/>PendSV / SVC / SysTick / 寄存器现场"]
+    app --> features
+    app --> core
+    features --> core
+    core -->|请求切换| port
+    port -->|tick / 切换提交| core
 ```
 
 > 当前架构、寄存器现场、API 契约及工程集成见 [设计手册](docs/rtos_design.md)，配有状态、等待归属和执行时序图；修复、优化及实板验证结果见 [交付汇总](docs/rtos_release_20261013.md)。
@@ -71,7 +66,7 @@
 
 ## USB 子系统
 
-基于 **CherryUSB 裁剪版**（仅保留 CDC/MSC/HID 设备栈 + DWC2 端口，共 6 个 `.c`），通过 [rtos_usb_osal.c](RTOS/Core/Src/rtos_usb_osal.c) 的 26 函数 OSAL 契约对接自研内核：
+基于 **CherryUSB 裁剪版**（仅保留 CDC/MSC/HID 设备栈 + DWC2 端口，共 6 个 `.c`），通过 [rtos_usb_osal.c](RTOS/USB/rtos_usb_osal.c) 的 26 函数 OSAL 契约对接自研内核：
 
 - **三合一复合设备**：单 USB 口同时枚举出虚拟串口（CDC ACM）+ 32KB RAM 盘 U 盘（MSC）+ 自定义 HID（64B IN/OUT 报告）；
 - **静态对象池 OSAL**：信号量/互斥锁/队列/线程/定时器全部池化，无堆分配；
@@ -110,10 +105,10 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 内核与硬件的全部耦合收敛在两处：
 
-1. **`RTOS/Port/` 移植层**（当前提供 GCC/ARM_CM7，已在 Cortex-M4F 上验证）：负责 PendSV/SVC 上下文切换、BASEPRI 或 PRIMASK 临界区和 tick。预定义宏用于选择部分处理器特性，不替代新目标的完整适配和验证；M0/M0+ 需要对应端口，不能仅修改屏蔽宏就视为移植完成；
+1. **`RTOS/Port/` 移植层**（当前提供 GCC/ARM_CM4F_CM7F，已在 F446 Cortex-M4F 上验证）：负责 PendSV/SVC 上下文切换、BASEPRI 或 PRIMASK 临界区和 tick。预定义宏用于选择部分处理器特性，不替代新目标的完整适配和验证；M0/M0+ 需要对应端口，不能仅修改屏蔽宏就视为移植完成；
 2. **`rtos_config.h`**：配置 tick 频率、性能注册表容量、BASEPRI 阈值及功能裁剪。目标 MCU 的中断优先级位数、FPU 和缓存契约仍需结合 SDK 核对；本轮实板验证平台为 F446RE。
 
-内核不提供启动文件/链接脚本/时钟配置——这些属于目标 SDK（如 CubeMX 工程）的职责，用户只需把 `Core/` 与 `Port/` 源文件加入 SDK 工程编译。USB 子系统换其他 USB IP（fsdev/chipidea 等）的完整移植步骤见 [rtos_design.md 第十三章](docs/rtos_design.md)。
+内核不提供启动文件/链接脚本/时钟配置——这些属于目标 SDK（如 CubeMX 工程）的职责，集成时需加入 `RTOS/Core/Src/`、所用功能目录与对应 `Port/` 源码，并配置公共和私有头文件搜索路径；手工源码清单的迁移要求见[源码导览](RTOS/README.md#工程迁移与兼容)。USB 子系统换其他 USB IP（fsdev/chipidea 等）的完整移植步骤见 [rtos_design.md 第十三章](docs/rtos_design.md)。
 
 ## 演示工程（STM32F446RET6 验证平台）
 
@@ -154,13 +149,17 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 │   ├── Src/usb_otg.c        # OTG_FS 时钟 GPIO NVIC(HAL 层 glue)
 │   └── Src/stm32f4xx_it.c   # 中断向量(HardFault 诊断入口/USB ISR 挂接)
 ├── RTOS/
-│   ├── Core/                # ★ 内核与 USB 子系统(芯片无关)
-│   │   ├── Src/rtos_{sched,task,sem,mutex,queue,event,timer,heap,mem,perf}.c
-│   │   ├── Src/rtos_usb.c   # USB 子系统(对象池/复合设备/MSC RAM 盘)
-│   │   ├── Src/rtos_usb_osal.c  # CherryUSB OSAL 适配层
-│   │   └── Inc/             # 对外 API + rtos_internal.h + rtos_config.h
-│   ├── Port/GCC/ARM_CM7/    # ★ 移植层 port.c(PendSV/SVC/BASEPRI, 兼容 M4F)
-│   └── lib/third/CherryUSB/ # CherryUSB 裁剪版(仅 CDC/MSC/HID/DWC2 设备栈)
+│   ├── README.md             # 源码导览、阅读顺序与构建迁移说明
+│   ├── Core/
+│   │   ├── Inc/              # 兼容既有公共 API、类型和配置头
+│   │   ├── Private/          # rtos_internal.h：内核模块间协议
+│   │   └── Src/rtos_{kernel,sched,task,wait}.c
+│   ├── IPC/                  # sem / mutex / queue / event
+│   ├── Memory/               # heap / mempool；公共 rtos_mem.h 名称保留
+│   ├── Services/             # timer / perf
+│   ├── USB/                  # OSAL / 复合设备 CDC+HID / MSC 后端
+│   ├── Port/GCC/ARM_CM4F_CM7F/ # port.c：PendSV/SVC/屏蔽与上下文
+│   └── lib/third/CherryUSB/   # 裁剪版 CDC/MSC/HID/DWC2 设备栈
 ├── AI/                      # ★ 端侧 AI 流水线
 │   ├── model/cnn2c.py       # PyTorch→C 转换工具(支持 int8 动态量化)
 │   ├── model/voice_classifier.pth  # 训练好的说话人分类模型
@@ -195,6 +194,8 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 | 文档 | 内容 |
 |---|---|
 | [rtos_fix_summary_20261026.md](docs/rtos_fix_summary_20261026.md) | **当前修复总览**：五项已复现缺陷、契约加固、最终验证及提交范围 |
+| [源码导览](RTOS/README.md) | 当前目录职责、模块边界、阅读顺序和手工构建迁移 |
+| [rtos_source_reorganization_20261027.md](docs/rtos_source_reorganization_20261027.md) | 源码重组映射、兼容与构建检查、测试迁移错误及最终验收状态 |
 | [rtos_design.md](docs/rtos_design.md) | **当前架构与实现手册**（16 章）：调度不变式 / PendSV 与 FPU 栈帧 / IPC 契约与寿命 / USB 适配 / 统计边界 / API 上下文矩阵 / 资源预算与业务关停 |
 | [rtos_performance_report.md](docs/rtos_performance_report.md) | **性能测试报告**：微基准 BM0–BM7 + 系统级场景 S1–S5 + 与 FreeRTOS V10.3.1 的逐项对照；含布局敏感性与已作废结论的更正记录 |
 | [rtos_testing_report.md](docs/rtos_testing_report.md) | **历史测试汇总**：基础功能与边界夹具、早期审计取证、方法教训及覆盖缺口；后续终验见下列带日期的报告 |

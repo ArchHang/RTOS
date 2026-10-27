@@ -1,16 +1,16 @@
 # 自研 RTOS 架构与实现设计手册
 
 > **核对平台**：STM32F446RE，单核 Cortex-M4F（ARMv7E-M），GCC `arm-none-eabi`。默认 168 MHz、1 kHz tick；其他处理器、时钟和配置需要独立适配与验证。
-> **文档基准**：2026-10-26 本工程 `RTOS/` 当前代码，包含源码审计修复、两轮性能优化、综合压力测试、临界区事务加固，以及传递优先级继承、对象销毁窗口和递归计数边界修复。原交付总览见 [2026-10-13 发布汇总](rtos_release_20261013.md)，后续复现及验证范围见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)和[复杂并发测试报告](rtos_adversarial_20261026.md)；早期缺陷与综合负载见 [审计报告](rtos_audit_20261012.md)、[生产压力测试报告](rtos_production_stress_20261013.md)。本文解释当前机制；不同阶段的性能数字保留在带日期报告中。4.2 中明确标注的历史图只用于追溯，不能当作当前端口流程。
+> **文档基准**：2026-10-27 本工程 `RTOS/` 当前代码，包含源码审计修复、两轮性能优化、综合压力测试、临界区事务加固，以及传递优先级继承、对象销毁窗口和递归计数边界修复。原交付总览见 [2026-10-13 发布汇总](rtos_release_20261013.md)，后续复现及验证范围见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)和[复杂并发测试报告](rtos_adversarial_20261026.md)；早期缺陷与综合负载见 [审计报告](rtos_audit_20261012.md)、[生产压力测试报告](rtos_production_stress_20261013.md)。本文解释当前机制；不同阶段的性能数字保留在带日期报告中。4.2 中明确标注的历史图只用于追溯，不能当作当前端口流程。
 > **文档目标**：说明内核的职责划分、共享状态、不变式、上下文切换协议和对象生命周期，使工程师能够沿调用链阅读源码、评估资源及审查修改。
-> **代码位置**：内核 `RTOS/Core/`、移植层 `RTOS/Port/GCC/ARM_CM7/port.c`
+> **代码位置**：机制 `RTOS/Core/`；对象 `RTOS/IPC/`；内存 `RTOS/Memory/`；服务 `RTOS/Services/`；USB `RTOS/USB/`；端口 `RTOS/Port/GCC/ARM_CM4F_CM7F/port.c`。文件职责与迁移清单见[源码导览](../RTOS/README.md)。
 > **配套文档**：[2026-10-12 底层优化报告](rtos_lowlevel_optimization_20261012.md)（当前实现与实板对照）、[第一轮性能优化报告](rtos_optimization_20261012.md)（历史阶段）、[rtos_performance_report.md](rtos_performance_report.md)（历史微基准 + 系统级场景 + 与 FreeRTOS 的实测对比）、[rtos_testing_report.md](rtos_testing_report.md)（功能回归/边界测试/HIL 复现审计）、[hardfault_debug.md](hardfault_debug.md)（故障诊断）、[compilation_pipeline.md](compilation_pipeline.md)（编译原理）、[freertos_design.md](freertos_design.md)（FreeRTOS 设计分析与排障，与本文互为镜像参照）
 
 ---
 
 ## 阅读方法与实现边界
 
-这份手册描述当前实现，不把配置注释、历史实验或其他 RTOS 的机制自动视为本内核已实现的功能。API 声明在 `RTOS/Core/Inc/`，行为以对应 `.c` 文件为准；结构摘要和伪代码用于解释协议，不是可以替代头文件的 ABI 定义。
+这份手册描述当前实现，不把配置注释、历史实验或其他 RTOS 的机制自动视为本内核已实现的功能。公共 API 声明在 `RTOS/Core/Inc/`，模块间协议在 `RTOS/Core/Private/rtos_internal.h`，行为以各功能目录中的 `.c` 文件为准；结构摘要和伪代码用于解释协议，不是可以替代头文件的 ABI 定义。
 
 | 阅读目标 | 建议路径 | 需要回答的问题 |
 |---|---|---|
@@ -26,6 +26,8 @@
 **复杂度记号**：`N` 为已登记任务数，`W` 为某对象等待者数，`M` 为已登记互斥锁数，`T` 为活跃软件定时器数，`B` 为一次消息的字节数。O(1) 只表示不随该规模增长，不代表固定周期数；完整 API 还可能包含参数验证、地址登记扫描、复制、继承重算和调度。资源与时延估算应使用对应配置和完整调用路径。
 
 图中箭头表示调用、状态迁移或数据流，以图注为准。PNG 是便于阅读的渲染结果，折叠的 Mermaid 代码是可维护图源。寄存器布局以当前端口和架构手册为准，性能数值应回到独立测量报告核对。
+
+**源码组织基准**：2026-10-27 的目录整理将共用等待机制与初始化入口从任务/调度文件提取，按功能归档 IPC、内存和服务，并合并 USB 的两层 OSAL 封装。公开头文件、函数接口和对象布局保持兼容；私有头及手工编译清单需迁移。新布局已完成独立编译与实板验收，详见[源码重组报告](rtos_source_reorganization_20261027.md)、[本批测试说明](../hil/refactor_20261027/README.md)及 16.8。历史报告保留原测试路径，不据此扩大历史实板验证范围。
 
 ---
 
@@ -54,46 +56,41 @@
 
 ## 1.1 分层结构
 
-![自研 RTOS 分层结构与依赖方向](images/rtos_design_01.png)
-
-<details><summary>图形源码（mermaid）</summary>
-
 ```mermaid
 flowchart TB
     app["用户应用 main.c<br/>任务 / 业务逻辑"]
-    api["公共 API 层<br/>task | sem | mutex | queue | event | timer | mem | perf"]
-    core["内核核心<br/>rtos_sched 就绪表·位图·延时链<br/>rtos_task / rtos_sem / rtos_mutex / rtos_queue ..."]
-    port["当前移植层 rtos_port<br/>PendSV · SVC · 临界区 · 栈初始化<br/>F446 Cortex-M4F 已核对"]
+    api["公共 API：Core/Inc<br/>task | sem | mutex | queue | event | timer | mem | perf | usb"]
+    features["IPC：资源、所有权、消息和条件<br/>Memory：堆与固定块池<br/>Services：定时器与性能观察<br/>USB：OSAL、复合设备与存储后端"]
+    core["Core/Src<br/>kernel：建立系统　task：TCB 生命周期与通知<br/>wait：共用等待协议　sched：就绪、延时和切换提交"]
+    port["Port/GCC/ARM_CM4F_CM7F<br/>PendSV · SVC · 临界区 · 栈初始化"]
     hw["用户 SDK (HAL / CMSIS) + Cortex-M 硬件"]
-
     app --> api
+    api --> features
     api --> core
+    features --> core
     core -->|请求切换与屏蔽| port
     port -->|tick 与切换提交| core
     port --> hw
-
-    note1["IPC 维护资源与对象等待链<br/>共享 TCB 等待节点及内核协议"]
-    note2["调度器选择候选任务<br/>异常处理保存现场并提交选择"]
-    core -.-> note1
-    port -.-> note2
 ```
 
-</details>
-
-图中分层表达职责，不是严格无环的函数调用图。IPC 模块通过 `rtos_internal.h` 复用等待、超时和唤醒协议，同时会读取当前 TCB；信号量自行登记位图等待节点。调度器通过端口请求 PendSV，端口异常处理再调用 tick 和切换提交函数。初始化时调度器还会借助任务模块建立 idle。理解这些受约束的双向协作，比假定所有依赖都只能向下更接近实际代码。
+图中分层表达职责，不是严格无环的函数调用图。IPC 模块通过私有 `rtos_internal.h` 调用 `rtos_wait.c` 的等待和唤醒协议，超时仍由调度器推进，同时会读取当前 TCB；信号量自行登记位图等待节点。调度器通过端口请求 PendSV，端口异常处理再调用 tick 和切换提交函数。初始化时调度器还会借助任务模块建立 idle。理解这些受约束的双向协作，比假定所有依赖都只能向下更接近实际代码。
 
 | 组件 | 主要职责与状态归属 | 协作边界 |
 |---|---|---|
-| `rtos_sched.c` | 就绪位图、每优先级就绪环、延时链、current/next 和调度状态 | 选任务、处理时间到期、请求和提交切换 |
-| `rtos_task.c` | TCB 构造、地址登记、任务生命周期、通知及公共等待原语 | 对象模块共享等待节点协议；删除时协调互斥锁和回收 |
-| sem/mutex/queue/event | 各对象的资源状态与等待链 | 在同一保护协议内登记结果、摘链并使任务就绪 |
-| `rtos_timer.c` | 命令队列、服务任务、活跃定时器链及创建代次 | 借助 queue/任务服务；用户回调在临界区外执行 |
+| `Core/Src/rtos_sched.c` | 就绪位图、每优先级就绪环、延时链、current/next 和调度状态 | 选任务、处理时间到期、请求和提交切换 |
+| `Core/Src/rtos_kernel.c` | 初始化顺序、启动入口、版本和默认弱钩子 | 编排 perf、heap、sched 与 timer，不持有调度链 |
+| `Core/Src/rtos_task.c` | TCB 构造、地址登记、任务生命周期、通知及延期回收 | 删除时协调等待链、互斥锁与堆；通知保持在本模块 |
+| `Core/Src/rtos_wait.c` | 共用等待链操作、阻塞登记、唤醒和优先级重挂 | 调用方持有临界区；实际切换在解除保护后由 PendSV 执行 |
+| `IPC/rtos_{sem,mutex,queue,event}.c` | 各对象的资源状态与等待链 | 在同一保护协议内登记结果、摘链并使任务就绪 |
+| `Services/rtos_timer.c` | 命令队列、服务任务、活跃定时器链及创建代次 | 借助 queue/任务服务；用户回调在临界区外执行 |
 | `rtos_port.h` / `port.c` | 原屏蔽值、临界区嵌套、PSP 栈帧和异常返回 | 由硬件异常承接 CPU 上下文切换；不能只更新 TCB 指针 |
 | 应用及目标 SDK | 业务对象、静态存储、任务入口、时钟与外设 | 负责缓冲寿命、错误处理、中断优先级及目标资源配置 |
 
 建立运行系统的次序是：板级时钟/内存/中断准备 → `rtos_init()` 初始化 perf、堆、调度器与 idle，并按配置初始化 timer → 应用建立 IPC、缓冲和任务 → `rtos_start()` 进入首任务。perf 在 idle 创建前初始化，避免清表时丢失刚登记的 idle；基础服务使用静态存储，应用任务则可混用静态和动态路径。初始化返回状态必须由应用检查，当前接口不提供跨全部模块的事务式失败回滚。
 
-沿源码阅读时，可从 [rtos_sched.c](../RTOS/Core/Src/rtos_sched.c) 的 `rtos_init/rtos_sched_start` 开始，然后跟进 [rtos_task.c](../RTOS/Core/Src/rtos_task.c) 的创建与阻塞协议，最后用 [port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 核对任务现场实际何时接管 CPU。
+沿源码阅读时，从 [rtos_kernel.c](../RTOS/Core/Src/rtos_kernel.c) 的 `rtos_init` 建立初始化顺序，再跟进 [rtos_sched.c](../RTOS/Core/Src/rtos_sched.c) 的 `rtos_sched_start/schedule/commit_context_switch`。任务构造和通知见 [rtos_task.c](../RTOS/Core/Src/rtos_task.c)，共用阻塞/唤醒协议见 [rtos_wait.c](../RTOS/Core/Src/rtos_wait.c)，最后用 [port.c](../RTOS/Port/GCC/ARM_CM4F_CM7F/port.c) 核对任务现场实际何时接管 CPU。
+
+源码按状态所有权划分，完整目录见[源码导览](../RTOS/README.md)。信号量、互斥锁、队列和事件组继续独立，因为令牌、所有权、消息和位条件的状态机不同；共享机制统一在 wait 模块，而不是把对象实现拼成一个文件。heap 与 mempool 保留不同分配器；就绪表和延时链仍由调度器共同维护，避免拆散 TCB 链接复用及到期转就绪的保护协议。USB 的静态句柄封装和 CherryUSB 命名桥接合入 OSAL，设备会话与 MSC 存储后端分开。
 
 > **当前实现说明**：以下机制已按源码校订：
 > ① 等待链有**两套并存约定**（信号量 FIFO 位图链 / 队列、事件组、互斥锁有序链）。位图选优先级是 O(1)，但信号量多等待者定位与清位仍需扫描，整体最坏 O(n)，见 1.3 不变式 III、2.3、6.3；
@@ -966,7 +963,7 @@ flowchart TB
 
 任务曾执行浮点指令后，后续没有 `float` 运算的调用点也可能带有活跃浮点上下文。不能按当前函数是否出现浮点类型估算帧大小。最小 96 字任务栈是 API 接受下限，不是业务栈足够的证明；预算还需覆盖最大调用链、可选对齐和裕量，并独立检查 MSP 的嵌套中断开销。
 
-源码定位：[rtos_port.h](../RTOS/Core/Inc/rtos_port.h) 120–134 行、[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 236–314、352–398、519–520 行。硬件块序及 EXC_RETURN 依据 [ST PM0214](https://www.st.com/resource/en/programming_manual/dm00046982-stm32-cortex-m4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf) 第 2.3.7 节；lazy 与 VSTM 的配合见 [Arm AN298](https://documentation-service.arm.com/static/5f0352c0cafe527e86f5bc66?token=) 第 2 节、第 4.3 节 Figure 8。本地 [core_cm4.h](../Drivers/CMSIS/Include/core_cm4.h) 554–555、1321–1325、1635–1641 行提供对齐、FPCCR 及异常返回常量。任务/异常栈的预算方法见 [Arm 栈空间分析](https://developer.arm.com/community/arm-community-blogs/b/architectures-and-processors-blog/posts/how-much-stack-memory-do-i-need-for-my-arm-cortex--m-applications) 第 5 节。
+源码定位：[rtos_port.h](../RTOS/Core/Inc/rtos_port.h) 的端口类型及临界区接口，以及 [port.c](../RTOS/Port/GCC/ARM_CM4F_CM7F/port.c) 的 `rtos_port_init_stack`、`rtos_port_pend_sv_handler` 与启动处理。硬件块序及 EXC_RETURN 依据 [ST PM0214](https://www.st.com/resource/en/programming_manual/dm00046982-stm32-cortex-m4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf) 第 2.3.7 节；lazy 与 VSTM 的配合见 [Arm AN298](https://documentation-service.arm.com/static/5f0352c0cafe527e86f5bc66?token=) 第 2 节、第 4.3 节 Figure 8。本地 [core_cm4.h](../Drivers/CMSIS/Include/core_cm4.h) 554–555、1321–1325、1635–1641 行提供对齐、FPCCR 及异常返回常量。任务/异常栈的预算方法见 [Arm 栈空间分析](https://developer.arm.com/community/arm-community-blogs/b/architectures-and-processors-blog/posts/how-much-stack-memory-do-i-need-for-my-arm-cortex--m-applications) 第 5 节。
 
 ## 4.2 PendSV 逐指令流程
 
@@ -1048,7 +1045,7 @@ PendSV 的优先级最低，合法 RTOS ISR 能在未屏蔽时抢占它，因此
 
 `top_of_stack` 的结构体偏移由编译期断言约束为 0，`current_tcb` 偏移由 `offsetof` 传入汇编；修改 TCB 或内核结构布局时必须保留这些约束。PendSV 是单层 naked 入口，不能在其外面包普通 C 函数记录耗时：编译器放在 R4–R11 的包装函数局部值会被新任务现场替换，导致包装函数返回路径错误。统计钩子位于 C 提交函数内。
 
-源码定位：[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 319–398 行、[rtos_sched.c](../RTOS/Core/Src/rtos_sched.c) 653–701 行。候选任务与稳定状态的区别见 1.3、3.3；优先级违约检查由 `rtos_config.h` 的断言提供，关闭断言不放宽 ISR 契约。
+源码定位：[port.c](../RTOS/Port/GCC/ARM_CM4F_CM7F/port.c) 的 `rtos_port_context_switch/rtos_port_pend_sv_handler`，以及 [rtos_sched.c](../RTOS/Core/Src/rtos_sched.c) 的 `rtos_sched_commit_context_switch`。候选任务与稳定状态的区别见 1.3、3.3；优先级违约检查由 `rtos_config.h` 的断言提供，关闭断言不放宽 ISR 契约。
 
 ## 4.3 任务栈初始化: 伪造一次中断
 
@@ -1068,7 +1065,7 @@ R3(填充) = 0xDEDEDEDE   ← 对齐垫片, 值无所谓
 
 初始化得到 18 字基本现场，没有 S16–S31 保存区。它与 4.1 的基本布局相同，因此 **首个启动任务由 SVC 恢复，后续新任务由 PendSV 恢复**。两条路径都先消费软件区，再以 EXC_RETURN=`0xFFFFFFFD` 进行异常返回，由硬件恢复 R0=`arg`、PC=`entry`。设计复用异常恢复格式，避免另设一套不兼容的任务入口现场。
 
-栈顶先向下对齐到 8 B；参数 `stack_size` 的单位是字而不是字节。移植层本身只构造固定初始现场，最小栈和长度溢出等校验由公共创建接口执行，调用者提供的存储仍必须足够且寿命覆盖任务使用期间。源码定位：[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 236–314 行、[rtos_task.c](../RTOS/Core/Src/rtos_task.c) 497–549 行。
+栈顶先向下对齐到 8 B；参数 `stack_size` 的单位是字而不是字节。移植层本身只构造固定初始现场，最小栈和长度溢出等校验由公共创建接口执行，调用者提供的存储仍必须足够且寿命覆盖任务使用期间。源码定位：[port.c](../RTOS/Port/GCC/ARM_CM4F_CM7F/port.c) 的 `rtos_port_init_stack`、[rtos_task.c](../RTOS/Core/Src/rtos_task.c) 的 `rtos_task_create/static`。
 
 ## 4.4 首任务启动: SVC 的必要性
 
@@ -1115,7 +1112,7 @@ rtos_port_svc_handler:                      (naked, 运行于 Handler 模式/MSP
 
 启动不变式是：**从置 RUNNING 到首任务 PSP 安装完成，SysTick/PendSV 仍受屏蔽，SVC 则可执行。** 在 `sched_start` 入口阶段就增强屏蔽，避免已由 HAL 配置的 SysTick 在状态变成 RUNNING 后提前进入内核；仅在后面的 `start_first_task` 屏蔽会留下窗口。当前路径随后 `cpsie i`，执行 SVC，恢复首任务现场后才解除 BASEPRI。若板级把 SVC 配成受阈值屏蔽的优先级，或把 PendSV 配成最高优先级，前提就不成立。
 
-`rtos_start()` 不返回到 `main()`；它也不是保持调用者中断屏蔽状态的普通函数，首任务按启动路径解除屏蔽后运行。源码定位：[rtos_sched.c](../RTOS/Core/Src/rtos_sched.c) 395–443 行、[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 439–535 行；F446 优先级位数见 [stm32f446xx.h](../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f446xx.h) 49 行，编码见 [core_cm4.h](../Drivers/CMSIS/Include/core_cm4.h) 1809–1823 行；FPU 访问许可见 [system_stm32f4xx.c](../Core/Src/system_stm32f4xx.c) 170–172 行。
+`rtos_start()` 不返回到 `main()`；它也不是保持调用者中断屏蔽状态的普通函数，首任务按启动路径解除屏蔽后运行。源码定位：[rtos_sched.c](../RTOS/Core/Src/rtos_sched.c) 的 `rtos_sched_start`、[port.c](../RTOS/Port/GCC/ARM_CM4F_CM7F/port.c) 的 `rtos_port_start_scheduler/start_first_task` 与 `rtos_port_svc_handler`；F446 优先级位数见 [stm32f446xx.h](../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f446xx.h) 49 行，编码见 [core_cm4.h](../Drivers/CMSIS/Include/core_cm4.h) 1809–1823 行；FPU 访问许可见 [system_stm32f4xx.c](../Core/Src/system_stm32f4xx.c) 170–172 行。
 
 ## 4.5 临界区: 进出与屏障
 
@@ -1205,7 +1202,7 @@ static inline void rtos_port_exit_critical(void)
 - **一次被实测否决的进一步优化**：曾尝试"嵌套时跳过冗余的 `msr` + `isb`"（用计数判断，仅在 0→1 时真正写 BASEPRI）。实测**净负收益**并已回退：`give_no_waiter` 91→99、`give_w01` 1246→1277 周期。原因是 `rtos_port_crit_nest` 为 `volatile`，判断+自增+分支引入的读-改-写访存开销超过了省下的写入；且信号量 give 路径本身并不嵌套，收益面根本不存在。该结论已写入源码注释，避免后续重复尝试。
 - **`rtos_port_context_switch()`**（挂起 PendSV）：先记 perf 时间戳（仅当 `RTOS_CONFIG_PERF_HOTPATH_STATS` 打开，默认关），再 `SCB->ICSR = PENDSVSET`，当前路径保留 DSB/ISB。不要把临界区入口的屏障配置直接复制到请求切换路径；二者操作对象和用途不同。
 
-源码定位：[rtos_port.h](../RTOS/Core/Inc/rtos_port.h) 的 `rtos_port_enter_critical/exit_critical`、[port.c](../RTOS/Port/GCC/ARM_CM7/port.c) 的 `rtos_port_critical_nesting_error` 与 `rtos_port_context_switch`；屏蔽寄存器的硬件语义见 [ST PM0214](https://www.st.com/resource/en/programming_manual/dm00046982-stm32-cortex-m4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf) 第 2.1.3 节。本章固定帧和指令说明只解释当前 Cortex-M4F 实现，不能据此认定所有 Cortex-M7 型号、编译 ABI、存储系统配置都已完成验证。
+源码定位：[rtos_port.h](../RTOS/Core/Inc/rtos_port.h) 的 `rtos_port_enter_critical/exit_critical`、[port.c](../RTOS/Port/GCC/ARM_CM4F_CM7F/port.c) 的 `rtos_port_critical_nesting_error` 与 `rtos_port_context_switch`；屏蔽寄存器的硬件语义见 [ST PM0214](https://www.st.com/resource/en/programming_manual/dm00046982-stm32-cortex-m4-mcus-and-mpus-programming-manual-stmicroelectronics.pdf) 第 2.1.3 节。本章固定帧和指令说明只解释当前 Cortex-M4F 实现，不能据此认定所有 Cortex-M7 型号、编译 ABI、存储系统配置都已完成验证。
 
 ---
 
@@ -1318,7 +1315,7 @@ flowchart TD
 
 公开任务句柄只有 TCB 指针，没有由 API 强制检查的“地址 + 代次”身份；若存储被另一个存活任务复用，旧指针可能再次命中登记地址。`task_id` 是观测字段，不能代替应用对句柄引用的失效与同步管理。创建前先准备新任务要访问的业务对象和参数；删除后通知相关模块停止使用旧引用，静态 TCB、栈和参数存储的寿命必须覆盖实际使用期间。图中的回收分支详见 5.2；动态自删除依赖 PendSV 完成保存以及 idle 后续得到运行机会。
 
-源码定位：[rtos_task.c](../RTOS/Core/Src/rtos_task.c) 43–80、433–575、577–694 行。最小栈校验只提供输入下限，实际业务栈预算见 4.1，不能把“创建成功”当作栈空间足够的证明。
+源码定位：[rtos_task.c](../RTOS/Core/Src/rtos_task.c) 的 `task_reserved/task_registered/task_create_core/rtos_task_delete`。最小栈校验只提供输入下限，实际业务栈预算见 4.1，不能把“创建成功”当作栈空间足够的证明。
 
 ## 5.2 rtos_task_delete(): 两条路径, 一个陷阱
 
@@ -1523,7 +1520,7 @@ VALUE 将当前通知值覆盖为新值，BIT 执行按位或，INCREMENT 使 32
 
 等待通知用 `blocked_on == tcb` 标识，并不挂独立对象等待链。通知到达正在等其他对象的任务时，仅更新通知槽，不越过其 queue/sem/event 等待。超时先发生、通知随后到达但任务尚未运行时，失败等待不清除新 pending 状态；下一次等待仍可消费该通知。调用方应先看返回状态，再决定是否使用 `recv_value`。
 
-源码依据：类型分支（`rtos_task.c:1015–1029`）、限定唤醒对象（`:1037–1040`）、超时后保留通知（`:1096–1113`）。
+源码依据：[rtos_task.c](../RTOS/Core/Src/rtos_task.c) 的 `rtos_task_notify` 类型分支与限定唤醒条件，以及 `rtos_task_notify_wait` 超时后保留通知的路径。
 
 ## 5.8 rtos_task_set_priority() 与"等待链重挂"
 
@@ -1585,6 +1582,8 @@ void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb)
 ```
 
 **优先级与 FIFO**：位图负责选择最高优先级，链表负责同级 FIFO。实际有效优先级发生变化时，节点重新进入相应优先级组；有效优先级不变时必须保留原位置。本次实板复现并修复了相同优先级设置也重新入链、使先等待者被排到后面的错误。当前只有信号量采用位图等待链，队列、事件与互斥锁使用有序等待链。
+
+上述公共重挂实现位于 [rtos_wait.c](../RTOS/Core/Src/rtos_wait.c)，任务改优先级和互斥继承共同调用。
 
 **旧位不能无条件清除**：同优先级等待者共享同一个存在位。摘除节点后，必须确认链上没有其他同优先级等待者，才能清除旧位；该修复在本次审计前的源码中已存在，旧文档解释错误。
 
@@ -1751,7 +1750,7 @@ EXIT
 
 `deinit` 在临界区内摘除对象等待链、撤销有限超时并使等待调用返回 `RTOS_ERR_DELETED`；恢复路径从 TCB 读取结果，不再读取 sem。但这不证明其他任务或 ISR 已停止发起新调用。释放对象存储之前，应用仍须协调所有使用者退出，并禁止陈旧句柄继续使用。无等待者时允许重新 init，也不等于对象可以与仍在运行的使用方并发重置。
 
-实现入口：[rtos_sem.c](../RTOS/Core/Src/rtos_sem.c) 的 `rtos_sem_init/take/give/deinit`；等待协议见 3.5–3.7。
+实现入口：[rtos_sem.c](../RTOS/IPC/rtos_sem.c) 的 `rtos_sem_init/take/give/deinit`；等待协议见 3.5–3.7。
 
 ---
 
@@ -2025,7 +2024,7 @@ sequenceDiagram
 
 消息通常按队尾发送、队首接收形成 FIFO；`to_front` 可改变消息顺序。等待任务按有效优先级选取、同级按入链先后选取，这是另一个维度，不代表所有业务消息都按生产者优先级重新排序。`get_count/get_free` 只给出瞬时快照，不为下一次发送预留槽位。
 
-源码定位：[rtos_queue.c](../RTOS/Core/Src/rtos_queue.c) 的 `rtos_queue_send`、`queue_wake_sender_on_free_slot` 与 `rtos_queue_recv`。
+源码定位：[rtos_queue.c](../RTOS/IPC/rtos_queue.c) 的 `rtos_queue_send`、`queue_wake_sender_on_free_slot` 与 `rtos_queue_recv`。
 
 ## 8.5 设计分析
 
@@ -2038,7 +2037,7 @@ sequenceDiagram
 
 事件组表达条件状态，不保存同一位被重复置位的次数。若业务要求每次发生都恰好消费一次，应采用计数或带序号的消息协议。等待模式和事件数据是两个独立参数：`CLEAR_ON_EXIT` 的 bit24 位于 **mode**，不会占用 event->bits 的 bit24。
 
-头文件注释约定应用使用低 24 位，实际 `rtos_event_bits_t` 为 uint32_t；当前 `set/clear/wait` 未掩码或拒绝高 8 位，也没有事件位数配置宏。应将低 24 位写成接口使用约定，不能声称源码已经强制验证该范围。源码见 [rtos_event.h](../RTOS/Core/Inc/rtos_event.h) 与 [rtos_event.c](../RTOS/Core/Src/rtos_event.c)。
+头文件注释约定应用使用低 24 位，实际 `rtos_event_bits_t` 为 uint32_t；当前 `set/clear/wait` 未掩码或拒绝高 8 位，也没有事件位数配置宏。应将低 24 位写成接口使用约定，不能声称源码已经强制验证该范围。源码见 [rtos_event.h](../RTOS/Core/Inc/rtos_event.h) 与 [rtos_event.c](../RTOS/IPC/rtos_event.c)。
 
 ## 9.1 rtos_event_wait(bits, mode, timeout)
 
@@ -2134,7 +2133,7 @@ EXIT; return 当前 bits
 
 **设计分工**：其他任务和合法 ISR 投递控制命令；服务任务维护活跃链、处理命令并执行回调。`rtos_timer_init` 创建静态服务任务，只允许 Thread 模式；`create` 建立调用方提供的静态对象，检查参数、活跃链和当前回调身份，允许首次使用未清零存储。服务初始化成功后再调用返回 `RTOS_ERR_ALREADY`，保留既有子系统状态。
 
-命令队列长度目前为 [rtos_timer.c](../RTOS/Core/Src/rtos_timer.c) 中的内部常量 `TIMER_CMD_QUEUE_LEN=16`，未通过 `rtos_config.h` 暴露。队列满时，ISR 非阻塞发送可失败；任务使用 100 tick 的等待预算，也必须检查返回值。服务任务内的就地控制与外部队列命令都在临界区内更新链表，存储和调用方生命周期仍需应用协调。
+命令队列长度目前为 [rtos_timer.c](../RTOS/Services/rtos_timer.c) 中的内部常量 `TIMER_CMD_QUEUE_LEN=16`，未通过 `rtos_config.h` 暴露。队列满时，ISR 非阻塞发送可失败；任务使用 100 tick 的等待预算，也必须检查返回值。服务任务内的就地控制与外部队列命令都在临界区内更新链表，存储和调用方生命周期仍需应用协调。
 
 **命令接受与生效分离**：普通调用返回 `RTOS_OK` 表示命令已入队或直接交付到正在等待命令队列的服务任务，不保证命令已经执行。`start` 的计时起点为命令被处理时的 `tick_count`，而不是 API 入口时刻。已有命令、正在执行的回调和更高优先级任务都会影响生效延迟，当前接口没有“一 tick 内生效”的承诺。
 
@@ -2202,7 +2201,7 @@ sequenceDiagram
 
 定时器对象及回调参数必须持续有效，直到所有在途命令和正在执行的回调收尾都不再引用它们。即使回调内自删已就地清除 initialized，服务循环在回调返回后仍会访问该节点，不能在回调中释放自己的 timer。需要动态销毁时，应由应用设计完整的结束确认协议；采用与子系统同寿命的静态对象可减少此类生命周期风险。`name` 仅保存指针，与任务名称复制进 TCB 的方式不同。
 
-实现入口：`timer_send_cmd`、`timer_handle_cmd`、`timer_reinsert_periodic` 和 `rtos_timer_service_task`，见 [rtos_timer.c](../RTOS/Core/Src/rtos_timer.c)。
+实现入口：`timer_send_cmd`、`timer_handle_cmd`、`timer_reinsert_periodic` 和 `rtos_timer_service_task`，见 [rtos_timer.c](../RTOS/Services/rtos_timer.c)。
 
 ## 10.5 设计分析
 
@@ -2274,7 +2273,7 @@ block_merge_next: 下一块也空闲 → size += 下一块大小; 下一块 magi
 
 `rtos_heap_get_free` 是空闲 payload 总和，`rtos_heap_get_max_alloc` 是最大单个连续 payload 的对齐上界。前者不能证明大请求可满足；后者也只描述查询时刻，不锁定后续分配。动态任务需要 TCB 和栈两次请求，必须同时预算块头、对齐及碎片，而不是只将 stack_words×4 与总空闲量比较。
 
-当前堆缓冲容量由 `RTOS_CONFIG_HEAP_SIZE` 决定，默认 32 KiB；堆并未因 `USE_STATIC_ALLOCATION=1` 而关闭。适合低频任务创建等路径；高频固定尺寸数据可使用内存池。源码见 [rtos_heap.c](../RTOS/Core/Src/rtos_heap.c) 的 `block_split`、`block_merge_next`、`rtos_heap_alloc/free/get_max_alloc`。
+当前堆缓冲容量由 `RTOS_CONFIG_HEAP_SIZE` 决定，默认 32 KiB；堆并未因 `USE_STATIC_ALLOCATION=1` 而关闭。适合低频任务创建等路径；高频固定尺寸数据可使用内存池。源码见 [rtos_heap.c](../RTOS/Memory/rtos_heap.c) 的 `block_split`、`block_merge_next`、`rtos_heap_alloc/free/get_max_alloc`。
 
 ## 11.2 固定块内存池: 分配 O(1)，释放 O(n)
 
@@ -2290,7 +2289,7 @@ free:  范围和块边界检查; 扫描空闲链拒绝重复释放;
 
 init 还检查基址指针对齐、块大小向上对齐溢出、总容量乘法和地址加法溢出。free 用整数地址校验范围及精确块边界，再在临界区内有界扫描空闲链，重复释放返回 `RTOS_ERR_ALREADY`；不能为追求 O(1) 释放而绕过该健壮性检查。调用方负责提供实际足够大的存储，不能以参数算术检查替代数组容量约束。
 
-pool 在 alloc/free 前必须初始化；仍有在用块时不能重新 init，因为初始化会重建全部空闲链，没有存活分配保护。初始化还自动将 pool 描述符登记到性能观察表，当前没有 unregister 接口；即使全部块已归还，局部 pool 描述符提前失效仍会使后续内存查询访问无效存储。pool 描述符宜采用子系统同寿命的静态存储，并保持实际 storage 有效直到所有使用结束。源码见 [rtos_mem.c](../RTOS/Core/Src/rtos_mem.c) 与 `rtos_perf_register_pool`。
+pool 在 alloc/free 前必须初始化；仍有在用块时不能重新 init，因为初始化会重建全部空闲链，没有存活分配保护。初始化还自动将 pool 描述符登记到性能观察表，当前没有 unregister 接口；即使全部块已归还，局部 pool 描述符提前失效仍会使后续内存查询访问无效存储。pool 描述符宜采用子系统同寿命的静态存储，并保持实际 storage 有效直到所有使用结束。源码见 [rtos_mempool.c](../RTOS/Memory/rtos_mempool.c) 与 `rtos_perf_register_pool`。
 
 ---
 
@@ -2349,7 +2348,7 @@ sched_commit_context_switch → perf_on_context_switch(prev, next):   /* 热统�
 
 派发延迟使用 `perf_pend_cycle` 与切换提交时刻的差值，包含请求之后的中断和屏蔽等待；重复请求可能更新记录起点。它不是从任意设备事件产生到业务任务首条指令的端到端响应，也不包含提交点之后的全部恢复指令。若需要该指标，应为具体事件设置独立时间戳并在任务入口采样。
 
-代码入口见 [rtos_perf.c](../RTOS/Core/Src/rtos_perf.c) 的 `rtos_perf_on_pend_switch`、`rtos_perf_on_context_switch` 和 `rtos_perf_get_system`；热钩子条件分别位于 port 的切换请求路径和 `rtos_sched_commit_context_switch`。
+代码入口见 [rtos_perf.c](../RTOS/Services/rtos_perf.c) 的 `rtos_perf_on_pend_switch`、`rtos_perf_on_context_switch` 和 `rtos_perf_get_system`；热钩子条件分别位于 port 的切换请求路径和 `rtos_sched_commit_context_switch`。
 
 ## 12.4 查询窗口与调用顺序
 
@@ -2383,28 +2382,22 @@ perf 任务观察表默认容量为 `MAX_TASKS+2=18`，满后新任务不再加�
 
 ## 13.1 分层架构与一帧数据的旅程
 
-```
-+----------------------------------------------------------+
-| 用户应用        main.c: task_usb_cdc / task_usb_msc /    |
-|                task_usb_hid                              |
-+----------------------------------------------------------+
-| 用户友好封装    rtos_usb.c: 描述符表、端点回调、          |
-|                CDC/HID 阻塞式 API、MSC RAM 盘读写        |
-+----------------------------------------------------------+
-| CherryUSB 设备栈  usbd_core.c (枚举状态机/标准请求)       |
-|                + class: usbd_cdc_acm / usbd_msc /        |
-|                  usbd_hid (类协议)                       |
-+----------------------------------------------------------+
-| DCD 驱动       usb_dc_dwc2.c (DWC2 寄存器级驱动)         |
-| 胶水层         usb_glue_st.c (时钟/GPIO/NVIC/IRQ 入口)   |
-+----------------------------------------------------------+
-| OSAL 适配      rtos_usb_osal.c: usb_osal_* 26 个函数     |
-+----------------------------------------------------------+
-| USB 引擎      rtos_usb.c: 静态对象池/双档堆/ISR 注册表   |
-+----------------------------------------------------------+
-| 内核          rtos_sem / mutex / queue / timer / task    |
-|               (第五~第十章所述的五原语)                   |
-+----------------------------------------------------------+
+```mermaid
+flowchart TB
+    app["用户任务：CDC / HID / MSC"]
+    device["USB/rtos_usb_device.c<br/>描述符、CDC/HID 会话、端点回调与阻塞 API"]
+    msc["USB/rtos_usb_msc.c<br/>MSC RAM 盘回调与统计"]
+    stack["CherryUSB core + CDC / MSC / HID 类"]
+    dcd["CherryUSB DWC2 驱动与 ST 胶水"]
+    osal["USB/rtos_usb_osal.c<br/>usb_osal_*、RTOS 句柄封装、对象池、USB 堆和 ISR 表"]
+    kernel["内核 sem / mutex / queue / timer / task"]
+    app --> device
+    device --> stack
+    stack --> msc
+    stack --> dcd
+    stack --> osal
+    device --> osal
+    osal --> kernel
 ```
 
 以"CDC 收到主机发来的一行数据"为例，一帧数据的完整旅程：
@@ -2412,7 +2405,7 @@ perf 任务观察表默认容量为 `MAX_TASKS+2=18`，满后新任务不再加�
 1. 主机发出 OUT token，DWC2 硬件收包入 RX FIFO，置中断挂起；
 2. `OTG_FS_IRQHandler`（usb_glue_st.c 提供）→ `USBD_IRQHandler(0)`（usb_dc_dwc2.c 的总入口）；
 3. DWC2 驱动读 GRXSTSP 弹出 FIFO 数据，按端点号调用 `usbd_event_ep_out_complete_handler`（usbd_core.c）；
-4. usbd_core 查端点注册表，转到我们注册的 `rtos_usb_cdc_bulk_out` 回调（rtos_usb.c，仍在 ISR 上下文）；
+4. usbd_core 查端点注册表，转到我们注册的 `rtos_usb_cdc_bulk_out` 回调（`USB/rtos_usb_device.c`，仍在 ISR 上下文）；
 5. 回调把数据 memcpy 进 RX 环形缓冲（临界区保护 head/tail），`rtos_sem_give(rx_sem)`；
 6. 给信号量触发调度决策，ISR 退出后 PendSV 切换到阻塞在 `rtos_usb_cdc_read` 的任务；
 7. 任务从环形缓冲拷出数据返回给用户。
@@ -2475,8 +2468,9 @@ USB 物理上只有一对差分线，"同时"是分时复用的宏观效果：
 | 文件 | 职责 |
 |---|---|
 | `Core/Inc/rtos_usb.h` | 对外 API（CDC/HID/MSC + ISR 注册）；`RTOS_CONFIG_USE_USB=0` 时全部宏化为空桩，零开销裁剪 |
-| `Core/Src/rtos_usb.c` | USB 引擎：静态对象池、双档堆、ISR 注册表；复合设备描述符与初始化序列；CDC/HID 阻塞式 API；MSC RAM 盘回调；DWC2 自定义 FIFO 划分 |
-| `Core/Src/rtos_usb_osal.c` | `usb_osal_*` 26 函数：CherryUSB 契约 → 本内核五原语 |
+| `USB/rtos_usb_osal.c` | 合并后的适配实现：`usb_osal_*` 26 函数及其 `rtos_usb_*` 句柄封装、静态对象池、双档堆和 ISR 注册表 |
+| `USB/rtos_usb_device.c` | 复合设备描述符与初始化；CDC/HID 会话、端点回调和阻塞式 API；F446 DWC2 FIFO 划分；专用构建的审计接口 |
+| `USB/rtos_usb_msc.c` | MSC RAM 盘后端三个回调、扇区统计及 MSC 关闭时的统计桩 |
 | `Core/Inc/usb_config.h` | CherryUSB 编译期配置入口 + OSAL 桥接（`#include "rtos_usb.h"`），CherryUSB 源文件经 `#include "usb_config.h"` 读取 |
 
 五个关键设计：
@@ -2582,7 +2576,7 @@ F446 OTG_FS 只有 **6 个端点（EP0~EP5）、320 字（1280B）FIFO**。Cherr
 解法是两点：
 
 1. **利用"同端点号 IN/OUT 是两个独立端点"**：HID OUT 借 EP1-OUT（与 CDC 的 EP1-IN 同号不同向），HID IN 借 EP5-IN（与 MSC 的 EP5-OUT 同号不同向）；
-2. **启用 `CONFIG_USB_DWC2_CUSTOM_FIFO`**，在 rtos_usb.c 实现 `dwc2_get_user_fifo_config()` 重新划分：
+2. **启用 `CONFIG_USB_DWC2_CUSTOM_FIFO`**，在 `USB/rtos_usb_device.c` 实现 `dwc2_get_user_fifo_config()` 重新划分：
 
 | FIFO | 字数 | 服务对象 |
 |---|---|---|
@@ -2634,7 +2628,7 @@ CherryUSB 每个源文件开头 `#include "usb_config.h"`，从这里读取全�
 | RP2040 / CH58x / BL618 / Nuvoton / HPM / AIC / MUSB | 各家 | 对应 `port/<name>` |
 | 全新 IP | — | `port/template/usb_dc.c` 骨架 |
 
-**平台无关、直接复用的部分**：`core/usbd_core.c` + 全部 `class/` + `common/` + 本工程 4 个自研文件中的 `rtos_usb.c/h`、`usb_config.h`（改参数即可）。
+**可复用部分**：CherryUSB 的 `core/usbd_core.c`、所用 `class/` 和 `common/`；本工程的 `USB/rtos_usb_osal.c` 提供内核适配，`USB/rtos_usb_device.c` 提供描述符与 CDC/HID 会话模板，`USB/rtos_usb_msc.c` 提供存储后端模板，公共配置和接口在 `Core/Inc/`。设备文件中的 F446 DWC2 FIFO 策略需要按新 IP 重写或替换，端点、缓存和中断契约仍需重新验证。
 
 ### Step 1: DCD 驱动 (仅全新 IP 需要)
 
@@ -2669,7 +2663,7 @@ USBD_IRQHandler(busid)                       DCD 总中断入口（用户 IRQ �
 
 `CONFIG_USBDEV_EP_NUM` 改为实际端点数；FIFO 划分按 `GHWCFG3.DFIFO_DEPTH` 等寄存器实测值重算（13.5.2 的表是 F446 的 320 字特例）；高速 IP 加 `CONFIG_USB_HS`（MPS 自动切 512）。
 
-### Step 5: 用户层 (照 rtos_usb.c 模式)
+### Step 5: 用户层（参照 USB/rtos_usb_device.c 与 rtos_usb_msc.c）
 
 - 描述符表 + 初始化序列（照 `rtos_usb_cdc_init`）：`usbd_desc_register` → `usbd_add_interface`（CDC×2 / MSC / HID，各类 `init_intf`）→ `usbd_add_endpoint` → `usbd_initialize(busid, reg_base, event_handler)`；
 - **必须实现** MSC 三回调（非 weak，链接期强制）：`usbd_msc_get_cap` / `usbd_msc_sector_read` / `usbd_msc_sector_write`——把三个函数里的 memcpy 换成真实介质（SPI Flash / SD 卡）读写，U 盘即告完成；
@@ -2682,7 +2676,7 @@ USB ISR 调用 sem_give 等内核 API，会修改就绪表/等待链表。**USB 
 ### 完整初始化时序 (供移植对照)
 
 ```
-rtos_init()                          内核起来（SysTick/PendSV）
+rtos_init()                          初始化内核数据、idle 与可选 timer；尚未调度
 rtos_usb_init()                      清零对象池/ISR 表, 初始化双档堆
 rtos_usb_cdc_init(0, USB_OTG_FS)     一步完成:
   ├─ 创建同步对象(rx/tx/hid 信号量, tx 互斥锁)
@@ -2695,8 +2689,12 @@ rtos_usb_cdc_init(0, USB_OTG_FS)     一步完成:
   │    └─ usb_dc_low_level_init      → HAL_PCD_MspInit(48MHz/GPIO/NVIC=6)
   │    └─ DCTL 清 SDIS               软连接, 主机开始枚举
   └─ MSC notify_handler              创建 usbd_msc 线程(经 OSAL)
-rtos_start()                          调度器接管, 枚举在 ISR+任务中自动完成
+rtos_start()                         启动端口时基，经 SVC 进入首任务；成功后不返回
 ```
+
+`rtos_init()` 位于 `rtos_kernel.c`，只编排性能监视器、堆、调度器及可选软件定时器初始化。
+SysTick 的 RTOS 时基配置和首任务接管发生在 `rtos_start()` → `rtos_sched_start()` →
+`rtos_port_start_scheduler()` 的启动路径；USB 枚举及其 ISR/任务协作还取决于实际总线连接和主机。
 
 ## 13.8 已知陷阱与经验教训
 
@@ -2802,7 +2800,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 | 等待多个条件任一成立或全部成立 | 事件组 | 位状态会合并重复置位；消费式清位影响同次 `set` 的后续等待者 |
 | 到期触发非硬实时后台工作 | 软件定时器 | 共享服务任务串行执行回调；控制命令接受成功不等于已经执行 |
 
-源码入口：`rtos_sem_take/give`（`rtos_sem.c:46/115`）、`rtos_mutex_take/give`（`rtos_mutex.c:138/196`）、`rtos_queue_send/recv`（`rtos_queue.c:140/256`）、`rtos_event_wait/set`（`rtos_event.c:132/73`）、`rtos_task_notify/notify_wait`（`rtos_task.c:1003/1046`）。
+源码入口：[IPC/rtos_sem.c](../RTOS/IPC/rtos_sem.c) 的 `rtos_sem_take/give`、[IPC/rtos_mutex.c](../RTOS/IPC/rtos_mutex.c) 的 `rtos_mutex_take/give`、[IPC/rtos_queue.c](../RTOS/IPC/rtos_queue.c) 的 `rtos_queue_send/recv`、[IPC/rtos_event.c](../RTOS/IPC/rtos_event.c) 的 `rtos_event_wait/set`，以及 [Core/Src/rtos_task.c](../RTOS/Core/Src/rtos_task.c) 的 `rtos_task_notify/notify_wait`。
 
 ## 16.2 上下文与返回语义矩阵
 
@@ -2832,7 +2830,7 @@ rtos_start()                          调度器接管, 枚举在 ISR+任务中�
 
 ISR 的 API 选择应遵循“快速捕获必要状态—投递短描述符或通知—由任务处理长业务”的分工。API 名称没有 `FromISR` 后缀不表示所有超时值都可以使用，临界区存在也不表示任意 NVIC 优先级都安全。
 
-源码 guard 复核位置：`rtos_sem.c` 的 take/give、`rtos_queue.c` 的 send/recv、`rtos_event.c` 的 wait/set/clear、`rtos_mutex.c` 的上下文检查、`rtos_mem.c` 的 alloc/free 和 `rtos_timer.c` 的命令入口。本次补齐的 heap/perf/USB 入口见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)；内部钩子仍由调用方保证上下文，不能由这张矩阵推断所有函数都有同类断言。
+源码 guard 复核位置：`rtos_sem.c` 的 take/give、`rtos_queue.c` 的 send/recv、`rtos_event.c` 的 wait/set/clear、`rtos_mutex.c` 的上下文检查、`Memory/rtos_mempool.c` 的 alloc/free 和 `rtos_timer.c` 的命令入口。本次补齐的 heap/perf/USB 入口见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)；内部钩子仍由调用方保证上下文，不能由这张矩阵推断所有函数都有同类断言。
 
 ## 16.3 对象与存储的寿命责任
 
@@ -2846,7 +2844,7 @@ ISR 的 API 选择应遵循“快速捕获必要状态—投递短描述符或�
 | timer 对象、回调 arg、name 指向存储 | 应用 | 控制命令和在途回调不再引用后才能销毁；timer 名称是指针保存，不会复制 |
 | mempool 对象及块 storage | 应用 | 所有块使用结束；pool 被 perf 注册后没有 unregister API，描述符不能提前销毁 |
 
-动态任务自删的延期回收见 `defer_free_tcb/process_pending_free`（`rtos_task.c:91/102`）。任务创建时复制名称，而定时器创建仅保存 `name` 指针（`rtos_timer.c:297`），这两者的调用方寿命责任不同。
+动态任务自删的延期回收见 `defer_free_tcb/process_pending_free`（[rtos_task.c](../RTOS/Core/Src/rtos_task.c)）。任务创建时复制名称，而定时器创建仅保存 `name` 指针（[rtos_timer.c](../RTOS/Services/rtos_timer.c) 的 `rtos_timer_create`），这两者的调用方寿命责任不同。
 
 `is_initialized` 是对象状态标志，不是防止地址复用的完整句柄身份。当前存活任务登记可以拒绝未登记 TCB，以及发现仍挂在对象上的等待者；它不能让一个已释放指针永久安全。如果同一地址被新对象重新使用，旧句柄不能继续作为新对象的授权句柄。
 
@@ -2854,7 +2852,7 @@ sem take/give、queue send/recv、event wait/set/clear 与 mutex take/give 在�
 
 sem、queue、event 的 `init` 允许首次传入未清零存储；有存活等待者时拒绝重置。空闲但仍有其他使用者的对象是否允许重置，必须由应用协调，不能将“当前没有等待者”解释为“所有使用者已经退出”。mutex 还通过注册表保护重复登记和存活拥有者。
 
-源码依据：`rtos_internal_object_has_waiters`（`rtos_task.c:63`）、`rtos_sem_init`（`rtos_sem.c:24`）、`rtos_queue_init`（`rtos_queue.c:29`）、`rtos_event_init`（`rtos_event.c:54`）、`rtos_mutex_init`（`rtos_mutex.c:99`）。
+源码依据：`rtos_internal_object_has_waiters`（`Core/Src/rtos_task.c`）与 `IPC/` 下的 `rtos_sem_init`、`rtos_queue_init`、`rtos_event_init`、`rtos_mutex_init`。
 
 ## 16.4 配置实效与资源预算
 
@@ -2880,7 +2878,7 @@ sem、queue、event 的 `init` 允许首次传入未清零存储；有存活等�
 
 堆为 first-fit 扫描所有物理块，n 应定义为总块数，包含已分配块，而不只是空闲块数。free 仅与下一高地址空闲块合并一次，既不后向合并，也不保证一次吞并所有连续空闲块。magic 和 FREE 位属于有限防御检查，不证明任意错误指针都安全。
 
-源码依据：`rtos_task_create/static`（`rtos_task.c:524/497`）、任务观察表入表（`rtos_perf.c:237–243`）、mutex 容量（`rtos_mutex.c:119`）、heap 扫描/分裂/合并（`rtos_heap.c:223/133/156`）、pool 对齐与注册（`rtos_mem.c:39–69`）。
+源码依据：`Core/Src/rtos_task.c` 的 `rtos_task_create/static`、`Services/rtos_perf.c` 的 `rtos_perf_on_task_created`、`IPC/rtos_mutex.c` 的注册容量检查、`Memory/rtos_heap.c` 的扫描/分裂/合并，以及 `Memory/rtos_mempool.c` 的对齐与注册。
 
 ## 16.5 综合业务模型与有界关停
 
@@ -2928,16 +2926,20 @@ flowchart TB
 
 | 验证层次 | 主要问题 | 当前仓库入口 | 结论边界 |
 |---|---|---|---|
-| 源码/编译 | ABI 偏移、条件编译、头文件与配置是否成立 | 内核与端口；配置矩阵记录 | 编译通过不代表该配置的调度语义已上板 |
+| 源码/编译 | ABI 偏移、条件编译、头文件与配置是否成立 | [结构核对](../hil/refactor_20261027/verify_layout.py)、[完整编译矩阵](../hil/refactor_20261027/compile_checks.ps1) | token 等价与编译通过不能单独证明运行及最坏时延 |
 | 功能/边界 | 参数、超时、销毁、等待链重挂是否符合契约 | [selftest.c](../Core/Src/selftest.c)、[boundary_test.c](../hil/fw/Src/boundary_test.c) | 构造 tick 验证不是连续运行几十天 |
 | 竞态与上下文 | 启动窗口、候选失效、寄存器/FPU 和屏蔽值是否保持 | [audit_regressions.c](../hil/fw/Src/audit_regressions.c)、[lowlevel_checks.c](../hil/fw/Src/lowlevel_checks.c)、[lowlevel_fpu_probe.c](../hil/fw/Port/ARM/lowlevel_fpu_probe.c)、[basepri_regressions.c](../hil/fw/Src/basepri_regressions.c) | 只证明所执行的上下文与交错，仍需对新改动补触发条件 |
-| 综合压力 | 混合 IPC、IRQ 嵌套、背压、数据守恒与关停 | [综合压力报告](rtos_production_stress_20261013.md) | 合成业务不等于真实设备端到端链路 |
+| 综合压力 | 混合 IPC、IRQ 嵌套、背压、数据守恒与关停 | [production_stress.c](../hil/fw/Src/production_stress.c)、[当前回归入口](../hil/refactor_20261027/run_regressions.ps1) | 合成业务不等于真实设备端到端链路；历史结果按日期区分 |
 | 测试器对照 | 输入损坏是否被真实检测，结束判据是否可信 | 故意损坏单条消息的负向批次 | 预期失败单独分类，不计入正常 PASS |
 | 优先级契约 | 高优先级 ISR 是否在共享状态访问前被预期断言捕获 | [basepri_guard.c](../hil/fw/Src/basepri_guard.c) | 每镜像一个终止用例；测试专用断言包装不返回被断言 API；不能当作断言关闭时的拒绝保证 |
 
 2026-10-13 批次记录包括 117 项专项回归的三次复位、432 PASS 与 10 INFO 的基础自测、103 项边界检查，以及默认/统计配置的上下文检查；综合压力有五轮正常运行、805 次检查、2,433,735 条成功接纳消息和 900 秒持续运行。这些旧数据及其排除项以[发布汇总](rtos_release_20261013.md)、[底层报告](rtos_lowlevel_optimization_20261012.md)及原始证据为准。
 
-此前综合负载的 API 中断为优先级 6/7，不能覆盖优先级 0–4 对临界区元数据事务的抢占。此次确定性交错、断言负向用例，以及新增高优先级纯硬件 IRQ 和三层嵌套的综合验证范围、实际运行配置及结果，统一见 [2026-10-25 BASEPRI 修复报告](rtos_basepri_fix_20261025.md)。有限矩阵与压力运行证明的是已执行路径，不能承诺检出所有 BUG，也不替代具体产品的时限、外设和故障注入验证。
+此前综合负载的 API 中断为优先级 6/7，不能覆盖优先级 0–4 对临界区元数据事务的抢占。2026-10-25 增补的确定性交错、断言负向用例，以及高优先级纯硬件 IRQ 和三层嵌套的验证范围见 [BASEPRI 修复报告](rtos_basepri_fix_20261025.md)；传递继承、对象销毁窗口和最大互斥图等后续范围见 [2026-10-26 复杂并发报告](rtos_adversarial_20261026.md)。
+
+2026-10-27 在本次新布局下重新执行并独立验收 **145 次最终实板采样**：60 个复杂并发镜像、74 个端口/屏蔽/阻塞返回/优先级契约镜像、10 个功能及业务镜像、1 个日常恢复镜像。其中 **144 次预期正常，1 次故意损坏消息并成功检出**；负向镜像的 `163 PASS / 3 FAIL / worker_errors=1` 是预先限定的检出结果，不能写成全部固件运行 `FAIL=0`。另有 193 项严格编译检查；M7 仅编译端口，IDE Debug/Release 的 GCC 14.3.1 镜像仅验证生成、编译和链接，实板镜像使用 GCC 11.3。
+
+本批每轮核对 160 项固件及构建输入，并关联 SWD 下载、串口日志、ELF 身份和结束标记。两次验收文本错误（USB 断言来源映射、日常输出结束文本）及早期轮次原样归档，不计入最终成功采样；原始记录、分类和独立验收见[重组报告](rtos_source_reorganization_20261027.md)、[测试方法](../hil/refactor_20261027/README.md)和[最终结果](../hil/refactor_20261027/verification_summary.json)。有限矩阵与压力运行证明的是已执行路径，不能承诺检出所有 BUG，也不替代具体产品的时限、外设和故障注入验证。
 
 排障时先记录实际状态，再追踪负责改变它的路径：
 
@@ -2967,3 +2969,30 @@ flowchart TB
 这些是待设计的方案，不是当前已实现的能力。性能优化先定位完整调用路径中的成本，再修改最小必要机制；源码指令数减少不能替代实测，也不能以删掉生命周期或中断屏蔽保护换取更好的微基准数字。
 
 设计手册维护应与实现变更同行：更新受影响的不变式、API 契约、图源和复杂度；用新的源码身份执行相关验证；把结果、退步与缺失覆盖留在测试报告。历史优化数据继续保存在[历史性能报告](rtos_performance_report.md)、[第一阶段优化](rtos_optimization_20261012.md)和[底层优化](rtos_lowlevel_optimization_20261012.md)，无需在本手册重复多组版本数字。
+
+## 16.8 重组后的源码集成与构建约束
+
+本次重组依据共享状态和保护协议划分编译单元，未改变内核算法、TCB 布局、临界区或上下文栈协议。
+`rtos_wait.c` 统一等待链机制，不把不同 IPC 对象的状态机合并；`rtos_kernel.c` 编排初始化，不拥有运行时调度链。
+任务地址登记、通知和自删延期回收仍在 `rtos_task.c`；就绪和延时链接复用仍在 `rtos_sched.c`。
+USB 两层 OSAL 合并，设备会话与 MSC 存储后端独立；两个相同的毫秒转换包装改用已有 inline。
+
+集成边界如下，完整文件对应关系见[源码导览](../RTOS/README.md)：
+
+| 边界 | 当前规则 | 常见迁移错误 |
+|---|---|---|
+| 公开接口 | 仍从 `RTOS/Core/Inc/` 包含原公共头，`rtos_mem.h` 名称保留 | 把实现改名误认为需要改应用 API 或复制声明 |
+| 私有协作 | 内核及相关测试增加 `RTOS/Core/Private/` 搜索路径 | 从旧公开目录查找 `rtos_internal.h`；把私有协议当作兼容 API |
+| 源码清单 | 加入 Core、IPC、Memory、Services、USB 和所选 Port 的当前单元，每个只链接一次 | 仍只收集 `Core/Src/`；同时链接旧 USB 文件和新模块 |
+| 端口选择 | 当前源位于 `Port/GCC/ARM_CM4F_CM7F/port.c` | 目录名被误当作所有 M7 芯片、FPU 和缓存配置都已完成实板验证 |
+| 对象等待 | 调用方持有内核临界区；helper 先登记阻塞并请求调度，解除保护后才切出 | helper 一返回就读取等待结果，跳过正确的临界区退出与切换时机 |
+| 复杂度 | 仍按完整 API 路径核算；信号量 FIFO 位图链的定位/清位最坏 O(W) | 根据文件拆分或旧“分组扫描”注释误认为整个唤醒路径已变为 O(1) |
+
+本工程 CubeIDE Debug/Release 均以整个 `RTOS/` 为源码入口；手工移植工程仍须更新自己的文件清单与头文件路径。
+HIL 的 [build_layout.ps1](../hil/build_layout.ps1) 统一维护 **15 个规则目录、57 个编译单元（16 个自研 RTOS C 单元）**，
+[build_fw.ps1](../hil/build_fw.ps1) 与 [restore_project.ps1](../hil/restore_project.ps1) 共用此清单和权威模板。
+编译选项变化会使相应旧对象失效；恢复会还原日常规则、源码与链接清单，并移除 HIL 副本及变体 stamp。
+新增或移动单元时须同时审查 IDE 输入、模板、对象清单及独立编译矩阵，不能只修改本机 Debug 生成文件。
+
+结构比较覆盖 263 个函数定义、63 项状态/类型等声明及 16 个公共头；它为机械搬移提供证据，不能替代运行验证。
+后续复测应创建新批次，记录编译器、配置、实际构建输入和结束条件；带日期验收器固定的是该批覆盖，不是自动检测所有缺陷的通用证明。

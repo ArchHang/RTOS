@@ -9,6 +9,7 @@
 > [综合压力报告](../docs/rtos_production_stress_20261013.md)（16 任务、双 IRQ 及原始证据）。
 > 后续补充：[BASEPRI 修复与回归报告](../docs/rtos_basepri_fix_20261025.md)（精确抢占、阻塞返回、三层 IRQ）。
 > 复杂并发：[对抗场景与健壮性报告](../docs/rtos_adversarial_20261026.md)（传递继承、对象销毁窗口、循环依赖、递归溢出及配置矩阵）。
+> 当前源码布局：[源码导览](../RTOS/README.md)。重组后的独立复测入口位于 `refactor_20261027/`；历史批次保留当时的源码路径。
 
 ---
 
@@ -31,26 +32,29 @@ powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1 -Only adversarial
 # 单独构建某个变体（不烧录）
 powershell -ExecutionPolicy Bypass -File hil\build_fw.ps1 -Variant bench
 
-# 把工程恢复到 CubeIDE 原始构建状态（并重建日常固件）
+# 恢复当前目录布局的日常构建模板（并重建日常固件）
 powershell -ExecutionPolicy Bypass -File hil\restore_project.ps1 -Rebuild
 ```
 
 ### 运行前提与仓库发布范围
 
-上述命令用于 Windows PowerShell 和 STM32CubeIDE 工具链。当前脚本和构建模板保留了实测时的
-固定工程路径 `E:\STM32_Project\CubeIDE\f446_rtos`、CubeIDE 1.13.2 工具路径及默认 COM3。
+上述命令用于 Windows PowerShell 和 STM32CubeIDE 工具链。当前 `build_fw.ps1` 与
+`restore_project.ps1` 从自身位置定位工程，构建模板使用相对源码路径；历史脚本仍可能使用
+固定工程路径 `E:\STM32_Project\CubeIDE\f446_rtos`。工具仍配置为 CubeIDE 1.13.2，串口默认为 COM3。
 其他电脑需要先配置工程、编译器、make、CubeProgrammer 和串口路径，再执行新批次；
 路径配置发生变化时须保存新的源码身份与证据，不能将新构建认作原始实测镜像。
 
 Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和解析结果。
-`Debug/`、本地 ELF、编译器 `.su` 栈记录、`baseline_RTOS/` 等回退快照及 `backup_precleanup/` 不随 Git 发布。
+工程 `Debug/`、本地 ELF、编译器 `.su` 栈记录、`baseline_RTOS/` 等回退快照及 `backup_precleanup/` 不随 Git 发布。
+`refactor_20261027/evidence/ide/generated/debug/` 与 `release/` 仅精准放行 IDE 生成的文本规则和对象清单，ELF/map 仍忽略。
 因此，clone 后可以审阅提交的文本证据，但不能原样执行完整原始身份复核：
 历史 `validate_evidence.ps1` 和新批次 `verify_evidence.py` 还依赖保存的 ELF、本机源码身份、栈记录及日常构建目录；
 缺少这些输入时应视为证据不可用，不能绕过哈希检查或据此生成新的通过结论。
 
 清单记录的是本机实测时的原始文件字节。当前 Git 使用 `core.autocrlf=true`，部分源码会在提交或
 检出时规范换行，因此不能保证 clone 后源码摘要与原实测字节自动一致；不要为匹配新检出文件而
-重写历史清单。原始 HIL txt/json 等通过 `.gitattributes` 的 `-text` 保持字节。
+重写历史清单。原始 HIL txt/json 等通过 `.gitattributes` 的 `-text` 保持字节；本批旧夹具 `.recorded`、
+IDE XML/生成规则快照，以及按固定摘要加载的离线验收器也保留原字节，避免发布改变证据或分析器身份。
 更换路径、换行或配置后应运行新批次并生成新证据，完整流程和缺陷总览见
 [2026-10-26 修复汇总](../docs/rtos_fix_summary_20261026.md)。
 
@@ -66,10 +70,16 @@ Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和
 |---|---|
 | `repro_all.ps1` | **传统套件入口**：audit / bench / boundary / selftest / scenario，自动构建+烧录+抓串口并汇总 |
 | `build_fw.ps1` | **变体化构建**：靠 `-DFIRMWARE_*` 宏切换固件形态，**不改源码**；自动处理变体切换导致的强制重编译 |
+| `build_layout.ps1` | 当前 15 个构建目录的共享清单；从权威模板建立完整 Debug 树，防止构建与恢复的目录清单漂移 |
 | `run_hil.ps1` | **烧录 + 抓串口**：烧录与监听在同一次调用内原子完成（避免丢失开机输出）；支持终止行与自动应答 |
 | `run_scenarios.ps1` | 批量跑场景 S1–S5 |
 | `repeat_run.ps1` | 同一固件连续烧录 N 次，用于**确定性验证**（判断指标是否可复现） |
-| `restore_project.ps1` | 还原 `Debug/Core/Src/subdir.mk`、`Debug/objects.list`，清中间产物，可选重建 |
+| `restore_project.ps1` | 恢复全部日常 make 规则、源码目录清单和链接对象；清除 HIL 副本及变体产物，可选重建 |
+| `refactor_20261027/verify_layout.py` | 与重组前提交比较函数 token、全局声明、公开头、主函数和第三方源码，以及新链接清单；只读，无硬件 |
+| `refactor_20261027/compile_checks.ps1` | 当前全部 16 个自研 C 单元 × 12 配置严格编译，加 M7 端口编译检查 |
+| `refactor_20261027/run_matrix.ps1`、`run_port_matrix.ps1` | 当前布局的复杂 IPC 及端口/中断回归；构建、模板和固件输入统一快照 |
+| `refactor_20261027/run_regressions.ps1` | 功能、生产压力及负向校验；`-SoakSeconds` 默认为 120，可配置至 900 |
+| `refactor_20261027/verify_results.py` | 独立核对本轮原始日志、烧录、ELF、源码身份及日常恢复状态；离线分析器不参与固件构建，其身份另记于验收输出 |
 | `perf_20261012/run_measurement.ps1`、`run_regression.ps1` | 第一轮性能优化的独立测量及回归；阶段身份与结果见[报告](../docs/rtos_optimization_20261012.md) |
 | `lowlevel_20261012/run_measurement.ps1`、`run_regression.ps1`、`run_lowlevel_checks.ps1` | 底层优化测量、完整回归及上下文／FPU 检查；见[报告](../docs/rtos_lowlevel_optimization_20261012.md) |
 | `production_20261012/run_production.ps1` | 综合压力批次：smoke / matrix / soak / negative；保留源码身份、构建、ELF、反汇编、真实下载和串口证据 |
