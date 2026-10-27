@@ -47,18 +47,19 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.609469184" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Core/Inc"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/AI/output/int8}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB/core}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB/common}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB/class/cdc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB/port/dwc2}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/Core/Inc}&quot;"/>
+									<listOptionValue builtIn="false" value="../AI/output/int8"/>
+									<listOptionValue builtIn="false" value="../RTOS/Core/Inc"/>
+									<listOptionValue builtIn="false" value="../RTOS/Core/Private"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB/class/msc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB/class/hid}&quot;"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/core"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/common"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/class/cdc"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/class/hid"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/class/msc"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/port/dwc2"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1884322230" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -85,10 +86,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="AI/output"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="AI/output"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="RTOS"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="RTOS"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -136,11 +137,19 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.823406482" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../Core/Inc"/>
+									<listOptionValue builtIn="false" value="../AI/output/int8"/>
+									<listOptionValue builtIn="false" value="../RTOS/Core/Inc"/>
+									<listOptionValue builtIn="false" value="../RTOS/Core/Private"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
 									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/RTOS/lib/third/CherryUSB}&quot;"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/core"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/common"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/class/cdc"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/class/hid"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/class/msc"/>
+									<listOptionValue builtIn="false" value="../RTOS/lib/third/CherryUSB/port/dwc2"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1997795065" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -167,9 +176,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="AI/output"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="RTOS/lib/third/CherryUSB"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="RTOS"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

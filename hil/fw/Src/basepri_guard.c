@@ -49,7 +49,7 @@ static const char *expected_module(void)
         "", "rtos_sem.c", "rtos_queue.c", "rtos_event.c", "rtos_task.c",
         "rtos_heap.c", "rtos_heap.c", "rtos_heap.c", "rtos_perf.c",
         "rtos_perf.c", "rtos_perf.c", "rtos_perf.c", "rtos_perf.c",
-        "rtos_usb.c", "rtos_usb.c", "port.c", "port.c"
+        "rtos_usb_device.c", "rtos_usb_osal.c", "port.c", "port.c"
     };
 
     return modules[BASEPRI_GUARD_CASE];

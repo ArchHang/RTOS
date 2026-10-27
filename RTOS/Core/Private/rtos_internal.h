@@ -53,6 +53,12 @@ static inline rtos_status_t rtos_internal_block_permitted(void)
             (rtos_kernel.current_tcb != NULL)) ? RTOS_OK : RTOS_ERR_SCHED;
 }
 
+/**
+ * @brief 分配任务 ID；由 rtos_sched.c 持有计数器。
+ * @note  任务构造路径在临界区内调用，调度器初始化保留既有重置语义。
+ */
+uint32_t rtos_internal_alloc_task_id(void);
+
 /* Caller holds the critical section. Does not inspect uninitialized objects. */
 rtos_bool_t rtos_internal_object_has_waiters(const void *obj);
 
@@ -70,13 +76,14 @@ rtos_tcb_t *rtos_sched_commit_context_switch(void);
  * @param obj     所等待的对象指针(用于归属校验与互斥锁优先级继承)。
  * @param head    对象等待链表头的地址。
  * @param timeout 超时(Tick)。RTOS_WAIT_FOREVER=永久阻塞。
- * @return RTOS_OK 表示已进入阻塞(返回时已被唤醒); RTOS_ERR_SCHED 表示调度器不在
- *         运行态, 调用方应放弃阻塞并把该错误码透传给上层。
+ * @return RTOS_OK 表示已登记阻塞并请求调度；RTOS_ERR_SCHED 表示调度器不在
+ *         运行态，未修改等待状态，调用方应把错误码透传给上层。
  *
  * @details 调用流程(IPC 模块典型用法):
  *          1. 检查对象状态(如信号量计数);
  *          2. 若需等待, 调用本函数挂入等待链表;
- *          3. 函数返回 RTOS_OK 后检查 wait_result 判断是对象唤醒还是超时。
+ *          3. 返回 RTOS_OK 后退出最外层临界区，允许 PendSV 切出当前任务；
+ *          4. 任务恢复运行后检查 wait_result，判断是对象唤醒还是超时。
  *
  * @note  本函数内部已包含"调度器运行态"守卫(见 rtos_internal_block_permitted),
  *        因此 **调用方不需要重复判断 `sched_state`**; 但**必须**检查返回值,
@@ -112,7 +119,7 @@ void rtos_internal_wake_all(rtos_wait_node_t **head, rtos_status_t reason);
 void rtos_internal_wait_insert_by_prio(rtos_wait_node_t **head, rtos_wait_node_t *node);
 
 /**
- * @brief 将等待节点尾插到等待链表(不定序, 配合优先级位图使用)。
+ * @brief 将等待节点尾插到等待链表(O(n)，不定序，配合优先级位图使用)。
  * @param head 等待链表头指针的地址。
  * @param node 待入链节点。
  * @note  与 rtos_internal_wait_insert_by_prio 不可在同一对象上混用。
@@ -174,7 +181,7 @@ void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter);
  * @details 等待链按优先级排序插入; set_priority 或互斥锁优先级继承的
  *          提升/恢复改变任务优先级后, 若该任务正阻塞在某对象等待链上,
  *          必须重排, 否则 wake_highest 按旧优先级取链首 → 唤醒顺序倒置。
- * @note  由 rtos_task.c 实现; 调用方需在临界区内。
+ * @note  由 rtos_wait.c 实现；调用方需在临界区内。
  */
 void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb);
 

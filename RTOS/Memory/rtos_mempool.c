@@ -1,5 +1,5 @@
 /**
- * @file    rtos_mem.c
+ * @file    rtos_mempool.c
  * @brief   固定块内存池实现
  *
  * @details 固定块内存池提供 O(1) 分配，无碎片。

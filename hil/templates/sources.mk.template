@@ -1,0 +1,37 @@
+# Canonical HIL build template; also usable after CubeIDE regenerates Debug.
+# Build directory: project-root/Debug; GNU Tools for STM32 11.3.rel1.
+
+ELF_SRCS :=
+OBJ_SRCS :=
+S_SRCS :=
+C_SRCS :=
+S_UPPER_SRCS :=
+O_SRCS :=
+CYCLO_FILES :=
+SIZE_OUTPUT :=
+OBJDUMP_LIST :=
+SU_FILES :=
+EXECUTABLES :=
+OBJS :=
+MAP_FILES :=
+S_DEPS :=
+S_UPPER_DEPS :=
+C_DEPS :=
+
+SUBDIRS := \
+AI/output/int8 \
+Core/Src \
+Core/Startup \
+Drivers/STM32F4xx_HAL_Driver/Src \
+RTOS/Core/Src \
+RTOS/IPC \
+RTOS/Memory \
+RTOS/Services \
+RTOS/USB \
+RTOS/Port/GCC/ARM_CM4F_CM7F \
+RTOS/lib/third/CherryUSB/class/cdc \
+RTOS/lib/third/CherryUSB/class/hid \
+RTOS/lib/third/CherryUSB/class/msc \
+RTOS/lib/third/CherryUSB/core \
+RTOS/lib/third/CherryUSB/port/dwc2
+

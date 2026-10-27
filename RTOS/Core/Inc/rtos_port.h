@@ -5,7 +5,7 @@
  * @details 定义内核与处理器架构(Cortex-M)之间的抽象接口。移植到新架构时
  *          只需实现本文件声明的一组函数与宏，内核其余代码无需修改。
  *
- *          当前实现(Port/GCC/ARM_CM7/port.c)面向 Cortex-M4F / M7F 内核，
+ *          当前实现(Port/GCC/ARM_CM4F_CM7F/port.c)面向 Cortex-M4F / M7F 内核，
  *          覆盖 STM32F4/F7/L4/H7 等系列的同内核型号。移植层需处理:
  *            1. 上下文切换(保存/恢复 R4-R11, S16-S31, PSP, EXC_RETURN)
  *            2. 临界区进出(BASEPRI 屏蔽中等优先级中断)

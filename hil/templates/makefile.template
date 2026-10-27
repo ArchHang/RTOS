@@ -14,7 +14,11 @@ RM := rm -rf
 -include RTOS/lib/third/CherryUSB/class/msc/subdir.mk
 -include RTOS/lib/third/CherryUSB/class/hid/subdir.mk
 -include RTOS/lib/third/CherryUSB/class/cdc/subdir.mk
--include RTOS/Port/GCC/ARM_CM7/subdir.mk
+-include RTOS/Port/GCC/ARM_CM4F_CM7F/subdir.mk
+-include RTOS/USB/subdir.mk
+-include RTOS/Services/subdir.mk
+-include RTOS/Memory/subdir.mk
+-include RTOS/IPC/subdir.mk
 -include RTOS/Core/Src/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk

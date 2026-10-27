@@ -1,0 +1,6 @@
+# Canonical HIL build template; also usable after CubeIDE regenerates Debug.
+# Build directory: project-root/Debug; GNU Tools for STM32 11.3.rel1.
+
+USER_OBJS :=
+
+LIBS :=

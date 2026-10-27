@@ -1,54 +1,28 @@
 /**
- * @file    rtos_usb.c
- * @brief   USB 子系统实现(对象池 / 堆 / ISR / CDC ACM 封装)
+ * @file    rtos_usb_device.c
+ * @brief   CherryUSB 复合设备描述符、CDC/HID 传输与 DWC2 FIFO 配置。
  *
- * @details 本文件实现 rtos_usb.h 声明的 USB 子系统。核心职责:
- *
- *          1. 静态对象池管理:
- *             - sem/mutex/mq/thread/timer 各维护一个静态数组池。
- *             - create 时扫描空闲槽(in_use==0), 标记并初始化底层 RTOS 对象。
- *             - delete 时 deinit 底层对象并归还槽位。
- *             - 池操作在临界区内扫描+标记, 防止多任务/ISR 并发分配同一槽。
- *
- *          2. USB 堆(双档固定块池):
- *             - 小块池(<=64B) + 大块池(<=512B), 各占 HEAP_SIZE 一半。
- *             - 用 rtos_mempool_t 实现, 复用内核 O(1) 分配器, 自动接入 perf 统计。
- *             - malloc 按 size 选档, free 按地址范围归还。
- *
- *          3. ISR 注册表:
- *             - 静态数组, 建立 irqn -> handler 映射。
- *             - dispatch 在用户 IRQHandler 中调用, 查表执行。
- *
- *          4. CDC ACM 用户封装:
- *             - 内置 USB 描述符(设备/配置/字符串/质量)。
- *             - 事件处理器: CONFIGURED 时启动首次 OUT 读取。
- *             - OUT 端点回调: 将收到的数据写入 RX 环形缓冲, 信号通知读线程。
- *             - IN 端点回调: 处理 ZLP, 信号通知写线程传输完成。
- *             - rtos_usb_cdc_read/write: 阻塞式 API, 内部用信号量同步。
- *
- *          5. 与内核和谐共存:
- *             - 线程经 rtos_task_create 创建, 自动接入 rtos_perf 与栈高水位。
- *             - 复用 rtos_sem/mutex/queue/timer, 优先级继承等特性自动生效。
- *             - 不修改任何内核源码, 纯适配层。
+ * @details CDC/HID 共用设备连接状态与端点回调, 在同一模块维护会话和超时预算。
+ *          对象池与 OSAL 适配由 rtos_usb_osal.c 提供, MSC 介质由 rtos_usb_msc.c 提供。
+ *          FIFO 配置面向 F446 OTG_FS; 更换控制器时需重新核对端点与 FIFO 容量。
  */
 #include "rtos_usb.h"
 
 #if RTOS_CONFIG_USE_USB
 
-#include "rtos_mem.h"
-#include "rtos_sched.h"
 #include <string.h>
 
-/* CherryUSB 头文件(CDC ACM 封装用) */
 #include "usbd_core.h"
 #include "usbd_cdc_acm.h"
-#if RTOS_CONFIG_USB_USE_MSC
-#include "usbd_msc.h" /* MSC 大容量存储(与 CDC 组成复合设备) */
-#endif
 #if RTOS_CONFIG_USB_USE_HID
-#include "usbd_hid.h" /* HID(与 CDC/MSC 组成复合设备) */
+#include "usbd_hid.h"
 #endif
-#include "usb_dwc2_param.h" /* dwc2_get_user_fifo_config 自定义 FIFO 划分 */
+#if RTOS_CONFIG_USB_USE_MSC
+#include "usbd_msc.h"
+#endif
+#include "usb_dwc2_param.h"
+
+#include "rtos_sched.h"
 
 /* ============================== DWC2 FIFO 自定义划分 ============================== */
 /* F446 OTG_FS: 6 端点(EP0~EP5), FIFO 总深 320 字。默认 ST 参数只给 EP0~EP3
@@ -73,508 +47,6 @@ void dwc2_get_user_fifo_config(uint32_t reg_base, struct usb_dwc2_user_fifo_conf
     config->device_tx_fifo_size[3] = 16U; /* EP3 IN: CDC 通知 */
     config->device_tx_fifo_size[4] = 16U; /* EP4 IN: MSC bulk */
     config->device_tx_fifo_size[5] = 16U; /* EP5 IN: HID 中断 */
-}
-
-/* ============================== 静态对象池 ============================== */
-
-static rtos_usb_sem_t s_sem_pool[RTOS_CONFIG_USB_OSAL_SEM_COUNT];
-static rtos_usb_mutex_t s_mutex_pool[RTOS_CONFIG_USB_OSAL_MUTEX_COUNT];
-static rtos_usb_mq_t s_mq_pool[RTOS_CONFIG_USB_OSAL_MQ_COUNT];
-static rtos_usb_thread_t s_thread_pool[RTOS_CONFIG_USB_OSAL_THREAD_COUNT];
-static rtos_usb_timer_t s_timer_pool[RTOS_CONFIG_USB_OSAL_TIMER_COUNT];
-
-/* ============================== ISR 注册表 ============================== */
-
-typedef struct {
-    uint32_t irqn;
-    rtos_usb_isr_handler_t handler;
-    void *arg;
-    uint8_t used;
-} rtos_usb_isr_entry_t;
-
-static rtos_usb_isr_entry_t s_isr_table[RTOS_CONFIG_USB_ISR_TABLE_SIZE];
-
-/* ============================== USB 堆(双档固定块池) ============================== */
-
-#define USB_SMALL_BLOCK_SIZE (64U)
-#define USB_LARGE_BLOCK_SIZE (512U)
-#define USB_SMALL_BLOCK_COUNT ((RTOS_CONFIG_USB_HEAP_SIZE / 2U) / USB_SMALL_BLOCK_SIZE)
-#define USB_LARGE_BLOCK_COUNT ((RTOS_CONFIG_USB_HEAP_SIZE / 2U) / USB_LARGE_BLOCK_SIZE)
-
-static uint8_t s_small_heap[USB_SMALL_BLOCK_SIZE * USB_SMALL_BLOCK_COUNT]
-    __attribute__((aligned(4)));
-static uint8_t s_large_heap[USB_LARGE_BLOCK_SIZE * USB_LARGE_BLOCK_COUNT]
-    __attribute__((aligned(4)));
-
-static rtos_mempool_t s_small_pool;
-static rtos_mempool_t s_large_pool;
-
-/* ============================== 毫秒转 Tick ============================== */
-
-static rtos_tick_t usb_ms_to_ticks(uint32_t ms)
-{
-    return rtos_usb_timeout_ticks(ms);
-}
-
-/* ============================== 内部辅助: 池分配/归还 ============================== */
-
-static rtos_usb_sem_t *alloc_sem_slot(void)
-{
-    RTOS_ASSERT_ISR_OK();
-    RTOS_PORT_ENTER_CRITICAL();
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_SEM_COUNT; i++) {
-        if (s_sem_pool[i].in_use == 0U) {
-            s_sem_pool[i].in_use = 1U;
-            RTOS_PORT_EXIT_CRITICAL();
-            return &s_sem_pool[i];
-        }
-    }
-    RTOS_PORT_EXIT_CRITICAL();
-    return NULL;
-}
-
-static rtos_usb_mutex_t *alloc_mutex_slot(void)
-{
-    RTOS_ASSERT_ISR_OK();
-    RTOS_PORT_ENTER_CRITICAL();
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_MUTEX_COUNT; i++) {
-        if (s_mutex_pool[i].in_use == 0U) {
-            s_mutex_pool[i].in_use = 1U;
-            RTOS_PORT_EXIT_CRITICAL();
-            return &s_mutex_pool[i];
-        }
-    }
-    RTOS_PORT_EXIT_CRITICAL();
-    return NULL;
-}
-
-static rtos_usb_mq_t *alloc_mq_slot(void)
-{
-    RTOS_ASSERT_ISR_OK();
-    RTOS_PORT_ENTER_CRITICAL();
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_MQ_COUNT; i++) {
-        if (s_mq_pool[i].in_use == 0U) {
-            s_mq_pool[i].in_use = 1U;
-            RTOS_PORT_EXIT_CRITICAL();
-            return &s_mq_pool[i];
-        }
-    }
-    RTOS_PORT_EXIT_CRITICAL();
-    return NULL;
-}
-
-static rtos_usb_thread_t *alloc_thread_slot(void)
-{
-    RTOS_ASSERT_ISR_OK();
-    RTOS_PORT_ENTER_CRITICAL();
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_OSAL_THREAD_COUNT; i++) {
-        /* A returning/self-deleting static task cannot free its own stack.
-         * Reclaim it only after PendSV has stopped using that TCB. State 2
-         * reserves a slot while task_create initializes its previous TCB. */
-        if ((s_thread_pool[i].in_use == 1U) &&
-            (s_thread_pool[i].tcb.state == RTOS_TASK_DELETED) &&
-            (&s_thread_pool[i].tcb != rtos_task_get_current())) {
-            s_thread_pool[i].in_use = 0U;
-        }
-        if (s_thread_pool[i].in_use == 0U) {
-            s_thread_pool[i].in_use = 2U;
-            RTOS_PORT_EXIT_CRITICAL();
-            return &s_thread_pool[i];
-        }
-    }
-    RTOS_PORT_EXIT_CRITICAL();
-    return NULL;
-}
-
-static rtos_usb_timer_t *alloc_timer_slot(uint32_t start_index)
-{
-    RTOS_ASSERT_ISR_OK();
-    RTOS_PORT_ENTER_CRITICAL();
-    for (uint32_t i = start_index; i < RTOS_CONFIG_USB_OSAL_TIMER_COUNT; i++) {
-        if (s_timer_pool[i].in_use == 0U) {
-            s_timer_pool[i].in_use = 1U;
-            RTOS_PORT_EXIT_CRITICAL();
-            return &s_timer_pool[i];
-        }
-    }
-    RTOS_PORT_EXIT_CRITICAL();
-    return NULL;
-}
-
-/* ============================== 初始化 ============================== */
-
-rtos_status_t rtos_usb_init(void)
-{
-    memset(s_sem_pool, 0, sizeof(s_sem_pool));
-    memset(s_mutex_pool, 0, sizeof(s_mutex_pool));
-    memset(s_mq_pool, 0, sizeof(s_mq_pool));
-    memset(s_thread_pool, 0, sizeof(s_thread_pool));
-    memset(s_timer_pool, 0, sizeof(s_timer_pool));
-    memset(s_isr_table, 0, sizeof(s_isr_table));
-
-    rtos_status_t st =
-        rtos_mempool_init(&s_small_pool, s_small_heap, USB_SMALL_BLOCK_SIZE, USB_SMALL_BLOCK_COUNT);
-    if (st != RTOS_OK) {
-        return st;
-    }
-    st =
-        rtos_mempool_init(&s_large_pool, s_large_heap, USB_LARGE_BLOCK_SIZE, USB_LARGE_BLOCK_COUNT);
-    return st;
-}
-
-/* ============================== ISR 注册与分发 ============================== */
-
-rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handler, void *arg)
-{
-    if (handler == NULL) {
-        return RTOS_ERR_NULL;
-    }
-
-    RTOS_ASSERT_ISR_OK();
-    RTOS_PORT_ENTER_CRITICAL();
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_ISR_TABLE_SIZE; i++) {
-        if ((s_isr_table[i].used != 0U) && (s_isr_table[i].irqn == irqn)) {
-            s_isr_table[i].handler = handler;
-            s_isr_table[i].arg = arg;
-            RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_OK;
-        }
-    }
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_ISR_TABLE_SIZE; i++) {
-        if (s_isr_table[i].used == 0U) {
-            s_isr_table[i].irqn = irqn;
-            s_isr_table[i].handler = handler;
-            s_isr_table[i].arg = arg;
-            s_isr_table[i].used = 1U;
-            RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_OK;
-        }
-    }
-    RTOS_PORT_EXIT_CRITICAL();
-    return RTOS_ERR_NO_MEM;
-}
-
-void rtos_usb_irq_dispatch(uint32_t irqn)
-{
-    RTOS_ASSERT_ISR_OK();
-    for (uint32_t i = 0U; i < RTOS_CONFIG_USB_ISR_TABLE_SIZE; i++) {
-        if ((s_isr_table[i].used != 0U) && (s_isr_table[i].irqn == irqn)) {
-            s_isr_table[i].handler(s_isr_table[i].arg);
-            return;
-        }
-    }
-}
-
-/* ============================== 信号量 ============================== */
-
-rtos_usb_sem_t *rtos_usb_sem_create(uint32_t init_count, uint32_t max_count)
-{
-    rtos_usb_sem_t *slot = alloc_sem_slot();
-    if (slot == NULL) {
-        return NULL;
-    }
-    uint32_t max_cnt = max_count;
-    if (max_cnt < 1U) {
-        max_cnt = 1U;
-    }
-    if (max_cnt < init_count) {
-        max_cnt = init_count;
-    }
-    if (rtos_sem_init(&slot->sem, init_count, max_cnt) != RTOS_OK) {
-        slot->in_use = 0U;
-        return NULL;
-    }
-    return slot;
-}
-
-void rtos_usb_sem_delete(rtos_usb_sem_t *sem)
-{
-    if (sem == NULL) {
-        return;
-    }
-    rtos_sem_deinit(&sem->sem);
-    sem->in_use = 0U;
-}
-
-rtos_status_t rtos_usb_sem_take(rtos_usb_sem_t *sem, rtos_tick_t timeout)
-{
-    if (sem == NULL) {
-        return RTOS_ERR_NULL;
-    }
-    return rtos_sem_take(&sem->sem, timeout);
-}
-
-rtos_status_t rtos_usb_sem_give(rtos_usb_sem_t *sem)
-{
-    if (sem == NULL) {
-        return RTOS_ERR_NULL;
-    }
-    return rtos_sem_give(&sem->sem);
-}
-
-void rtos_usb_sem_reset(rtos_usb_sem_t *sem)
-{
-    if (sem == NULL) {
-        return;
-    }
-    RTOS_ASSERT_ISR_OK();
-    /* 将计数清零: 在临界区内操作, 唤醒所有等待者(它们会因 count=0 而继续阻塞)。
-     * 注意: 本 RTOS 的 rtos_sem 没有 reset API, 这里手动清零 count。
-     * 等待者不会丢失(它们仍在等待链表上), 只是不会因这次 reset 而被唤醒。 */
-    RTOS_PORT_ENTER_CRITICAL();
-    sem->sem.count = 0U;
-    RTOS_PORT_EXIT_CRITICAL();
-}
-
-/* ============================== 互斥锁 ============================== */
-
-rtos_usb_mutex_t *rtos_usb_mutex_create(void)
-{
-    rtos_usb_mutex_t *slot = alloc_mutex_slot();
-    if (slot == NULL) {
-        return NULL;
-    }
-    if (rtos_mutex_init(&slot->mutex) != RTOS_OK) {
-        slot->in_use = 0U;
-        return NULL;
-    }
-    return slot;
-}
-
-void rtos_usb_mutex_delete(rtos_usb_mutex_t *mutex)
-{
-    if (mutex == NULL) {
-        return;
-    }
-    rtos_mutex_deinit(&mutex->mutex);
-    mutex->in_use = 0U;
-}
-
-rtos_status_t rtos_usb_mutex_take(rtos_usb_mutex_t *mutex)
-{
-    if (mutex == NULL) {
-        return RTOS_ERR_NULL;
-    }
-    return rtos_mutex_take(&mutex->mutex, RTOS_WAIT_FOREVER);
-}
-
-rtos_status_t rtos_usb_mutex_give(rtos_usb_mutex_t *mutex)
-{
-    if (mutex == NULL) {
-        return RTOS_ERR_NULL;
-    }
-    return rtos_mutex_give(&mutex->mutex);
-}
-
-/* ============================== 消息队列 ============================== */
-
-rtos_usb_mq_t *rtos_usb_mq_create(uint32_t max_msgs)
-{
-    if ((max_msgs == 0U) || (max_msgs > RTOS_CONFIG_USB_MQ_DEPTH)) {
-        return NULL;
-    }
-    rtos_usb_mq_t *slot = alloc_mq_slot();
-    if (slot == NULL) {
-        return NULL;
-    }
-    if (rtos_queue_init(&slot->queue, slot->storage, sizeof(uintptr_t), max_msgs) != RTOS_OK) {
-        slot->in_use = 0U;
-        return NULL;
-    }
-    return slot;
-}
-
-void rtos_usb_mq_delete(rtos_usb_mq_t *mq)
-{
-    if (mq == NULL) {
-        return;
-    }
-    rtos_queue_deinit(&mq->queue);
-    mq->in_use = 0U;
-}
-
-rtos_status_t rtos_usb_mq_send(rtos_usb_mq_t *mq, uintptr_t addr, rtos_tick_t timeout)
-{
-    if (mq == NULL) {
-        return RTOS_ERR_NULL;
-    }
-    return rtos_queue_send(&mq->queue, &addr, timeout, RTOS_FALSE);
-}
-
-rtos_status_t rtos_usb_mq_recv(rtos_usb_mq_t *mq, uintptr_t *addr, rtos_tick_t timeout)
-{
-    if ((mq == NULL) || (addr == NULL)) {
-        return RTOS_ERR_NULL;
-    }
-    return rtos_queue_recv(&mq->queue, addr, timeout);
-}
-
-/* ============================== 线程 ============================== */
-
-rtos_usb_thread_t *rtos_usb_thread_create(const char *name, uint32_t stack_size, rtos_prio_t prio,
-                                          rtos_task_func_t entry, void *arg)
-{
-    if (entry == NULL) {
-        return NULL;
-    }
-    /* 优先级越界保护: CherryUSB 可能传入 >= MAX_PRIORITIES 的值 */
-    if (prio >= RTOS_CONFIG_MAX_PRIORITIES) {
-        prio = RTOS_CONFIG_MAX_PRIORITIES - 1U;
-    }
-    rtos_usb_thread_t *slot = alloc_thread_slot();
-    if (slot == NULL) {
-        return NULL;
-    }
-    uint32_t actual_stack = stack_size;
-    if ((actual_stack == 0U) || (actual_stack > RTOS_CONFIG_USB_THREAD_STACK_SIZE)) {
-        actual_stack = RTOS_CONFIG_USB_THREAD_STACK_SIZE;
-    }
-    if (actual_stack < RTOS_CONFIG_MINIMAL_STACK_SIZE) {
-        actual_stack = RTOS_CONFIG_MINIMAL_STACK_SIZE;
-    }
-    if (rtos_task_create_static(&slot->tcb, slot->stack, actual_stack, entry, arg, prio, name) !=
-        RTOS_OK) {
-        slot->in_use = 0U;
-        return NULL;
-    }
-    slot->in_use = 1U;
-    return slot;
-}
-
-void rtos_usb_thread_delete(rtos_usb_thread_t *thread)
-{
-    if (RTOS_PORT_IN_ISR()) return;
-    if (thread == NULL) {
-        rtos_task_delete(NULL);
-        return;
-    }
-    if (&thread->tcb == rtos_task_get_current()) {
-        /* The slot is reaped by alloc_thread_slot after switching away. */
-        (void)rtos_task_delete(&thread->tcb);
-        return;
-    }
-    RTOS_PORT_ENTER_CRITICAL();
-    if (thread->in_use != 1U) {
-        RTOS_PORT_EXIT_CRITICAL();
-        return;
-    }
-    thread->in_use = 2U; /* Prevent a higher task from reaping before return. */
-    RTOS_PORT_EXIT_CRITICAL();
-    rtos_status_t status = rtos_task_delete(&thread->tcb);
-    RTOS_PORT_ENTER_CRITICAL();
-    thread->in_use = status == RTOS_OK ? 0U : 1U;
-    RTOS_PORT_EXIT_CRITICAL();
-}
-
-void rtos_usb_thread_schedule_other(void)
-{
-    /* CherryUSB usb_osal_thread_schedule_other: 暂时降低当前线程优先级到最低,
-     * 让出 CPU, 然后恢复。用于让低优先级 USB 任务有机会执行。 */
-    rtos_tcb_t *cur = rtos_task_get_current();
-    if (cur == NULL) {
-        return;
-    }
-    rtos_prio_t old_prio = rtos_task_get_priority(cur);
-    rtos_task_set_priority(cur, RTOS_CONFIG_MAX_PRIORITIES - 1U);
-    rtos_task_yield();
-    rtos_task_set_priority(cur, old_prio);
-}
-
-/* ============================== 定时器 ============================== */
-
-rtos_usb_timer_t *rtos_usb_timer_create(const char *name, uint32_t ms, rtos_timer_cb_t cb,
-                                        void *arg, bool is_periodic)
-{
-    if (cb == NULL) {
-        return NULL;
-    }
-    rtos_timer_mode_t mode = is_periodic ? RTOS_TIMER_PERIODIC : RTOS_TIMER_ONE_SHOT;
-    uint32_t start_index = 0U;
-    while (start_index < RTOS_CONFIG_USB_OSAL_TIMER_COUNT) {
-        rtos_usb_timer_t *slot = alloc_timer_slot(start_index);
-        if (slot == NULL) {
-            return NULL;
-        }
-        rtos_status_t status =
-            rtos_timer_create(&slot->timer, name, cb, arg, usb_ms_to_ticks(ms), mode);
-        if (status == RTOS_OK) {
-            return slot;
-        }
-        slot->in_use = 0U;
-        if (status != RTOS_ERR_ALREADY) {
-            return NULL;
-        }
-        /* DELETE is asynchronous: this free slot can still belong to an
-         * active timer until TIMER processes its accepted delete command.
-         * Preserve the kernel guard and try another unused slot. */
-        start_index = (uint32_t)(slot - s_timer_pool) + 1U;
-    }
-    return NULL;
-}
-
-rtos_status_t rtos_usb_timer_delete_checked(rtos_usb_timer_t *timer)
-{
-    if (timer == NULL) {
-        return RTOS_ERR_NULL;
-    }
-    rtos_status_t status = rtos_timer_delete(&timer->timer);
-    if (status == RTOS_OK) timer->in_use = 0U;
-    return status;
-}
-
-void rtos_usb_timer_delete(rtos_usb_timer_t *timer)
-{
-    (void)rtos_usb_timer_delete_checked(timer);
-}
-
-void rtos_usb_timer_start(rtos_usb_timer_t *timer)
-{
-    if (timer == NULL) {
-        return;
-    }
-    rtos_timer_start(&timer->timer);
-}
-
-void rtos_usb_timer_stop(rtos_usb_timer_t *timer)
-{
-    if (timer == NULL) {
-        return;
-    }
-    rtos_timer_stop(&timer->timer);
-}
-
-/* ============================== USB 堆 ============================== */
-
-void *rtos_usb_malloc(size_t size)
-{
-    if (size == 0U) {
-        return NULL;
-    }
-    if (size <= USB_SMALL_BLOCK_SIZE) {
-        return rtos_mempool_alloc(&s_small_pool);
-    }
-    if (size <= USB_LARGE_BLOCK_SIZE) {
-        return rtos_mempool_alloc(&s_large_pool);
-    }
-    return NULL;
-}
-
-void rtos_usb_free(void *ptr)
-{
-    if (ptr == NULL) {
-        return;
-    }
-    uint8_t *p = (uint8_t *)ptr;
-    if ((p >= s_small_heap) && (p < s_small_heap + sizeof(s_small_heap))) {
-        rtos_mempool_free(&s_small_pool, ptr);
-    } else if ((p >= s_large_heap) && (p < s_large_heap + sizeof(s_large_heap))) {
-        rtos_mempool_free(&s_large_pool, ptr);
-    }
-}
-
-void rtos_usb_msleep(uint32_t ms)
-{
-    rtos_task_delay(usb_ms_to_ticks(ms));
 }
 
 /*============================================================================*/
@@ -1204,7 +676,7 @@ int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
     }
 
     rtos_tick_t started = rtos_sched_get_tick_count();
-    rtos_tick_t budget = usb_ms_to_ticks(timeout_ms);
+    rtos_tick_t budget = rtos_usb_timeout_ticks(timeout_ms);
     uint32_t total_sent = 0U;
     if (rtos_mutex_take(&dev->tx_mutex->mutex, usb_timeout_remaining(started, budget)) != RTOS_OK) {
         return 0;
@@ -1268,7 +740,7 @@ int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     }
     RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
-    rtos_tick_t timeout = usb_ms_to_ticks(timeout_ms);
+    rtos_tick_t timeout = rtos_usb_timeout_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();
 
     for (;;) {
@@ -1365,7 +837,7 @@ int rtos_usb_hid_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
     if (len > HID_MPS) {
         len = HID_MPS; /* 单报告最大 64B */
     }
-    rtos_tick_t timeout = usb_ms_to_ticks(timeout_ms);
+    rtos_tick_t timeout = rtos_usb_timeout_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();
     int sent = 0;
     if (rtos_mutex_take(&dev->hid_tx_mutex->mutex,
@@ -1419,7 +891,7 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     }
     RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
-    rtos_tick_t timeout = usb_ms_to_ticks(timeout_ms);
+    rtos_tick_t timeout = rtos_usb_timeout_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();
 
     for (;;) {
@@ -1471,106 +943,6 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
 }
 
 #endif /* RTOS_CONFIG_USB_USE_HID */
-
-/*============================================================================*/
-/*====================  MSC 大容量存储封装(RAM 盘)  ==========================*/
-/*============================================================================*/
-/* CherryUSB 的 usbd_msc.c 通过以下三个弱约定回调访问存储介质:
- *   usbd_msc_get_cap       → 上报容量(扇区数/扇区大小)
- *   usbd_msc_sector_read   → 读扇区(运行于 usbd_msc 线程)
- *   usbd_msc_sector_write  → 写扇区(运行于 usbd_msc 线程)
- * 此处用静态 RAM 数组模拟 U 盘。用户接入 SPI Flash/SD 卡时, 只需将这三个
- * 函数内部的 memcpy 替换为实际介质的读写驱动即可。 */
-
-#if RTOS_CONFIG_USB_USE_MSC
-
-#define MSC_BLOCK_SIZE (512U)
-#define MSC_BLOCK_NUM (RTOS_CONFIG_USB_MSC_RAM_DISK_SIZE / MSC_BLOCK_SIZE)
-
-/* 编译期检查: RAM 盘大小必须是 512 的整数倍且非空 */
-#if (MSC_BLOCK_NUM * MSC_BLOCK_SIZE) != RTOS_CONFIG_USB_MSC_RAM_DISK_SIZE
-#error "RTOS_CONFIG_USB_MSC_RAM_DISK_SIZE must be a multiple of 512"
-#endif
-
-static uint8_t s_msc_ram_disk[RTOS_CONFIG_USB_MSC_RAM_DISK_SIZE]
-    __attribute__((aligned(4)));
-
-/* 扇区读写统计(观测用, MSC 任务周期性打印) */
-static volatile uint32_t s_msc_read_sectors;
-static volatile uint32_t s_msc_write_sectors;
-
-void usbd_msc_get_cap(uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size)
-{
-    (void)busid;
-    (void)lun;
-    *block_num = MSC_BLOCK_NUM;
-    *block_size = MSC_BLOCK_SIZE;
-}
-
-int usbd_msc_sector_read(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer,
-                         uint32_t length)
-{
-    (void)busid;
-    (void)lun;
-    if ((sector >= MSC_BLOCK_NUM) || (buffer == NULL) ||
-        ((length % MSC_BLOCK_SIZE) != 0U) ||
-        ((sector + length / MSC_BLOCK_SIZE) > MSC_BLOCK_NUM)) {
-        return -1;
-    }
-    memcpy(buffer, &s_msc_ram_disk[sector * MSC_BLOCK_SIZE], length);
-    s_msc_read_sectors += length / MSC_BLOCK_SIZE;
-    return 0;
-}
-
-int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer,
-                          uint32_t length)
-{
-#if RTOS_CONFIG_USB_MSC_READONLY
-    (void)busid;
-    (void)lun;
-    (void)sector;
-    (void)buffer;
-    (void)length;
-    return -1;
-#else
-    (void)busid;
-    (void)lun;
-    if ((sector >= MSC_BLOCK_NUM) || (buffer == NULL) ||
-        ((length % MSC_BLOCK_SIZE) != 0U) ||
-        ((sector + length / MSC_BLOCK_SIZE) > MSC_BLOCK_NUM)) {
-        return -1;
-    }
-    memcpy(&s_msc_ram_disk[sector * MSC_BLOCK_SIZE], buffer, length);
-    s_msc_write_sectors += length / MSC_BLOCK_SIZE;
-    return 0;
-#endif
-}
-
-void rtos_usb_msc_get_stats(uint8_t busid, uint32_t *reads, uint32_t *writes)
-{
-    (void)busid;
-    if (reads != NULL) {
-        *reads = s_msc_read_sectors;
-    }
-    if (writes != NULL) {
-        *writes = s_msc_write_sectors;
-    }
-}
-
-#else /* !RTOS_CONFIG_USB_USE_MSC */
-
-void rtos_usb_msc_get_stats(uint8_t busid, uint32_t *reads, uint32_t *writes)
-{
-    (void)busid;
-    if (reads != NULL) {
-        *reads = 0U;
-    }
-    if (writes != NULL) {
-        *writes = 0U;
-    }
-}
-
-#endif /* RTOS_CONFIG_USB_USE_MSC */
 
 #if defined(RTOS_HIL_AUDIT_PENDSV)
 /* Audit-only transport seam: tests run real CDC/HID APIs and callbacks, while

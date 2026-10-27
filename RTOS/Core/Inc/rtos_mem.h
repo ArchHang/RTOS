@@ -1,12 +1,10 @@
 /**
  * @file    rtos_mem.h
- * @brief   内存管理接口
+ * @brief   固定块内存池接口(保留 rtos_mem.h 名称以兼容现有应用)。
  *
- * @details 提供两种内存管理方案:
- *            1. 固定块内存池(Fixed Block Pool): O(1) 分配，无碎片，
- *               适合实时系统。每个池内块大小固定。
- *            2. (可选)动态堆: 仅在 RTOS_CONFIG_USE_STATIC_ALLOCATION=0 时启用。
- *          本实现默认采用静态分配策略，对象池(TCB/信号量等)在编译期固定。
+ * @details 固定块内存池(Fixed Block Pool)提供 O(1) 分配，无碎片。
+ *          每个池内块大小固定，独立实现位于 Memory/rtos_mempool.c。
+ *          变长动态堆使用独立的 rtos_heap.h 接口，不受静态分配开关禁用。
  *          固定块池用于应用层需要动态分配等长结构的场景(如网络数据包)。
  */
 #ifndef RTOS_MEM_H_

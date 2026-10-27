@@ -132,7 +132,7 @@ extern "C" {
 /* F446 OTG_FS 共 6 个端点(EP0~EP5)、FIFO 总深 320 字(1280B)。
  * CherryUSB 默认 ST 参数只给 EP0~EP3 分配 IN 端点 TX FIFO, 而复合设备
  * (CDC bulk IN + CDC 通知 IN + MSC bulk IN + HID 中断 IN)需要 4 个非控制
- * IN 端点, 因此启用自定义 FIFO 划分(实现在 rtos_usb.c 的
+ * IN 端点, 因此启用自定义 FIFO 划分(实现在 rtos_usb_device.c 的
  * dwc2_get_user_fifo_config), 并利用"同一端点号 IN/OUT 为两个独立端点":
  *   EP0 控制 | EP1 IN=CDC bulk(0x81) EP1 OUT=HID(0x01)
  *   EP2 OUT=CDC bulk(0x02) | EP3 IN=CDC 通知(0x83)

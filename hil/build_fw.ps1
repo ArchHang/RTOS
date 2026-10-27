@@ -3,7 +3,7 @@
 #
 # The variant is chosen purely by preprocessing macros (-DFIRMWARE_*), so no
 # source file has to be edited between runs. hil\restore_project.ps1 puts the
-# generated build files back to their pristine CubeIDE state.
+# generated build files back to the canonical daily build templates.
 #
 # Usage:
 #   powershell -ExecutionPolicy Bypass -File hil\build_fw.ps1 -Variant daily
@@ -24,10 +24,11 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
-$ROOT  = 'E:\STM32_Project\CubeIDE\f446_rtos'
+$ROOT  = Split-Path $PSScriptRoot -Parent
 $HIL   = Join-Path $ROOT 'hil'
 $DBG   = Join-Path $ROOT 'Debug'
 $LOCAL = Join-Path $HIL 'fwsrc'
+. (Join-Path $HIL 'build_layout.ps1')
 $TOOLS = 'E:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\tools\bin'
 $MAKE  = 'E:\ST\STM32CubeIDE_1.13.2\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.make.win32_2.1.100.202310302056\tools\bin\make.exe'
 $env:PATH = "$TOOLS;$env:PATH"
@@ -185,6 +186,9 @@ if ($Variant -eq 'basepri_guard' -and $DisableAssertions) {
     throw 'basepri_guard requires assertions; use basepri for assertion-disabled mask tests'
 }
 
+# Recreate every generated directory from committed templates when Debug is absent.
+Initialize-HilBuildTree -ProjectRoot $ROOT -DebugRoot $DBG
+
 # These overrides are opt-in and are propagated to all kernel translation units.
 $configFlags = @()
 if ($CriticalMask -eq 'primask') { $configFlags += '-DRTOS_CONFIG_USE_BASEPRI=0' }
@@ -197,22 +201,18 @@ $configArgs = $configFlags -join ' '
 
 # The audit injects a real syscall-priority IRQ at the PendSV decision window.
 # Keep this hook out of every production build and recompile on macro changes.
-foreach ($rel in @('RTOS/Core/Src','RTOS/Port/GCC/ARM_CM7','RTOS/lib/third/CherryUSB/class/msc','RTOS/lib/third/CherryUSB/core','RTOS/lib/third/CherryUSB/port/dwc2')) {
-    $kernelMk = Join-Path $DBG "$rel/subdir.mk"
-    $kernelTpl = Join-Path $HIL ('templates/' + ($rel -replace '/', '_') + '.mk')
-    if (-not (Test-Path -LiteralPath $kernelTpl)) { Copy-Item -LiteralPath $kernelMk -Destination $kernelTpl }
+foreach ($rule in @(Get-HilBuildRules | Where-Object { $_.Relative.StartsWith('RTOS/') })) {
+    $kernelTpl = Join-Path $HIL ('templates/' + $rule.Template)
     $kernelRaw = [System.IO.File]::ReadAllText($kernelTpl)
-    if ($Variant -eq 'audit') { $kernelRaw = $kernelRaw.Replace('-DDEBUG', '-DDEBUG -DRTOS_HIL_AUDIT_PENDSV=1') }
+    if ($Variant -eq 'audit') {
+        $kernelRaw = $kernelRaw.Replace('-DDEBUG', '-DDEBUG -DRTOS_HIL_AUDIT_PENDSV=1')
+    }
     if ($configArgs -ne '') { $kernelRaw = $kernelRaw.Replace('-DDEBUG', "-DDEBUG $configArgs") }
     $kernelRaw = $kernelRaw -replace '-O[0-3sg]\b', "-$Optimization"
-    if ([System.IO.File]::ReadAllText($kernelMk) -ne $kernelRaw) {
-        [System.IO.File]::WriteAllText($kernelMk, $kernelRaw)
-        Get-ChildItem -LiteralPath (Join-Path $DBG $rel) -File | Where-Object { $_.Extension -in '.o','.d' } | Remove-Item -Force
-    }
+    Set-HilBuildRule -ProjectRoot $ROOT -DebugRoot $DBG -Relative $rule.Relative -Content $kernelRaw
 }
 $auditLinkMk = Join-Path $DBG 'makefile'
 $auditLinkTpl = Join-Path $HIL 'templates/makefile.template'
-if (-not (Test-Path -LiteralPath $auditLinkTpl)) { Copy-Item -LiteralPath $auditLinkMk -Destination $auditLinkTpl }
 $auditLinkRaw = [System.IO.File]::ReadAllText($auditLinkTpl)
 if ($Variant -eq 'audit') {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=usbd_ep_start_write -Wl,--wrap=usbd_ep_start_read')
@@ -238,14 +238,10 @@ foreach ($b in $cfg.extra) {
 }
 
 # ------------------------------------------------------------ regenerate mk ---
-# Everything is regenerated from the archived pristine CubeIDE file, so repeated
+# Everything is regenerated from the canonical application rule, so repeated
 # builds never accumulate edits.
 $origMk = Join-Path $HIL 'templates\subdir.mk.template'
-if (-not (Test-Path $origMk)) {
-    $raw = [System.IO.File]::ReadAllText((Join-Path $DBG 'Core\Src\subdir.mk'))
-    $raw = ($raw -split "`r?`n" | Where-Object { $_ -notmatch 'hil/fwsrc' -and $_ -notmatch 'HIL_VARIANT' }) -join "`r`n"
-    [System.IO.File]::WriteAllText($origMk, $raw)
-}
+if (-not (Test-Path -LiteralPath $origMk)) { throw "Missing template: $origMk" }
 $lines = [System.IO.File]::ReadAllLines($origMk)
 
 $exSrc = @(); $exObj = @(); $exDep = @()
@@ -255,7 +251,7 @@ foreach ($e in $cfg.exclude) {
 
 $flagArgs = ($cfg.flags | ForEach-Object { "-D$_" }) -join ' '
 if ($configArgs -ne '') { $flagArgs += " $configArgs" }
-$incExtra = '-I"E:/STM32_Project/CubeIDE/f446_rtos/hil/fwsrc" -I"E:/STM32_Project/CubeIDE/f446_rtos/hil/fw/Inc"'
+$incExtra = '-I"../hil/fwsrc" -I"../hil/fw/Inc"'
 
 $out = New-Object System.Collections.Generic.List[string]
 $mode = ''
@@ -269,8 +265,7 @@ foreach ($l in $lines) {
         $nl = $l
         $nl = $nl -replace '-O[0-3sg]\b', "-$Optimization"
         if ($flagArgs -ne '') { $nl = $nl -replace '-DDEBUG', ("-DDEBUG " + $flagArgs) }
-        $nl = $nl -replace [regex]::Escape('-I"E:/STM32_Project/CubeIDE/f446_rtos/RTOS/Core/Inc"'),
-                               ('-I"E:/STM32_Project/CubeIDE/f446_rtos/RTOS/Core/Inc" ' + $incExtra)
+        $nl += " $incExtra"
         $out.Add($nl)
         continue
     }
@@ -300,22 +295,12 @@ if ($cfg.extra.Count -gt 0) {
 }
 [System.IO.File]::WriteAllLines((Join-Path $DBG 'Core\Src\subdir.mk'), $out)
 
-# objects.list is REGENERATED from scratch (never filtered incrementally):
+# objects.list is regenerated from the complete canonical template:
 # an incremental filter loses entries permanently the first time a variant
 # excludes a file, which silently breaks later variants (observed: benchmark.o
 # vanished after the scenario build and the bench variant then failed to link).
 $baseOl = Join-Path $HIL 'templates/objects.list.template'
-if (-not (Test-Path -LiteralPath $baseOl) -and (Test-Path -LiteralPath (Join-Path $LOCAL 'objects_list.template'))) {
-    Copy-Item -LiteralPath (Join-Path $LOCAL 'objects_list.template') -Destination $baseOl
-}
-if (-not (Test-Path $baseOl)) {
-    $ol0 = New-Object System.Collections.Generic.List[string]
-    foreach ($l in (Get-Content (Join-Path $DBG 'objects.list'))) {
-        if ($l -match 'hil/fwsrc') { continue }
-        $ol0.Add($l.Trim())
-    }
-    Set-Content $baseOl -Value $ol0
-}
+if (-not (Test-Path -LiteralPath $baseOl)) { throw "Missing template: $baseOl" }
 $ol = New-Object System.Collections.Generic.List[string]
 foreach ($l in (Get-Content $baseOl)) {
     $skip = $false

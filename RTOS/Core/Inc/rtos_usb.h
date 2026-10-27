@@ -17,13 +17,11 @@
  *            +-------------------------------------------+
  *            |        用户应用 (rtos_usb_cdc_*)          |
  *            +-------------------------------------------+
- *            |  CDC ACM 封装 (rtos_usb.c 内置)           |
+ *            |  CDC/HID 设备封装 (rtos_usb_device.c)     |
  *            +-------------------------------------------+
  *            |  CherryUSB core/class (lib/third/...)     |
  *            +-------------------------------------------+
- *            |  rtos_usb_osal.c (usb_osal_* 兼容实现)    |  <-- OSAL 适配层
- *            +-------------------------------------------+
- *            |  rtos_usb.c (对象池/堆/ISR/CDC 封装)      |  <-- RTOS USB 引擎
+ *            |  rtos_usb_osal.c (对象池/堆/ISR/适配)     |  <-- OSAL 适配层
  *            +-------------------------------------------+
  *            |  rtos_sem/mutex/queue/timer/task (内核)   |
  *            +-------------------------------------------+
@@ -39,7 +37,7 @@
  *
  *          对象管理模式:
  *            CherryUSB 的 osal 采用"create 返回句柄"模式, 而本 RTOS 的 IPC
- *            对象是静态的(用户传入对象指针)。为弥合差异, rtos_usb.c 内部维护
+ *            对象是静态的(用户传入对象指针)。为弥合差异, rtos_usb_osal.c 内部维护
  *            静态对象池(sem/mutex/mq/thread/timer 各一个数组), create 时从池中
  *            取一个空闲对象并初始化, delete 时归还。池容量由 rtos_config.h 配置。
  *            线程对象内嵌固定大小栈数组(RTOS_CONFIG_USB_THREAD_STACK_SIZE 字),
@@ -48,7 +46,7 @@
  *          内存分配:
  *            rtos_usb_malloc/free 提供 USB 协议栈所需的动态内存(URB/描述符/
  *            class 结构), 内部用双档固定块池(<=64B 小块, <=512B 大块)实现,
- *            O(1) 分配释放, 无碎片, 全程临界区保护。
+ *            O(1) 分配, 释放时检查空闲链以拒绝双重释放, 全程临界区保护。
  *
  *          CDC ACM 用户封装:
  *            rtos_usb_cdc_init() 一行调用完成: 描述符注册 → 接口初始化 →
@@ -405,7 +403,7 @@ void rtos_usb_cdc_flush_rx(uint8_t busid);
  *   rtos_usb_init();
  *   rtos_usb_cdc_init(0, (uintptr_t)USB_OTG_FS);  // 同时枚举 CDC + MSC
  *
- * 接入真实介质(SPI Flash/SD 卡): 修改 rtos_usb.c 末尾的
+ * 接入真实介质(SPI Flash/SD 卡): 修改 USB/rtos_usb_msc.c 中的
  * usbd_msc_get_cap / usbd_msc_sector_read / usbd_msc_sector_write 三个回调。
  */
 
@@ -422,7 +420,7 @@ void rtos_usb_msc_get_stats(uint8_t busid, uint32_t *reads, uint32_t *writes);
 /* 当 rtos_config.h 中 RTOS_CONFIG_USB_USE_HID=1 时, rtos_usb_cdc_init() 会在
  * 同一 USB 设备上再注册一个 HID 接口(自定义厂商定义报告, 64B IN/OUT)。
  *
- * 报告格式(见 rtos_usb.c 的 s_hid_report_descriptor):
+ * 报告格式(见 USB/rtos_usb_device.c 的 s_hid_report_descriptor):
  *   Input 报告(设备→主机)  64 字节
  *   Output 报告(主机→设备) 64 字节
  * 主机侧可用 hidapi / libusb 或 CherryUSB 的 test_hid_inout.py 收发测试。
