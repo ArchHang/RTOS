@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "adversarial_mutex_boundary_on_c64_basepri_a1_O2",
+    "started":  "2026-10-27T16:41:42.4571000+08:00",
+    "finished":  "2026-10-27T16:41:45.8523915+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "2E792BB4307754C1731E7E494876677D0DE4CAB4C4E54D9B14BD0FBD770C227E",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AMB\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "adversarial_mutex_basepri_a1_O2",
+    "started":  "2026-10-27T15:01:15.1348185+08:00",
+    "finished":  "2026-10-27T15:01:22.5552683+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "7B007B1C66D300ADDA1EDCA3F1106F4D0EF4D18906D362E8B9189B0D6DCC8267",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AM\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

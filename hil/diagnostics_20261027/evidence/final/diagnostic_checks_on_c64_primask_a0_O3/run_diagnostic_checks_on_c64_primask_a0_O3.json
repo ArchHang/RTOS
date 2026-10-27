@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "diagnostic_checks_on_c64_primask_a0_O3",
+    "started":  "2026-10-27T16:49:03.8431281+08:00",
+    "finished":  "2026-10-27T16:49:08.6801264+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "41C36E2369B7F8505F84FB2DF505F5AECC88B56DA3B268B86EA74B0EE04E2125",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "DG\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

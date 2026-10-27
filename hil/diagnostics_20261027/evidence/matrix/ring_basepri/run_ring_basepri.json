@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "ring_basepri",
+    "started":  "2026-10-27T16:38:34.6482086+08:00",
+    "finished":  "2026-10-27T16:38:36.8773125+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "9FA9C7B882ECA17C159EB05E61C8971109AA78C0A2D1A82A3215DFC7B2B67B07",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "DG\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

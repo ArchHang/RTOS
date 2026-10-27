@@ -1,0 +1,8 @@
+E:\STM32_Project\CubeIDE\f446_rtos\RTOS\Services\rtos_diag.c:19:2: error: #error "Diagnostic capacity must be a power of two in [8, 1024]"
+   19 | #error "Diagnostic capacity must be a power of two in [8, 1024]"
+      |  ^~~~~
+E:\STM32_Project\CubeIDE\f446_rtos\RTOS\Services\rtos_diag.c: In function 'rtos_diag_get_info':
+E:\STM32_Project\CubeIDE\f446_rtos\RTOS\Services\rtos_diag.c:259:37: error: comparison of unsigned expression in '< 0' is always false [-Werror=type-limits]
+  259 |     for (uint32_t index = 0U; index < RTOS_CONFIG_DIAGNOSTIC_CAPACITY; index++) {
+      |                                     ^
+cc1.exe: all warnings being treated as errors

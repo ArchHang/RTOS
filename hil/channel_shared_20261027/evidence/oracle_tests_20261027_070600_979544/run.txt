@@ -1,0 +1,28 @@
+ORACLE|PASS|name=real_capture_control scope=complete_capture_copy detail=unaltered real evidence accepted
+ORACLE|PASS|name=extra_failed_verdict scope=complete_capture_copy detail=no extra failed verdicts
+ORACLE|PASS|name=malformed_check_verdict scope=complete_capture_copy detail=no malformed check verdicts
+ORACLE|PASS|name=actual_fault_report scope=complete_capture_copy detail=no fatal fault
+ORACLE|PASS|name=wrong_compiled_optimization scope=complete_capture_copy detail=uniform labeled optimization
+ORACLE|PASS|name=wrong_firmware_bytes scope=complete_capture_copy detail=flashed ELF identity
+ORACLE|PASS|name=wrong_built_elf_binding scope=complete_capture_copy detail=flashed ELF identity
+ORACLE|PASS|name=missing_flash_verification scope=complete_capture_copy detail=expected physical ST-LINK and successful verification
+ORACLE|PASS|name=bench_real_uart_control scope=real_uart_only detail=unaltered real evidence accepted
+ORACLE|PASS|name=bench_missing_cell scope=real_uart_copy detail=270 distinct measurements, no missing/duplicate cell
+ORACLE|PASS|name=bench_duplicate_cell_same_row_count scope=real_uart_copy detail=270 distinct measurements, no missing/duplicate cell
+ORACLE|PASS|name=bench_incorrect_message_work scope=real_uart_copy detail=matched work, valid cycles, data and no DWT overflow
+ORACLE|PASS|name=profile_real_uart_control scope=real_uart_only detail=unaltered real evidence accepted
+ORACLE|PASS|name=profile_missing_cell scope=real_uart_copy detail=280 distinct IRQ measurements, complete size/API/waiter matrix
+ORACLE|PASS|name=profile_duplicate_cell_same_row_count scope=real_uart_copy detail=280 distinct IRQ measurements, complete size/API/waiter matrix
+ORACLE|PASS|name=profile_incorrect_hook_hits scope=real_uart_copy detail=exactly one actual legal IRQ and successful operation per sample
+ORACLE|PASS|name=profile_incorrect_irq_count scope=real_uart_copy detail=exactly one actual legal IRQ and successful operation per sample
+ORACLE|PASS|name=stress_real_uart_control scope=real_uart_only detail=unaltered real evidence accepted
+ORACLE|PASS|name=stress_zero_consumer_unchanged_total scope=real_uart_copy detail=each consumer participates and counts sum
+ORACLE|PASS|name=stress_missing_task_diagnostic scope=real_uart_copy detail=all eight tasks and the IRQ have diagnostics
+ORACLE|PASS|name=stress_unclassified_task_error scope=real_uart_copy detail=no unclassified API/timeout errors; all consumers close
+ORACLE|PASS|name=stress_incorrect_business_pacing scope=real_uart_copy detail=explicit business pacing and diagnostics
+ORACLE|PASS|name=stress_negative_real_uart_control scope=real_uart_only detail=unaltered real evidence accepted
+ORACLE|PASS|name=stress_negative_additional_failure scope=real_uart_copy detail=no extra failed verdicts
+ORACLE|PASS|name=stress_negative_additional_malformed_failure scope=real_uart_copy detail=no malformed check verdicts
+ORACLE|PASS|name=stress_negative_different_failure_name scope=real_uart_copy detail=only specified injected failures
+ORACLE|PASS|name=stress_negative_second_corruption scope=real_uart_copy detail=exact message ledger
+ORACLE|SUMMARY|status=PASS pass=27 missing=0

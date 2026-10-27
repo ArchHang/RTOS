@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "adversarial_lifetime_on_c64_basepri_a1_O2",
+    "started":  "2026-10-27T16:41:35.1370889+08:00",
+    "finished":  "2026-10-27T16:41:38.6258663+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "97E69AD555EC4DF873B678EDD0A1906C2356CA70294F5CDBC556B90525756757",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "OF\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

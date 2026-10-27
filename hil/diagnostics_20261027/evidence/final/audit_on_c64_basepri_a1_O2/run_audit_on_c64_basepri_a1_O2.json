@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "audit_on_c64_basepri_a1_O2",
+    "started":  "2026-10-27T16:50:15.6331555+08:00",
+    "finished":  "2026-10-27T16:50:20.4321993+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "3477A0896C30DC2D6ACD687617F39DABFD684CADCC8AE8B6C4370F6820277B5B",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AT\\|DONE",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

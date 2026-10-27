@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "production_stress_on_c64_basepri_a1_O2",
+    "started":  "2026-10-27T16:41:57.0424888+08:00",
+    "finished":  "2026-10-27T16:42:30.6555232+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "ED79C1D8AE1773DB605E8EBDA61D719CBA407CD4C97945A776BE483A303AE989",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "STRESS\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

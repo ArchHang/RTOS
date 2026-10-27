@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "basepri_on_c64_primask_a1_O2",
+    "started":  "2026-10-27T16:52:37.5069718+08:00",
+    "finished":  "2026-10-27T16:52:49.6096702+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "78ADEC74D6E7F1B57D369E047ABAF71E9B26C6955B6912ED67079169DBB2FC8F",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "BP\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

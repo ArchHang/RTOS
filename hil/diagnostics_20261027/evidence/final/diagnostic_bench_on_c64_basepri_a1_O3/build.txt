@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'diagnostic_bench' OK -- same business workload with diagnostics enabled or erased; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  41508	    124	  45632	  87264	  154e0	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

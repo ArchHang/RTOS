@@ -1,0 +1,19 @@
+[
+  "C:\\Users\\23350\\.conda\\envs\\mingw\\Scripts\\gcc.exe",
+  "-std=c11",
+  "-Wall",
+  "-Wextra",
+  "-Werror",
+  "-O0",
+  "-DRTOS_CONFIG_USE_CHANNEL=0",
+  "-DRTOS_CONFIG_ASSERT_ENABLED=0",
+  "-include",
+  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_20261027\\host\\host_port.h",
+  "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_20261027\\host",
+  "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+  "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\IPC\\rtos_channel.c",
+  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_20261027\\host\\channel_disabled.c",
+  "-o",
+  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_20261027\\host\\.build\\20261027_134622_465060\\channel_O0_disabled.exe"
+]

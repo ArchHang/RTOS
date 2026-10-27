@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "first_fault",
+    "started":  "2026-10-27T16:30:46.0922790+08:00",
+    "finished":  "2026-10-27T16:30:48.1176820+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "5C8A6230E86B612E3F86FE355CE62A18551C506A507E6BC75A53682FF91E645C",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "Locate source:",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

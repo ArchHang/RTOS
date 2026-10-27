@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "diagnostic_checks_on_c64_basepri_a1_O0",
+    "started":  "2026-10-27T16:48:14.0105291+08:00",
+    "finished":  "2026-10-27T16:48:19.7351890+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "C320F23E54ADD3C5E910CB69EA22854017DA65D7A0DFB43C0B52F6B1C4C50FDE",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "DG\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

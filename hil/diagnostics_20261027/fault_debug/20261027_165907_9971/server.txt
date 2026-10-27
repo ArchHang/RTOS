@@ -1,0 +1,44 @@
+
+
+STMicroelectronics ST-LINK GDB server. Version 7.5.0
+Copyright (c) 2023, STMicroelectronics. All rights reserved.
+
+Starting server with the following options:
+        Persistent Mode            : Disabled
+        Logging Level              : 31
+        Listen Port Number         : 42123
+        Status Refresh Delay       : 15s
+        Verbose Mode               : Enabled
+        SWD Debug                  : Enabled
+
+COM frequency = 4000 kHz
+Target connection mode: Attach
+Reading ROM table for AP 0 @0xe00fffd0
+Hardware watchpoint supported by the target 
+ST-LINK Firmware version : V2J43M28
+Device ID: 0x421
+PC: 0x1
+ST-LINK device status: RUN_MODE
+ST-LINK detects target voltage = 3.26 V
+ST-LINK device status: RUN_MODE
+ST-LINK device initialization OK
+Stm32Device, pollAndNotify running...
+SwvSrv state change: 0 -> 1
+Waiting for connection on port 42124...
+Waiting for debugger connection...
+Waiting for connection on port 42123...
+Accepted connection on port 42123...
+Debugger connected
+Waiting for debugger connection...
+Waiting for connection on port 42123...
+GDB session thread running
+GdbSessionManager, session started: 1
+Try halt...
+ST-LINK device status: HALT_MODE
+GDB session, device event: 4
+GDB session, device event: 3
+GDB session, device event: 1
+GDB session terminated: Client connection lost
+GdbSessionManager, session terminated: 1
+GdbSrv, last session terminated, signal dispose
+Stopping port 42123

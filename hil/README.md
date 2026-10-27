@@ -10,6 +10,15 @@
 > 后续补充：[BASEPRI 修复与回归报告](../docs/rtos_basepri_fix_20261025.md)（精确抢占、阻塞返回、三层 IRQ）。
 > 复杂并发：[对抗场景与健壮性报告](../docs/rtos_adversarial_20261026.md)（传递继承、对象销毁窗口、循环依赖、递归溢出及配置矩阵）。
 > 当前源码布局：[源码导览](../RTOS/README.md)。重组后的独立复测入口位于 `refactor_20261027/`；历史批次保留当时的源码路径。
+> 当前共享内存算法：[channel_shared_20261027/](channel_shared_20261027/README.md) 保存有序区间索引
+> 的宿主专项、无 DMA 实板对照与集成回归；下述原 channel 批次为前一版历史结果。
+> 借用通道扩展：[channel_20261027/](channel_20261027/README.md) 包含本次宿主模型、
+> 新功能配置矩阵、真实 DMA/IRQ、故障注入与三种数据传递接口的性能对照；
+> 可裁剪诊断服务：[diagnostics_20261027/](diagnostics_20261027/README.md) 保存记录提交、
+> 等待解释、ON/OFF 成本和真实故障验证。当前自研单元为 18 个，工程单元为 59 个；
+> 旧批次保留其当时的固定数量断言，不能直接用来验收新增服务。
+> 发布检查：[publish_20261027/](publish_20261027/README.md) 只核对实际 Git 文本与源码换行等价，
+> 不把未发布的 ELF 算作已完成二进制或硬件身份复核。
 
 ---
 
@@ -45,7 +54,9 @@ powershell -ExecutionPolicy Bypass -File hil\restore_project.ps1 -Rebuild
 路径配置发生变化时须保存新的源码身份与证据，不能将新构建认作原始实测镜像。
 
 Git 仓库保留测试源码、脚本、原始文本日志、源码 manifest 和解析结果。
-工程 `Debug/`、本地 ELF、编译器 `.su` 栈记录、`baseline_RTOS/` 等回退快照及 `backup_precleanup/` 不随 Git 发布。
+工程 `Debug/`、本地 ELF、逐对象的编译器 `.su`、`baseline_RTOS/` 等回退快照及 `backup_precleanup/` 不随 Git 发布。
+带日期批次 `strict/evidence/*/stack_usage.su` 是已汇总的纯文本栈审计，按该批规则单独保留，
+不能与待清理的逐对象 `.su` 混作一类。
 `refactor_20261027/evidence/ide/generated/debug/` 与 `release/` 仅精准放行 IDE 生成的文本规则和对象清单，ELF/map 仍忽略。
 因此，clone 后可以审阅提交的文本证据，但不能原样执行完整原始身份复核：
 历史 `validate_evidence.ps1` 和新批次 `verify_evidence.py` 还依赖保存的 ELF、本机源码身份、栈记录及日常构建目录；
@@ -76,7 +87,7 @@ IDE XML/生成规则快照，以及按固定摘要加载的离线验收器也保
 | `repeat_run.ps1` | 同一固件连续烧录 N 次，用于**确定性验证**（判断指标是否可复现） |
 | `restore_project.ps1` | 恢复全部日常 make 规则、源码目录清单和链接对象；清除 HIL 副本及变体产物，可选重建 |
 | `refactor_20261027/verify_layout.py` | 与重组前提交比较函数 token、全局声明、公开头、主函数和第三方源码，以及新链接清单；只读，无硬件 |
-| `refactor_20261027/compile_checks.ps1` | 当前全部 16 个自研 C 单元 × 12 配置严格编译，加 M7 端口编译检查 |
+| `refactor_20261027/compile_checks.ps1` | 重组批次的 16 个自研 C 单元 × 12 配置历史检查；新通道使用 channel 批次入口 |
 | `refactor_20261027/run_matrix.ps1`、`run_port_matrix.ps1` | 当前布局的复杂 IPC 及端口/中断回归；构建、模板和固件输入统一快照 |
 | `refactor_20261027/run_regressions.ps1` | 功能、生产压力及负向校验；`-SoakSeconds` 默认为 120，可配置至 900 |
 | `refactor_20261027/verify_results.py` | 独立核对本轮原始日志、烧录、ELF、源码身份及日常恢复状态；离线分析器不参与固件构建，其身份另记于验收输出 |

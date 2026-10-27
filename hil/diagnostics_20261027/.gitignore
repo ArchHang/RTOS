@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pid
+host/.build/
+.build/
+strict/.build/
+baseline/*
+!baseline/sources.json

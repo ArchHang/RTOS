@@ -1,0 +1,49 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+DG|META|mode=fault diagnostics=1 capacity=64
+DG|FAULT_ARMED|task=3 code=udf
+
+
+==================== FAULT REPORT ====================
+
+DIAG history frozen in SRAM; inspect diag_slots with the debugger.
+--- Exception context ---
+EXC_RETURN = 0xFFFFFFFD
+Mode       : Thread (task code)
+Stack frame: PSP, basic frame (8 words)
+Frame SP   = 0x20002650 (valid)
+
+--- Saved registers (exception frame) ---
+PC   = 0x08006E20    faulting instruction (reliable on precise faults)
+LR   = 0x08006F97    return address (valid only if fault is inside a callee)
+R0   = 0x00000000    R1  = 0x2000A6AC
+R2   = 0x00000000    R3  = 0x20000078
+R12  = 0x0000000A
+xPSR = 0x01000000    IPSR = 0 (Thread)
+
+--- RTOS task ---
+Task       : "audit" (priority 9, id 3)
+Task stack : base 0x20001678, size 0x00001000 bytes
+Stack usage: 0x00000028 bytes in use at fault (current frame, not peak)
+
+--- Fault status registers ---
+CFSR = 0x00010000
+  UsageFaults:
+    UNDEFINSTR  undefined instruction executed
+MMFAR = not valid
+BFAR  = not valid
+SHCSR = 0x00070008
+
+--- Action ---
+System halted. Fault context also mirrored in g_fault (debugger access).
+Locate source: arm-none-eabi-addr2line -e f446_rtos.elf -f -C <PC>
+======================================================

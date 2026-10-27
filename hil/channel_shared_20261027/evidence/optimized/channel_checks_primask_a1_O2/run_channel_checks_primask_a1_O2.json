@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "channel_checks_primask_a1_O2",
+    "started":  "2026-10-27T14:55:41.2511776+08:00",
+    "finished":  "2026-10-27T14:55:45.6329989+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "16A09F089D90823883F6A920E019E44171CDF1ED2CB70B4C37B1EEA94F15C33C",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "CH\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

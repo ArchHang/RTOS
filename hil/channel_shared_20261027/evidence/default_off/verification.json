@@ -1,0 +1,16 @@
+{
+  "captures": 2,
+  "passed": true,
+  "results": [
+    {
+      "tag": "bench_basepri_a1_O2",
+      "mode": "bench",
+      "raw_acceptance": true
+    },
+    {
+      "tag": "daily_basepri_a1_O2",
+      "mode": "daily",
+      "raw_acceptance": true
+    }
+  ]
+}

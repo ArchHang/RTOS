@@ -1,0 +1,355 @@
+{
+  "status": "PASS",
+  "hardware_captures": 46,
+  "fresh_builds": 44,
+  "replayed_verified_images": 2,
+  "dma_workflows": 0,
+  "current_channel_sha256": "df286255ef17e270621330ebe10c49833eec60a39963839065d5d91445c58a51",
+  "current_main_sha256": "32c1e6f3d50c754a8e09db169982551ae1cb4828760662ab106bdee482012874",
+  "oracle_sha256": "dfe9f4faf14431858c5bb9e8dc9e64fce873386fa8d85bc899394ba595a335e8",
+  "groups": {
+    "baseline_replay": [
+      {
+        "tag": "channel_bench_basepri_a1_O2",
+        "identity_sha256": "0df722a7342b940d351567059f5784c50983c5e0c2ead2d556eee03e4e5aff32",
+        "mode": "bench",
+        "pass": 1366,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_profile_basepri_a1_O2",
+        "identity_sha256": "dbdc8c694c38fa6c0cd261ebb3e9e45514a3ba114248df287b451ee10d092bed",
+        "mode": "profile",
+        "pass": 1040,
+        "expected_fail": 0
+      }
+    ],
+    "optimized": [
+      {
+        "tag": "channel_bench_basepri_a1_O2",
+        "identity_sha256": "1ea8046f339678be785603d51f3283912f88bfed716840d58d721d3b944f5b21",
+        "mode": "bench",
+        "pass": 1366,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_bench_basepri_a1_O3",
+        "identity_sha256": "2c7c5b82361735cbe51b51a9c36bc9e6ef69ca9b2b1c11f6c1ccf8ecb01f1c73",
+        "mode": "bench",
+        "pass": 1366,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_basepri_a0_O0",
+        "identity_sha256": "61093b14bb73e96b7697ba1f3a29386889726f8ccaf291440912bffc30882fb7",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_basepri_a0_O2",
+        "identity_sha256": "564f4ee6e4b5858aa57c2227932d1c0a14508ba6d9d4502dc469f05b1714b2ca",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_basepri_a0_O3",
+        "identity_sha256": "97503e5cd43399d86ddde03be070011adc4c6bc9490ef7997a6f2b3949a6d84a",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_basepri_a1_O0",
+        "identity_sha256": "082d0f61d7425ae833ae614ff36055f4cbb4cefe70ed0fb6bdf5e0ed77fa61a0",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_basepri_a1_O2",
+        "identity_sha256": "a57342b7a5758fec41ac0c96e4b716e4be9d39cc3594dcfc7ac5608114e13459",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_basepri_a1_O3",
+        "identity_sha256": "f587412d31fe976808ea645769ddd71392fc0115c7867a3b79c1b4cb4e4e6fb6",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_primask_a0_O0",
+        "identity_sha256": "6728e74c1d047c00d39ede27749ef9c674845852203dc3e62f980d09d8c03b7d",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_primask_a0_O2",
+        "identity_sha256": "4e594dd98d7da3860af042054b2be4e6d2a3d50536430256752049fd85edd3a7",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_primask_a0_O3",
+        "identity_sha256": "8d8ab96fd06e360714156588041288ff0b5013addfa09645a573a31149108159",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_primask_a1_O0",
+        "identity_sha256": "f22278105c2e6422520c07f2758598399b951f1c1a5f183040130b7c3279fbb6",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_primask_a1_O2",
+        "identity_sha256": "3be91a899e34d018b9e7fa511861fe5e6bd052269d39e4de3e771afde192cf2c",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_checks_primask_a1_O3",
+        "identity_sha256": "b460a6dfcc7f3f6bdd03f39708a3f6f5a529fec320868611347950c43b3988b5",
+        "mode": "functional",
+        "pass": 413,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_profile_basepri_a1_O2",
+        "identity_sha256": "b7aaddae570b5263318f0885290f9aae7ef6f3d36d9acc78f84ac88bf0f4779e",
+        "mode": "profile",
+        "pass": 1040,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_profile_primask_a1_O2",
+        "identity_sha256": "f6dd476b3b98ef6629f335ba2eae9b31f7caca6a8f12c089081d14fe4be119b3",
+        "mode": "profile",
+        "pass": 1040,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_basepri_a0_O0",
+        "identity_sha256": "e77c3a5812da3ab7b7aefae507a8aef7e394ce22f8a974186fc6fd630b27b53c",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_basepri_a0_O2",
+        "identity_sha256": "e83e2e3fadf11c674ce8aac9ae30003ad832217b59c6eeb2eb33cca5511d626e",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_basepri_a0_O3",
+        "identity_sha256": "3b9356f15eff64b8ecaeef93c750f931c669816fb7b1d32c3f7f9b87623eb5a0",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_basepri_a1_O0",
+        "identity_sha256": "ffd0d65750e2ec308b544944d54728d0bf2b496803dbef7f26d39f419dcc6ae8",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_basepri_a1_O2",
+        "identity_sha256": "6c72aab5665e5064b62ba98e58f962e4b1ec1cf33af46697eea4d6fb505a90af",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_basepri_a1_O3",
+        "identity_sha256": "e4fa3fdfa1b6747b8809467a728007da013a3c27c4d3135fbd1e2fb31c67d57f",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_negative_basepri_a1_O2",
+        "identity_sha256": "c8a4e0935cb610bdecd7ad4d7d6e00361da4f279140ae2cf3242a9e71ce8e766",
+        "mode": "stress",
+        "pass": 45,
+        "expected_fail": 3
+      },
+      {
+        "tag": "channel_stress_primask_a0_O0",
+        "identity_sha256": "31189aba847df190428dea8c846179a348b9108ae345406b0d7dd9df939e6adc",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_primask_a0_O2",
+        "identity_sha256": "0db4ed7783adac0329ce4fb3cc8c78fc7660de1ca29127730a8c5214146e0331",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_primask_a0_O3",
+        "identity_sha256": "bfc980eaf4d5c5ac6e2f39ea7d5f2fc1d46f0e02b06e4a03a393538edef707c5",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_primask_a1_O0",
+        "identity_sha256": "3769673552ed9b88177b2a30a1cf422addf3162ef64f3caceee15e3cb1c48df3",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_primask_a1_O2",
+        "identity_sha256": "05b9f75d5b5e5ef9fd4af84acbd9844e2afef10ad1a6eeda50ec56a1645111fb",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      },
+      {
+        "tag": "channel_stress_primask_a1_O3",
+        "identity_sha256": "1fa9539878913a03155fd45554198eb7f170c26779b4dd5fef679d534bcbab44",
+        "mode": "stress",
+        "pass": 48,
+        "expected_fail": 0
+      }
+    ],
+    "regression": [
+      {
+        "tag": "adversarial_lifetime_basepri_a1_O2",
+        "identity_sha256": "2065b8f21c7750053bbd2b0dc2fecae63f0c38478e615152287e8a94bee15b1f",
+        "mode": "adversarial_lifetime",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "adversarial_mutex_basepri_a1_O2",
+        "identity_sha256": "01a7c65b4da4d628e3c6cf5b3d6f18212053a62248f5c5deeb129a7c32da5a0f",
+        "mode": "adversarial_mutex",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "adversarial_mutex_boundary_basepri_a1_O2",
+        "identity_sha256": "cfe54b543e3d7b0e1ec4dd4022fb998e464cdacc158ce689cdd3de19975118eb",
+        "mode": "adversarial_mutex_boundary",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "adversarial_registry_basepri_a1_O2",
+        "identity_sha256": "8c2b0ae2b2b13ca689a97fdc9b2db8dd51942e96ba458d6b2b64a2935bfceff5",
+        "mode": "adversarial_registry",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "adversarial_wait_basepri_a1_O2",
+        "identity_sha256": "1a5d7881aef4c305a5b72b832f6f553710e456409c5ace91ab8d2bef3955cc24",
+        "mode": "adversarial_wait",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "audit_basepri_a1_O2",
+        "identity_sha256": "aa98a85d60d7118d535d296cf08f10b1029a64a7b282274b1fc06ad6d459f459",
+        "mode": "audit",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "basepri_basepri_a1_O2",
+        "identity_sha256": "f5fccd8a7defe84847093a021e721b8e95858b117088bfbc3196baf49f8afc1b",
+        "mode": "basepri",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "basepri_primask_a1_O2",
+        "identity_sha256": "4fccbd8d80a6f30af231cdd014be27f6018477db6cba6e243911635963e2f024",
+        "mode": "basepri",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "bench_basepri_a1_O2",
+        "identity_sha256": "dc4897c0d3a532a78394a9afbd8d20075bb45869a89fc86b3750e9b2cf9023d4",
+        "mode": "bench",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "boundary_basepri_a1_O2",
+        "identity_sha256": "3352c78037139a9a902fc6bfe3ff04c001cbede6bf846af0a86b18d3aa64db39",
+        "mode": "boundary",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "lowlevel_basepri_a1_O2",
+        "identity_sha256": "8c2e478fb4acf02edaf60409386ca6e38c210ca85095add465cecc964454a340",
+        "mode": "lowlevel",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "production_stress_basepri_a1_O2",
+        "identity_sha256": "148950aace9d7c8717ceb12a5601b5cc74a1135ce2bceb45545f79fce696597b",
+        "mode": "production_stress",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "selftest_basepri_a1_O2",
+        "identity_sha256": "5a0154309e6cd56e98c8112d6637f80f44deb4b3b1ad19df1c100d4c74c29bfe",
+        "mode": "selftest",
+        "raw_acceptance": true
+      }
+    ],
+    "default_off": [
+      {
+        "tag": "bench_basepri_a1_O2",
+        "identity_sha256": "fa6bbce8d64c9a51a67f2b5a1bfa1c57b77bc3afa294f343bbf69cbfd90f43c6",
+        "mode": "bench",
+        "raw_acceptance": true
+      },
+      {
+        "tag": "daily_basepri_a1_O2",
+        "identity_sha256": "ba8ad934b17d35271eea80086cfd0e286eb023f361c50eaedd210c7c61dc1637",
+        "mode": "daily",
+        "raw_acceptance": true
+      }
+    ]
+  },
+  "auxiliary_reports": [
+    {
+      "path": "strict\\evidence\\20261027_145634_241268\\summary.json",
+      "sha256": "2564b813a2e5b692a23db29a02376ac246236188f7f0e2be0ae995d732e94532"
+    },
+    {
+      "path": "strict\\evidence\\20261027_150353_755538\\summary.json",
+      "sha256": "b60b8e48df16c45914171dea989546431a0527aa2cace30481c68216cbc59f9e"
+    },
+    {
+      "path": "host\\evidence\\baseline_pre_optimization\\summary.json",
+      "sha256": "871700bf16af7e06c21b72ab01929744fc8e8a3f8f128c188a88eecd490ec7d6"
+    },
+    {
+      "path": "host\\evidence\\optimized_regions_v1\\summary.json",
+      "sha256": "09dd66fb018ff39dbc8469e4252d971761a5b5dbb90b00456b21d30235f27d0f"
+    },
+    {
+      "path": "evidence\\oracle_tests_20261027_070600_979544\\summary.json",
+      "sha256": "2eae1e9b4bf938f9d7638a6ae78b1e988853fe504d3aec49a19e7eff15143b16"
+    }
+  ],
+  "limits": [
+    "Finite scenarios, not proof of all bugs absent",
+    "One active channel in hardware performance observations",
+    "Eight-owner index/lifecycle tests use the native scripted port",
+    "M7 code generation only; port adaptation still required for other CPUs"
+  ]
+}

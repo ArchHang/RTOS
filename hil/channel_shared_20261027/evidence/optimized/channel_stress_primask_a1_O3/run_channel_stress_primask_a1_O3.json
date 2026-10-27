@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "channel_stress_primask_a1_O3",
+    "started":  "2026-10-27T14:57:25.7493787+08:00",
+    "finished":  "2026-10-27T14:57:29.5191986+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "8EFC2F6E196C2D0C39C620E3A953EDBEAB4029F0A2591A92879C01168C9C0607",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "CH\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "completed_utc": "2026-10-27T06:56:49.888709+00:00",
+  "compiler": "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+  "translation_units": 17,
+  "scope": "without_documentation",
+  "expected_checks": 429,
+  "checks": 429,
+  "passed": 429,
+  "failed": 0,
+  "suites": {
+    "m4_matrix": 408,
+    "m7_codegen_only": 17,
+    "documentation": 0,
+    "public_header": 4
+  },
+  "source_identity_stable": true,
+  "changed_inputs": [],
+  "limitations": [
+    "Compilation only; no link or runtime validation",
+    "M7 code generation retains F446 headers; no H7 BSP proof",
+    "No M7 DMA/cache/MPU or hardware evidence",
+    "Size totals describe separate objects, not linked firmware"
+  ]
+}

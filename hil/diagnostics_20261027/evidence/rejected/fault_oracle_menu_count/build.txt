@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'diagnostic_fault' OK -- intentional UsageFault preserving committed pre-fault history; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  37024	    132	  44304	  81460	  13e34	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,0 +1,180 @@
+{
+  "captures": 29,
+  "passed": true,
+  "results": [
+    {
+      "tag": "channel_bench_basepri_a1_O2",
+      "mode": "bench",
+      "pass": 1366,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_bench_basepri_a1_O3",
+      "mode": "bench",
+      "pass": 1366,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_basepri_a0_O0",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_basepri_a0_O2",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_basepri_a0_O3",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_basepri_a1_O0",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_basepri_a1_O2",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_basepri_a1_O3",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_primask_a0_O0",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_primask_a0_O2",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_primask_a0_O3",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_primask_a1_O0",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_primask_a1_O2",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_checks_primask_a1_O3",
+      "mode": "functional",
+      "pass": 413,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_profile_basepri_a1_O2",
+      "mode": "profile",
+      "pass": 1040,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_profile_primask_a1_O2",
+      "mode": "profile",
+      "pass": 1040,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_basepri_a0_O0",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_basepri_a0_O2",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_basepri_a0_O3",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_basepri_a1_O0",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_basepri_a1_O2",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_basepri_a1_O3",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_negative_basepri_a1_O2",
+      "mode": "stress",
+      "pass": 45,
+      "expected_fail": 3
+    },
+    {
+      "tag": "channel_stress_primask_a0_O0",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_primask_a0_O2",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_primask_a0_O3",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_primask_a1_O0",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_primask_a1_O2",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    },
+    {
+      "tag": "channel_stress_primask_a1_O3",
+      "mode": "stress",
+      "pass": 48,
+      "expected_fail": 0
+    }
+  ]
+}

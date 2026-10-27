@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "implementation": "baseline",
+  "passed": true,
+  "scope": "direct channel C/public header; comments and string literals excluded",
+  "files": {
+    "RTOS/IPC/rtos_channel.c": {
+      "bytes": 28005,
+      "sha256": "b16950e71460d849b8d8a6c4f23f282481e37e6afe74c8faa90cb12b7caed36a",
+      "includes": [
+        "rtos_channel.h",
+        "rtos_internal.h",
+        "rtos_task.h",
+        "stddef.h",
+        "stdint.h",
+        "string.h"
+      ],
+      "sdk_includes": [],
+      "direct_hardware_tokens": [],
+      "rtos_port_kernel_dependencies": [
+        "RTOS_PORT_ENTER_CRITICAL",
+        "RTOS_PORT_EXIT_CRITICAL",
+        "RTOS_PORT_IN_ISR",
+        "rtos_internal_block_current_on",
+        "rtos_internal_block_permitted",
+        "rtos_internal_wake_all",
+        "rtos_kernel",
+        "rtos_port_crit_nest",
+        "rtos_port_get_global_interrupt_mask",
+        "rtos_port_get_interrupt_mask",
+        "rtos_port_isr_priority"
+      ],
+      "memory_calls": [
+        "memset"
+      ]
+    },
+    "RTOS/Core/Inc/rtos_channel.h": {
+      "bytes": 10965,
+      "sha256": "31b9c0b975af25072dc7684b5e42afe040359ed5f133dc4ce2b56b36cabab80b",
+      "includes": [
+        "rtos_types.h"
+      ],
+      "sdk_includes": [],
+      "direct_hardware_tokens": [],
+      "rtos_port_kernel_dependencies": [],
+      "memory_calls": []
+    }
+  },
+  "fixed_input_checks": [
+    {
+      "kind": "immutable_baseline",
+      "path": "baseline/RTOS/IPC/rtos_channel.c",
+      "matches": true
+    },
+    {
+      "kind": "immutable_baseline",
+      "path": "baseline/RTOS/Core/Inc/rtos_channel.h",
+      "matches": true
+    },
+    {
+      "kind": "immutable_baseline",
+      "path": "baseline/RTOS/Core/Inc/rtos_config.h",
+      "matches": true
+    },
+    {
+      "kind": "immutable_baseline",
+      "path": "baseline/RTOS/Core/Inc/rtos_port.h",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Src/channel_checks.c",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Src/channel_stress.c",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Src/channel_bench.c",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Src/channel_profile.c",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Src/channel_fixture.c",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Inc/channel_fixture.h",
+      "matches": true
+    },
+    {
+      "kind": "fixed_fixtures",
+      "path": "hil/fw/Inc/audit_regressions.h",
+      "matches": true
+    },
+    {
+      "kind": "build_inputs",
+      "path": "hil/build_fw.ps1",
+      "matches": true
+    },
+    {
+      "kind": "build_inputs",
+      "path": "hil/templates/RTOS_IPC.mk",
+      "matches": true
+    },
+    {
+      "kind": "build_inputs",
+      "path": "hil/templates/objects.list.template",
+      "matches": true
+    },
+    {
+      "kind": "build_inputs",
+      "path": "Core/Src/main.c",
+      "matches": true
+    },
+    {
+      "kind": "build_inputs",
+      "path": "STM32F446RETX_FLASH.ld",
+      "matches": true
+    },
+    {
+      "kind": "unchanged_configuration_and_port",
+      "path": "RTOS/Core/Inc/rtos_config.h",
+      "matches": true
+    },
+    {
+      "kind": "unchanged_configuration_and_port",
+      "path": "RTOS/Core/Inc/rtos_port.h",
+      "matches": true
+    }
+  ],
+  "limits": [
+    "No DMA or peripheral driver is invoked by this script.",
+    "The RTOS port still uses ARM PRIMASK/BASEPRI/IPSR and NVIC priorities.",
+    "Static scanning is not a cross-architecture execution or SMP proof."
+  ]
+}

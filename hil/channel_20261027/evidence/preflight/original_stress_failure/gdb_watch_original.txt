@@ -1,0 +1,380 @@
+CH|GDB|SESSION|original-elf-no-rebuild
+GNU gdb (GNU Tools for STM32 11.3.rel1.20230912-1600) 12.1.90.20220802-git
+Copyright (C) 2022 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "--host=x86_64-w64-mingw32 --target=arm-none-eabi".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word".
+Symbols from "E:\STM32_Project\CubeIDE\f446_rtos\hil\channel_20261027\evidence\preflight\original_stress_failure\firmware_channel_stress_basepri_a1_O0.elf".
+Local exec file:
+	`E:\STM32_Project\CubeIDE\f446_rtos\hil\channel_20261027\evidence\preflight\original_stress_failure\firmware_channel_stress_basepri_a1_O0.elf', file type elf32-littlearm.
+	Entry point: 0x80018e0
+	0x08000000 - 0x080001c4 is .isr_vector
+	0x080001d0 - 0x0800a9b8 is .text
+	0x0800a9b8 - 0x0800f910 is .rodata
+	0x0800f910 - 0x0800f918 is .ARM
+	0x0800f918 - 0x0800f918 is .preinit_array
+	0x0800f918 - 0x0800f91c is .init_array
+	0x0800f91c - 0x0800f920 is .fini_array
+	0x20000000 - 0x20000070 is .data
+	0x20000070 - 0x2000e0e0 is .bss
+	0x2000e0e0 - 0x2000e6e0 is ._user_heap_stack
+CH|GDB|SYMBOL|errors_address=0x2000df48
+0x080013dc in report_status () at ../Core/Src/stm32f4xx_it.c:432
+Loading section .isr_vector, size 0x1c4 lma 0x8000000
+Loading section .text, size 0xa7e8 lma 0x80001d0
+Loading section .rodata, size 0x4f58 lma 0x800a9b8
+Loading section .ARM, size 0x8 lma 0x800f910
+Loading section .init_array, size 0x4 lma 0x800f918
+Loading section .fini_array, size 0x4 lma 0x800f91c
+Loading section .data, size 0x70 lma 0x800f920
+Start address 0x080018e0, load size 63876
+Transfer rate: 31 KB/sec, 6387 bytes/write.
+STM32 Successfully completed reset operation (System reset)
+Section .isr_vector, range 0x8000000 -- 0x80001c4: MIS-MATCHED!
+warning: One or more sections of the target image does not match
+the loaded file
+
+Section .text, range 0x80001d0 -- 0x800a9b8: MIS-MATCHED!
+warning: One or more sections of the target image does not match
+the loaded file
+
+Hardware assisted breakpoint 1 at 0x800948c: file ../hil/fwsrc/channel_stress.c, line 360.
+
+Temporary breakpoint 1, 0x0800948c in audit_regressions_task (argument=0xa5a5a5a5) at ../hil/fwsrc/channel_stress.c:360
+CH|GDB|ARM|stopped-at-original-audit-entry
+$1 = 0x800948c
+$2 = 0
+Hardware watchpoint 2: -location *(unsigned int *)$original_errors_address
+Hardware assisted breakpoint 3 at 0x8009858: file ../hil/fwsrc/channel_fixture.c, line 24.
+Num     Type           Disp Enb Address    What
+2       hw watchpoint  keep y              -location *(unsigned int *)$original_errors_address
+        silent
+        echo CH|GDB|FIRST_ERROR_WRITE|hardware-watchpoint\n
+        capture_original_state
+3       hw breakpoint  del  y   0x08009858 in ch_finish at ../hil/fwsrc/channel_fixture.c:24
+        silent
+        echo CH|GDB|NO_ERROR_WRITE_THIS_RUN|reached-original-ch_finish\n
+        capture_original_state
+CH|GDB|RUN|watching-first-original-errors-write
+CH|GDB|NO_ERROR_WRITE_THIS_RUN|reached-original-ch_finish
+CH|GDB|CAPTURE|registers
+r0             0x800f6e4           134280932
+r1             0x0                 0
+r2             0x22400000          574619648
+r3             0x12000000          301989888
+r4             0x20002690          536880784
+r5             0x800f808           134281224
+r6             0x6060606           101058054
+r7             0x20002678          536880760
+r8             0x8080808           134744072
+r9             0x9090909           151587081
+r10            0x10101010          269488144
+r11            0x11111111          286331153
+r12            0xa                 10
+sp             0x20002678          0x20002678 <s_heap_buf+4184>
+lr             0x80096db           134256347
+pc             0x8009858           0x8009858 <ch_finish>
+xpsr           0x1000000           16777216
+d0             0                   (raw 0x0000000000000000)
+d1             0                   (raw 0x0000000000000000)
+d2             0                   (raw 0x0000000000000000)
+d3             0                   (raw 0x0000000000000000)
+d4             0                   (raw 0x0000000000000000)
+d5             0                   (raw 0x0000000000000000)
+d6             0                   (raw 0x0000000000000000)
+d7             0                   (raw 0x0000000000000000)
+d8             0                   (raw 0x0000000000000000)
+d9             0                   (raw 0x0000000000000000)
+d10            0                   (raw 0x0000000000000000)
+d11            0                   (raw 0x0000000000000000)
+d12            0                   (raw 0x0000000000000000)
+d13            0                   (raw 0x0000000000000000)
+d14            0                   (raw 0x0000000000000000)
+d15            0                   (raw 0x0000000000000000)
+fpscr          0x0                 0
+msp            0x2001ffa0          0x2001ffa0
+psp            0x20002678          0x20002678 <s_heap_buf+4184>
+primask        0x0                 0
+basepri        0x0                 0
+faultmask      0x0                 0
+control        0x2                 2
+s0             0                   (raw 0x00000000)
+s1             0                   (raw 0x00000000)
+s2             0                   (raw 0x00000000)
+s3             0                   (raw 0x00000000)
+s4             0                   (raw 0x00000000)
+s5             0                   (raw 0x00000000)
+s6             0                   (raw 0x00000000)
+s7             0                   (raw 0x00000000)
+s8             0                   (raw 0x00000000)
+s9             0                   (raw 0x00000000)
+s10            0                   (raw 0x00000000)
+s11            0                   (raw 0x00000000)
+s12            0                   (raw 0x00000000)
+s13            0                   (raw 0x00000000)
+s14            0                   (raw 0x00000000)
+s15            0                   (raw 0x00000000)
+s16            0                   (raw 0x00000000)
+s17            0                   (raw 0x00000000)
+s18            0                   (raw 0x00000000)
+s19            0                   (raw 0x00000000)
+s20            0                   (raw 0x00000000)
+s21            0                   (raw 0x00000000)
+s22            0                   (raw 0x00000000)
+s23            0                   (raw 0x00000000)
+s24            0                   (raw 0x00000000)
+s25            0                   (raw 0x00000000)
+s26            0                   (raw 0x00000000)
+s27            0                   (raw 0x00000000)
+s28            0                   (raw 0x00000000)
+s29            0                   (raw 0x00000000)
+s30            0                   (raw 0x00000000)
+s31            0                   (raw 0x00000000)
+CH|GDB|CAPTURE|backtrace-with-DWARF-locals
+#0  0x08009858 in ch_finish (mode=0x800f7e0 "stress_channel_deinit") at ../hil/fwsrc/channel_fixture.c:24
+        checksum = 134281184
+#1  0x080096da in audit_regressions_task (argument=0x0) at ../hil/fwsrc/channel_stress.c:413
+        config = {
+          storage = 0x20009d48 <storage>,
+          storage_size = 2048,
+          slots = 0x2000a548 <slots>,
+          slots_size = 256,
+          block_size = 256,
+          block_count = 8
+        }
+        status = RTOS_OK
+        ready = 1
+        timer_started = 1
+#2  0x08002db0 in process_pending_free () at ../RTOS/Core/Src/rtos_task.c:113
+        list = 0x8002db1 <rtos_task_exit_handler>
+#3  0x80006f58 in ?? ()
+No symbol table info available.
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+CH|GDB|CAPTURE|current-frame-arguments
+mode = 0x800f7e0 "stress_channel_deinit"
+CH|GDB|CAPTURE|current-frame-locals
+checksum = 134281184
+CH|GDB|CAPTURE|kernel-and-original-fixture-state
+$3 = 0
+$4 = 0
+$5 = {1024, 1024, 1024, 1024, 512}
+$6 = {1024, 1024, 1024, 1024, 512}
+$7 = {4272, 324, 12, 0}
+$8 = {
+  acquired = 4608,
+  published = 4608,
+  received = 4608,
+  released = 4608,
+  cancelled = 0,
+  stale_rejections = 0,
+  acquire_misses = 360,
+  receive_misses = 0,
+  acquire_waits = 1201,
+  receive_waits = 6032,
+  acquire_timeouts = 0,
+  receive_timeouts = 0,
+  closed_rejections = 4,
+  capacity = 8,
+  free = 8,
+  writing = 0,
+  queued = 0,
+  reading = 0,
+  queued_peak = 8,
+  in_use_peak = 8,
+  waiting_writers = 0,
+  waiting_readers = 0,
+  closed = 1
+}
+$9 = 1769
+$10 = (rtos_tcb_t *) 0x20001628 <s_heap_buf+8>
+$11 = "audit\000\000\000\000\000\000\000\000\000\000"
+$12 = 9
+$13 = RTOS_TASK_RUNNING
+$14 = (void *) 0x0
+$15 = RTOS_OK
+$16 = 0
+$17 = 0x0
+$18 = 0x0
+$19 = 0x0
+$20 = 0x2
+$21 = 0x2001ffa0
+$22 = 0x20002678
+CH|GDB|CAPTURE|icsr-cfsr-hfsr-and-stack
+0xe000ed04:	0x00000000
+0xe000ed28:	0x00000000	0x00000000	0x00000000
+0x20002678 <s_heap_buf+4184>:	0xa5a5a5a5	0x00000000	0x20009d48	0x00000800
+0x20002688 <s_heap_buf+4200>:	0x2000a548	0x00000100	0x00000100	0x00000008
+0x20002698 <s_heap_buf+4216>:	0x00000641	0x00000001	0x00000001	0x00111111
+0x200026a8 <s_heap_buf+4232>:	0x00000008	0x00000004	0x00000001	0x00000004
+0x200026b8 <s_heap_buf+4248>:	0x04040404	0x05050505	0x07070707	0x08002db1
+0x200026c8 <s_heap_buf+4264>:	0xa5a5a5a5	0x80006f58	0x00000000	0x00000000
+0x200026d8 <s_heap_buf+4280>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x200026e8 <s_heap_buf+4296>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x200026f8 <s_heap_buf+4312>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x20002708 <s_heap_buf+4328>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x20002718 <s_heap_buf+4344>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x20002728 <s_heap_buf+4360>:	0x00000000	0x00000000	0x00000000	0x00000000
+CH|GDB|CAPTURE|original-current-function-raw-instructions
+Dump of assembler code for function ch_finish:
+=> 0x08009858 <+0>:	80 b5	push	{r7, lr}
+   0x0800985a <+2>:	84 b0	sub	sp, #16
+   0x0800985c <+4>:	00 af	add	r7, sp, #0
+   0x0800985e <+6>:	78 60	str	r0, [r7, #4]
+   0x08009860 <+8>:	ff f7 68 ff	bl	0x8009734 <rtos_port_enter_critical>
+   0x08009864 <+12>:	10 4b	ldr	r3, [pc, #64]	; (0x80098a8 <ch_finish+80>)
+   0x08009866 <+14>:	1b 68	ldr	r3, [r3, #0]
+   0x08009868 <+16>:	fb 60	str	r3, [r7, #12]
+   0x0800986a <+18>:	ff f7 97 ff	bl	0x800979c <rtos_port_exit_critical>
+   0x0800986e <+22>:	f9 68	ldr	r1, [r7, #12]
+   0x08009870 <+24>:	0e 48	ldr	r0, [pc, #56]	; (0x80098ac <ch_finish+84>)
+   0x08009872 <+26>:	00 f0 51 fa	bl	0x8009d18 <printf>
+   0x08009876 <+30>:	0e 4b	ldr	r3, [pc, #56]	; (0x80098b0 <ch_finish+88>)
+   0x08009878 <+32>:	1a 68	ldr	r2, [r3, #0]
+   0x0800987a <+34>:	0e 4b	ldr	r3, [pc, #56]	; (0x80098b4 <ch_finish+92>)
+   0x0800987c <+36>:	1b 68	ldr	r3, [r3, #0]
+   0x0800987e <+38>:	79 68	ldr	r1, [r7, #4]
+   0x08009880 <+40>:	0d 48	ldr	r0, [pc, #52]	; (0x80098b8 <ch_finish+96>)
+   0x08009882 <+42>:	00 f0 49 fa	bl	0x8009d18 <printf>
+   0x08009886 <+46>:	0b 4b	ldr	r3, [pc, #44]	; (0x80098b4 <ch_finish+92>)
+   0x08009888 <+48>:	1b 68	ldr	r3, [r3, #0]
+   0x0800988a <+50>:	00 2b	cmp	r3, #0
+   0x0800988c <+52>:	14 bf	ite	ne
+   0x0800988e <+54>:	01 23	movne	r3, #1
+   0x08009890 <+56>:	00 23	moveq	r3, #0
+   0x08009892 <+58>:	db b2	uxtb	r3, r3
+   0x08009894 <+60>:	19 46	mov	r1, r3
+   0x08009896 <+62>:	09 48	ldr	r0, [pc, #36]	; (0x80098bc <ch_finish+100>)
+   0x08009898 <+64>:	00 f0 3e fa	bl	0x8009d18 <printf>
+   0x0800989c <+68>:	4f f4 7a 70	mov.w	r0, #1000	; 0x3e8
+   0x080098a0 <+72>:	f9 f7 f2 fc	bl	0x8003288 <rtos_task_delay>
+   0x080098a4 <+76>:	fa e7	b.n	0x800989c <ch_finish+68>
+   0x080098a6 <+78>:	00 bf	nop
+   0x080098a8 <+80>:	90 df	svc	144	; 0x90
+   0x080098aa <+82>:	00 20	movs	r0, #0
+   0x080098ac <+84>:	40 f8 00 08	str.w	r0, [r0, <undefined>]
+   0x080098b0 <+88>:	88 df	svc	136	; 0x88
+   0x080098b2 <+90>:	00 20	movs	r0, #0
+   0x080098b4 <+92>:	8c df	svc	140	; 0x8c
+   0x080098b6 <+94>:	00 20	movs	r0, #0
+   0x080098b8 <+96>:	5c f8 00 08	ldr.w	r0, [r12, <undefined>]
+   0x080098bc <+100>:	84 f8 00 08	strb.w	r0, [r4, #2048]	; 0x800
+End of assembler dump.
+CH|GDB|CAPTURE|breakpoint-watchpoint-types
+Num     Type           Disp Enb Address    What
+2       hw watchpoint  keep y              -location *(unsigned int *)$original_errors_address
+        silent
+        echo CH|GDB|FIRST_ERROR_WRITE|hardware-watchpoint\n
+        capture_original_state
+CH|GDB|HALTED|no-continue-no-detach-no-quit
+CH|GDB|READY|target-remains-halted-inspect-interactively
+STM32 Successfully completed reset operation (System reset)
+Hardware assisted breakpoint 4 at 0x8009858: file ../hil/fwsrc/channel_fixture.c, line 24.
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x0800190a in Reset_Handler () at ../Core/Startup/startup_stm32f446retx.s:94
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x080089e4 in rtos_port_exit_critical () at ../RTOS/Core/Inc/rtos_port.h:125
+$23 = 1
+#0  0x080089e4 in rtos_port_exit_critical () at ../RTOS/Core/Inc/rtos_port.h:125
+        previous_primask = 0
+        nesting = 0
+#1  0x08008a56 in add_error () at ../hil/fwsrc/channel_stress.c:63
+No locals.
+#2  0x08008d36 in consumer_task (argument=0x2) at ../hil/fwsrc/channel_stress.c:167
+        reader = {
+          sequence = 0,
+          ticket = {
+            incarnation = 0,
+            generation = 0,
+            channel_address = 0,
+            slot = 0
+          },
+          data = 0x0,
+          length = 0,
+          tag = 0
+        }
+        status = RTOS_ERR_TIMEOUT
+        consumer = 2
+        delivered = 16
+#3  0x08002db0 in process_pending_free () at ../RTOS/Core/Src/rtos_task.c:113
+        list = 0x8002db1 <rtos_task_exit_handler>
+#4  0xa5a5a5a4 in ?? ()
+No symbol table info available.
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+$24 = 1572
+$25 = {
+  acquired = 4544,
+  published = 4544,
+  received = 4544,
+  released = 4544,
+  cancelled = 0,
+  stale_rejections = 0,
+  acquire_misses = 334,
+  receive_misses = 0,
+  acquire_waits = 1232,
+  receive_waits = 5767,
+  acquire_timeouts = 0,
+  receive_timeouts = 1,
+  closed_rejections = 0,
+  capacity = 8,
+  free = 8,
+  writing = 0,
+  queued = 0,
+  reading = 0,
+  queued_peak = 8,
+  in_use_peak = 8,
+  waiting_writers = 0,
+  waiting_readers = 0,
+  closed = 0
+}
+0xe000ed30:	0x00000000
+Num     Type           Disp Enb Address    What
+2       hw watchpoint  keep y              -location *(unsigned int *)$original_errors_address
+        silent
+        echo CH|GDB|FIRST_ERROR_WRITE|hardware-watchpoint\n
+        capture_original_state
+4       hw breakpoint  del  y   0x08009858 in ch_finish at ../hil/fwsrc/channel_fixture.c:24
+Continuing.
+
+Temporary breakpoint 4, 0x08009858 in ch_finish (mode=0x800f7e0 "stress_channel_deinit") at ../hil/fwsrc/channel_fixture.c:24
+$26 = 1
+$27 = {1024, 1024, 1024, 1024, 512}
+$28 = {1024, 1024, 1024, 1024, 512}
+$29 = {
+  acquired = 4608,
+  published = 4608,
+  received = 4608,
+  released = 4608,
+  cancelled = 0,
+  stale_rejections = 0,
+  acquire_misses = 334,
+  receive_misses = 0,
+  acquire_waits = 1232,
+  receive_waits = 5899,
+  acquire_timeouts = 0,
+  receive_timeouts = 1,
+  closed_rejections = 3,
+  capacity = 8,
+  free = 8,
+  writing = 0,
+  queued = 0,
+  reading = 0,
+  queued_peak = 8,
+  in_use_peak = 8,
+  waiting_writers = 0,
+  waiting_readers = 0,
+  closed = 1
+}

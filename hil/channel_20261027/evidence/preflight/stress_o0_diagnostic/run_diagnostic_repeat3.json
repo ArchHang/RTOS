@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "diagnostic_repeat3",
+    "started":  "2026-10-27T14:00:38.6789792+08:00",
+    "finished":  "2026-10-27T14:00:43.2004169+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "E020786DF681D26670B0D3964618ACB21AF169C137AC490CE4DBF8DFD9D97C5E",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "CH\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+                          "CH|CHECK|FAIL|id=40 name=stress_each_consumer_delivered"
+                      ]
+}

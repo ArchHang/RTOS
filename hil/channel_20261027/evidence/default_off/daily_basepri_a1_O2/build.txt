@@ -1,0 +1,3 @@
+built 'daily' OK -- daily demo firmware (app tasks + HardFault tests + USB); warnings=2
+   text	   data	    bss	    dec	    hex	filename
+ 205488	    128	 125952	 331568	  50f30	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

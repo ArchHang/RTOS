@@ -1,0 +1,34 @@
+{
+  "firmware_sha256": "f74e35bc349e0ab6f7ecc643bc2175ae2b9b961490fd0e6366f31831f0e11084",
+  "capture": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\final\\fault_final",
+  "debugger_arguments": [
+    "--nh",
+    "-nx",
+    "-q",
+    "-batch",
+    "-x",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\fault_snapshot.gdb",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\final\\fault_final\\firmware_fault_final.elf"
+  ],
+  "finished": "2026-10-27T16:59:11.4213137+08:00",
+  "script_sha256": "ba5fe29d43f1eded2c99f1e6172e97723504d6ff3272c1b67e0387ad3ae1807d",
+  "capture_identity_sha256": "7c5fa14e9e8d753a3b8d724f564d813aa8d5eade0a475a5c262352002954a1e5",
+  "debugger_exit": 0,
+  "started": "2026-10-27T16:59:08.0051623+08:00",
+  "server_arguments": [
+    "-d",
+    "-g",
+    "-i",
+    "066DFF555775514867092907",
+    "-p",
+    "42123",
+    "-l",
+    "31",
+    "-v",
+    "-cp",
+    "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.cubeprogrammer.win32_2.1.100.202311100844\\tools\\bin",
+    "--frequency",
+    "4000"
+  ],
+  "attach_only": true
+}

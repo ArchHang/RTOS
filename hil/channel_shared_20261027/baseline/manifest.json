@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "captured_utc": "2026-10-27T06:45:31.482686+00:00",
+  "workspace": "E:\\STM32_Project\\CubeIDE\\f446_rtos",
+  "purpose": "Byte-exact pre-optimization production baseline; no DMA workflow",
+  "sources": [
+    {
+      "source": "RTOS/IPC/rtos_channel.c",
+      "snapshot": "baseline/RTOS/IPC/rtos_channel.c",
+      "bytes": 28005,
+      "sha256": "b16950e71460d849b8d8a6c4f23f282481e37e6afe74c8faa90cb12b7caed36a"
+    },
+    {
+      "source": "RTOS/Core/Inc/rtos_channel.h",
+      "snapshot": "baseline/RTOS/Core/Inc/rtos_channel.h",
+      "bytes": 10965,
+      "sha256": "31b9c0b975af25072dc7684b5e42afe040359ed5f133dc4ce2b56b36cabab80b"
+    },
+    {
+      "source": "RTOS/Core/Inc/rtos_config.h",
+      "snapshot": "baseline/RTOS/Core/Inc/rtos_config.h",
+      "bytes": 13018,
+      "sha256": "d2c399bead299f81fad0a99ad3c8673ff51deb2c02f0c42bc878ce20e7a0f0b6"
+    },
+    {
+      "source": "RTOS/Core/Inc/rtos_port.h",
+      "snapshot": "baseline/RTOS/Core/Inc/rtos_port.h",
+      "bytes": 13285,
+      "sha256": "4140558e02c63da134046460e1528959a06e0ead9ff697ac05418d3c8304e86a"
+    }
+  ],
+  "fixed_fixtures": [
+    {
+      "source": "hil/fw/Src/channel_checks.c",
+      "bytes": 29653,
+      "sha256": "d2c1e62fbc7e242ef884f7b74e7c78fcf6ae9b599fe6334a4b88a32dbd7e23fa"
+    },
+    {
+      "source": "hil/fw/Src/channel_stress.c",
+      "bytes": 19778,
+      "sha256": "e22057ce60ca6d1dc9309d68b4843452d6d491b4aaabb3871edd1ab41bc4651a"
+    },
+    {
+      "source": "hil/fw/Src/channel_bench.c",
+      "bytes": 12062,
+      "sha256": "0079627947e2718591573b2f678ab82a02e1a3e5934eb6755e83ca7a6461a9d7"
+    },
+    {
+      "source": "hil/fw/Src/channel_profile.c",
+      "bytes": 16149,
+      "sha256": "e109274fa04ccd35670888954cf52cbbc228161b7d633d4019650c23c1079d72"
+    },
+    {
+      "source": "hil/fw/Src/channel_fixture.c",
+      "bytes": 2568,
+      "sha256": "3190386e8252ad5b57d333a9f24c1da04bbc58977082eb23eae0df3469eb0ea7"
+    },
+    {
+      "source": "hil/fw/Inc/channel_fixture.h",
+      "bytes": 2396,
+      "sha256": "305e5fc5fce9ffd8ca86a0f868443936474c68a1150f53df5a6e71f1ff3fd548"
+    },
+    {
+      "source": "hil/fw/Inc/audit_regressions.h",
+      "bytes": 131,
+      "sha256": "50df88f3876581c3ca64099ab14a3b9207e120859f415e19fdb4e2b87e4e181d"
+    }
+  ],
+  "build_inputs": [
+    {
+      "source": "hil/build_fw.ps1",
+      "bytes": 20938,
+      "sha256": "4dac3ff3272c7f2fac910cb86c195b1565696dc545be40b15bc3634c9868f939"
+    },
+    {
+      "source": "hil/templates/RTOS_IPC.mk",
+      "bytes": 2019,
+      "sha256": "9da078150fe8496bb6ae49084edbdf9ec6bbffc958185aad36c21f399bd62a7f"
+    },
+    {
+      "source": "hil/templates/objects.list.template",
+      "bytes": 2343,
+      "sha256": "74ff8d239cd1884411c66e15e9e12566f605cc31b26de02981394275d377b25d"
+    },
+    {
+      "source": "Core/Src/main.c",
+      "bytes": 30500,
+      "sha256": "32c1e6f3d50c754a8e09db169982551ae1cb4828760662ab106bdee482012874"
+    },
+    {
+      "source": "STM32F446RETX_FLASH.ld",
+      "bytes": 4767,
+      "sha256": "1abcc98019258405ac9f91efc942b0e1a0bbdbf48c86494c0cbd68640d303593"
+    }
+  ]
+}

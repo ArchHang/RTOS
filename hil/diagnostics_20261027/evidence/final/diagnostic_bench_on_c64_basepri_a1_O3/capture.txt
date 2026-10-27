@@ -1,0 +1,106 @@
+===== diagnostic_bench_on_c64_basepri_a1_O3 (5546 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\diagnostics_20261027\evidence\final\diagnostic_bench_on_c64_basepri_a1_O3\log_diagnostic_bench_on_c64_basepri_a1_O3.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+DG|META|mode=bench diagnostics=1 capacity=64 operations=1024 rounds=3
+DG|CHECK|PASS|id=1 name=bench_prepared
+DG|CHECK|PASS|id=2 name=bench_exact_work
+DG|CHECK|PASS|id=3 name=bench_worker_accounted
+DG|BENCH|name=sem_nowait round=0 operations=1024 cycles=228777 ticks=1 checksum=524800 errors=0
+DG|CHECK|PASS|id=4 name=bench_cleanup
+DG|CHECK|PASS|id=5 name=bench_prepared
+DG|CHECK|PASS|id=6 name=bench_exact_work
+DG|CHECK|PASS|id=7 name=bench_worker_accounted
+DG|BENCH|name=queue_nowait round=0 operations=1024 cycles=404129 ticks=2 checksum=524800 errors=0
+DG|CHECK|PASS|id=8 name=bench_cleanup
+DG|CHECK|PASS|id=9 name=bench_prepared
+DG|CHECK|PASS|id=10 name=bench_exact_work
+DG|CHECK|PASS|id=11 name=bench_worker_accounted
+DG|BENCH|name=notify_nowait round=0 operations=1024 cycles=241246 ticks=2 checksum=524800 errors=0
+DG|CHECK|PASS|id=12 name=bench_cleanup
+DG|CHECK|PASS|id=13 name=bench_prepared
+DG|CHECK|PASS|id=14 name=bench_exact_work
+DG|CHECK|PASS|id=15 name=bench_worker_accounted
+DG|BENCH|name=sem_pingpong round=0 operations=1024 cycles=2352053 ticks=14 checksum=524800 errors=0
+DG|CHECK|PASS|id=16 name=bench_cleanup
+DG|CHECK|PASS|id=17 name=bench_prepared
+DG|CHECK|PASS|id=18 name=bench_exact_work
+DG|CHECK|PASS|id=19 name=bench_worker_accounted
+DG|BENCH|name=queue_pingpong round=0 operations=1024 cycles=2672963 ticks=16 checksum=524800 errors=0
+DG|CHECK|PASS|id=20 name=bench_cleanup
+DG|CHECK|PASS|id=21 name=bench_prepared
+DG|CHECK|PASS|id=22 name=bench_exact_work
+DG|CHECK|PASS|id=23 name=bench_worker_accounted
+DG|BENCH|name=notify_pingpong round=0 operations=1024 cycles=2271235 ticks=13 checksum=524800 errors=0
+DG|CHECK|PASS|id=24 name=bench_cleanup
+DG|CHECK|PASS|id=25 name=bench_prepared
+DG|CHECK|PASS|id=26 name=bench_exact_work
+DG|CHECK|PASS|id=27 name=bench_worker_accounted
+DG|BENCH|name=sem_nowait round=1 operations=1024 cycles=228778 ticks=1 checksum=524800 errors=0
+DG|CHECK|PASS|id=28 name=bench_cleanup
+DG|CHECK|PASS|id=29 name=bench_prepared
+DG|CHECK|PASS|id=30 name=bench_exact_work
+DG|CHECK|PASS|id=31 name=bench_worker_accounted
+DG|BENCH|name=queue_nowait round=1 operations=1024 cycles=404138 ticks=2 checksum=524800 errors=0
+DG|CHECK|PASS|id=32 name=bench_cleanup
+DG|CHECK|PASS|id=33 name=bench_prepared
+DG|CHECK|PASS|id=34 name=bench_exact_work
+DG|CHECK|PASS|id=35 name=bench_worker_accounted
+DG|BENCH|name=notify_nowait round=1 operations=1024 cycles=241065 ticks=1 checksum=524800 errors=0
+DG|CHECK|PASS|id=36 name=bench_cleanup
+DG|CHECK|PASS|id=37 name=bench_prepared
+DG|CHECK|PASS|id=38 name=bench_exact_work
+DG|CHECK|PASS|id=39 name=bench_worker_accounted
+DG|BENCH|name=sem_pingpong round=1 operations=1024 cycles=2352042 ticks=14 checksum=524800 errors=0
+DG|CHECK|PASS|id=40 name=bench_cleanup
+DG|CHECK|PASS|id=41 name=bench_prepared
+DG|CHECK|PASS|id=42 name=bench_exact_work
+DG|CHECK|PASS|id=43 name=bench_worker_accounted
+DG|BENCH|name=queue_pingpong round=1 operations=1024 cycles=2672981 ticks=16 checksum=524800 errors=0
+DG|CHECK|PASS|id=44 name=bench_cleanup
+DG|CHECK|PASS|id=45 name=bench_prepared
+DG|CHECK|PASS|id=46 name=bench_exact_work
+DG|CHECK|PASS|id=47 name=bench_worker_accounted
+DG|BENCH|name=notify_pingpong round=1 operations=1024 cycles=2271519 ticks=14 checksum=524800 errors=0
+DG|CHECK|PASS|id=48 name=bench_cleanup
+DG|CHECK|PASS|id=49 name=bench_prepared
+DG|CHECK|PASS|id=50 name=bench_exact_work
+DG|CHECK|PASS|id=51 name=bench_worker_accounted
+DG|BENCH|name=sem_nowait round=2 operations=1024 cycles=228777 ticks=1 checksum=524800 errors=0
+DG|CHECK|PASS|id=52 name=bench_cleanup
+DG|CHECK|PASS|id=53 name=bench_prepared
+DG|CHECK|PASS|id=54 name=bench_exact_work
+DG|CHECK|PASS|id=55 name=bench_worker_accounted
+DG|BENCH|name=queue_nowait round=2 operations=1024 cycles=404138 ticks=2 checksum=524800 errors=0
+DG|CHECK|PASS|id=56 name=bench_cleanup
+DG|CHECK|PASS|id=57 name=bench_prepared
+DG|CHECK|PASS|id=58 name=bench_exact_work
+DG|CHECK|PASS|id=59 name=bench_worker_accounted
+DG|BENCH|name=notify_nowait round=2 operations=1024 cycles=241244 ticks=2 checksum=524800 errors=0
+DG|CHECK|PASS|id=60 name=bench_cleanup
+DG|CHECK|PASS|id=61 name=bench_prepared
+DG|CHECK|PASS|id=62 name=bench_exact_work
+DG|CHECK|PASS|id=63 name=bench_worker_accounted
+DG|BENCH|name=sem_pingpong round=2 operations=1024 cycles=2352103 ticks=14 checksum=524800 errors=0
+DG|CHECK|PASS|id=64 name=bench_cleanup
+DG|CHECK|PASS|id=65 name=bench_prepared
+DG|CHECK|PASS|id=66 name=bench_exact_work
+DG|CHECK|PASS|id=67 name=bench_worker_accounted
+DG|BENCH|name=queue_pingpong round=2 operations=1024 cycles=2672968 ticks=16 checksum=524800 errors=0
+DG|CHECK|PASS|id=68 name=bench_cleanup
+DG|CHECK|PASS|id=69 name=bench_prepared
+DG|CHECK|PASS|id=70 name=bench_exact_work
+DG|CHECK|PASS|id=71 name=bench_worker_accounted
+DG|BENCH|name=notify_pingpong round=2 operations=1024 cycles=2271268 ticks=13 checksum=524800 errors=0
+DG|CHECK|PASS|id=72 name=bench_cleanup
+DG|SUMMARY|mode=bench pass=72 fail=0
+DG|DONE|status=0
+

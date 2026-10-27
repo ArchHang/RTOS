@@ -1,0 +1,17 @@
+﻿{
+    "tag":  "channel_stress_negative_basepri_a1_O2",
+    "started":  "2026-10-27T14:58:23.8225206+08:00",
+    "finished":  "2026-10-27T14:58:27.6254919+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "4B8C2779CE4F5D2BF05625B8B6C82D5E33B1CF88F61384282E29EB4F704900C7",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "CH\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+                          "CH|CHECK|FAIL|id=32 name=stress_source_exact_once",
+                          "CH|CHECK|FAIL|id=41 name=stress_no_worker_or_irq_error",
+                          "CH|CHECK|FAIL|id=42 name=stress_unique_message_bitmap"
+                      ]
+}

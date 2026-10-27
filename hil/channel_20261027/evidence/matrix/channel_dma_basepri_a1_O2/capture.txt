@@ -1,0 +1,55 @@
+===== channel_dma_basepri_a1_O2 (2695 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\channel_20261027\evidence\matrix\channel_dma_basepri_a1_O2\log_channel_dma_basepri_a1_O2.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+CH|META|mode=dma peripheral=DMA2_Stream0 irq_priority=5 bytes=16384 source=memory destination=loan cache=none
+CH|CHECK|PASS|id=1 name=dma_idle_stream_claimed
+CH|CHECK|PASS|id=2 name=dma_completion_sem_init
+CH|CHECK|PASS|id=3 name=dma_channel_init
+CH|CHECK|PASS|id=4 name=dma_writer_acquired
+CH|CHECK|PASS|id=5 name=dma_destination_is_loan
+CH|CHECK|PASS|id=6 name=dma_real_irq_received
+CH|CHECK|PASS|id=7 name=dma_one_real_tc_no_error
+CH|CHECK|PASS|id=8 name=dma_tc_published
+CH|CHECK|PASS|id=9 name=dma_receive
+CH|CHECK|PASS|id=10 name=dma_reader_exact_destination
+CH|CHECK|PASS|id=11 name=dma_payload_verified_in_place
+CH|CHECK|PASS|id=12 name=dma_reader_released
+CH|DMA|case=normal bytes=16384 tc=1 remaining=0 errors=0 publish=0 source=20009de0 destination=2000dde0
+CH|CHECK|PASS|id=13 name=dma_ledger_read
+CH|CHECK|PASS|id=14 name=dma_all_storage_returned
+CH|CHECK|PASS|id=15 name=dma_channel_close
+CH|CHECK|PASS|id=16 name=dma_channel_deinit
+CH|CHECK|PASS|id=17 name=dma_channel_init
+CH|CHECK|PASS|id=18 name=dma_writer_acquired
+CH|CHECK|PASS|id=19 name=dma_destination_is_loan
+CH|CHECK|PASS|id=20 name=dma_physically_running_across_close
+CH|CHECK|PASS|id=21 name=dma_close_succeeded
+CH|CHECK|PASS|id=22 name=dma_close_did_not_reclaim_loan
+CH|CHECK|PASS|id=23 name=dma_deinit_refused_live_loan
+CH|CHECK|PASS|id=24 name=dma_real_irq_received
+CH|CHECK|PASS|id=25 name=dma_one_real_tc_no_error
+CH|CHECK|PASS|id=26 name=dma_closed_completion_refused_publish
+CH|CHECK|PASS|id=27 name=dma_cancel_only_after_tc
+CH|CHECK|PASS|id=28 name=dma_closed_transfer_payload_intact
+CH|CHECK|PASS|id=29 name=dma_closed_no_message_leaked
+CH|DMA|case=close_in_flight bytes=16384 before=4096 after=4059 tc_before=0 tc_after=0 tc=1 remaining=0 publish=-11 cancel=0
+CH|CHECK|PASS|id=30 name=dma_ledger_read
+CH|CHECK|PASS|id=31 name=dma_all_storage_returned
+CH|CHECK|PASS|id=32 name=dma_channel_deinit
+CH|CHECK|PASS|id=33 name=dma_completion_sem_deinit
+CH|CHECK|PASS|id=34 name=dma_stream_stopped
+CH|CHECK|PASS|id=35 name=dma_registration_restored
+CH|CHECK|PASS|id=36 name=dma_clock_restored
+CH|CHECKSUM|value=5f55d000
+CH|SUMMARY|mode=dma pass=36 fail=0
+CH|DONE|status=0
+

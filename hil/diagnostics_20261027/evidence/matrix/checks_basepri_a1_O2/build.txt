@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'diagnostic_checks' OK -- bounded flight recorder and actual kernel wait explanations; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  59672	    132	  46776	 106580	  1a054	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

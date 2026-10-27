@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "channel_dma_primask_a0_O2",
+    "started":  "2026-10-27T13:56:18.9941194+08:00",
+    "finished":  "2026-10-27T13:56:21.1512940+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "EDC9BA2BFBCA563C84B43C33AA82670B343D663A77BE995FADB756DE8E2AE385",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "CH\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

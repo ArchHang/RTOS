@@ -1,0 +1,1705 @@
+{
+  "status": "PASS",
+  "created_utc": "2026-10-27T08:41:52.437405+00:00",
+  "measurements_per_configuration": 18,
+  "exchanges_per_sample": 1024,
+  "sources_matched_within_each_pair": true,
+  "comparisons": [
+    {
+      "optimization": "O2",
+      "paths": {
+        "sem_nowait": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 220577,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 220576,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 220576,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              215.4072265625,
+              215.40625,
+              215.40625
+            ],
+            "min": 215.40625,
+            "median": 215.40625,
+            "max": 215.4072265625
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 229761,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 229761,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 229760,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              224.3759765625,
+              224.3759765625,
+              224.375
+            ],
+            "min": 224.375,
+            "median": 224.3759765625,
+            "max": 224.3759765625
+          },
+          "median_added_cycles": 8.9697265625,
+          "median_added_percent": 4.164097635282171
+        },
+        "queue_nowait": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 424838,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 424840,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 424838,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              414.880859375,
+              414.8828125,
+              414.880859375
+            ],
+            "min": 414.880859375,
+            "median": 414.880859375,
+            "max": 414.8828125
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 423787,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 423794,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 424119,
+                "ticks": 3,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              413.8544921875,
+              413.861328125,
+              414.1787109375
+            ],
+            "min": 413.8544921875,
+            "median": 413.861328125,
+            "max": 414.1787109375
+          },
+          "median_added_cycles": -1.01953125,
+          "median_added_percent": -0.2457407294074447
+        },
+        "notify_nowait": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 233882,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 234066,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 233883,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              228.400390625,
+              228.580078125,
+              228.4013671875
+            ],
+            "min": 228.400390625,
+            "median": 228.4013671875,
+            "max": 228.580078125
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 245129,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 243189,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 242562,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              239.3837890625,
+              237.4892578125,
+              236.876953125
+            ],
+            "min": 236.876953125,
+            "median": 237.4892578125,
+            "max": 239.3837890625
+          },
+          "median_added_cycles": 9.087890625,
+          "median_added_percent": 3.978912533189672
+        },
+        "sem_pingpong": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 1454703,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 1454699,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 1454957,
+                "ticks": 9,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              1420.6083984375,
+              1420.6044921875,
+              1420.8564453125
+            ],
+            "min": 1420.6044921875,
+            "median": 1420.6083984375,
+            "max": 1420.8564453125
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 2219770,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 2220137,
+                "ticks": 14,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 2220008,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              2167.744140625,
+              2168.1025390625,
+              2167.9765625
+            ],
+            "min": 2167.744140625,
+            "median": 2167.9765625,
+            "max": 2168.1025390625
+          },
+          "median_added_cycles": 747.3681640625,
+          "median_added_percent": 52.60902053546326
+        },
+        "queue_pingpong": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 1849604,
+                "ticks": 11,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 1849464,
+                "ticks": 11,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 1849437,
+                "ticks": 11,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              1806.25390625,
+              1806.1171875,
+              1806.0908203125
+            ],
+            "min": 1806.0908203125,
+            "median": 1806.1171875,
+            "max": 1806.25390625
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 2648644,
+                "ticks": 16,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 2648112,
+                "ticks": 15,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 2648425,
+                "ticks": 16,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              2586.56640625,
+              2586.046875,
+              2586.3525390625
+            ],
+            "min": 2586.046875,
+            "median": 2586.3525390625,
+            "max": 2586.56640625
+          },
+          "median_added_cycles": 780.2353515625,
+          "median_added_percent": 43.19959728872797
+        },
+        "notify_pingpong": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 1397546,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 1397886,
+                "ticks": 9,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 1397571,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              1364.791015625,
+              1365.123046875,
+              1364.8154296875
+            ],
+            "min": 1364.791015625,
+            "median": 1364.8154296875,
+            "max": 1365.123046875
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 2250930,
+                "ticks": 14,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 2250999,
+                "ticks": 14,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 2250669,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              2198.173828125,
+              2198.2412109375,
+              2197.9189453125
+            ],
+            "min": 2197.9189453125,
+            "median": 2198.173828125,
+            "max": 2198.2412109375
+          },
+          "median_added_cycles": 833.3583984375,
+          "median_added_percent": 61.06015365230103
+        }
+      },
+      "memory": {
+        "bss_data_bytes": {
+          "off": 41612,
+          "on": 44208,
+          "added": 2596
+        },
+        "allocated_nobits_bytes": {
+          "off": 43040,
+          "on": 45632,
+          "added": 2592
+        },
+        "allocated_file_bytes": {
+          "off": 36768,
+          "on": 40184,
+          "added": 3416
+        },
+        "writable_allocated_bytes": {
+          "off": 43160,
+          "on": 45756,
+          "added": 2596
+        },
+        "diagnostic_defined_function_bytes": {
+          "off": 0,
+          "on": 392,
+          "added": 392
+        },
+        "diagnostic_defined_object_bytes": {
+          "off": 0,
+          "on": 2596,
+          "added": 2596
+        }
+      }
+    },
+    {
+      "optimization": "O3",
+      "paths": {
+        "sem_nowait": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 222628,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 222624,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 222630,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              217.41015625,
+              217.40625,
+              217.412109375
+            ],
+            "min": 217.40625,
+            "median": 217.41015625,
+            "max": 217.412109375
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 231843,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 231847,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 232025,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              226.4091796875,
+              226.4130859375,
+              226.5869140625
+            ],
+            "min": 226.4091796875,
+            "median": 226.4130859375,
+            "max": 226.5869140625
+          },
+          "median_added_cycles": 9.0029296875,
+          "median_added_percent": 4.140988554898755
+        },
+        "queue_nowait": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 409469,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 409802,
+                "ticks": 3,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 409463,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              399.8720703125,
+              400.197265625,
+              399.8662109375
+            ],
+            "min": 399.8662109375,
+            "median": 399.8720703125,
+            "max": 400.197265625
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 410534,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 410534,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 410882,
+                "ticks": 3,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              400.912109375,
+              400.912109375,
+              401.251953125
+            ],
+            "min": 400.912109375,
+            "median": 400.912109375,
+            "max": 401.251953125
+          },
+          "median_added_cycles": 1.0400390625,
+          "median_added_percent": 0.260092949649424
+        },
+        "notify_nowait": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 232031,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 231854,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 231853,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              226.5927734375,
+              226.419921875,
+              226.4189453125
+            ],
+            "min": 226.4189453125,
+            "median": 226.419921875,
+            "max": 226.5927734375
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 243482,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 244129,
+                "ticks": 1,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 243861,
+                "ticks": 2,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              237.775390625,
+              238.4072265625,
+              238.1455078125
+            ],
+            "min": 237.775390625,
+            "median": 238.1455078125,
+            "max": 238.4072265625
+          },
+          "median_added_cycles": 11.7255859375,
+          "median_added_percent": 5.1786900376961365
+        },
+        "sem_pingpong": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 1391228,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 1391277,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 1391621,
+                "ticks": 9,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              1358.62109375,
+              1358.6689453125,
+              1359.0048828125
+            ],
+            "min": 1358.62109375,
+            "median": 1358.6689453125,
+            "max": 1359.0048828125
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 2217711,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 2218050,
+                "ticks": 14,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 2217774,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              2165.7333984375,
+              2166.064453125,
+              2165.794921875
+            ],
+            "min": 2165.7333984375,
+            "median": 2165.794921875,
+            "max": 2166.064453125
+          },
+          "median_added_cycles": 807.1259765625,
+          "median_added_percent": 59.40563956710274
+        },
+        "queue_pingpong": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 1751211,
+                "ticks": 10,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 1751449,
+                "ticks": 11,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 1751461,
+                "ticks": 11,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              1710.1669921875,
+              1710.3994140625,
+              1710.4111328125
+            ],
+            "min": 1710.1669921875,
+            "median": 1710.3994140625,
+            "max": 1710.4111328125
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 2586898,
+                "ticks": 15,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 2586863,
+                "ticks": 15,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 2586898,
+                "ticks": 15,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              2526.267578125,
+              2526.2333984375,
+              2526.267578125
+            ],
+            "min": 2526.2333984375,
+            "median": 2526.267578125,
+            "max": 2526.267578125
+          },
+          "median_added_cycles": 815.8681640625,
+          "median_added_percent": 47.70044688712032
+        },
+        "notify_pingpong": {
+          "off": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 1326608,
+                "ticks": 7,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 1326975,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 1326958,
+                "ticks": 8,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              1295.515625,
+              1295.8740234375,
+              1295.857421875
+            ],
+            "min": 1295.515625,
+            "median": 1295.857421875,
+            "max": 1295.8740234375
+          },
+          "on": {
+            "raw_samples": [
+              {
+                "round": 0,
+                "operations": 1024,
+                "cycles": 2163630,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 1,
+                "operations": 1024,
+                "cycles": 2163753,
+                "ticks": 13,
+                "checksum": 524800,
+                "errors": 0
+              },
+              {
+                "round": 2,
+                "operations": 1024,
+                "cycles": 2163397,
+                "ticks": 12,
+                "checksum": 524800,
+                "errors": 0
+              }
+            ],
+            "cycles_per_exchange": [
+              2112.919921875,
+              2113.0400390625,
+              2112.6923828125
+            ],
+            "min": 2112.6923828125,
+            "median": 2112.919921875,
+            "max": 2113.0400390625
+          },
+          "median_added_cycles": 817.0625,
+          "median_added_percent": 63.05188257653972
+        }
+      },
+      "memory": {
+        "bss_data_bytes": {
+          "off": 41612,
+          "on": 44208,
+          "added": 2596
+        },
+        "allocated_nobits_bytes": {
+          "off": 43040,
+          "on": 45632,
+          "added": 2592
+        },
+        "allocated_file_bytes": {
+          "off": 39216,
+          "on": 42660,
+          "added": 3444
+        },
+        "writable_allocated_bytes": {
+          "off": 43160,
+          "on": 45756,
+          "added": 2596
+        },
+        "diagnostic_defined_function_bytes": {
+          "off": 0,
+          "on": 376,
+          "added": 376
+        },
+        "diagnostic_defined_object_bytes": {
+          "off": 0,
+          "on": 2596,
+          "added": 2596
+        }
+      }
+    }
+  ],
+  "captures": {
+    "O2_off": {
+      "path": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O2_off",
+      "identity_sha256": "4802fa7025092ddb4d25d2a465f44933b0c17d27a6a79fe411d42e6cd013c545",
+      "elf_sha256": "84b446081e2d0da34fc3278eba8599c3a9833073d8f8f9000c6b2d15c5491a04",
+      "elf_details": {
+        "allocated_sections": {
+          ".isr_vector": {
+            "type": 1,
+            "flags": 2,
+            "address": 134217728,
+            "bytes": 452,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".text": {
+            "type": 1,
+            "flags": 6,
+            "address": 134218192,
+            "bytes": 31060,
+            "alignment": 16,
+            "stored_in_file": true
+          },
+          ".rodata": {
+            "type": 1,
+            "flags": 2,
+            "address": 134249252,
+            "bytes": 5128,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".ARM": {
+            "type": 1879048193,
+            "flags": 130,
+            "address": 134254380,
+            "bytes": 8,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".preinit_array": {
+            "type": 16,
+            "flags": 3,
+            "address": 134254388,
+            "bytes": 0,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".init_array": {
+            "type": 14,
+            "flags": 3,
+            "address": 134254388,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".fini_array": {
+            "type": 15,
+            "flags": 3,
+            "address": 134254392,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".data": {
+            "type": 1,
+            "flags": 3,
+            "address": 536870912,
+            "bytes": 112,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".bss": {
+            "type": 8,
+            "flags": 3,
+            "address": 536871024,
+            "bytes": 41500,
+            "alignment": 8,
+            "stored_in_file": false
+          },
+          "._user_heap_stack": {
+            "type": 8,
+            "flags": 3,
+            "address": 536912524,
+            "bytes": 1540,
+            "alignment": 1,
+            "stored_in_file": false
+          }
+        },
+        "bss_data_bytes": 41612,
+        "allocated_nobits_bytes": 43040,
+        "allocated_file_bytes": 36768,
+        "writable_allocated_bytes": 43160,
+        "diagnostic_defined_function_bytes": 0,
+        "diagnostic_defined_object_bytes": 0,
+        "diagnostic_symbols": []
+      },
+      "arm_tools": [
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-size.exe",
+            "-A",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O2_off\\firmware_bench_O2_off.elf"
+          ],
+          "exit_code": 0,
+          "output": "O2_off_size.txt",
+          "output_sha256": "b0c4cdaeac3c83f7f72bc9b520e5da7c15181b6ef1f5b34c298bfec5473c7029"
+        },
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-nm.exe",
+            "-S",
+            "--size-sort",
+            "--radix=d",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O2_off\\firmware_bench_O2_off.elf"
+          ],
+          "exit_code": 0,
+          "output": "O2_off_nm.txt",
+          "output_sha256": "157bb187c80f75916db1278279786448f23b2f193eb87a4e22cb29354ff795b6"
+        }
+      ]
+    },
+    "O2_on": {
+      "path": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O2_on",
+      "identity_sha256": "57b88b03eef830a5f309be38a41d7d4064830e8096174f07d62ec4c2b3741947",
+      "elf_sha256": "f3463da2120f280e364ceed4081d68b7adaef47d40010404a1b9b89608ed86ab",
+      "elf_details": {
+        "allocated_sections": {
+          ".isr_vector": {
+            "type": 1,
+            "flags": 2,
+            "address": 134217728,
+            "bytes": 452,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".text": {
+            "type": 1,
+            "flags": 6,
+            "address": 134218192,
+            "bytes": 34400,
+            "alignment": 16,
+            "stored_in_file": true
+          },
+          ".rodata": {
+            "type": 1,
+            "flags": 2,
+            "address": 134252592,
+            "bytes": 5200,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".ARM": {
+            "type": 1879048193,
+            "flags": 130,
+            "address": 134257792,
+            "bytes": 8,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".preinit_array": {
+            "type": 16,
+            "flags": 3,
+            "address": 134257800,
+            "bytes": 0,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".init_array": {
+            "type": 14,
+            "flags": 3,
+            "address": 134257800,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".fini_array": {
+            "type": 15,
+            "flags": 3,
+            "address": 134257804,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".data": {
+            "type": 1,
+            "flags": 3,
+            "address": 536870912,
+            "bytes": 116,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".bss": {
+            "type": 8,
+            "flags": 3,
+            "address": 536871032,
+            "bytes": 44092,
+            "alignment": 8,
+            "stored_in_file": false
+          },
+          "._user_heap_stack": {
+            "type": 8,
+            "flags": 3,
+            "address": 536915124,
+            "bytes": 1540,
+            "alignment": 1,
+            "stored_in_file": false
+          }
+        },
+        "bss_data_bytes": 44208,
+        "allocated_nobits_bytes": 45632,
+        "allocated_file_bytes": 40184,
+        "writable_allocated_bytes": 45756,
+        "diagnostic_defined_function_bytes": 392,
+        "diagnostic_defined_object_bytes": 2596,
+        "diagnostic_symbols": [
+          {
+            "name": "rtos_diag_emit_locked.part.0",
+            "address": 134244649,
+            "bytes": 264,
+            "type": 2,
+            "binding": 0,
+            "section": ".text"
+          },
+          {
+            "name": "diag_fault_code",
+            "address": 536909380,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_fault_pc",
+            "address": 536909384,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_fault_valid",
+            "address": 536909388,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_frozen",
+            "address": 536909392,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_identity_exhausted",
+            "address": 536909396,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_sequence_exhausted",
+            "address": 536909400,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_slots",
+            "address": 536909404,
+            "bytes": 2560,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_trigger",
+            "address": 536911964,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_writing",
+            "address": 536911968,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_next_sequence",
+            "address": 536870932,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".data"
+          },
+          {
+            "name": "rtos_diag_emit_locked",
+            "address": 134244913,
+            "bytes": 28,
+            "type": 2,
+            "binding": 1,
+            "section": ".text"
+          },
+          {
+            "name": "rtos_diag_fault_freeze",
+            "address": 134244977,
+            "bytes": 64,
+            "type": 2,
+            "binding": 1,
+            "section": ".text"
+          },
+          {
+            "name": "rtos_diag_identity_exhausted_locked",
+            "address": 134244941,
+            "bytes": 36,
+            "type": 2,
+            "binding": 1,
+            "section": ".text"
+          }
+        ]
+      },
+      "arm_tools": [
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-size.exe",
+            "-A",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O2_on\\firmware_bench_O2_on.elf"
+          ],
+          "exit_code": 0,
+          "output": "O2_on_size.txt",
+          "output_sha256": "3ba82de4cce53db5489f3f84e9b524e96cfd69aea75afcc932ab739000c52f5e"
+        },
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-nm.exe",
+            "-S",
+            "--size-sort",
+            "--radix=d",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O2_on\\firmware_bench_O2_on.elf"
+          ],
+          "exit_code": 0,
+          "output": "O2_on_nm.txt",
+          "output_sha256": "3135adedbe7b3686809002d3a6bb28b70b62fcd8c4036627efa004530c305146"
+        }
+      ]
+    },
+    "O3_off": {
+      "path": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O3_off",
+      "identity_sha256": "eb4ff8b8ad37c68319f61afd8ab25a1846962f46970663761f6d0a8a7d771b7c",
+      "elf_sha256": "d815a6830c866eb9eb67a419497876d467cb9270d3f24aab34294bd0c9b15629",
+      "elf_details": {
+        "allocated_sections": {
+          ".isr_vector": {
+            "type": 1,
+            "flags": 2,
+            "address": 134217728,
+            "bytes": 452,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".text": {
+            "type": 1,
+            "flags": 6,
+            "address": 134218192,
+            "bytes": 33508,
+            "alignment": 16,
+            "stored_in_file": true
+          },
+          ".rodata": {
+            "type": 1,
+            "flags": 2,
+            "address": 134251700,
+            "bytes": 5128,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".ARM": {
+            "type": 1879048193,
+            "flags": 130,
+            "address": 134256828,
+            "bytes": 8,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".preinit_array": {
+            "type": 16,
+            "flags": 3,
+            "address": 134256836,
+            "bytes": 0,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".init_array": {
+            "type": 14,
+            "flags": 3,
+            "address": 134256836,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".fini_array": {
+            "type": 15,
+            "flags": 3,
+            "address": 134256840,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".data": {
+            "type": 1,
+            "flags": 3,
+            "address": 536870912,
+            "bytes": 112,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".bss": {
+            "type": 8,
+            "flags": 3,
+            "address": 536871024,
+            "bytes": 41500,
+            "alignment": 8,
+            "stored_in_file": false
+          },
+          "._user_heap_stack": {
+            "type": 8,
+            "flags": 3,
+            "address": 536912524,
+            "bytes": 1540,
+            "alignment": 1,
+            "stored_in_file": false
+          }
+        },
+        "bss_data_bytes": 41612,
+        "allocated_nobits_bytes": 43040,
+        "allocated_file_bytes": 39216,
+        "writable_allocated_bytes": 43160,
+        "diagnostic_defined_function_bytes": 0,
+        "diagnostic_defined_object_bytes": 0,
+        "diagnostic_symbols": []
+      },
+      "arm_tools": [
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-size.exe",
+            "-A",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O3_off\\firmware_bench_O3_off.elf"
+          ],
+          "exit_code": 0,
+          "output": "O3_off_size.txt",
+          "output_sha256": "c9dc4439dcbdc1a1251199f5dea734136dfd908582900284f345fa97739f88c5"
+        },
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-nm.exe",
+            "-S",
+            "--size-sort",
+            "--radix=d",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O3_off\\firmware_bench_O3_off.elf"
+          ],
+          "exit_code": 0,
+          "output": "O3_off_nm.txt",
+          "output_sha256": "64b2bf455467e835dba32bfb163e5d0315c7371a31b7d2e9cfca02ac5d61c7c4"
+        }
+      ]
+    },
+    "O3_on": {
+      "path": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O3_on",
+      "identity_sha256": "57ed32809e138b5cc36a7d13b63687dbf8aa3b504c91cf93481b8ca455229e59",
+      "elf_sha256": "7a73effad83f233fe9fd8341b21d4ebc11458a537488e9a204d1ae701e749773",
+      "elf_details": {
+        "allocated_sections": {
+          ".isr_vector": {
+            "type": 1,
+            "flags": 2,
+            "address": 134217728,
+            "bytes": 452,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".text": {
+            "type": 1,
+            "flags": 6,
+            "address": 134218192,
+            "bytes": 36876,
+            "alignment": 16,
+            "stored_in_file": true
+          },
+          ".rodata": {
+            "type": 1,
+            "flags": 2,
+            "address": 134255068,
+            "bytes": 5200,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".ARM": {
+            "type": 1879048193,
+            "flags": 130,
+            "address": 134260268,
+            "bytes": 8,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".preinit_array": {
+            "type": 16,
+            "flags": 3,
+            "address": 134260276,
+            "bytes": 0,
+            "alignment": 1,
+            "stored_in_file": true
+          },
+          ".init_array": {
+            "type": 14,
+            "flags": 3,
+            "address": 134260276,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".fini_array": {
+            "type": 15,
+            "flags": 3,
+            "address": 134260280,
+            "bytes": 4,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".data": {
+            "type": 1,
+            "flags": 3,
+            "address": 536870912,
+            "bytes": 116,
+            "alignment": 4,
+            "stored_in_file": true
+          },
+          ".bss": {
+            "type": 8,
+            "flags": 3,
+            "address": 536871032,
+            "bytes": 44092,
+            "alignment": 8,
+            "stored_in_file": false
+          },
+          "._user_heap_stack": {
+            "type": 8,
+            "flags": 3,
+            "address": 536915124,
+            "bytes": 1540,
+            "alignment": 1,
+            "stored_in_file": false
+          }
+        },
+        "bss_data_bytes": 44208,
+        "allocated_nobits_bytes": 45632,
+        "allocated_file_bytes": 42660,
+        "writable_allocated_bytes": 45756,
+        "diagnostic_defined_function_bytes": 376,
+        "diagnostic_defined_object_bytes": 2596,
+        "diagnostic_symbols": [
+          {
+            "name": "diag_fault_code",
+            "address": 536909380,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_fault_pc",
+            "address": 536909384,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_fault_valid",
+            "address": 536909388,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_frozen",
+            "address": 536909392,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_identity_exhausted",
+            "address": 536909396,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_sequence_exhausted",
+            "address": 536909400,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_slots",
+            "address": 536909404,
+            "bytes": 2560,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_trigger",
+            "address": 536911964,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_writing",
+            "address": 536911968,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".bss"
+          },
+          {
+            "name": "diag_next_sequence",
+            "address": 536870932,
+            "bytes": 4,
+            "type": 1,
+            "binding": 0,
+            "section": ".data"
+          },
+          {
+            "name": "rtos_diag_emit_locked",
+            "address": 134246385,
+            "bytes": 276,
+            "type": 2,
+            "binding": 1,
+            "section": ".text"
+          },
+          {
+            "name": "rtos_diag_fault_freeze",
+            "address": 134246697,
+            "bytes": 64,
+            "type": 2,
+            "binding": 1,
+            "section": ".text"
+          },
+          {
+            "name": "rtos_diag_identity_exhausted_locked",
+            "address": 134246661,
+            "bytes": 36,
+            "type": 2,
+            "binding": 1,
+            "section": ".text"
+          }
+        ]
+      },
+      "arm_tools": [
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-size.exe",
+            "-A",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O3_on\\firmware_bench_O3_on.elf"
+          ],
+          "exit_code": 0,
+          "output": "O3_on_size.txt",
+          "output_sha256": "94d3d50c272d6018883e6ada8a47f2a4be98b33d7d26f63314fbe48a7f6a90d8"
+        },
+        {
+          "command": [
+            "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-nm.exe",
+            "-S",
+            "--size-sort",
+            "--radix=d",
+            "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\evidence\\performance\\bench_O3_on\\firmware_bench_O3_on.elf"
+          ],
+          "exit_code": 0,
+          "output": "O3_on_nm.txt",
+          "output_sha256": "edbdc2807ddc6e0447b74315f4e08b6ca1ad6c0e9fbdc4299e98750edecb8e3e"
+        }
+      ]
+    }
+  },
+  "analysis_sources": {
+    "compare_performance.py": "83f0e84697485277a0637a3d2288dc07770733b0b3fafba24e708da48dee4f70",
+    "verify_results.py": "275fd37f1a5cbaf03e10c11e1878bf156f1c4d7adf9d71db65a3323ff4d02264"
+  },
+  "limits": [
+    "Three samples per path; no statistical confidence or WCET guarantee",
+    "Samples include loop, scheduler and SysTick interference",
+    "Symbols do not fully attribute inline call-site or alignment cost",
+    "ON/OFF performance does not itself prove an absence of all bugs"
+  ]
+}

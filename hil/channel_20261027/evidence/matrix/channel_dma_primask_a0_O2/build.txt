@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'channel_dma' OK -- real DMA2 memory-to-memory loan publication and safe shutdown; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  40780	    120	  74952	 115852	  1c48c	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

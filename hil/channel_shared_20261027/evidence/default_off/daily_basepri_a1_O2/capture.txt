@@ -1,0 +1,29 @@
+===== daily_basepri_a1_O2 (1028 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\channel_shared_20261027\evidence\default_off\daily_basepri_a1_O2\log_daily_basepri_a1_O2.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+[I/USB] ========== dwc2 dcd params ==========
+[I/USB] CID:00002000
+[I/USB] GSNPSID:4f54320a
+[I/USB] GHWCFG1:00000000
+[I/USB] GHWCFG2:229ed520
+[I/USB] GHWCFG3:0200d1e8
+[I/USB] GHWCFG4:17f08030
+[I/USB] dwc2 has 6 endpoints and dfifo depth(32-bit words) is 320
+[I/USB] fifo0 size:0010, offset:00b0
+[I/USB] fifo1 size:0040, offset:00c0
+[I/USB] fifo2 size:0010, offset:0100
+[I/USB] fifo3 size:0010, offset:0110
+[I/USB] fifo4 size:0010, offset:0120
+[I/USB] fifo5 size:0010, offset:0130
+task 1 running
+task 0 running
+

@@ -1,0 +1,191 @@
+{
+  "status": "PASS",
+  "oracle_sha256": "dfe9f4faf14431858c5bb9e8dc9e64fce873386fa8d85bc899394ba595a335e8",
+  "test_source_sha256": "833050426d3dd2eeecb6746b78c8c154fb61dba96ce860d0b9ecc1975408cbe2",
+  "checks": 27,
+  "originals_unchanged": true,
+  "originals": {
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\build.txt": "a4f3cb0217b267578c72aa3d7ee63b08dec77685253c47882e4b61b5d19d58c2",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\build_detail.txt": "d96847dc2cb4e90ad8d6ab9a4d34125c26e28f9defedbf878035ace2ace28b9f",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\capture.txt": "8d45c6dc570b9fbb8fe0f752551c82b54e84ca012753eca57c45f96f25cf71a9",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\firmware_channel_checks_basepri_a1_O2.elf": "253b57aa19a51c4a1554f8a2d0e2b795224e991debe7386ebe30a1a01ce15f1d",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\flash_channel_checks_basepri_a1_O2.txt": "b4d3e3f822d46e710b6720e500a298ac94c7ac6b2f0d0b6e5e63ff184306ebf5",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\identity.json": "a57342b7a5758fec41ac0c96e4b716e4be9d39cc3594dcfc7ac5608114e13459",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\log_channel_checks_basepri_a1_O2.txt": "0961d63a403c71e78fd53108afea0143ce11a0ac1f3a611a3849b585fabb933b",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\run_channel_checks_basepri_a1_O2.json": "617d34c0b0a5a88d94bcbcfa8552ecb224d6b7fa1aced99067d83259f79064bd",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_checks_basepri_a1_O2\\sources.json": "23af76d17904b05a03ec6d461e01af12e88b3d5182aea98e35bc437c2c52b668",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_bench_basepri_a1_O2\\log_channel_bench_basepri_a1_O2.txt": "860d3fff1299ee52e02e809a43b88130b3314456d0496999f55df6ccf29f59f5",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_profile_basepri_a1_O2\\log_channel_profile_basepri_a1_O2.txt": "167b8941461e19d3e9c1871e5716154373ff1f1b40d5f296c4243b61002596aa",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_stress_basepri_a0_O0\\log_channel_stress_basepri_a0_O0.txt": "d525bfcf71dcd08e2066bed4a218b442ad1a8f1dee8c3b4b5c993267cf174258",
+    "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\channel_shared_20261027\\evidence\\optimized\\channel_stress_negative_basepri_a1_O2\\log_channel_stress_negative_basepri_a1_O2.txt": "de927050a809072eb2b1646b2d9b9cabf3e49299f19e5f5d60f5fa15610492df"
+  },
+  "missing": [],
+  "results": [
+    {
+      "name": "real_capture_control",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "unaltered real evidence accepted"
+    },
+    {
+      "name": "extra_failed_verdict",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "no extra failed verdicts"
+    },
+    {
+      "name": "malformed_check_verdict",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "no malformed check verdicts"
+    },
+    {
+      "name": "actual_fault_report",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "no fatal fault"
+    },
+    {
+      "name": "wrong_compiled_optimization",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "uniform labeled optimization"
+    },
+    {
+      "name": "wrong_firmware_bytes",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "flashed ELF identity"
+    },
+    {
+      "name": "wrong_built_elf_binding",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "flashed ELF identity"
+    },
+    {
+      "name": "missing_flash_verification",
+      "scope": "complete_capture_copy",
+      "passed": true,
+      "detail": "expected physical ST-LINK and successful verification"
+    },
+    {
+      "name": "bench_real_uart_control",
+      "scope": "real_uart_only",
+      "passed": true,
+      "detail": "unaltered real evidence accepted"
+    },
+    {
+      "name": "bench_missing_cell",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "270 distinct measurements, no missing/duplicate cell"
+    },
+    {
+      "name": "bench_duplicate_cell_same_row_count",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "270 distinct measurements, no missing/duplicate cell"
+    },
+    {
+      "name": "bench_incorrect_message_work",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "matched work, valid cycles, data and no DWT overflow"
+    },
+    {
+      "name": "profile_real_uart_control",
+      "scope": "real_uart_only",
+      "passed": true,
+      "detail": "unaltered real evidence accepted"
+    },
+    {
+      "name": "profile_missing_cell",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "280 distinct IRQ measurements, complete size/API/waiter matrix"
+    },
+    {
+      "name": "profile_duplicate_cell_same_row_count",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "280 distinct IRQ measurements, complete size/API/waiter matrix"
+    },
+    {
+      "name": "profile_incorrect_hook_hits",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "exactly one actual legal IRQ and successful operation per sample"
+    },
+    {
+      "name": "profile_incorrect_irq_count",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "exactly one actual legal IRQ and successful operation per sample"
+    },
+    {
+      "name": "stress_real_uart_control",
+      "scope": "real_uart_only",
+      "passed": true,
+      "detail": "unaltered real evidence accepted"
+    },
+    {
+      "name": "stress_zero_consumer_unchanged_total",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "each consumer participates and counts sum"
+    },
+    {
+      "name": "stress_missing_task_diagnostic",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "all eight tasks and the IRQ have diagnostics"
+    },
+    {
+      "name": "stress_unclassified_task_error",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "no unclassified API/timeout errors; all consumers close"
+    },
+    {
+      "name": "stress_incorrect_business_pacing",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "explicit business pacing and diagnostics"
+    },
+    {
+      "name": "stress_negative_real_uart_control",
+      "scope": "real_uart_only",
+      "passed": true,
+      "detail": "unaltered real evidence accepted"
+    },
+    {
+      "name": "stress_negative_additional_failure",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "no extra failed verdicts"
+    },
+    {
+      "name": "stress_negative_additional_malformed_failure",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "no malformed check verdicts"
+    },
+    {
+      "name": "stress_negative_different_failure_name",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "only specified injected failures"
+    },
+    {
+      "name": "stress_negative_second_corruption",
+      "scope": "real_uart_copy",
+      "passed": true,
+      "detail": "exact message ledger"
+    }
+  ],
+  "limitations": [
+    "Mutation tests validate the oracle, not another hardware run",
+    "UART-only baselines do not supply fresh-build or ELF proof"
+  ]
+}

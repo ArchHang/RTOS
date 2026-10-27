@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "checks_basepri_a1_O2",
+    "started":  "2026-10-27T16:34:43.5301465+08:00",
+    "finished":  "2026-10-27T16:34:48.3905393+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "D33C31B371ACEB0E06EBADC108B8D5016815785559F5727EC42C1D650887E3B6",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "DG\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

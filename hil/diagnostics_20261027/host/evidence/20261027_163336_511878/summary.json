@@ -1,0 +1,85 @@
+{
+  "status": "PASS",
+  "source_identity_stable": true,
+  "results": [
+    {
+      "tag": "O0_c8_on1",
+      "optimization": "O0",
+      "capacity": 8,
+      "enabled": 1,
+      "checks": 6192,
+      "executable_sha256": "da5a9cf1defc6694901e9dc8c5ea6b3bf571081cd7ec8632b3b6d6b3ee85c331",
+      "passed": true
+    },
+    {
+      "tag": "O0_c64_on1",
+      "optimization": "O0",
+      "capacity": 64,
+      "enabled": 1,
+      "checks": 32932,
+      "executable_sha256": "598449a2c05ebe107303f589574f1af15f095f09e5ce0b4b2520a94393620864",
+      "passed": true
+    },
+    {
+      "tag": "O0_c1024_on1",
+      "optimization": "O0",
+      "capacity": 1024,
+      "enabled": 1,
+      "checks": 515749,
+      "executable_sha256": "7d0fca44015ee630152209cf309933af7182fecebfaa00d9151c21cdbb1726b0",
+      "passed": true
+    },
+    {
+      "tag": "O3_c8_on1",
+      "optimization": "O3",
+      "capacity": 8,
+      "enabled": 1,
+      "checks": 6192,
+      "executable_sha256": "5993025a846f68a9f9028a288aaa217c39c2219c4c59360ae1ffd98826b6da9c",
+      "passed": true
+    },
+    {
+      "tag": "O3_c64_on1",
+      "optimization": "O3",
+      "capacity": 64,
+      "enabled": 1,
+      "checks": 32932,
+      "executable_sha256": "efc11e3e9ebbc58cbe0a9e7fbcb71d0bfc617ec81c5a62185a15cbb8c7d40914",
+      "passed": true
+    },
+    {
+      "tag": "O3_c1024_on1",
+      "optimization": "O3",
+      "capacity": 1024,
+      "enabled": 1,
+      "checks": 515749,
+      "executable_sha256": "886c7b4e424ade04fa7b31fdb46208bc82d62b6c5013a064fe2dc832cbb12345",
+      "passed": true
+    },
+    {
+      "tag": "O0_c64_on0",
+      "optimization": "O0",
+      "capacity": 64,
+      "enabled": 0,
+      "checks": 13,
+      "executable_sha256": "51947c1c2387ce5009456d22eea864b7b517e5883606aa6e0980460310bf17e3",
+      "passed": true
+    },
+    {
+      "tag": "O3_c64_on0",
+      "optimization": "O3",
+      "capacity": 64,
+      "enabled": 0,
+      "checks": 13,
+      "executable_sha256": "5c361bd2370b90514621724375385d7bc89844c41c952ea041409375b9ce4fee",
+      "passed": true
+    }
+  ],
+  "scope": "native recorder + scripted single-thread mock exclusion",
+  "sanitizer": "none",
+  "limits": [
+    "No Cortex-M timing or real interrupt concurrency",
+    "No ASan/UBSan instrumentation",
+    "No proof of all possible RTOS bugs"
+  ]
+}

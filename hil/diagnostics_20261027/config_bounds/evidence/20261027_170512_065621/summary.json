@@ -1,0 +1,3455 @@
+{
+  "status": "PASS",
+  "completed_utc": "2026-10-27T09:05:12.946245+00:00",
+  "checks": 10,
+  "passed": 10,
+  "source_identity_stable": true,
+  "expected_error": "Diagnostic capacity must be a power of two in [8, 1024]",
+  "results": [
+    {
+      "tag": "diagnostics1_capacity0",
+      "enabled": 1,
+      "capacity": 0,
+      "expected_compile": false,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=0",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity0.o"
+      ],
+      "exit_code": 1,
+      "diagnostics": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:19:2: error: #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n   19 | #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n      |  ^~~~~\nE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c: In function 'rtos_diag_get_info':\nE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:259:37: error: comparison of unsigned expression in '< 0' is always false [-Werror=type-limits]\n  259 |     for (uint32_t index = 0U; index < RTOS_CONFIG_DIAGNOSTIC_CAPACITY; index++) {\n      |                                     ^\ncc1.exe: all warnings being treated as errors\n",
+      "exact_capacity_error": true,
+      "passed": true
+    },
+    {
+      "tag": "diagnostics1_capacity1",
+      "enabled": 1,
+      "capacity": 1,
+      "expected_compile": false,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=1",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity1.o"
+      ],
+      "exit_code": 1,
+      "diagnostics": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:19:2: error: #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n   19 | #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n      |  ^~~~~\n",
+      "exact_capacity_error": true,
+      "passed": true
+    },
+    {
+      "tag": "diagnostics1_capacity7",
+      "enabled": 1,
+      "capacity": 7,
+      "expected_compile": false,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=7",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity7.o"
+      ],
+      "exit_code": 1,
+      "diagnostics": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:19:2: error: #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n   19 | #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n      |  ^~~~~\n",
+      "exact_capacity_error": true,
+      "passed": true
+    },
+    {
+      "tag": "diagnostics1_capacity12",
+      "enabled": 1,
+      "capacity": 12,
+      "expected_compile": false,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=12",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity12.o"
+      ],
+      "exit_code": 1,
+      "diagnostics": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:19:2: error: #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n   19 | #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n      |  ^~~~~\n",
+      "exact_capacity_error": true,
+      "passed": true
+    },
+    {
+      "tag": "diagnostics1_capacity1025",
+      "enabled": 1,
+      "capacity": 1025,
+      "expected_compile": false,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=1025",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity1025.o"
+      ],
+      "exit_code": 1,
+      "diagnostics": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:19:2: error: #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n   19 | #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n      |  ^~~~~\n",
+      "exact_capacity_error": true,
+      "passed": true
+    },
+    {
+      "tag": "diagnostics1_capacity2048",
+      "enabled": 1,
+      "capacity": 2048,
+      "expected_compile": false,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=2048",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity2048.o"
+      ],
+      "exit_code": 1,
+      "diagnostics": "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c:19:2: error: #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n   19 | #error \"Diagnostic capacity must be a power of two in [8, 1024]\"\n      |  ^~~~~\n",
+      "exact_capacity_error": true,
+      "passed": true
+    },
+    {
+      "tag": "diagnostics1_capacity8",
+      "enabled": 1,
+      "capacity": 8,
+      "expected_compile": true,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=8",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity8.o"
+      ],
+      "exit_code": 0,
+      "diagnostics": "",
+      "passed": true,
+      "object_sha256": "302f14ab8955b0bbdda9a389cc8313064a7655219138fcb7c6df766a3ec6a9b4",
+      "allocated_sections": {
+        ".text": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 0,
+          "alignment": 2,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".data": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".bss": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": null,
+          "relocations": []
+        },
+        ".text.rtos_diag_emit_locked.part.0": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 264,
+          "alignment": 4,
+          "content": "2780597e3af748f68b592b1a25c2534cc10cef6acac88006522fd724805de6e6",
+          "relocations": [
+            {
+              "offset": 236,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_next_sequence"
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_slots"
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_sequence_exhausted"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "rtos_kernel",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.diag_copy_slot": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 264,
+          "alignment": 4,
+          "content": "eff46f134919e1e524ab849cea5a9338462094a4e235be171679a78e7efdc6e2",
+          "relocations": [
+            {
+              "offset": 196,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 220,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_slots"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_emit_locked": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 28,
+          "alignment": 4,
+          "content": "b0fe47c03c3b4189c08487b7ef239d9596d7b3d23957b80c4f012d8bf0dd52c7",
+          "relocations": [
+            {
+              "offset": 24,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 18,
+              "type": 30,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            }
+          ]
+        },
+        ".text.rtos_diag_identity_exhausted_locked": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 36,
+          "alignment": 4,
+          "content": "9468a78a378b31d2ed2c5949310edb99cd5260c74c274f99caed866c201822ea",
+          "relocations": [
+            {
+              "offset": 24,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 28,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_identity_exhausted"
+            },
+            {
+              "offset": 32,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_record": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 172,
+          "alignment": 4,
+          "content": "f8dddf765cb53fdabc24337c324b07dd67a62d041e95fb6f648bd8d1fdf86c4c",
+          "relocations": [
+            {
+              "offset": 78,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 152,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 160,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 136,
+              "type": 30,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_status": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "7040d0583e5ecac60bcce75fd4f0cb1bb00b9bca35804d24955e7052a0c7e049",
+          "relocations": [
+            {
+              "offset": 78,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 134,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 156,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_value": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "f23769cbfaee8ec367fa30863a91a1d43761c5b8ccc973cf08a8a467743333d2",
+          "relocations": [
+            {
+              "offset": 80,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 136,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 158,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_reset": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 280,
+          "alignment": 4,
+          "content": "b290e3d8205bc13e696d79e424d9ad7944ab31da5d838e272a5accc8f6646988",
+          "relocations": [
+            {
+              "offset": 154,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 170,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 218,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 228,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 232,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 236,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_identity_exhausted"
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_sequence_exhausted"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_next_sequence"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 264,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 268,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            },
+            {
+              "offset": 272,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 276,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            }
+          ]
+        },
+        ".text.rtos_diag_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "f6a5934b0895277a2bdc4b0db240a339334f12fdd13f05846e2e349be278565f",
+          "relocations": [
+            {
+              "offset": 10,
+              "type": 10,
+              "symbol": "rtos_port_isr_priority",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 124,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 140,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 160,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".text.rtos_diag_mark": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 208,
+          "alignment": 4,
+          "content": "404bca7958406982ac67a4442edd898a48cb600a461567d55fa4fc083a5430a9",
+          "relocations": [
+            {
+              "offset": 14,
+              "type": 10,
+              "symbol": "rtos_port_isr_priority",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 154,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 164,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 180,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 192,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 196,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 200,
+              "type": 2,
+              "symbol": "rtos_kernel",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 204,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_get_info": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 428,
+          "alignment": 4,
+          "content": "5876f7d2d860e0bde1bb064591d4c995f5a1ba6c476acc462871aa3f3457e543",
+          "relocations": [
+            {
+              "offset": 178,
+              "type": 10,
+              "symbol": "memset",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 190,
+              "type": 10,
+              "symbol": "diag_copy_slot",
+              "value": 1,
+              "target_section": ".text.diag_copy_slot"
+            },
+            {
+              "offset": 308,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 322,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 376,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 388,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 392,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 396,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 400,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 404,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 408,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 412,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 416,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 420,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 424,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            }
+          ]
+        },
+        ".text.rtos_diag_read": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 108,
+          "alignment": 4,
+          "content": "1a0b3acc2b1f2bda39b8b8cc054af0710fc45e27482907f15e9eeb323872177a",
+          "relocations": [
+            {
+              "offset": 38,
+              "type": 10,
+              "symbol": "diag_copy_slot",
+              "value": 1,
+              "target_section": ".text.diag_copy_slot"
+            }
+          ]
+        },
+        ".text.rtos_diag_explain": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 684,
+          "alignment": 4,
+          "content": "c533397cfb7801a6b4abd725de2796bf25d6b795fcd96a65d7132605e3856371",
+          "relocations": [
+            {
+              "offset": 18,
+              "type": 10,
+              "symbol": "memset",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 54,
+              "type": 10,
+              "symbol": "rtos_diag_get_info",
+              "value": 1,
+              "target_section": ".text.rtos_diag_get_info"
+            },
+            {
+              "offset": 134,
+              "type": 10,
+              "symbol": "rtos_diag_read",
+              "value": 1,
+              "target_section": ".text.rtos_diag_read"
+            },
+            {
+              "offset": 422,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 572,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 658,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 668,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 672,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 676,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 680,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".rodata.CSWTCH.33"
+            }
+          ]
+        },
+        ".text.rtos_diag_fault_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 64,
+          "alignment": 4,
+          "content": "8135a9ed285d482680c622a1c9443a1d7447a3c5488b8ec2ddce1e8011a720d9",
+          "relocations": [
+            {
+              "offset": 44,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 48,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 52,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 56,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            },
+            {
+              "offset": 60,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".bss.diag_fault_code": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_fault_pc": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_fault_valid": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_frozen": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_identity_exhausted": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_sequence_exhausted": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_slots": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 320,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_trigger": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_writing": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".data.diag_next_sequence": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".data.diag_session": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".data.diag_session_first": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".rodata.CSWTCH.33": {
+          "type": 1,
+          "flags": 2,
+          "bytes": 9,
+          "alignment": 4,
+          "content": "c799de64a880425862a15e950365b531d77da1df443688a6c83e1812987a1595",
+          "relocations": []
+        }
+      }
+    },
+    {
+      "tag": "diagnostics1_capacity64",
+      "enabled": 1,
+      "capacity": 64,
+      "expected_compile": true,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=64",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity64.o"
+      ],
+      "exit_code": 0,
+      "diagnostics": "",
+      "passed": true,
+      "object_sha256": "5f4358965deafec677a938fdb17a1f5b2e7ecc7dd6c405bbcc9fbac2e9371c5c",
+      "allocated_sections": {
+        ".text": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 0,
+          "alignment": 2,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".data": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".bss": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": null,
+          "relocations": []
+        },
+        ".text.rtos_diag_emit_locked.part.0": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 264,
+          "alignment": 4,
+          "content": "9db7242390ba97ac31823fbad3a6db9a8873f9104ccf3146d6829cff2a630426",
+          "relocations": [
+            {
+              "offset": 236,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_next_sequence"
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_slots"
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_sequence_exhausted"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "rtos_kernel",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.diag_copy_slot": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 264,
+          "alignment": 4,
+          "content": "eff46f134919e1e524ab849cea5a9338462094a4e235be171679a78e7efdc6e2",
+          "relocations": [
+            {
+              "offset": 196,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 220,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_slots"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_emit_locked": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 28,
+          "alignment": 4,
+          "content": "b0fe47c03c3b4189c08487b7ef239d9596d7b3d23957b80c4f012d8bf0dd52c7",
+          "relocations": [
+            {
+              "offset": 24,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 18,
+              "type": 30,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            }
+          ]
+        },
+        ".text.rtos_diag_identity_exhausted_locked": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 36,
+          "alignment": 4,
+          "content": "9468a78a378b31d2ed2c5949310edb99cd5260c74c274f99caed866c201822ea",
+          "relocations": [
+            {
+              "offset": 24,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 28,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_identity_exhausted"
+            },
+            {
+              "offset": 32,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_record": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 172,
+          "alignment": 4,
+          "content": "f8dddf765cb53fdabc24337c324b07dd67a62d041e95fb6f648bd8d1fdf86c4c",
+          "relocations": [
+            {
+              "offset": 78,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 152,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 160,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 136,
+              "type": 30,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_status": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "7040d0583e5ecac60bcce75fd4f0cb1bb00b9bca35804d24955e7052a0c7e049",
+          "relocations": [
+            {
+              "offset": 78,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 134,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 156,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_value": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "f23769cbfaee8ec367fa30863a91a1d43761c5b8ccc973cf08a8a467743333d2",
+          "relocations": [
+            {
+              "offset": 80,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 136,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 158,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_reset": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 280,
+          "alignment": 4,
+          "content": "b290e3d8205bc13e696d79e424d9ad7944ab31da5d838e272a5accc8f6646988",
+          "relocations": [
+            {
+              "offset": 154,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 170,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 218,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 228,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 232,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 236,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_identity_exhausted"
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_sequence_exhausted"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_next_sequence"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 264,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 268,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            },
+            {
+              "offset": 272,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 276,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            }
+          ]
+        },
+        ".text.rtos_diag_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "f6a5934b0895277a2bdc4b0db240a339334f12fdd13f05846e2e349be278565f",
+          "relocations": [
+            {
+              "offset": 10,
+              "type": 10,
+              "symbol": "rtos_port_isr_priority",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 124,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 140,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 160,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".text.rtos_diag_mark": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 208,
+          "alignment": 4,
+          "content": "404bca7958406982ac67a4442edd898a48cb600a461567d55fa4fc083a5430a9",
+          "relocations": [
+            {
+              "offset": 14,
+              "type": 10,
+              "symbol": "rtos_port_isr_priority",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 154,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 164,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 180,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 192,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 196,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 200,
+              "type": 2,
+              "symbol": "rtos_kernel",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 204,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_get_info": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 436,
+          "alignment": 4,
+          "content": "80abe243d65940bd17c50c36cafb4107810700e6a6c47920ae7ff6491c117bcb",
+          "relocations": [
+            {
+              "offset": 180,
+              "type": 10,
+              "symbol": "memset",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 192,
+              "type": 10,
+              "symbol": "diag_copy_slot",
+              "value": 1,
+              "target_section": ".text.diag_copy_slot"
+            },
+            {
+              "offset": 312,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 326,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 384,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 396,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 400,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 404,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 408,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 412,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 416,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 420,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 424,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 428,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 432,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            }
+          ]
+        },
+        ".text.rtos_diag_read": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 108,
+          "alignment": 4,
+          "content": "b4c10a70d503c6fc0e8d738b4d3408463b5295258846b80dc307afa5d5b46552",
+          "relocations": [
+            {
+              "offset": 38,
+              "type": 10,
+              "symbol": "diag_copy_slot",
+              "value": 1,
+              "target_section": ".text.diag_copy_slot"
+            }
+          ]
+        },
+        ".text.rtos_diag_explain": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 684,
+          "alignment": 4,
+          "content": "8b0bfc041bcdc6233f10de87495cbb0a92f0b47f6c18f4a7c74bf7558bafdb42",
+          "relocations": [
+            {
+              "offset": 18,
+              "type": 10,
+              "symbol": "memset",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 54,
+              "type": 10,
+              "symbol": "rtos_diag_get_info",
+              "value": 1,
+              "target_section": ".text.rtos_diag_get_info"
+            },
+            {
+              "offset": 134,
+              "type": 10,
+              "symbol": "rtos_diag_read",
+              "value": 1,
+              "target_section": ".text.rtos_diag_read"
+            },
+            {
+              "offset": 422,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 572,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 658,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 668,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 672,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 676,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 680,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".rodata.CSWTCH.33"
+            }
+          ]
+        },
+        ".text.rtos_diag_fault_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 64,
+          "alignment": 4,
+          "content": "8135a9ed285d482680c622a1c9443a1d7447a3c5488b8ec2ddce1e8011a720d9",
+          "relocations": [
+            {
+              "offset": 44,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 48,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 52,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 56,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            },
+            {
+              "offset": 60,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".bss.diag_fault_code": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_fault_pc": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_fault_valid": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_frozen": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_identity_exhausted": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_sequence_exhausted": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_slots": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 2560,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_trigger": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_writing": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".data.diag_next_sequence": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".data.diag_session": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".data.diag_session_first": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".rodata.CSWTCH.33": {
+          "type": 1,
+          "flags": 2,
+          "bytes": 9,
+          "alignment": 4,
+          "content": "c799de64a880425862a15e950365b531d77da1df443688a6c83e1812987a1595",
+          "relocations": []
+        }
+      }
+    },
+    {
+      "tag": "diagnostics1_capacity1024",
+      "enabled": 1,
+      "capacity": 1024,
+      "expected_compile": true,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=1",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=1024",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics1_capacity1024.o"
+      ],
+      "exit_code": 0,
+      "diagnostics": "",
+      "passed": true,
+      "object_sha256": "e5d8e5091a4e7fa745eb80b6d48b8bcb73276d07cda8158eff65340dbac66e89",
+      "allocated_sections": {
+        ".text": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 0,
+          "alignment": 2,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".data": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".bss": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": null,
+          "relocations": []
+        },
+        ".text.rtos_diag_emit_locked.part.0": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 264,
+          "alignment": 4,
+          "content": "a9465d81cc1c1713981752ca9c06589caae2f1333757c6a1f176af2ab9765d39",
+          "relocations": [
+            {
+              "offset": 236,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_next_sequence"
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_slots"
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_sequence_exhausted"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "rtos_kernel",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.diag_copy_slot": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 264,
+          "alignment": 4,
+          "content": "eff46f134919e1e524ab849cea5a9338462094a4e235be171679a78e7efdc6e2",
+          "relocations": [
+            {
+              "offset": 196,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 220,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_slots"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_emit_locked": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 28,
+          "alignment": 4,
+          "content": "b0fe47c03c3b4189c08487b7ef239d9596d7b3d23957b80c4f012d8bf0dd52c7",
+          "relocations": [
+            {
+              "offset": 24,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 18,
+              "type": 30,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            }
+          ]
+        },
+        ".text.rtos_diag_identity_exhausted_locked": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 36,
+          "alignment": 4,
+          "content": "9468a78a378b31d2ed2c5949310edb99cd5260c74c274f99caed866c201822ea",
+          "relocations": [
+            {
+              "offset": 24,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 28,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_identity_exhausted"
+            },
+            {
+              "offset": 32,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_record": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 172,
+          "alignment": 4,
+          "content": "f8dddf765cb53fdabc24337c324b07dd67a62d041e95fb6f648bd8d1fdf86c4c",
+          "relocations": [
+            {
+              "offset": 78,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 152,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 160,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 136,
+              "type": 30,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_status": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "7040d0583e5ecac60bcce75fd4f0cb1bb00b9bca35804d24955e7052a0c7e049",
+          "relocations": [
+            {
+              "offset": 78,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 134,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 156,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_internal_diag_return_value": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "f23769cbfaee8ec367fa30863a91a1d43761c5b8ccc973cf08a8a467743333d2",
+          "relocations": [
+            {
+              "offset": 80,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 136,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 158,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_reset": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 280,
+          "alignment": 4,
+          "content": "b290e3d8205bc13e696d79e424d9ad7944ab31da5d838e272a5accc8f6646988",
+          "relocations": [
+            {
+              "offset": 154,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 170,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 218,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 228,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 232,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 236,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 240,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_identity_exhausted"
+            },
+            {
+              "offset": 244,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_sequence_exhausted"
+            },
+            {
+              "offset": 248,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_next_sequence"
+            },
+            {
+              "offset": 252,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 256,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 260,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 264,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 268,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            },
+            {
+              "offset": 272,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 276,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            }
+          ]
+        },
+        ".text.rtos_diag_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 176,
+          "alignment": 4,
+          "content": "f6a5934b0895277a2bdc4b0db240a339334f12fdd13f05846e2e349be278565f",
+          "relocations": [
+            {
+              "offset": 10,
+              "type": 10,
+              "symbol": "rtos_port_isr_priority",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 124,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 140,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 160,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 164,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 168,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 172,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".text.rtos_diag_mark": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 208,
+          "alignment": 4,
+          "content": "404bca7958406982ac67a4442edd898a48cb600a461567d55fa4fc083a5430a9",
+          "relocations": [
+            {
+              "offset": 14,
+              "type": 10,
+              "symbol": "rtos_port_isr_priority",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 154,
+              "type": 10,
+              "symbol": "rtos_diag_emit_locked.part.0",
+              "value": 1,
+              "target_section": ".text.rtos_diag_emit_locked.part.0"
+            },
+            {
+              "offset": 164,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 180,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 192,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 196,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 200,
+              "type": 2,
+              "symbol": "rtos_kernel",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 204,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            }
+          ]
+        },
+        ".text.rtos_diag_get_info": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 440,
+          "alignment": 4,
+          "content": "853bf7f380c4bd2b8d8b00ec1e109ebe2e1d3136fe5724cedc3e76f6cc0aa178",
+          "relocations": [
+            {
+              "offset": 182,
+              "type": 10,
+              "symbol": "memset",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 194,
+              "type": 10,
+              "symbol": "diag_copy_slot",
+              "value": 1,
+              "target_section": ".text.diag_copy_slot"
+            },
+            {
+              "offset": 318,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 332,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 390,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 400,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 404,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 408,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session_first"
+            },
+            {
+              "offset": 412,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 416,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            },
+            {
+              "offset": 420,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_writing"
+            },
+            {
+              "offset": 424,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 428,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 432,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 436,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            }
+          ]
+        },
+        ".text.rtos_diag_read": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 108,
+          "alignment": 4,
+          "content": "b587d9825ddb9f041500cab86fdda18cbf7f0a1bab32e6f50521261986ca461a",
+          "relocations": [
+            {
+              "offset": 38,
+              "type": 10,
+              "symbol": "diag_copy_slot",
+              "value": 1,
+              "target_section": ".text.diag_copy_slot"
+            }
+          ]
+        },
+        ".text.rtos_diag_explain": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 688,
+          "alignment": 4,
+          "content": "89aad3d93166980ad57196a0d28dfb45f8a76c01d820b99bd999d30ea7d9dc29",
+          "relocations": [
+            {
+              "offset": 18,
+              "type": 10,
+              "symbol": "memset",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 54,
+              "type": 10,
+              "symbol": "rtos_diag_get_info",
+              "value": 1,
+              "target_section": ".text.rtos_diag_get_info"
+            },
+            {
+              "offset": 136,
+              "type": 10,
+              "symbol": "rtos_diag_read",
+              "value": 1,
+              "target_section": ".text.rtos_diag_read"
+            },
+            {
+              "offset": 424,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 574,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 660,
+              "type": 10,
+              "symbol": "rtos_port_critical_nesting_error",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 672,
+              "type": 2,
+              "symbol": "rtos_port_crit_nest",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 676,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".data.diag_session"
+            },
+            {
+              "offset": 680,
+              "type": 2,
+              "symbol": "rtos_port_saved_mask",
+              "value": 0,
+              "target_section": ""
+            },
+            {
+              "offset": 684,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".rodata.CSWTCH.33"
+            }
+          ]
+        },
+        ".text.rtos_diag_fault_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 64,
+          "alignment": 4,
+          "content": "8135a9ed285d482680c622a1c9443a1d7447a3c5488b8ec2ddce1e8011a720d9",
+          "relocations": [
+            {
+              "offset": 44,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_frozen"
+            },
+            {
+              "offset": 48,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_valid"
+            },
+            {
+              "offset": 52,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_code"
+            },
+            {
+              "offset": 56,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_fault_pc"
+            },
+            {
+              "offset": 60,
+              "type": 2,
+              "symbol": "",
+              "value": 0,
+              "target_section": ".bss.diag_trigger"
+            }
+          ]
+        },
+        ".bss.diag_fault_code": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_fault_pc": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_fault_valid": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_frozen": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_identity_exhausted": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_sequence_exhausted": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_slots": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 40960,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_trigger": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".bss.diag_writing": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": null,
+          "relocations": []
+        },
+        ".data.diag_next_sequence": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".data.diag_session": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".data.diag_session_first": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "67abdd721024f0ff4e0b3f4c2fc13bc5bad42d0b7851d456d88d203d15aaa450",
+          "relocations": []
+        },
+        ".rodata.CSWTCH.33": {
+          "type": 1,
+          "flags": 2,
+          "bytes": 9,
+          "alignment": 4,
+          "content": "c799de64a880425862a15e950365b531d77da1df443688a6c83e1812987a1595",
+          "relocations": []
+        }
+      }
+    },
+    {
+      "tag": "diagnostics0_capacity12",
+      "enabled": 0,
+      "capacity": 12,
+      "expected_compile": true,
+      "command": [
+        "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-std=gnu11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-DDEBUG",
+        "-DUSE_HAL_DRIVER",
+        "-DSTM32F446xx",
+        "-DRTOS_CONFIG_ASSERT_ENABLED=1",
+        "-DRTOS_CONFIG_USE_CHANNEL=1",
+        "-DRTOS_CONFIG_USE_DIAGNOSTICS=0",
+        "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=12",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\AI\\output\\int8",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Core\\Private",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\STM32F4xx_HAL_Driver\\Inc\\Legacy",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\Drivers\\CMSIS\\Include",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\core",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\common",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\cdc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\hid",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\class\\msc",
+        "-IE:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\lib\\third\\CherryUSB\\port\\dwc2",
+        "-c",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\RTOS\\Services\\rtos_diag.c",
+        "-o",
+        "E:\\STM32_Project\\CubeIDE\\f446_rtos\\hil\\diagnostics_20261027\\.build\\config_bounds_20261027_170512_065621\\diagnostics0_capacity12.o"
+      ],
+      "exit_code": 0,
+      "diagnostics": "",
+      "passed": true,
+      "object_sha256": "6d4c847c8fefb4198483610c9d0e839ed2a0b924536a35dcc1ced75d9b371a69",
+      "allocated_sections": {
+        ".text": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 0,
+          "alignment": 2,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".data": {
+          "type": 1,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "relocations": []
+        },
+        ".bss": {
+          "type": 8,
+          "flags": 3,
+          "bytes": 0,
+          "alignment": 1,
+          "content": null,
+          "relocations": []
+        },
+        ".text.rtos_diag_reset": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 8,
+          "alignment": 4,
+          "content": "0a29cd576ec31f2bd1b27bdbe60dd7e89c8aab40577f2838c33f109d385f01aa",
+          "relocations": []
+        },
+        ".text.rtos_diag_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 8,
+          "alignment": 4,
+          "content": "0a29cd576ec31f2bd1b27bdbe60dd7e89c8aab40577f2838c33f109d385f01aa",
+          "relocations": []
+        },
+        ".text.rtos_diag_mark": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 8,
+          "alignment": 4,
+          "content": "0a29cd576ec31f2bd1b27bdbe60dd7e89c8aab40577f2838c33f109d385f01aa",
+          "relocations": []
+        },
+        ".text.rtos_diag_get_info": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 8,
+          "alignment": 4,
+          "content": "0a29cd576ec31f2bd1b27bdbe60dd7e89c8aab40577f2838c33f109d385f01aa",
+          "relocations": []
+        },
+        ".text.rtos_diag_read": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 8,
+          "alignment": 4,
+          "content": "0a29cd576ec31f2bd1b27bdbe60dd7e89c8aab40577f2838c33f109d385f01aa",
+          "relocations": []
+        },
+        ".text.rtos_diag_explain": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 8,
+          "alignment": 4,
+          "content": "0a29cd576ec31f2bd1b27bdbe60dd7e89c8aab40577f2838c33f109d385f01aa",
+          "relocations": []
+        },
+        ".text.rtos_diag_fault_freeze": {
+          "type": 1,
+          "flags": 6,
+          "bytes": 4,
+          "alignment": 4,
+          "content": "0c302d771ae76f031fe8c4a87c6f54f6b1e93bbf4552d26a8ea553f2a89c0530",
+          "relocations": []
+        }
+      },
+      "disabled_has_no_static_state": true
+    }
+  ],
+  "limits": [
+    "Compilation only; not a linked application RAM-fit or runtime result",
+    "Maximum legal capacity may exceed an application's remaining SRAM"
+  ]
+}

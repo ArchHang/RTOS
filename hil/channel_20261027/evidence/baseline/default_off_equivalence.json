@@ -1,0 +1,208 @@
+{
+  "allocated_image_identical": true,
+  "before": {
+    "file_sha256": "234eb60d2ebc136cc73e3cd077cf3fe443b9de1457d0f42dc75a4372c11393f2",
+    "entry": 134232149,
+    "allocated": {
+      ".isr_vector": {
+        "type": 1,
+        "flags": 2,
+        "address": 134217728,
+        "bytes": 452,
+        "sha256": "4eb445785631df2160b972c9c4da24b179dc7cc73f8a2eeb7b4591f16a45684e"
+      },
+      ".text": {
+        "type": 1,
+        "flags": 6,
+        "address": 134218192,
+        "bytes": 66196,
+        "sha256": "54693dc67945f587eea2607a4f0bb6ba634e3a21af3d360b8eb9df426d5d83c0"
+      },
+      ".rodata": {
+        "type": 1,
+        "flags": 2,
+        "address": 134284392,
+        "bytes": 138832,
+        "sha256": "cc89cabc934f7155184a890394b470064b9e712988f9425f22dbbfd0f2f3e2dd"
+      },
+      ".ARM": {
+        "type": 1879048193,
+        "flags": 130,
+        "address": 134423224,
+        "bytes": 8,
+        "sha256": "f62fa635f55cd278512f40f2d3bd1287d66f9b38b0d26ec2840b90f9b592ff41"
+      },
+      ".preinit_array": {
+        "type": 16,
+        "flags": 3,
+        "address": 134423232,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".init_array": {
+        "type": 14,
+        "flags": 3,
+        "address": 134423232,
+        "bytes": 4,
+        "sha256": "c43199c3e63c76eaabc0be61b2c8443537dc9d46af34e8e40d027d53aabc2b29"
+      },
+      ".fini_array": {
+        "type": 15,
+        "flags": 3,
+        "address": 134423236,
+        "bytes": 4,
+        "sha256": "09cb2d19034a63d1421db55e5e90c0823b4e7957c24110e7d2b35cd5fcc83cc1"
+      },
+      ".data": {
+        "type": 1,
+        "flags": 3,
+        "address": 536870912,
+        "bytes": 120,
+        "sha256": "582b282c94ba2ab15d3b72c8a0a68188d597e932139d97693c71b09c3367313b"
+      },
+      ".bss": {
+        "type": 8,
+        "flags": 3,
+        "address": 536871032,
+        "bytes": 124412,
+        "sha256": null
+      },
+      "._user_heap_stack": {
+        "type": 8,
+        "flags": 3,
+        "address": 536995444,
+        "bytes": 1540,
+        "sha256": null
+      }
+    },
+    "load_mappings": [
+      {
+        "virtual": 134217728,
+        "physical": 134217728,
+        "filesz": 205512,
+        "memsz": 205512,
+        "flags": 7,
+        "alignment": 65536
+      },
+      {
+        "virtual": 536870912,
+        "physical": 134423240,
+        "filesz": 120,
+        "memsz": 124532,
+        "flags": 6,
+        "alignment": 65536
+      },
+      {
+        "virtual": 536995444,
+        "physical": 134423360,
+        "filesz": 0,
+        "memsz": 1540,
+        "flags": 6,
+        "alignment": 65536
+      }
+    ]
+  },
+  "after": {
+    "file_sha256": "a6d148b11f66cb0a828fbce13354d9e5f37661af02822613809dc7680c83302f",
+    "entry": 134232149,
+    "allocated": {
+      ".isr_vector": {
+        "type": 1,
+        "flags": 2,
+        "address": 134217728,
+        "bytes": 452,
+        "sha256": "4eb445785631df2160b972c9c4da24b179dc7cc73f8a2eeb7b4591f16a45684e"
+      },
+      ".text": {
+        "type": 1,
+        "flags": 6,
+        "address": 134218192,
+        "bytes": 66196,
+        "sha256": "54693dc67945f587eea2607a4f0bb6ba634e3a21af3d360b8eb9df426d5d83c0"
+      },
+      ".rodata": {
+        "type": 1,
+        "flags": 2,
+        "address": 134284392,
+        "bytes": 138832,
+        "sha256": "cc89cabc934f7155184a890394b470064b9e712988f9425f22dbbfd0f2f3e2dd"
+      },
+      ".ARM": {
+        "type": 1879048193,
+        "flags": 130,
+        "address": 134423224,
+        "bytes": 8,
+        "sha256": "f62fa635f55cd278512f40f2d3bd1287d66f9b38b0d26ec2840b90f9b592ff41"
+      },
+      ".preinit_array": {
+        "type": 16,
+        "flags": 3,
+        "address": 134423232,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      ".init_array": {
+        "type": 14,
+        "flags": 3,
+        "address": 134423232,
+        "bytes": 4,
+        "sha256": "c43199c3e63c76eaabc0be61b2c8443537dc9d46af34e8e40d027d53aabc2b29"
+      },
+      ".fini_array": {
+        "type": 15,
+        "flags": 3,
+        "address": 134423236,
+        "bytes": 4,
+        "sha256": "09cb2d19034a63d1421db55e5e90c0823b4e7957c24110e7d2b35cd5fcc83cc1"
+      },
+      ".data": {
+        "type": 1,
+        "flags": 3,
+        "address": 536870912,
+        "bytes": 120,
+        "sha256": "582b282c94ba2ab15d3b72c8a0a68188d597e932139d97693c71b09c3367313b"
+      },
+      ".bss": {
+        "type": 8,
+        "flags": 3,
+        "address": 536871032,
+        "bytes": 124412,
+        "sha256": null
+      },
+      "._user_heap_stack": {
+        "type": 8,
+        "flags": 3,
+        "address": 536995444,
+        "bytes": 1540,
+        "sha256": null
+      }
+    },
+    "load_mappings": [
+      {
+        "virtual": 134217728,
+        "physical": 134217728,
+        "filesz": 205512,
+        "memsz": 205512,
+        "flags": 7,
+        "alignment": 65536
+      },
+      {
+        "virtual": 536870912,
+        "physical": 134423240,
+        "filesz": 120,
+        "memsz": 124532,
+        "flags": 6,
+        "alignment": 65536
+      },
+      {
+        "virtual": 536995444,
+        "physical": 134423360,
+        "filesz": 0,
+        "memsz": 1540,
+        "flags": 6,
+        "alignment": 65536
+      }
+    ]
+  },
+  "scope": "ELF32 load mappings, entry, SHF_ALLOC section bytes/size/address; DWARF ignored"
+}

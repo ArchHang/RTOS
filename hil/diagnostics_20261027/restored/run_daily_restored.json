@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "daily_restored",
+    "started":  "2026-10-27T17:03:42.4346628+08:00",
+    "finished":  "2026-10-27T17:03:48.4020642+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "5AE6B647C8E829CABE0296295915C240899B39C275B40EE4A638EB344DD5FA87",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "task 1 running",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

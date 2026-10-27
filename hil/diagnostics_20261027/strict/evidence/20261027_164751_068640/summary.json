@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "completed_utc": "2026-10-27T08:48:08.248961+00:00",
+  "translation_units": 18,
+  "checks": 454,
+  "passed": 454,
+  "failed": 0,
+  "suites": {
+    "m4_matrix": 432,
+    "m7_codegen_only": 18,
+    "public_header": 4
+  },
+  "source_identity_stable": true,
+  "changed_inputs": [],
+  "limits": [
+    "Compile only; no link/runtime proof",
+    "M7 retains F446 BSP headers; no H7 board/cache/DMA validation",
+    "Per-object sizes are not linked firmware sizes"
+  ]
+}

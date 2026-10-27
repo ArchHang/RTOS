@@ -1,0 +1,3 @@
+built 'basepri' OK -- deterministic critical-state preemption and interrupt-mask regression; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  41896	    120	  43048	  85064	  14c48	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

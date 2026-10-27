@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'channel_stress_negative' OK -- intentional single payload corruption to verify the stress oracle; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  45744	    120	  59352	 105216	  19b00	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

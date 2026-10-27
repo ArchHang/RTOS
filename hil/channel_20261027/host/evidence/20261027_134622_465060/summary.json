@@ -1,0 +1,71 @@
+{
+  "status": "PASS",
+  "compiler": "C:\\Users\\23350\\.conda\\envs\\mingw\\Scripts\\gcc.exe",
+  "results": [
+    {
+      "optimization": "O0",
+      "suite": "model",
+      "passed": true,
+      "checks": 51139586,
+      "api_calls": 602613,
+      "model_operations": 300000,
+      "executable_sha256": "06F6106B0130F8A6775834613CE26EBD719834D6EA2ABA959F5A607D2511484A",
+      "sanitizer": "not used",
+      "runtime_scope": "native scripted scheduler"
+    },
+    {
+      "optimization": "O0",
+      "suite": "boundaries",
+      "passed": true,
+      "checks": 22,
+      "executable_sha256": "35872FE45A05BD07425690F25694842D9C64A2F701E61AA5B4FD7D0B4DAA2378",
+      "production_source_mode": "direct include",
+      "sanitizer": "not used"
+    },
+    {
+      "optimization": "O0",
+      "suite": "disabled",
+      "passed": true,
+      "checks": 16,
+      "executable_sha256": "635E9B466580191B625EB533A72BA10720AF0608BCB48BA45A69408563A2535F",
+      "production_source_mode": "separate translation unit",
+      "sanitizer": "not used"
+    },
+    {
+      "optimization": "O3",
+      "suite": "model",
+      "passed": true,
+      "checks": 51139586,
+      "api_calls": 602613,
+      "model_operations": 300000,
+      "executable_sha256": "B11FC79C4BD03EE4AB98BC99B4AE05C6EDE14D959DC64287F9C6E57E7E722722",
+      "sanitizer": "not used",
+      "runtime_scope": "native scripted scheduler"
+    },
+    {
+      "optimization": "O3",
+      "suite": "boundaries",
+      "passed": true,
+      "checks": 22,
+      "executable_sha256": "F22F2FBE857EF8500F22C9D2E623C79BD9FB37310F7AD6ED0D2CB8C9FFF690F5",
+      "production_source_mode": "direct include",
+      "sanitizer": "not used"
+    },
+    {
+      "optimization": "O3",
+      "suite": "disabled",
+      "passed": true,
+      "checks": 16,
+      "executable_sha256": "801348E335E2ABE8BCCC03C54309B5A7834AED7AD40E62BB0693620BBEE82A7B",
+      "production_source_mode": "separate translation unit",
+      "sanitizer": "not used"
+    }
+  ],
+  "source_identity_stable": true,
+  "production_source": "RTOS/IPC/rtos_channel.c",
+  "limitations": [
+    "No Cortex-M timing or real IRQ/concurrency validation",
+    "No ASan/UBSan instrumentation in these native builds",
+    "Canary tests cannot prevent direct misuse of expired naked pointers"
+  ]
+}

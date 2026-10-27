@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "adversarial_wait_on_c64_basepri_a1_O2",
+    "started":  "2026-10-27T16:41:28.7586215+08:00",
+    "finished":  "2026-10-27T16:41:31.4086872+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "FC9F12688566AB972218F61CA348C1810CA8D4B5D4F46CAA7DEF82D85D91A2A0",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "AW\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'audit' OK -- 2026-10-12 kernel audit regressions; warnings=25
+   text	   data	    bss	    dec	    hex	filename
+  81416	    124	  78632	 160172	  271ac	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

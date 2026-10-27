@@ -1,0 +1,23 @@
+fault_report (sp=<optimized out>, exc_return=<optimized out>) at ../Core/Src/stm32f4xx_it.c:535
+535	    for (;;) {
+Trying to halt core...
+DGDBG|STATE|frozen=1 trigger=2 fault_valid=1 writing=0 session=2 first=5 next=14
+DGDBG|FAULT|code=0x10000 pc=0x0 cfsr=0x10000 frame_valid=1 frame_pc=0x8006e20
+   0x8006e20 <audit_regressions_task+52>:	udf	#0
+0x8006e20 <audit_regressions_task+52>:	0xde00
+DGDBG|SLOT|index=4 commit=5 seq=5 tick=0 task=3 event=9 op=0 value=0xa55a0001 detail=0x12345678 result=0
+DGDBG|SLOT|index=5 commit=6 seq=6 tick=0 task=3 event=1 op=1 value=0x2 detail=0x0 result=0
+DGDBG|SLOT|index=6 commit=7 seq=7 tick=0 task=2 event=3 op=0 value=0x0 detail=0x0 result=0
+DGDBG|SLOT|index=7 commit=8 seq=8 tick=0 task=2 event=1 op=4 value=0xffffffff detail=0x0 result=0
+DGDBG|SLOT|index=8 commit=9 seq=9 tick=0 task=1 event=3 op=0 value=0x0 detail=0x0 result=0
+DGDBG|SLOT|index=9 commit=10 seq=10 tick=2 task=3 event=2 op=0 value=0x0 detail=0x0 result=0
+DGDBG|SLOT|index=10 commit=11 seq=11 tick=2 task=3 event=3 op=0 value=0x0 detail=0x0 result=0
+DGDBG|SLOT|index=11 commit=12 seq=12 tick=2 task=3 event=4 op=1 value=0x0 detail=0x0 result=0
+DGDBG|SLOT|index=12 commit=13 seq=13 tick=2 task=3 event=9 op=0 value=0xa55a0002 detail=0x87654321 result=0
+#0  fault_report (sp=<optimized out>, exc_return=<optimized out>) at ../Core/Src/stm32f4xx_it.c:535
+#1  <signal handler called>
+#2  audit_regressions_task (argument=<optimized out>) at ../hil/fwsrc/diagnostic_fault.c:27
+#3  0x08002b5c in rtos_port_exit_critical () at ../RTOS/Core/Inc/rtos_port.h:136
+#4  rtos_task_delete (tcb=0x4040404) at ../RTOS/Core/Src/rtos_task.c:323
+#5  0x00000000 in ?? ()
+[Inferior 1 (Remote target) detached]

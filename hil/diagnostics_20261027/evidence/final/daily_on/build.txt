@@ -1,0 +1,4 @@
+variant changed -> forced recompile of main.c and variant sources
+built 'daily' OK -- daily demo firmware (app tasks + HardFault tests + USB); warnings=2
+   text	   data	    bss	    dec	    hex	filename
+ 207720	    132	 128544	 336396	  5220c	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

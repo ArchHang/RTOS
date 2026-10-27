@@ -1,0 +1,137 @@
+===== audit_basepri_a1_O2 (6704 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\channel_20261027\evidence\regression\audit_basepri_a1_O2\log_audit_basepri_a1_O2.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+AT|SCHEDTASK|suspend_before_start|PASS
+AT|SCHEDTASK|resume_before_start|PASS
+AT|SCHEDTASK|notify_wait_before_start|PASS
+AT|SCHEDTASK|duplicate_init_preserves_idle|PASS
+AT|SCHEDTASK|empty_start_preserves_basepri|PASS
+AT|META|audit_20261012
+AT|SCHEDTASK|construct_window_exercised|PASS
+AT|SCHEDTASK|construct_resume_rejected|PASS
+AT|SCHEDTASK|construct_priority_rejected|PASS
+AT|SCHEDTASK|construct_notify_rejected|PASS
+AT|SCHEDTASK|construct_suspend_rejected|PASS
+AT|SCHEDTASK|static_duplicate_preserves_task|PASS
+AT|SCHEDTASK|static_delete_live|PASS
+AT|SCHEDTASK|static_delete_after_delete|PASS
+AT|SCHEDTASK|static_recreate_after_delete|PASS
+AT|SCHEDTASK|create_child_ran|PASS
+AT|SCHEDTASK|handle_before_preemption|PASS
+AT|SCHEDTASK|yield_while_suspended|PASS
+AT|SCHEDTASK|yield_after_resume|PASS
+AT|SCHEDTASK|priority_while_suspended|PASS
+AT|SCHEDTASK|priority_after_resume|PASS
+AT|SCHEDTASK|nested_suspend|PASS
+AT|SCHEDTASK|nested_resume|PASS
+AT|SCHEDTASK|cancel_obsolete_switch|PASS
+AT|SCHEDTASK|canceled_switch_restores_running|PASS
+AT|SCHEDTASK|idle_cannot_suspend|PASS
+AT|SCHEDTASK|SUMMARY|pass=25 fail=0
+AT|IPC|event_timeout_object_reused|PASS|actual=2 expect=2
+AT|IPC|sem_active_reinit|PASS|actual=4294967291 expect=4294967291
+AT|IPC|queue_receiver_active_reinit|PASS|actual=4294967291 expect=4294967291
+AT|IPC|queue_sender_active_reinit|PASS|actual=4294967291 expect=4294967291
+AT|IPC|event_active_reinit|PASS|actual=4294967291 expect=4294967291
+AT|IPC|mutex_active_reinit|PASS|actual=4294967291 expect=4294967291
+AT|IPC|mutex_duplicate_registration|PASS|actual=1 expect=1
+AT|IPC|mutex_registration_cleanup|PASS|actual=0 expect=0
+AT|IPC|sem_fifo_same_priority|PASS|actual=1 expect=1
+AT|IPC|queue_fifo_same_priority|PASS|actual=1 expect=1
+AT|IPC|event_fifo_same_priority|PASS|actual=1 expect=1
+AT|IPC|mutex_fifo_same_priority|PASS|actual=1 expect=1
+AT|IPC|queue_storage_size_overflow|PASS|actual=4294967295 expect=4294967295
+AT|IPC|queue_receiver_size_mismatch|PASS|actual=4294967295 expect=4294967295
+AT|IPC|queue_sender_size_mismatch|PASS|actual=4294967295 expect=4294967295
+AT|IPC|SUMMARY|pass=15 fail=0
+AT|MEMTIMER|pool_align_overflow|PASS|actual=-1|expect=-1
+AT|MEMTIMER|pool_valid_init|PASS|actual=0|expect=0
+AT|MEMTIMER|pool_interior_free|PASS|actual=-1|expect=-1
+AT|MEMTIMER|pool_double_free_rejected|PASS|actual=-5|expect=-5
+AT|MEMTIMER|pool_free_count_bounded|PASS|actual=4|expect=4
+AT|MEMTIMER|pool_allocations_distinct|PASS|actual=0|expect=0
+AT|MEMTIMER|pool_double_free_with_other_allocated|PASS|actual=-5|expect=-5
+AT|MEMTIMER|callback_restart_status|PASS|actual=0|expect=0
+AT|MEMTIMER|expired_peer_not_lost|PASS|actual=1|expect=1
+AT|MEMTIMER|oneshot_self_restart|PASS|actual=2|expect=2
+AT|MEMTIMER|future_callback_not_early|PASS|actual=100|expect=100
+AT|MEMTIMER|timer_invalid_mode|PASS|actual=-1|expect=-1
+AT|MEMTIMER|timer_recreate_inactive|PASS|actual=0|expect=0
+AT|MEMTIMER|timer_old_delete_does_not_cancel_new|PASS|actual=1|expect=1
+AT|MEMTIMER|periodic_absolute_phase|PASS|actual=100|expect=100
+AT|MEMTIMER|long_callback_rechecks_deadline|PASS|actual=30|expect=31
+AT|MEMTIMER|timer_irq6_fired_once|PASS|actual=1|expect=1
+AT|MEMTIMER|timer_irq_start_accepted|PASS|actual=0|expect=0
+AT|MEMTIMER|timer_irq_only_enqueues|PASS|actual=0|expect=0
+AT|MEMTIMER|timer_irq_started_callback|PASS|actual=1|expect=1
+AT|MEMTIMER|timer_repeat_init_rejected|PASS|actual=-5|expect=-5
+AT|MEMTIMER|timer_repeat_init_keeps_active|PASS|actual=1|expect=1
+AT|MEMTIMER|perf_disabled_cpu_zero|PASS|actual=0|expect=0
+AT|MEMTIMER|SUMMARY|pass=23|fail=0
+AT|USBPORT|basepri_preserve_stronger_enter|PASS
+AT|USBPORT|basepri_preserve_stronger_exit|PASS
+AT|USBPORT|basepri_strengthen_weaker_enter|PASS
+AT|USBPORT|basepri_restore_weaker_exit|PASS
+AT|USBPORT|primask_preserve_disabled_enter|PASS
+AT|USBPORT|primask_preserve_disabled_exit|PASS
+AT|USBPORT|nested_inner_remains_masked|PASS
+AT|USBPORT|nested_outer_restores|PASS
+AT|USBPORT|critical_nesting_balanced|PASS
+AT|USBPORT|timer_ms_one|PASS
+AT|USBPORT|timer_ms_before_overflow|PASS
+AT|USBPORT|timer_ms_overflow|PASS
+AT|USBPORT|msc_stack_byte_configuration|PASS
+AT|USBPORT|msc_actual_stack_words|PASS
+AT|USBPORT|pendsv_legal_irq_executed|PASS
+AT|USBPORT|pendsv_legal_irq_deferred|PASS
+AT|USBPORT|pendsv_highest_ready_runs_first|PASS
+AT|USBPORT|simulated_usb_setup|PASS
+AT|USBPORT|cdc_reset_does_not_report_sent|PASS
+AT|USBPORT|hid_reset_does_not_report_sent|PASS
+AT|USBPORT|hid_reset_discards_stale_rx|PASS
+AT|USBPORT|msc_valid_lun_read_capacity|PASS
+AT|USBPORT|msc_invalid_lun_rejected|PASS
+AT|USBPORT|msc_sector_add_overflow_rejected|PASS
+AT|USBPORT|dwc2_valid_rx_preserves_guard|PASS
+AT|USBPORT|dwc2_oversize_rx_preserves_guard|PASS
+AT|USBPORT|core_get_valid_interface|PASS
+AT|USBPORT|core_get_invalid_interface_rejected|PASS
+AT|USBPORT|core_set_invalid_interface_rejected|PASS
+AT|USBPORT|core_high_index_interface_rejected|PASS
+AT|USBPORT|core_select_alt_zero_keeps_endpoint|PASS
+AT|USBPORT|core_invalid_alt_rejected_keeps_endpoint|PASS
+AT|USBPORT|core_config_scan_stays_in_total_length|PASS
+AT|USBPORT|cdc_mutex_no_wait|PASS
+AT|USBPORT|cdc_mutex_finite_budget|PASS
+AT|USBPORT|cdc_read_repeated_event_budget|PASS
+AT|USBPORT|hid_mutex_no_wait|PASS
+AT|USBPORT|hid_mutex_finite_budget|PASS
+AT|USBPORT|hid_read_repeated_event_budget|PASS
+AT|USBPORT|osal_return_pool_reused|PASS
+AT|USBPORT|osal_return_completed|PASS
+AT|USBPORT|osal_self_delete_pool_reused|PASS
+AT|USBPORT|osal_self_delete_completed|PASS
+AT|USBPORT|osal_delete_irq_executed|PASS
+AT|USBPORT|DETAIL|timer_queue_fill_successes=17|status=-3
+AT|USBPORT|osal_timer_queue_full_confirmed|PASS
+AT|USBPORT|osal_timer_queue_fill_count_valid|PASS
+AT|USBPORT|osal_timer_failed_delete_retains_slot|PASS
+AT|USBPORT|osal_timer_failed_delete_retains_outer|PASS
+AT|USBPORT|osal_thread_isr_delete_retains_slot|PASS
+AT|USBPORT|osal_thread_isr_delete_keeps_task|PASS
+AT|USBPORT|osal_active_timer_fixture|PASS
+AT|USBPORT|osal_active_delete_accepted|PASS
+AT|USBPORT|osal_active_delete_pending|PASS
+AT|USBPORT|osal_create_after_active_delete|PASS
+AT|USBPORT|SUMMARY|pass=54|fail=0
+AT|DONE
+

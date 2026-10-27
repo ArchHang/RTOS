@@ -1,0 +1,27 @@
+===== diagnostic_checks_off_c64_basepri_a1_O2 (1129 chars) -> E:\STM32_Project\CubeIDE\f446_rtos\hil\diagnostics_20261027\evidence\final\diagnostic_checks_off_c64_basepri_a1_O2\log_diagnostic_checks_off_c64_basepri_a1_O2.txt =====
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+DG|META|mode=disabled diagnostics=0 capacity=64 assertions=1 mask=1
+DG|CHECK|PASS|id=1 name=disabled_feature_selected
+DG|CHECK|PASS|id=2 name=disabled_reset
+DG|CHECK|PASS|id=3 name=disabled_freeze
+DG|CHECK|PASS|id=4 name=disabled_marker
+DG|CHECK|PASS|id=5 name=disabled_info
+DG|CHECK|PASS|id=6 name=disabled_read
+DG|CHECK|PASS|id=7 name=disabled_explain
+DG|CHECK|PASS|id=8 name=disabled_info_unchanged
+DG|CHECK|PASS|id=9 name=disabled_record_unchanged
+DG|CHECK|PASS|id=10 name=disabled_explanation_unchanged
+DG|CHECK|PASS|id=11 name=disabled_fault_is_noop
+DG|SUMMARY|mode=disabled pass=11 fail=0
+DG|DONE|status=0
+

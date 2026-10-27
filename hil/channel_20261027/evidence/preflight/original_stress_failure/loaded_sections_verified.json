@@ -1,0 +1,64 @@
+{
+  "elf_sha256": "d394004e4cec33a291f567810a3086c9020764b4cdca2cc8861cf2d4d4cacb4f",
+  "dump_sha256": "7f92ad7de26b4359a02e0cba4ce504bda230f04f04ee1e8a46a5a0e2e7007099",
+  "all_loaded_sections_match": true,
+  "sections": [
+    {
+      "section": ".isr_vector",
+      "physical_address": 134217728,
+      "bytes": 452,
+      "match": true,
+      "expected_sha256": "c665b9a3a9c73852e2a66b987c72574df20e51a3da0d3151a0c0ea1c02572024",
+      "readback_sha256": "c665b9a3a9c73852e2a66b987c72574df20e51a3da0d3151a0c0ea1c02572024"
+    },
+    {
+      "section": ".text",
+      "physical_address": 134218192,
+      "bytes": 42984,
+      "match": true,
+      "expected_sha256": "f29b2ea57d2e986aefb3364518a7049cf64eb408ea078226896ee0fa15f26d72",
+      "readback_sha256": "f29b2ea57d2e986aefb3364518a7049cf64eb408ea078226896ee0fa15f26d72"
+    },
+    {
+      "section": ".rodata",
+      "physical_address": 134261176,
+      "bytes": 20312,
+      "match": true,
+      "expected_sha256": "858ad4456b106f6f1222b42fa3ac95c1a1f7551e0ed7c53dcf7f19016a6a76e6",
+      "readback_sha256": "858ad4456b106f6f1222b42fa3ac95c1a1f7551e0ed7c53dcf7f19016a6a76e6"
+    },
+    {
+      "section": ".ARM",
+      "physical_address": 134281488,
+      "bytes": 8,
+      "match": true,
+      "expected_sha256": "7d048eb131b9190071695ce42cd101bc523ab17f7da291ac2eb64df80b656b81",
+      "readback_sha256": "7d048eb131b9190071695ce42cd101bc523ab17f7da291ac2eb64df80b656b81"
+    },
+    {
+      "section": ".init_array",
+      "physical_address": 134281496,
+      "bytes": 4,
+      "match": true,
+      "expected_sha256": "c43199c3e63c76eaabc0be61b2c8443537dc9d46af34e8e40d027d53aabc2b29",
+      "readback_sha256": "c43199c3e63c76eaabc0be61b2c8443537dc9d46af34e8e40d027d53aabc2b29"
+    },
+    {
+      "section": ".fini_array",
+      "physical_address": 134281500,
+      "bytes": 4,
+      "match": true,
+      "expected_sha256": "09cb2d19034a63d1421db55e5e90c0823b4e7957c24110e7d2b35cd5fcc83cc1",
+      "readback_sha256": "09cb2d19034a63d1421db55e5e90c0823b4e7957c24110e7d2b35cd5fcc83cc1"
+    },
+    {
+      "section": ".data",
+      "physical_address": 134281504,
+      "bytes": 112,
+      "match": true,
+      "expected_sha256": "aa3ea0253a07816daaa4c073a62aecaff06beeca9d38c202e4f0985a2b301c06",
+      "readback_sha256": "aa3ea0253a07816daaa4c073a62aecaff06beeca9d38c202e4f0985a2b301c06"
+    }
+  ],
+  "note": "GDB compare-sections reported CRC mismatch. Direct byte readback is equal in every loaded section; unloaded segment padding is excluded."
+}

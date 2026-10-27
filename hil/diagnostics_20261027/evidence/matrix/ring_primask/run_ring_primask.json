@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "ring_primask",
+    "started":  "2026-10-27T16:38:40.5071598+08:00",
+    "finished":  "2026-10-27T16:38:42.7177666+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "0B228A7A4EA6983211F93E93B34ABAF3DB8223EAC5C80DB73A934E95BB6BEA63",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "DG\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

@@ -1,0 +1,53 @@
+﻿      -------------------------------------------------------------------
+                       STM32CubeProgrammer v2.15.0                  
+      -------------------------------------------------------------------
+
+ST-LINK SN  : 066DFF555775514867092907
+ST-LINK FW  : V2J43M28
+Board       : NUCLEO-F446RE
+Voltage     : 3.27V
+SWD freq    : 4000 KHz
+Connect mode: Under Reset
+Reset mode  : Hardware reset
+Device ID   : 0x421
+Revision ID : Rev A
+Device name : STM32F446xx
+Flash size  : 512 KBytes
+Device type : MCU
+Device CPU  : Cortex-M4
+BL Version  : 0x90
+
+
+
+Memory Programming ...
+Opening and parsing file: f446_rtos.elf
+  File          : f446_rtos.elf
+  Size          : 45.66 KB 
+  Address       : 0x08000000 
+
+
+Erasing memory corresponding to segment 0:
+Erasing internal memory sectors [0 2]
+Download in Progress:
+�������������������������������������������������� 0%
+�������������������������������������������������� 100%
+
+File download complete
+Time elapsed during download operation: 00:00:01.243
+
+
+
+Verifying ...
+
+
+Read progress:
+�������������������������������������������������� 50%
+�������������������������������������������������� 100%
+
+Download verified successfully 
+
+
+
+MCU Reset
+
+Software reset is performed

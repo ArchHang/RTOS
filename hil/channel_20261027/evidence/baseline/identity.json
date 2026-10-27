@@ -1,0 +1,7 @@
+{
+  "reference": "Previously verified daily image before channel implementation",
+  "source_commit": "87bfbe4a6efc50f9b828128c713a1b5af2900ef8",
+  "sha256": "234EB60D2EBC136CC73E3CD077CF3FE443B9DE1457D0F42DC75A4372C11393F2",
+  "original_capture": "hil/refactor_20261027/evidence/daily/run_final_daily.json",
+  "comparison": "Allocated sections only; debug metadata need not match"
+}

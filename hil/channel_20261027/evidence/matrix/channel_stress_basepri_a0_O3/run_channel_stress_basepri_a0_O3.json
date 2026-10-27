@@ -1,0 +1,15 @@
+﻿{
+    "tag":  "channel_stress_basepri_a0_O3",
+    "started":  "2026-10-27T14:05:01.1593833+08:00",
+    "finished":  "2026-10-27T14:05:05.1722223+08:00",
+    "elf":  "E:\\STM32_Project\\CubeIDE\\f446_rtos\\Debug\\f446_rtos.elf",
+    "sha256":  "57FB1FCBF6D1BB1B627379975DDDE198BB91A33CA20310576F17822DFF807958",
+    "port":  "COM3",
+    "baud":  115200,
+    "flashed":  true,
+    "terminator":  "CH\\|DONE\\|status=",
+    "terminator_seen":  true,
+    "failure_lines":  [
+
+                      ]
+}

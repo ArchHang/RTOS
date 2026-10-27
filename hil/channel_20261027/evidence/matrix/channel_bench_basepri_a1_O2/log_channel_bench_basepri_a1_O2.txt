@@ -1,0 +1,1666 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+CH|META|mode=bench sizes=16,64,256,1024 capacities=1,3,16 large_shapes=4096x1,4096x3,16384x1 paths=copy,pool,loan work=ipc,e2e repetitions=3 batches=128 interrupts=enabled cycle_counter=DWT core_hz=168000000 rows=270
+CH|CHECK|PASS|id=1 name=bench_real_dwt_enabled
+CH|CHECK|PASS|id=2 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=16 capacity=1 batches=128 messages=128 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=3 name=bench_path_prepared
+CH|CHECK|PASS|id=4 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=1 mode=ipc repetition=0 messages=128 cycles=72620 cycles_per_message=567 ticks=1 valid=1
+CH|CHECK|PASS|id=5 name=bench_queue_drained
+CH|CHECK|PASS|id=6 name=bench_queue_deinit
+CH|CHECK|PASS|id=7 name=bench_path_prepared
+CH|CHECK|PASS|id=8 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=1 mode=ipc repetition=0 messages=128 cycles=110888 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=9 name=bench_queue_drained
+CH|CHECK|PASS|id=10 name=bench_queue_deinit
+CH|CHECK|PASS|id=11 name=bench_pool_all_returned
+CH|CHECK|PASS|id=12 name=bench_path_prepared
+CH|CHECK|PASS|id=13 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=1 mode=ipc repetition=0 messages=128 cycles=510170 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=14 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=15 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=16 name=bench_loan_close
+CH|CHECK|PASS|id=17 name=bench_loan_deinit
+CH|CHECK|PASS|id=18 name=bench_path_prepared
+CH|CHECK|PASS|id=19 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=1 mode=ipc repetition=1 messages=128 cycles=110888 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=20 name=bench_queue_drained
+CH|CHECK|PASS|id=21 name=bench_queue_deinit
+CH|CHECK|PASS|id=22 name=bench_pool_all_returned
+CH|CHECK|PASS|id=23 name=bench_path_prepared
+CH|CHECK|PASS|id=24 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=1 mode=ipc repetition=1 messages=128 cycles=510159 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=25 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=26 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=27 name=bench_loan_close
+CH|CHECK|PASS|id=28 name=bench_loan_deinit
+CH|CHECK|PASS|id=29 name=bench_path_prepared
+CH|CHECK|PASS|id=30 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=1 mode=ipc repetition=1 messages=128 cycles=72242 cycles_per_message=564 ticks=0 valid=1
+CH|CHECK|PASS|id=31 name=bench_queue_drained
+CH|CHECK|PASS|id=32 name=bench_queue_deinit
+CH|CHECK|PASS|id=33 name=bench_path_prepared
+CH|CHECK|PASS|id=34 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=1 mode=ipc repetition=2 messages=128 cycles=510168 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=35 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=36 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=37 name=bench_loan_close
+CH|CHECK|PASS|id=38 name=bench_loan_deinit
+CH|CHECK|PASS|id=39 name=bench_path_prepared
+CH|CHECK|PASS|id=40 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=1 mode=ipc repetition=2 messages=128 cycles=72619 cycles_per_message=567 ticks=1 valid=1
+CH|CHECK|PASS|id=41 name=bench_queue_drained
+CH|CHECK|PASS|id=42 name=bench_queue_deinit
+CH|CHECK|PASS|id=43 name=bench_path_prepared
+CH|CHECK|PASS|id=44 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=1 mode=ipc repetition=2 messages=128 cycles=110564 cycles_per_message=863 ticks=0 valid=1
+CH|CHECK|PASS|id=45 name=bench_queue_drained
+CH|CHECK|PASS|id=46 name=bench_queue_deinit
+CH|CHECK|PASS|id=47 name=bench_pool_all_returned
+CH|CHECK|PASS|id=48 name=bench_path_prepared
+CH|CHECK|PASS|id=49 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=1 mode=e2e repetition=0 messages=128 cycles=165773 cycles_per_message=1295 ticks=1 valid=1
+CH|CHECK|PASS|id=50 name=bench_queue_drained
+CH|CHECK|PASS|id=51 name=bench_queue_deinit
+CH|CHECK|PASS|id=52 name=bench_path_prepared
+CH|CHECK|PASS|id=53 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=1 mode=e2e repetition=0 messages=128 cycles=206802 cycles_per_message=1615 ticks=2 valid=1
+CH|CHECK|PASS|id=54 name=bench_queue_drained
+CH|CHECK|PASS|id=55 name=bench_queue_deinit
+CH|CHECK|PASS|id=56 name=bench_pool_all_returned
+CH|CHECK|PASS|id=57 name=bench_path_prepared
+CH|CHECK|PASS|id=58 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=1 mode=e2e repetition=0 messages=128 cycles=596818 cycles_per_message=4662 ticks=3 valid=1
+CH|CHECK|PASS|id=59 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=60 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=61 name=bench_loan_close
+CH|CHECK|PASS|id=62 name=bench_loan_deinit
+CH|CHECK|PASS|id=63 name=bench_path_prepared
+CH|CHECK|PASS|id=64 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=1 mode=e2e repetition=1 messages=128 cycles=206520 cycles_per_message=1613 ticks=1 valid=1
+CH|CHECK|PASS|id=65 name=bench_queue_drained
+CH|CHECK|PASS|id=66 name=bench_queue_deinit
+CH|CHECK|PASS|id=67 name=bench_pool_all_returned
+CH|CHECK|PASS|id=68 name=bench_path_prepared
+CH|CHECK|PASS|id=69 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=1 mode=e2e repetition=1 messages=128 cycles=597110 cycles_per_message=4664 ticks=4 valid=1
+CH|CHECK|PASS|id=70 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=71 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=72 name=bench_loan_close
+CH|CHECK|PASS|id=73 name=bench_loan_deinit
+CH|CHECK|PASS|id=74 name=bench_path_prepared
+CH|CHECK|PASS|id=75 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=1 mode=e2e repetition=1 messages=128 cycles=165760 cycles_per_message=1295 ticks=1 valid=1
+CH|CHECK|PASS|id=76 name=bench_queue_drained
+CH|CHECK|PASS|id=77 name=bench_queue_deinit
+CH|CHECK|PASS|id=78 name=bench_path_prepared
+CH|CHECK|PASS|id=79 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=1 mode=e2e repetition=2 messages=128 cycles=596829 cycles_per_message=4662 ticks=3 valid=1
+CH|CHECK|PASS|id=80 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=81 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=82 name=bench_loan_close
+CH|CHECK|PASS|id=83 name=bench_loan_deinit
+CH|CHECK|PASS|id=84 name=bench_path_prepared
+CH|CHECK|PASS|id=85 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=1 mode=e2e repetition=2 messages=128 cycles=165795 cycles_per_message=1295 ticks=1 valid=1
+CH|CHECK|PASS|id=86 name=bench_queue_drained
+CH|CHECK|PASS|id=87 name=bench_queue_deinit
+CH|CHECK|PASS|id=88 name=bench_path_prepared
+CH|CHECK|PASS|id=89 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=1 mode=e2e repetition=2 messages=128 cycles=206518 cycles_per_message=1613 ticks=1 valid=1
+CH|CHECK|PASS|id=90 name=bench_queue_drained
+CH|CHECK|PASS|id=91 name=bench_queue_deinit
+CH|CHECK|PASS|id=92 name=bench_pool_all_returned
+CH|CHECK|PASS|id=93 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=16 capacity=3 batches=128 messages=384 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=94 name=bench_path_prepared
+CH|CHECK|PASS|id=95 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=3 mode=ipc repetition=0 messages=384 cycles=207785 cycles_per_message=541 ticks=1 valid=1
+CH|CHECK|PASS|id=96 name=bench_queue_drained
+CH|CHECK|PASS|id=97 name=bench_queue_deinit
+CH|CHECK|PASS|id=98 name=bench_path_prepared
+CH|CHECK|PASS|id=99 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=3 mode=ipc repetition=0 messages=384 cycles=281027 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=100 name=bench_queue_drained
+CH|CHECK|PASS|id=101 name=bench_queue_deinit
+CH|CHECK|PASS|id=102 name=bench_pool_all_returned
+CH|CHECK|PASS|id=103 name=bench_path_prepared
+CH|CHECK|PASS|id=104 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=3 mode=ipc repetition=0 messages=384 cycles=1506674 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=105 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=106 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=107 name=bench_loan_close
+CH|CHECK|PASS|id=108 name=bench_loan_deinit
+CH|CHECK|PASS|id=109 name=bench_path_prepared
+CH|CHECK|PASS|id=110 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=3 mode=ipc repetition=1 messages=384 cycles=280997 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=111 name=bench_queue_drained
+CH|CHECK|PASS|id=112 name=bench_queue_deinit
+CH|CHECK|PASS|id=113 name=bench_pool_all_returned
+CH|CHECK|PASS|id=114 name=bench_path_prepared
+CH|CHECK|PASS|id=115 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=3 mode=ipc repetition=1 messages=384 cycles=1506700 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=116 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=117 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=118 name=bench_loan_close
+CH|CHECK|PASS|id=119 name=bench_loan_deinit
+CH|CHECK|PASS|id=120 name=bench_path_prepared
+CH|CHECK|PASS|id=121 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=3 mode=ipc repetition=1 messages=384 cycles=207785 cycles_per_message=541 ticks=1 valid=1
+CH|CHECK|PASS|id=122 name=bench_queue_drained
+CH|CHECK|PASS|id=123 name=bench_queue_deinit
+CH|CHECK|PASS|id=124 name=bench_path_prepared
+CH|CHECK|PASS|id=125 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=3 mode=ipc repetition=2 messages=384 cycles=1506742 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=126 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=127 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=128 name=bench_loan_close
+CH|CHECK|PASS|id=129 name=bench_loan_deinit
+CH|CHECK|PASS|id=130 name=bench_path_prepared
+CH|CHECK|PASS|id=131 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=3 mode=ipc repetition=2 messages=384 cycles=207733 cycles_per_message=540 ticks=1 valid=1
+CH|CHECK|PASS|id=132 name=bench_queue_drained
+CH|CHECK|PASS|id=133 name=bench_queue_deinit
+CH|CHECK|PASS|id=134 name=bench_path_prepared
+CH|CHECK|PASS|id=135 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=3 mode=ipc repetition=2 messages=384 cycles=281334 cycles_per_message=732 ticks=2 valid=1
+CH|CHECK|PASS|id=136 name=bench_queue_drained
+CH|CHECK|PASS|id=137 name=bench_queue_deinit
+CH|CHECK|PASS|id=138 name=bench_pool_all_returned
+CH|CHECK|PASS|id=139 name=bench_path_prepared
+CH|CHECK|PASS|id=140 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=3 mode=e2e repetition=0 messages=384 cycles=456745 cycles_per_message=1189 ticks=3 valid=1
+CH|CHECK|PASS|id=141 name=bench_queue_drained
+CH|CHECK|PASS|id=142 name=bench_queue_deinit
+CH|CHECK|PASS|id=143 name=bench_path_prepared
+CH|CHECK|PASS|id=144 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=3 mode=e2e repetition=0 messages=384 cycles=531140 cycles_per_message=1383 ticks=4 valid=1
+CH|CHECK|PASS|id=145 name=bench_queue_drained
+CH|CHECK|PASS|id=146 name=bench_queue_deinit
+CH|CHECK|PASS|id=147 name=bench_pool_all_returned
+CH|CHECK|PASS|id=148 name=bench_path_prepared
+CH|CHECK|PASS|id=149 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=3 mode=e2e repetition=0 messages=384 cycles=1758586 cycles_per_message=4579 ticks=11 valid=1
+CH|CHECK|PASS|id=150 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=151 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=152 name=bench_loan_close
+CH|CHECK|PASS|id=153 name=bench_loan_deinit
+CH|CHECK|PASS|id=154 name=bench_path_prepared
+CH|CHECK|PASS|id=155 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=3 mode=e2e repetition=1 messages=384 cycles=530842 cycles_per_message=1382 ticks=3 valid=1
+CH|CHECK|PASS|id=156 name=bench_queue_drained
+CH|CHECK|PASS|id=157 name=bench_queue_deinit
+CH|CHECK|PASS|id=158 name=bench_pool_all_returned
+CH|CHECK|PASS|id=159 name=bench_path_prepared
+CH|CHECK|PASS|id=160 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=3 mode=e2e repetition=1 messages=384 cycles=1758557 cycles_per_message=4579 ticks=11 valid=1
+CH|CHECK|PASS|id=161 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=162 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=163 name=bench_loan_close
+CH|CHECK|PASS|id=164 name=bench_loan_deinit
+CH|CHECK|PASS|id=165 name=bench_path_prepared
+CH|CHECK|PASS|id=166 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=3 mode=e2e repetition=1 messages=384 cycles=456451 cycles_per_message=1188 ticks=2 valid=1
+CH|CHECK|PASS|id=167 name=bench_queue_drained
+CH|CHECK|PASS|id=168 name=bench_queue_deinit
+CH|CHECK|PASS|id=169 name=bench_path_prepared
+CH|CHECK|PASS|id=170 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=3 mode=e2e repetition=2 messages=384 cycles=1758212 cycles_per_message=4578 ticks=10 valid=1
+CH|CHECK|PASS|id=171 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=172 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=173 name=bench_loan_close
+CH|CHECK|PASS|id=174 name=bench_loan_deinit
+CH|CHECK|PASS|id=175 name=bench_path_prepared
+CH|CHECK|PASS|id=176 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=3 mode=e2e repetition=2 messages=384 cycles=456686 cycles_per_message=1189 ticks=3 valid=1
+CH|CHECK|PASS|id=177 name=bench_queue_drained
+CH|CHECK|PASS|id=178 name=bench_queue_deinit
+CH|CHECK|PASS|id=179 name=bench_path_prepared
+CH|CHECK|PASS|id=180 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=3 mode=e2e repetition=2 messages=384 cycles=530993 cycles_per_message=1382 ticks=3 valid=1
+CH|CHECK|PASS|id=181 name=bench_queue_drained
+CH|CHECK|PASS|id=182 name=bench_queue_deinit
+CH|CHECK|PASS|id=183 name=bench_pool_all_returned
+CH|CHECK|PASS|id=184 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=16 capacity=16 batches=128 messages=2048 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=185 name=bench_path_prepared
+CH|CHECK|PASS|id=186 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=16 mode=ipc repetition=0 messages=2048 cycles=1087834 cycles_per_message=531 ticks=6 valid=1
+CH|CHECK|PASS|id=187 name=bench_queue_drained
+CH|CHECK|PASS|id=188 name=bench_queue_deinit
+CH|CHECK|PASS|id=189 name=bench_path_prepared
+CH|CHECK|PASS|id=190 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=16 mode=ipc repetition=0 messages=2048 cycles=1484973 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=191 name=bench_queue_drained
+CH|CHECK|PASS|id=192 name=bench_queue_deinit
+CH|CHECK|PASS|id=193 name=bench_pool_all_returned
+CH|CHECK|PASS|id=194 name=bench_path_prepared
+CH|CHECK|PASS|id=195 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=16 mode=ipc repetition=0 messages=2048 cycles=7982142 cycles_per_message=3897 ticks=47 valid=1
+CH|CHECK|PASS|id=196 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=197 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=198 name=bench_loan_close
+CH|CHECK|PASS|id=199 name=bench_loan_deinit
+CH|CHECK|PASS|id=200 name=bench_path_prepared
+CH|CHECK|PASS|id=201 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=16 mode=ipc repetition=1 messages=2048 cycles=1484953 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=202 name=bench_queue_drained
+CH|CHECK|PASS|id=203 name=bench_queue_deinit
+CH|CHECK|PASS|id=204 name=bench_pool_all_returned
+CH|CHECK|PASS|id=205 name=bench_path_prepared
+CH|CHECK|PASS|id=206 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=16 mode=ipc repetition=1 messages=2048 cycles=7982174 cycles_per_message=3897 ticks=47 valid=1
+CH|CHECK|PASS|id=207 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=208 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=209 name=bench_loan_close
+CH|CHECK|PASS|id=210 name=bench_loan_deinit
+CH|CHECK|PASS|id=211 name=bench_path_prepared
+CH|CHECK|PASS|id=212 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=16 mode=ipc repetition=1 messages=2048 cycles=1088102 cycles_per_message=531 ticks=7 valid=1
+CH|CHECK|PASS|id=213 name=bench_queue_drained
+CH|CHECK|PASS|id=214 name=bench_queue_deinit
+CH|CHECK|PASS|id=215 name=bench_path_prepared
+CH|CHECK|PASS|id=216 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=16 mode=ipc repetition=2 messages=2048 cycles=7982448 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=217 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=218 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=219 name=bench_loan_close
+CH|CHECK|PASS|id=220 name=bench_loan_deinit
+CH|CHECK|PASS|id=221 name=bench_path_prepared
+CH|CHECK|PASS|id=222 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=16 mode=ipc repetition=2 messages=2048 cycles=1087811 cycles_per_message=531 ticks=6 valid=1
+CH|CHECK|PASS|id=223 name=bench_queue_drained
+CH|CHECK|PASS|id=224 name=bench_queue_deinit
+CH|CHECK|PASS|id=225 name=bench_path_prepared
+CH|CHECK|PASS|id=226 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=16 mode=ipc repetition=2 messages=2048 cycles=1484904 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=227 name=bench_queue_drained
+CH|CHECK|PASS|id=228 name=bench_queue_deinit
+CH|CHECK|PASS|id=229 name=bench_pool_all_returned
+CH|CHECK|PASS|id=230 name=bench_path_prepared
+CH|CHECK|PASS|id=231 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=16 mode=e2e repetition=0 messages=2048 cycles=2343663 cycles_per_message=1144 ticks=14 valid=1
+CH|CHECK|PASS|id=232 name=bench_queue_drained
+CH|CHECK|PASS|id=233 name=bench_queue_deinit
+CH|CHECK|PASS|id=234 name=bench_path_prepared
+CH|CHECK|PASS|id=235 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=16 mode=e2e repetition=0 messages=2048 cycles=2739442 cycles_per_message=1337 ticks=16 valid=1
+CH|CHECK|PASS|id=236 name=bench_queue_drained
+CH|CHECK|PASS|id=237 name=bench_queue_deinit
+CH|CHECK|PASS|id=238 name=bench_pool_all_returned
+CH|CHECK|PASS|id=239 name=bench_path_prepared
+CH|CHECK|PASS|id=240 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=16 mode=e2e repetition=0 messages=2048 cycles=9307487 cycles_per_message=4544 ticks=55 valid=1
+CH|CHECK|PASS|id=241 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=242 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=243 name=bench_loan_close
+CH|CHECK|PASS|id=244 name=bench_loan_deinit
+CH|CHECK|PASS|id=245 name=bench_path_prepared
+CH|CHECK|PASS|id=246 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=16 mode=e2e repetition=1 messages=2048 cycles=2739370 cycles_per_message=1337 ticks=16 valid=1
+CH|CHECK|PASS|id=247 name=bench_queue_drained
+CH|CHECK|PASS|id=248 name=bench_queue_deinit
+CH|CHECK|PASS|id=249 name=bench_pool_all_returned
+CH|CHECK|PASS|id=250 name=bench_path_prepared
+CH|CHECK|PASS|id=251 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=16 mode=e2e repetition=1 messages=2048 cycles=9308013 cycles_per_message=4544 ticks=56 valid=1
+CH|CHECK|PASS|id=252 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=253 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=254 name=bench_loan_close
+CH|CHECK|PASS|id=255 name=bench_loan_deinit
+CH|CHECK|PASS|id=256 name=bench_path_prepared
+CH|CHECK|PASS|id=257 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=16 mode=e2e repetition=1 messages=2048 cycles=2343688 cycles_per_message=1144 ticks=14 valid=1
+CH|CHECK|PASS|id=258 name=bench_queue_drained
+CH|CHECK|PASS|id=259 name=bench_queue_deinit
+CH|CHECK|PASS|id=260 name=bench_path_prepared
+CH|CHECK|PASS|id=261 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16 capacity=16 mode=e2e repetition=2 messages=2048 cycles=9307670 cycles_per_message=4544 ticks=56 valid=1
+CH|CHECK|PASS|id=262 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=263 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=264 name=bench_loan_close
+CH|CHECK|PASS|id=265 name=bench_loan_deinit
+CH|CHECK|PASS|id=266 name=bench_path_prepared
+CH|CHECK|PASS|id=267 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16 capacity=16 mode=e2e repetition=2 messages=2048 cycles=2343386 cycles_per_message=1144 ticks=13 valid=1
+CH|CHECK|PASS|id=268 name=bench_queue_drained
+CH|CHECK|PASS|id=269 name=bench_queue_deinit
+CH|CHECK|PASS|id=270 name=bench_path_prepared
+CH|CHECK|PASS|id=271 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16 capacity=16 mode=e2e repetition=2 messages=2048 cycles=2739508 cycles_per_message=1337 ticks=16 valid=1
+CH|CHECK|PASS|id=272 name=bench_queue_drained
+CH|CHECK|PASS|id=273 name=bench_queue_deinit
+CH|CHECK|PASS|id=274 name=bench_pool_all_returned
+CH|CHECK|PASS|id=275 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=64 capacity=1 batches=128 messages=128 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=276 name=bench_path_prepared
+CH|CHECK|PASS|id=277 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=1 mode=ipc repetition=0 messages=128 cycles=133682 cycles_per_message=1044 ticks=0 valid=1
+CH|CHECK|PASS|id=278 name=bench_queue_drained
+CH|CHECK|PASS|id=279 name=bench_queue_deinit
+CH|CHECK|PASS|id=280 name=bench_path_prepared
+CH|CHECK|PASS|id=281 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=1 mode=ipc repetition=0 messages=128 cycles=110564 cycles_per_message=863 ticks=0 valid=1
+CH|CHECK|PASS|id=282 name=bench_queue_drained
+CH|CHECK|PASS|id=283 name=bench_queue_deinit
+CH|CHECK|PASS|id=284 name=bench_pool_all_returned
+CH|CHECK|PASS|id=285 name=bench_path_prepared
+CH|CHECK|PASS|id=286 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=1 mode=ipc repetition=0 messages=128 cycles=510148 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=287 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=288 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=289 name=bench_loan_close
+CH|CHECK|PASS|id=290 name=bench_loan_deinit
+CH|CHECK|PASS|id=291 name=bench_path_prepared
+CH|CHECK|PASS|id=292 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=1 mode=ipc repetition=1 messages=128 cycles=110564 cycles_per_message=863 ticks=0 valid=1
+CH|CHECK|PASS|id=293 name=bench_queue_drained
+CH|CHECK|PASS|id=294 name=bench_queue_deinit
+CH|CHECK|PASS|id=295 name=bench_pool_all_returned
+CH|CHECK|PASS|id=296 name=bench_path_prepared
+CH|CHECK|PASS|id=297 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=1 mode=ipc repetition=1 messages=128 cycles=510169 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=298 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=299 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=300 name=bench_loan_close
+CH|CHECK|PASS|id=301 name=bench_loan_deinit
+CH|CHECK|PASS|id=302 name=bench_path_prepared
+CH|CHECK|PASS|id=303 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=1 mode=ipc repetition=1 messages=128 cycles=134059 cycles_per_message=1047 ticks=1 valid=1
+CH|CHECK|PASS|id=304 name=bench_queue_drained
+CH|CHECK|PASS|id=305 name=bench_queue_deinit
+CH|CHECK|PASS|id=306 name=bench_path_prepared
+CH|CHECK|PASS|id=307 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=1 mode=ipc repetition=2 messages=128 cycles=510146 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=308 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=309 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=310 name=bench_loan_close
+CH|CHECK|PASS|id=311 name=bench_loan_deinit
+CH|CHECK|PASS|id=312 name=bench_path_prepared
+CH|CHECK|PASS|id=313 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=1 mode=ipc repetition=2 messages=128 cycles=134063 cycles_per_message=1047 ticks=1 valid=1
+CH|CHECK|PASS|id=314 name=bench_queue_drained
+CH|CHECK|PASS|id=315 name=bench_queue_deinit
+CH|CHECK|PASS|id=316 name=bench_path_prepared
+CH|CHECK|PASS|id=317 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=1 mode=ipc repetition=2 messages=128 cycles=110894 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=318 name=bench_queue_drained
+CH|CHECK|PASS|id=319 name=bench_queue_deinit
+CH|CHECK|PASS|id=320 name=bench_pool_all_returned
+CH|CHECK|PASS|id=321 name=bench_path_prepared
+CH|CHECK|PASS|id=322 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=1 mode=e2e repetition=0 messages=128 cycles=417992 cycles_per_message=3265 ticks=2 valid=1
+CH|CHECK|PASS|id=323 name=bench_queue_drained
+CH|CHECK|PASS|id=324 name=bench_queue_deinit
+CH|CHECK|PASS|id=325 name=bench_path_prepared
+CH|CHECK|PASS|id=326 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=1 mode=e2e repetition=0 messages=128 cycles=397544 cycles_per_message=3105 ticks=3 valid=1
+CH|CHECK|PASS|id=327 name=bench_queue_drained
+CH|CHECK|PASS|id=328 name=bench_queue_deinit
+CH|CHECK|PASS|id=329 name=bench_pool_all_returned
+CH|CHECK|PASS|id=330 name=bench_path_prepared
+CH|CHECK|PASS|id=331 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=1 mode=e2e repetition=0 messages=128 cycles=787577 cycles_per_message=6152 ticks=4 valid=1
+CH|CHECK|PASS|id=332 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=333 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=334 name=bench_loan_close
+CH|CHECK|PASS|id=335 name=bench_loan_deinit
+CH|CHECK|PASS|id=336 name=bench_path_prepared
+CH|CHECK|PASS|id=337 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=1 mode=e2e repetition=1 messages=128 cycles=397261 cycles_per_message=3103 ticks=2 valid=1
+CH|CHECK|PASS|id=338 name=bench_queue_drained
+CH|CHECK|PASS|id=339 name=bench_queue_deinit
+CH|CHECK|PASS|id=340 name=bench_pool_all_returned
+CH|CHECK|PASS|id=341 name=bench_path_prepared
+CH|CHECK|PASS|id=342 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=1 mode=e2e repetition=1 messages=128 cycles=787882 cycles_per_message=6155 ticks=5 valid=1
+CH|CHECK|PASS|id=343 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=344 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=345 name=bench_loan_close
+CH|CHECK|PASS|id=346 name=bench_loan_deinit
+CH|CHECK|PASS|id=347 name=bench_path_prepared
+CH|CHECK|PASS|id=348 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=1 mode=e2e repetition=1 messages=128 cycles=418334 cycles_per_message=3268 ticks=3 valid=1
+CH|CHECK|PASS|id=349 name=bench_queue_drained
+CH|CHECK|PASS|id=350 name=bench_queue_deinit
+CH|CHECK|PASS|id=351 name=bench_path_prepared
+CH|CHECK|PASS|id=352 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=1 mode=e2e repetition=2 messages=128 cycles=787881 cycles_per_message=6155 ticks=5 valid=1
+CH|CHECK|PASS|id=353 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=354 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=355 name=bench_loan_close
+CH|CHECK|PASS|id=356 name=bench_loan_deinit
+CH|CHECK|PASS|id=357 name=bench_path_prepared
+CH|CHECK|PASS|id=358 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=1 mode=e2e repetition=2 messages=128 cycles=418205 cycles_per_message=3267 ticks=3 valid=1
+CH|CHECK|PASS|id=359 name=bench_queue_drained
+CH|CHECK|PASS|id=360 name=bench_queue_deinit
+CH|CHECK|PASS|id=361 name=bench_path_prepared
+CH|CHECK|PASS|id=362 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=1 mode=e2e repetition=2 messages=128 cycles=397263 cycles_per_message=3103 ticks=2 valid=1
+CH|CHECK|PASS|id=363 name=bench_queue_drained
+CH|CHECK|PASS|id=364 name=bench_queue_deinit
+CH|CHECK|PASS|id=365 name=bench_pool_all_returned
+CH|CHECK|PASS|id=366 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=64 capacity=3 batches=128 messages=384 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=367 name=bench_path_prepared
+CH|CHECK|PASS|id=368 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=3 mode=ipc repetition=0 messages=384 cycles=392404 cycles_per_message=1021 ticks=2 valid=1
+CH|CHECK|PASS|id=369 name=bench_queue_drained
+CH|CHECK|PASS|id=370 name=bench_queue_deinit
+CH|CHECK|PASS|id=371 name=bench_path_prepared
+CH|CHECK|PASS|id=372 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=3 mode=ipc repetition=0 messages=384 cycles=280996 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=373 name=bench_queue_drained
+CH|CHECK|PASS|id=374 name=bench_queue_deinit
+CH|CHECK|PASS|id=375 name=bench_pool_all_returned
+CH|CHECK|PASS|id=376 name=bench_path_prepared
+CH|CHECK|PASS|id=377 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=3 mode=ipc repetition=0 messages=384 cycles=1506680 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=378 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=379 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=380 name=bench_loan_close
+CH|CHECK|PASS|id=381 name=bench_loan_deinit
+CH|CHECK|PASS|id=382 name=bench_path_prepared
+CH|CHECK|PASS|id=383 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=3 mode=ipc repetition=1 messages=384 cycles=281005 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=384 name=bench_queue_drained
+CH|CHECK|PASS|id=385 name=bench_queue_deinit
+CH|CHECK|PASS|id=386 name=bench_pool_all_returned
+CH|CHECK|PASS|id=387 name=bench_path_prepared
+CH|CHECK|PASS|id=388 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=3 mode=ipc repetition=1 messages=384 cycles=1506697 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=389 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=390 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=391 name=bench_loan_close
+CH|CHECK|PASS|id=392 name=bench_loan_deinit
+CH|CHECK|PASS|id=393 name=bench_path_prepared
+CH|CHECK|PASS|id=394 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=3 mode=ipc repetition=1 messages=384 cycles=392384 cycles_per_message=1021 ticks=2 valid=1
+CH|CHECK|PASS|id=395 name=bench_queue_drained
+CH|CHECK|PASS|id=396 name=bench_queue_deinit
+CH|CHECK|PASS|id=397 name=bench_path_prepared
+CH|CHECK|PASS|id=398 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=3 mode=ipc repetition=2 messages=384 cycles=1506721 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=399 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=400 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=401 name=bench_loan_close
+CH|CHECK|PASS|id=402 name=bench_loan_deinit
+CH|CHECK|PASS|id=403 name=bench_path_prepared
+CH|CHECK|PASS|id=404 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=3 mode=ipc repetition=2 messages=384 cycles=392383 cycles_per_message=1021 ticks=2 valid=1
+CH|CHECK|PASS|id=405 name=bench_queue_drained
+CH|CHECK|PASS|id=406 name=bench_queue_deinit
+CH|CHECK|PASS|id=407 name=bench_path_prepared
+CH|CHECK|PASS|id=408 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=3 mode=ipc repetition=2 messages=384 cycles=280983 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=409 name=bench_queue_drained
+CH|CHECK|PASS|id=410 name=bench_queue_deinit
+CH|CHECK|PASS|id=411 name=bench_pool_all_returned
+CH|CHECK|PASS|id=412 name=bench_path_prepared
+CH|CHECK|PASS|id=413 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=3 mode=e2e repetition=0 messages=384 cycles=1213697 cycles_per_message=3160 ticks=7 valid=1
+CH|CHECK|PASS|id=414 name=bench_queue_drained
+CH|CHECK|PASS|id=415 name=bench_queue_deinit
+CH|CHECK|PASS|id=416 name=bench_path_prepared
+CH|CHECK|PASS|id=417 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=3 mode=e2e repetition=0 messages=384 cycles=1103235 cycles_per_message=2873 ticks=6 valid=1
+CH|CHECK|PASS|id=418 name=bench_queue_drained
+CH|CHECK|PASS|id=419 name=bench_queue_deinit
+CH|CHECK|PASS|id=420 name=bench_pool_all_returned
+CH|CHECK|PASS|id=421 name=bench_path_prepared
+CH|CHECK|PASS|id=422 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=3 mode=e2e repetition=0 messages=384 cycles=2330884 cycles_per_message=6070 ticks=14 valid=1
+CH|CHECK|PASS|id=423 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=424 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=425 name=bench_loan_close
+CH|CHECK|PASS|id=426 name=bench_loan_deinit
+CH|CHECK|PASS|id=427 name=bench_path_prepared
+CH|CHECK|PASS|id=428 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=3 mode=e2e repetition=1 messages=384 cycles=1103580 cycles_per_message=2873 ticks=6 valid=1
+CH|CHECK|PASS|id=429 name=bench_queue_drained
+CH|CHECK|PASS|id=430 name=bench_queue_deinit
+CH|CHECK|PASS|id=431 name=bench_pool_all_returned
+CH|CHECK|PASS|id=432 name=bench_path_prepared
+CH|CHECK|PASS|id=433 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=3 mode=e2e repetition=1 messages=384 cycles=2330909 cycles_per_message=6070 ticks=14 valid=1
+CH|CHECK|PASS|id=434 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=435 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=436 name=bench_loan_close
+CH|CHECK|PASS|id=437 name=bench_loan_deinit
+CH|CHECK|PASS|id=438 name=bench_path_prepared
+CH|CHECK|PASS|id=439 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=3 mode=e2e repetition=1 messages=384 cycles=1213726 cycles_per_message=3160 ticks=7 valid=1
+CH|CHECK|PASS|id=440 name=bench_queue_drained
+CH|CHECK|PASS|id=441 name=bench_queue_deinit
+CH|CHECK|PASS|id=442 name=bench_path_prepared
+CH|CHECK|PASS|id=443 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=3 mode=e2e repetition=2 messages=384 cycles=2330925 cycles_per_message=6070 ticks=14 valid=1
+CH|CHECK|PASS|id=444 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=445 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=446 name=bench_loan_close
+CH|CHECK|PASS|id=447 name=bench_loan_deinit
+CH|CHECK|PASS|id=448 name=bench_path_prepared
+CH|CHECK|PASS|id=449 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=3 mode=e2e repetition=2 messages=384 cycles=1213719 cycles_per_message=3160 ticks=7 valid=1
+CH|CHECK|PASS|id=450 name=bench_queue_drained
+CH|CHECK|PASS|id=451 name=bench_queue_deinit
+CH|CHECK|PASS|id=452 name=bench_path_prepared
+CH|CHECK|PASS|id=453 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=3 mode=e2e repetition=2 messages=384 cycles=1103963 cycles_per_message=2874 ticks=7 valid=1
+CH|CHECK|PASS|id=454 name=bench_queue_drained
+CH|CHECK|PASS|id=455 name=bench_queue_deinit
+CH|CHECK|PASS|id=456 name=bench_pool_all_returned
+CH|CHECK|PASS|id=457 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=64 capacity=16 batches=128 messages=2048 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=458 name=bench_path_prepared
+CH|CHECK|PASS|id=459 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=16 mode=ipc repetition=0 messages=2048 cycles=2072664 cycles_per_message=1012 ticks=12 valid=1
+CH|CHECK|PASS|id=460 name=bench_queue_drained
+CH|CHECK|PASS|id=461 name=bench_queue_deinit
+CH|CHECK|PASS|id=462 name=bench_path_prepared
+CH|CHECK|PASS|id=463 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=16 mode=ipc repetition=0 messages=2048 cycles=1484908 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=464 name=bench_queue_drained
+CH|CHECK|PASS|id=465 name=bench_queue_deinit
+CH|CHECK|PASS|id=466 name=bench_pool_all_returned
+CH|CHECK|PASS|id=467 name=bench_path_prepared
+CH|CHECK|PASS|id=468 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=16 mode=ipc repetition=0 messages=2048 cycles=7982154 cycles_per_message=3897 ticks=47 valid=1
+CH|CHECK|PASS|id=469 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=470 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=471 name=bench_loan_close
+CH|CHECK|PASS|id=472 name=bench_loan_deinit
+CH|CHECK|PASS|id=473 name=bench_path_prepared
+CH|CHECK|PASS|id=474 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=16 mode=ipc repetition=1 messages=2048 cycles=1484914 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=475 name=bench_queue_drained
+CH|CHECK|PASS|id=476 name=bench_queue_deinit
+CH|CHECK|PASS|id=477 name=bench_pool_all_returned
+CH|CHECK|PASS|id=478 name=bench_path_prepared
+CH|CHECK|PASS|id=479 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=16 mode=ipc repetition=1 messages=2048 cycles=7982513 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=480 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=481 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=482 name=bench_loan_close
+CH|CHECK|PASS|id=483 name=bench_loan_deinit
+CH|CHECK|PASS|id=484 name=bench_path_prepared
+CH|CHECK|PASS|id=485 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=16 mode=ipc repetition=1 messages=2048 cycles=2072845 cycles_per_message=1012 ticks=13 valid=1
+CH|CHECK|PASS|id=486 name=bench_queue_drained
+CH|CHECK|PASS|id=487 name=bench_queue_deinit
+CH|CHECK|PASS|id=488 name=bench_path_prepared
+CH|CHECK|PASS|id=489 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=16 mode=ipc repetition=2 messages=2048 cycles=7982487 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=490 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=491 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=492 name=bench_loan_close
+CH|CHECK|PASS|id=493 name=bench_loan_deinit
+CH|CHECK|PASS|id=494 name=bench_path_prepared
+CH|CHECK|PASS|id=495 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=16 mode=ipc repetition=2 messages=2048 cycles=2072673 cycles_per_message=1012 ticks=12 valid=1
+CH|CHECK|PASS|id=496 name=bench_queue_drained
+CH|CHECK|PASS|id=497 name=bench_queue_deinit
+CH|CHECK|PASS|id=498 name=bench_path_prepared
+CH|CHECK|PASS|id=499 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=16 mode=ipc repetition=2 messages=2048 cycles=1484949 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=500 name=bench_queue_drained
+CH|CHECK|PASS|id=501 name=bench_queue_deinit
+CH|CHECK|PASS|id=502 name=bench_pool_all_returned
+CH|CHECK|PASS|id=503 name=bench_path_prepared
+CH|CHECK|PASS|id=504 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=16 mode=e2e repetition=0 messages=2048 cycles=6381389 cycles_per_message=3115 ticks=38 valid=1
+CH|CHECK|PASS|id=505 name=bench_queue_drained
+CH|CHECK|PASS|id=506 name=bench_queue_deinit
+CH|CHECK|PASS|id=507 name=bench_path_prepared
+CH|CHECK|PASS|id=508 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=16 mode=e2e repetition=0 messages=2048 cycles=5794586 cycles_per_message=2829 ticks=35 valid=1
+CH|CHECK|PASS|id=509 name=bench_queue_drained
+CH|CHECK|PASS|id=510 name=bench_queue_deinit
+CH|CHECK|PASS|id=511 name=bench_pool_all_returned
+CH|CHECK|PASS|id=512 name=bench_path_prepared
+CH|CHECK|PASS|id=513 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=16 mode=e2e repetition=0 messages=2048 cycles=12360657 cycles_per_message=6035 ticks=73 valid=1
+CH|CHECK|PASS|id=514 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=515 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=516 name=bench_loan_close
+CH|CHECK|PASS|id=517 name=bench_loan_deinit
+CH|CHECK|PASS|id=518 name=bench_path_prepared
+CH|CHECK|PASS|id=519 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=16 mode=e2e repetition=1 messages=2048 cycles=5794461 cycles_per_message=2829 ticks=35 valid=1
+CH|CHECK|PASS|id=520 name=bench_queue_drained
+CH|CHECK|PASS|id=521 name=bench_queue_deinit
+CH|CHECK|PASS|id=522 name=bench_pool_all_returned
+CH|CHECK|PASS|id=523 name=bench_path_prepared
+CH|CHECK|PASS|id=524 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=16 mode=e2e repetition=1 messages=2048 cycles=12360981 cycles_per_message=6035 ticks=74 valid=1
+CH|CHECK|PASS|id=525 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=526 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=527 name=bench_loan_close
+CH|CHECK|PASS|id=528 name=bench_loan_deinit
+CH|CHECK|PASS|id=529 name=bench_path_prepared
+CH|CHECK|PASS|id=530 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=16 mode=e2e repetition=1 messages=2048 cycles=6381365 cycles_per_message=3115 ticks=38 valid=1
+CH|CHECK|PASS|id=531 name=bench_queue_drained
+CH|CHECK|PASS|id=532 name=bench_queue_deinit
+CH|CHECK|PASS|id=533 name=bench_path_prepared
+CH|CHECK|PASS|id=534 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=64 capacity=16 mode=e2e repetition=2 messages=2048 cycles=12360969 cycles_per_message=6035 ticks=74 valid=1
+CH|CHECK|PASS|id=535 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=536 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=537 name=bench_loan_close
+CH|CHECK|PASS|id=538 name=bench_loan_deinit
+CH|CHECK|PASS|id=539 name=bench_path_prepared
+CH|CHECK|PASS|id=540 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=64 capacity=16 mode=e2e repetition=2 messages=2048 cycles=6381490 cycles_per_message=3115 ticks=38 valid=1
+CH|CHECK|PASS|id=541 name=bench_queue_drained
+CH|CHECK|PASS|id=542 name=bench_queue_deinit
+CH|CHECK|PASS|id=543 name=bench_path_prepared
+CH|CHECK|PASS|id=544 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=64 capacity=16 mode=e2e repetition=2 messages=2048 cycles=5794155 cycles_per_message=2829 ticks=34 valid=1
+CH|CHECK|PASS|id=545 name=bench_queue_drained
+CH|CHECK|PASS|id=546 name=bench_queue_deinit
+CH|CHECK|PASS|id=547 name=bench_pool_all_returned
+CH|CHECK|PASS|id=548 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=256 capacity=1 batches=128 messages=128 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=549 name=bench_path_prepared
+CH|CHECK|PASS|id=550 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=1 mode=ipc repetition=0 messages=128 cycles=380154 cycles_per_message=2969 ticks=2 valid=1
+CH|CHECK|PASS|id=551 name=bench_queue_drained
+CH|CHECK|PASS|id=552 name=bench_queue_deinit
+CH|CHECK|PASS|id=553 name=bench_path_prepared
+CH|CHECK|PASS|id=554 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=1 mode=ipc repetition=0 messages=128 cycles=110894 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=555 name=bench_queue_drained
+CH|CHECK|PASS|id=556 name=bench_queue_deinit
+CH|CHECK|PASS|id=557 name=bench_pool_all_returned
+CH|CHECK|PASS|id=558 name=bench_path_prepared
+CH|CHECK|PASS|id=559 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=1 mode=ipc repetition=0 messages=128 cycles=510168 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=560 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=561 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=562 name=bench_loan_close
+CH|CHECK|PASS|id=563 name=bench_loan_deinit
+CH|CHECK|PASS|id=564 name=bench_path_prepared
+CH|CHECK|PASS|id=565 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=1 mode=ipc repetition=1 messages=128 cycles=110903 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=566 name=bench_queue_drained
+CH|CHECK|PASS|id=567 name=bench_queue_deinit
+CH|CHECK|PASS|id=568 name=bench_pool_all_returned
+CH|CHECK|PASS|id=569 name=bench_path_prepared
+CH|CHECK|PASS|id=570 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=1 mode=ipc repetition=1 messages=128 cycles=510163 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=571 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=572 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=573 name=bench_loan_close
+CH|CHECK|PASS|id=574 name=bench_loan_deinit
+CH|CHECK|PASS|id=575 name=bench_path_prepared
+CH|CHECK|PASS|id=576 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=1 mode=ipc repetition=1 messages=128 cycles=380158 cycles_per_message=2969 ticks=2 valid=1
+CH|CHECK|PASS|id=577 name=bench_queue_drained
+CH|CHECK|PASS|id=578 name=bench_queue_deinit
+CH|CHECK|PASS|id=579 name=bench_path_prepared
+CH|CHECK|PASS|id=580 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=1 mode=ipc repetition=2 messages=128 cycles=510168 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=581 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=582 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=583 name=bench_loan_close
+CH|CHECK|PASS|id=584 name=bench_loan_deinit
+CH|CHECK|PASS|id=585 name=bench_path_prepared
+CH|CHECK|PASS|id=586 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=1 mode=ipc repetition=2 messages=128 cycles=380489 cycles_per_message=2972 ticks=3 valid=1
+CH|CHECK|PASS|id=587 name=bench_queue_drained
+CH|CHECK|PASS|id=588 name=bench_queue_deinit
+CH|CHECK|PASS|id=589 name=bench_path_prepared
+CH|CHECK|PASS|id=590 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=1 mode=ipc repetition=2 messages=128 cycles=110888 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=591 name=bench_queue_drained
+CH|CHECK|PASS|id=592 name=bench_queue_deinit
+CH|CHECK|PASS|id=593 name=bench_pool_all_returned
+CH|CHECK|PASS|id=594 name=bench_path_prepared
+CH|CHECK|PASS|id=595 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=1 mode=e2e repetition=0 messages=128 cycles=1427492 cycles_per_message=11152 ticks=8 valid=1
+CH|CHECK|PASS|id=596 name=bench_queue_drained
+CH|CHECK|PASS|id=597 name=bench_queue_deinit
+CH|CHECK|PASS|id=598 name=bench_path_prepared
+CH|CHECK|PASS|id=599 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=1 mode=e2e repetition=0 messages=128 cycles=1160233 cycles_per_message=9064 ticks=6 valid=1
+CH|CHECK|PASS|id=600 name=bench_queue_drained
+CH|CHECK|PASS|id=601 name=bench_queue_deinit
+CH|CHECK|PASS|id=602 name=bench_pool_all_returned
+CH|CHECK|PASS|id=603 name=bench_path_prepared
+CH|CHECK|PASS|id=604 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=1 mode=e2e repetition=0 messages=128 cycles=1551253 cycles_per_message=12119 ticks=10 valid=1
+CH|CHECK|PASS|id=605 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=606 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=607 name=bench_loan_close
+CH|CHECK|PASS|id=608 name=bench_loan_deinit
+CH|CHECK|PASS|id=609 name=bench_path_prepared
+CH|CHECK|PASS|id=610 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=1 mode=e2e repetition=1 messages=128 cycles=1160234 cycles_per_message=9064 ticks=6 valid=1
+CH|CHECK|PASS|id=611 name=bench_queue_drained
+CH|CHECK|PASS|id=612 name=bench_queue_deinit
+CH|CHECK|PASS|id=613 name=bench_pool_all_returned
+CH|CHECK|PASS|id=614 name=bench_path_prepared
+CH|CHECK|PASS|id=615 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=1 mode=e2e repetition=1 messages=128 cycles=1551258 cycles_per_message=12119 ticks=10 valid=1
+CH|CHECK|PASS|id=616 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=617 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=618 name=bench_loan_close
+CH|CHECK|PASS|id=619 name=bench_loan_deinit
+CH|CHECK|PASS|id=620 name=bench_path_prepared
+CH|CHECK|PASS|id=621 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=1 mode=e2e repetition=1 messages=128 cycles=1427300 cycles_per_message=11150 ticks=8 valid=1
+CH|CHECK|PASS|id=622 name=bench_queue_drained
+CH|CHECK|PASS|id=623 name=bench_queue_deinit
+CH|CHECK|PASS|id=624 name=bench_path_prepared
+CH|CHECK|PASS|id=625 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=1 mode=e2e repetition=2 messages=128 cycles=1550958 cycles_per_message=12116 ticks=9 valid=1
+CH|CHECK|PASS|id=626 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=627 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=628 name=bench_loan_close
+CH|CHECK|PASS|id=629 name=bench_loan_deinit
+CH|CHECK|PASS|id=630 name=bench_path_prepared
+CH|CHECK|PASS|id=631 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=1 mode=e2e repetition=2 messages=128 cycles=1427293 cycles_per_message=11150 ticks=8 valid=1
+CH|CHECK|PASS|id=632 name=bench_queue_drained
+CH|CHECK|PASS|id=633 name=bench_queue_deinit
+CH|CHECK|PASS|id=634 name=bench_path_prepared
+CH|CHECK|PASS|id=635 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=1 mode=e2e repetition=2 messages=128 cycles=1160507 cycles_per_message=9066 ticks=7 valid=1
+CH|CHECK|PASS|id=636 name=bench_queue_drained
+CH|CHECK|PASS|id=637 name=bench_queue_deinit
+CH|CHECK|PASS|id=638 name=bench_pool_all_returned
+CH|CHECK|PASS|id=639 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=256 capacity=3 batches=128 messages=384 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=640 name=bench_path_prepared
+CH|CHECK|PASS|id=641 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=3 mode=ipc repetition=0 messages=384 cycles=1130844 cycles_per_message=2944 ticks=6 valid=1
+CH|CHECK|PASS|id=642 name=bench_queue_drained
+CH|CHECK|PASS|id=643 name=bench_queue_deinit
+CH|CHECK|PASS|id=644 name=bench_path_prepared
+CH|CHECK|PASS|id=645 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=3 mode=ipc repetition=0 messages=384 cycles=280997 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=646 name=bench_queue_drained
+CH|CHECK|PASS|id=647 name=bench_queue_deinit
+CH|CHECK|PASS|id=648 name=bench_pool_all_returned
+CH|CHECK|PASS|id=649 name=bench_path_prepared
+CH|CHECK|PASS|id=650 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=3 mode=ipc repetition=0 messages=384 cycles=1506702 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=651 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=652 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=653 name=bench_loan_close
+CH|CHECK|PASS|id=654 name=bench_loan_deinit
+CH|CHECK|PASS|id=655 name=bench_path_prepared
+CH|CHECK|PASS|id=656 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=3 mode=ipc repetition=1 messages=384 cycles=281303 cycles_per_message=732 ticks=2 valid=1
+CH|CHECK|PASS|id=657 name=bench_queue_drained
+CH|CHECK|PASS|id=658 name=bench_queue_deinit
+CH|CHECK|PASS|id=659 name=bench_pool_all_returned
+CH|CHECK|PASS|id=660 name=bench_path_prepared
+CH|CHECK|PASS|id=661 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=3 mode=ipc repetition=1 messages=384 cycles=1506685 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=662 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=663 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=664 name=bench_loan_close
+CH|CHECK|PASS|id=665 name=bench_loan_deinit
+CH|CHECK|PASS|id=666 name=bench_path_prepared
+CH|CHECK|PASS|id=667 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=3 mode=ipc repetition=1 messages=384 cycles=1131154 cycles_per_message=2945 ticks=7 valid=1
+CH|CHECK|PASS|id=668 name=bench_queue_drained
+CH|CHECK|PASS|id=669 name=bench_queue_deinit
+CH|CHECK|PASS|id=670 name=bench_path_prepared
+CH|CHECK|PASS|id=671 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=3 mode=ipc repetition=2 messages=384 cycles=1506717 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=672 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=673 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=674 name=bench_loan_close
+CH|CHECK|PASS|id=675 name=bench_loan_deinit
+CH|CHECK|PASS|id=676 name=bench_path_prepared
+CH|CHECK|PASS|id=677 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=3 mode=ipc repetition=2 messages=384 cycles=1131001 cycles_per_message=2945 ticks=7 valid=1
+CH|CHECK|PASS|id=678 name=bench_queue_drained
+CH|CHECK|PASS|id=679 name=bench_queue_deinit
+CH|CHECK|PASS|id=680 name=bench_path_prepared
+CH|CHECK|PASS|id=681 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=3 mode=ipc repetition=2 messages=384 cycles=281302 cycles_per_message=732 ticks=2 valid=1
+CH|CHECK|PASS|id=682 name=bench_queue_drained
+CH|CHECK|PASS|id=683 name=bench_queue_deinit
+CH|CHECK|PASS|id=684 name=bench_pool_all_returned
+CH|CHECK|PASS|id=685 name=bench_path_prepared
+CH|CHECK|PASS|id=686 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=3 mode=e2e repetition=0 messages=384 cycles=4242239 cycles_per_message=11047 ticks=25 valid=1
+CH|CHECK|PASS|id=687 name=bench_queue_drained
+CH|CHECK|PASS|id=688 name=bench_queue_deinit
+CH|CHECK|PASS|id=689 name=bench_path_prepared
+CH|CHECK|PASS|id=690 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=3 mode=e2e repetition=0 messages=384 cycles=3394364 cycles_per_message=8839 ticks=20 valid=1
+CH|CHECK|PASS|id=691 name=bench_queue_drained
+CH|CHECK|PASS|id=692 name=bench_queue_deinit
+CH|CHECK|PASS|id=693 name=bench_pool_all_returned
+CH|CHECK|PASS|id=694 name=bench_path_prepared
+CH|CHECK|PASS|id=695 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=3 mode=e2e repetition=0 messages=384 cycles=4620622 cycles_per_message=12032 ticks=27 valid=1
+CH|CHECK|PASS|id=696 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=697 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=698 name=bench_loan_close
+CH|CHECK|PASS|id=699 name=bench_loan_deinit
+CH|CHECK|PASS|id=700 name=bench_path_prepared
+CH|CHECK|PASS|id=701 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=3 mode=e2e repetition=1 messages=384 cycles=3394039 cycles_per_message=8838 ticks=20 valid=1
+CH|CHECK|PASS|id=702 name=bench_queue_drained
+CH|CHECK|PASS|id=703 name=bench_queue_deinit
+CH|CHECK|PASS|id=704 name=bench_pool_all_returned
+CH|CHECK|PASS|id=705 name=bench_path_prepared
+CH|CHECK|PASS|id=706 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=3 mode=e2e repetition=1 messages=384 cycles=4620946 cycles_per_message=12033 ticks=28 valid=1
+CH|CHECK|PASS|id=707 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=708 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=709 name=bench_loan_close
+CH|CHECK|PASS|id=710 name=bench_loan_deinit
+CH|CHECK|PASS|id=711 name=bench_path_prepared
+CH|CHECK|PASS|id=712 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=3 mode=e2e repetition=1 messages=384 cycles=4242261 cycles_per_message=11047 ticks=25 valid=1
+CH|CHECK|PASS|id=713 name=bench_queue_drained
+CH|CHECK|PASS|id=714 name=bench_queue_deinit
+CH|CHECK|PASS|id=715 name=bench_path_prepared
+CH|CHECK|PASS|id=716 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=3 mode=e2e repetition=2 messages=384 cycles=4620638 cycles_per_message=12032 ticks=27 valid=1
+CH|CHECK|PASS|id=717 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=718 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=719 name=bench_loan_close
+CH|CHECK|PASS|id=720 name=bench_loan_deinit
+CH|CHECK|PASS|id=721 name=bench_path_prepared
+CH|CHECK|PASS|id=722 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=3 mode=e2e repetition=2 messages=384 cycles=4242410 cycles_per_message=11047 ticks=26 valid=1
+CH|CHECK|PASS|id=723 name=bench_queue_drained
+CH|CHECK|PASS|id=724 name=bench_queue_deinit
+CH|CHECK|PASS|id=725 name=bench_path_prepared
+CH|CHECK|PASS|id=726 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=3 mode=e2e repetition=2 messages=384 cycles=3393888 cycles_per_message=8838 ticks=20 valid=1
+CH|CHECK|PASS|id=727 name=bench_queue_drained
+CH|CHECK|PASS|id=728 name=bench_queue_deinit
+CH|CHECK|PASS|id=729 name=bench_pool_all_returned
+CH|CHECK|PASS|id=730 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=256 capacity=16 batches=128 messages=2048 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=731 name=bench_path_prepared
+CH|CHECK|PASS|id=732 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=16 mode=ipc repetition=0 messages=2048 cycles=6011423 cycles_per_message=2935 ticks=35 valid=1
+CH|CHECK|PASS|id=733 name=bench_queue_drained
+CH|CHECK|PASS|id=734 name=bench_queue_deinit
+CH|CHECK|PASS|id=735 name=bench_path_prepared
+CH|CHECK|PASS|id=736 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=16 mode=ipc repetition=0 messages=2048 cycles=1484910 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=737 name=bench_queue_drained
+CH|CHECK|PASS|id=738 name=bench_queue_deinit
+CH|CHECK|PASS|id=739 name=bench_pool_all_returned
+CH|CHECK|PASS|id=740 name=bench_path_prepared
+CH|CHECK|PASS|id=741 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=16 mode=ipc repetition=0 messages=2048 cycles=7982493 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=742 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=743 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=744 name=bench_loan_close
+CH|CHECK|PASS|id=745 name=bench_loan_deinit
+CH|CHECK|PASS|id=746 name=bench_path_prepared
+CH|CHECK|PASS|id=747 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=16 mode=ipc repetition=1 messages=2048 cycles=1484659 cycles_per_message=724 ticks=8 valid=1
+CH|CHECK|PASS|id=748 name=bench_queue_drained
+CH|CHECK|PASS|id=749 name=bench_queue_deinit
+CH|CHECK|PASS|id=750 name=bench_pool_all_returned
+CH|CHECK|PASS|id=751 name=bench_path_prepared
+CH|CHECK|PASS|id=752 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=16 mode=ipc repetition=1 messages=2048 cycles=7982538 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=753 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=754 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=755 name=bench_loan_close
+CH|CHECK|PASS|id=756 name=bench_loan_deinit
+CH|CHECK|PASS|id=757 name=bench_path_prepared
+CH|CHECK|PASS|id=758 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=16 mode=ipc repetition=1 messages=2048 cycles=6011704 cycles_per_message=2935 ticks=36 valid=1
+CH|CHECK|PASS|id=759 name=bench_queue_drained
+CH|CHECK|PASS|id=760 name=bench_queue_deinit
+CH|CHECK|PASS|id=761 name=bench_path_prepared
+CH|CHECK|PASS|id=762 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=16 mode=ipc repetition=2 messages=2048 cycles=7982153 cycles_per_message=3897 ticks=47 valid=1
+CH|CHECK|PASS|id=763 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=764 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=765 name=bench_loan_close
+CH|CHECK|PASS|id=766 name=bench_loan_deinit
+CH|CHECK|PASS|id=767 name=bench_path_prepared
+CH|CHECK|PASS|id=768 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=16 mode=ipc repetition=2 messages=2048 cycles=6011669 cycles_per_message=2935 ticks=36 valid=1
+CH|CHECK|PASS|id=769 name=bench_queue_drained
+CH|CHECK|PASS|id=770 name=bench_queue_deinit
+CH|CHECK|PASS|id=771 name=bench_path_prepared
+CH|CHECK|PASS|id=772 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=16 mode=ipc repetition=2 messages=2048 cycles=1484621 cycles_per_message=724 ticks=8 valid=1
+CH|CHECK|PASS|id=773 name=bench_queue_drained
+CH|CHECK|PASS|id=774 name=bench_queue_deinit
+CH|CHECK|PASS|id=775 name=bench_pool_all_returned
+CH|CHECK|PASS|id=776 name=bench_path_prepared
+CH|CHECK|PASS|id=777 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=16 mode=e2e repetition=0 messages=2048 cycles=22532504 cycles_per_message=11002 ticks=135 valid=1
+CH|CHECK|PASS|id=778 name=bench_queue_drained
+CH|CHECK|PASS|id=779 name=bench_queue_deinit
+CH|CHECK|PASS|id=780 name=bench_path_prepared
+CH|CHECK|PASS|id=781 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=16 mode=e2e repetition=0 messages=2048 cycles=18013447 cycles_per_message=8795 ticks=107 valid=1
+CH|CHECK|PASS|id=782 name=bench_queue_drained
+CH|CHECK|PASS|id=783 name=bench_queue_deinit
+CH|CHECK|PASS|id=784 name=bench_pool_all_returned
+CH|CHECK|PASS|id=785 name=bench_path_prepared
+CH|CHECK|PASS|id=786 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=16 mode=e2e repetition=0 messages=2048 cycles=24574165 cycles_per_message=11999 ticks=146 valid=1
+CH|CHECK|PASS|id=787 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=788 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=789 name=bench_loan_close
+CH|CHECK|PASS|id=790 name=bench_loan_deinit
+CH|CHECK|PASS|id=791 name=bench_path_prepared
+CH|CHECK|PASS|id=792 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=16 mode=e2e repetition=1 messages=2048 cycles=18013182 cycles_per_message=8795 ticks=107 valid=1
+CH|CHECK|PASS|id=793 name=bench_queue_drained
+CH|CHECK|PASS|id=794 name=bench_queue_deinit
+CH|CHECK|PASS|id=795 name=bench_pool_all_returned
+CH|CHECK|PASS|id=796 name=bench_path_prepared
+CH|CHECK|PASS|id=797 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=16 mode=e2e repetition=1 messages=2048 cycles=24574317 cycles_per_message=11999 ticks=147 valid=1
+CH|CHECK|PASS|id=798 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=799 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=800 name=bench_loan_close
+CH|CHECK|PASS|id=801 name=bench_loan_deinit
+CH|CHECK|PASS|id=802 name=bench_path_prepared
+CH|CHECK|PASS|id=803 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=16 mode=e2e repetition=1 messages=2048 cycles=22532249 cycles_per_message=11002 ticks=134 valid=1
+CH|CHECK|PASS|id=804 name=bench_queue_drained
+CH|CHECK|PASS|id=805 name=bench_queue_deinit
+CH|CHECK|PASS|id=806 name=bench_path_prepared
+CH|CHECK|PASS|id=807 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=256 capacity=16 mode=e2e repetition=2 messages=2048 cycles=24574470 cycles_per_message=11999 ticks=146 valid=1
+CH|CHECK|PASS|id=808 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=809 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=810 name=bench_loan_close
+CH|CHECK|PASS|id=811 name=bench_loan_deinit
+CH|CHECK|PASS|id=812 name=bench_path_prepared
+CH|CHECK|PASS|id=813 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=256 capacity=16 mode=e2e repetition=2 messages=2048 cycles=22532345 cycles_per_message=11002 ticks=134 valid=1
+CH|CHECK|PASS|id=814 name=bench_queue_drained
+CH|CHECK|PASS|id=815 name=bench_queue_deinit
+CH|CHECK|PASS|id=816 name=bench_path_prepared
+CH|CHECK|PASS|id=817 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=256 capacity=16 mode=e2e repetition=2 messages=2048 cycles=18013157 cycles_per_message=8795 ticks=107 valid=1
+CH|CHECK|PASS|id=818 name=bench_queue_drained
+CH|CHECK|PASS|id=819 name=bench_queue_deinit
+CH|CHECK|PASS|id=820 name=bench_pool_all_returned
+CH|CHECK|PASS|id=821 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=1024 capacity=1 batches=128 messages=128 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=822 name=bench_path_prepared
+CH|CHECK|PASS|id=823 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=1 mode=ipc repetition=0 messages=128 cycles=1365516 cycles_per_message=10668 ticks=9 valid=1
+CH|CHECK|PASS|id=824 name=bench_queue_drained
+CH|CHECK|PASS|id=825 name=bench_queue_deinit
+CH|CHECK|PASS|id=826 name=bench_path_prepared
+CH|CHECK|PASS|id=827 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=1 mode=ipc repetition=0 messages=128 cycles=110913 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=828 name=bench_queue_drained
+CH|CHECK|PASS|id=829 name=bench_queue_deinit
+CH|CHECK|PASS|id=830 name=bench_pool_all_returned
+CH|CHECK|PASS|id=831 name=bench_path_prepared
+CH|CHECK|PASS|id=832 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=1 mode=ipc repetition=0 messages=128 cycles=510165 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=833 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=834 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=835 name=bench_loan_close
+CH|CHECK|PASS|id=836 name=bench_loan_deinit
+CH|CHECK|PASS|id=837 name=bench_path_prepared
+CH|CHECK|PASS|id=838 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=1 mode=ipc repetition=1 messages=128 cycles=110908 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=839 name=bench_queue_drained
+CH|CHECK|PASS|id=840 name=bench_queue_deinit
+CH|CHECK|PASS|id=841 name=bench_pool_all_returned
+CH|CHECK|PASS|id=842 name=bench_path_prepared
+CH|CHECK|PASS|id=843 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=1 mode=ipc repetition=1 messages=128 cycles=510156 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=844 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=845 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=846 name=bench_loan_close
+CH|CHECK|PASS|id=847 name=bench_loan_deinit
+CH|CHECK|PASS|id=848 name=bench_path_prepared
+CH|CHECK|PASS|id=849 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=1 mode=ipc repetition=1 messages=128 cycles=1365193 cycles_per_message=10665 ticks=8 valid=1
+CH|CHECK|PASS|id=850 name=bench_queue_drained
+CH|CHECK|PASS|id=851 name=bench_queue_deinit
+CH|CHECK|PASS|id=852 name=bench_path_prepared
+CH|CHECK|PASS|id=853 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=1 mode=ipc repetition=2 messages=128 cycles=510177 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=854 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=855 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=856 name=bench_loan_close
+CH|CHECK|PASS|id=857 name=bench_loan_deinit
+CH|CHECK|PASS|id=858 name=bench_path_prepared
+CH|CHECK|PASS|id=859 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=1 mode=ipc repetition=2 messages=128 cycles=1365472 cycles_per_message=10667 ticks=9 valid=1
+CH|CHECK|PASS|id=860 name=bench_queue_drained
+CH|CHECK|PASS|id=861 name=bench_queue_deinit
+CH|CHECK|PASS|id=862 name=bench_path_prepared
+CH|CHECK|PASS|id=863 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=1 mode=ipc repetition=2 messages=128 cycles=110917 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=864 name=bench_queue_drained
+CH|CHECK|PASS|id=865 name=bench_queue_deinit
+CH|CHECK|PASS|id=866 name=bench_pool_all_returned
+CH|CHECK|PASS|id=867 name=bench_path_prepared
+CH|CHECK|PASS|id=868 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=1 mode=e2e repetition=0 messages=128 cycles=5465010 cycles_per_message=42695 ticks=32 valid=1
+CH|CHECK|PASS|id=869 name=bench_queue_drained
+CH|CHECK|PASS|id=870 name=bench_queue_deinit
+CH|CHECK|PASS|id=871 name=bench_path_prepared
+CH|CHECK|PASS|id=872 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=1 mode=e2e repetition=0 messages=128 cycles=4212958 cycles_per_message=32913 ticks=25 valid=1
+CH|CHECK|PASS|id=873 name=bench_queue_drained
+CH|CHECK|PASS|id=874 name=bench_queue_deinit
+CH|CHECK|PASS|id=875 name=bench_pool_all_returned
+CH|CHECK|PASS|id=876 name=bench_path_prepared
+CH|CHECK|PASS|id=877 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=1 mode=e2e repetition=0 messages=128 cycles=4604184 cycles_per_message=35970 ticks=28 valid=1
+CH|CHECK|PASS|id=878 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=879 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=880 name=bench_loan_close
+CH|CHECK|PASS|id=881 name=bench_loan_deinit
+CH|CHECK|PASS|id=882 name=bench_path_prepared
+CH|CHECK|PASS|id=883 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=1 mode=e2e repetition=1 messages=128 cycles=4212957 cycles_per_message=32913 ticks=25 valid=1
+CH|CHECK|PASS|id=884 name=bench_queue_drained
+CH|CHECK|PASS|id=885 name=bench_queue_deinit
+CH|CHECK|PASS|id=886 name=bench_pool_all_returned
+CH|CHECK|PASS|id=887 name=bench_path_prepared
+CH|CHECK|PASS|id=888 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=1 mode=e2e repetition=1 messages=128 cycles=4603853 cycles_per_message=35967 ticks=27 valid=1
+CH|CHECK|PASS|id=889 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=890 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=891 name=bench_loan_close
+CH|CHECK|PASS|id=892 name=bench_loan_deinit
+CH|CHECK|PASS|id=893 name=bench_path_prepared
+CH|CHECK|PASS|id=894 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=1 mode=e2e repetition=1 messages=128 cycles=5465136 cycles_per_message=42696 ticks=32 valid=1
+CH|CHECK|PASS|id=895 name=bench_queue_drained
+CH|CHECK|PASS|id=896 name=bench_queue_deinit
+CH|CHECK|PASS|id=897 name=bench_path_prepared
+CH|CHECK|PASS|id=898 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=1 mode=e2e repetition=2 messages=128 cycles=4603849 cycles_per_message=35967 ticks=27 valid=1
+CH|CHECK|PASS|id=899 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=900 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=901 name=bench_loan_close
+CH|CHECK|PASS|id=902 name=bench_loan_deinit
+CH|CHECK|PASS|id=903 name=bench_path_prepared
+CH|CHECK|PASS|id=904 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=1 mode=e2e repetition=2 messages=128 cycles=5465385 cycles_per_message=42698 ticks=33 valid=1
+CH|CHECK|PASS|id=905 name=bench_queue_drained
+CH|CHECK|PASS|id=906 name=bench_queue_deinit
+CH|CHECK|PASS|id=907 name=bench_path_prepared
+CH|CHECK|PASS|id=908 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=1 mode=e2e repetition=2 messages=128 cycles=4212943 cycles_per_message=32913 ticks=25 valid=1
+CH|CHECK|PASS|id=909 name=bench_queue_drained
+CH|CHECK|PASS|id=910 name=bench_queue_deinit
+CH|CHECK|PASS|id=911 name=bench_pool_all_returned
+CH|CHECK|PASS|id=912 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=1024 capacity=3 batches=128 messages=384 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=913 name=bench_path_prepared
+CH|CHECK|PASS|id=914 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=3 mode=ipc repetition=0 messages=384 cycles=4085499 cycles_per_message=10639 ticks=24 valid=1
+CH|CHECK|PASS|id=915 name=bench_queue_drained
+CH|CHECK|PASS|id=916 name=bench_queue_deinit
+CH|CHECK|PASS|id=917 name=bench_path_prepared
+CH|CHECK|PASS|id=918 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=3 mode=ipc repetition=0 messages=384 cycles=281306 cycles_per_message=732 ticks=2 valid=1
+CH|CHECK|PASS|id=919 name=bench_queue_drained
+CH|CHECK|PASS|id=920 name=bench_queue_deinit
+CH|CHECK|PASS|id=921 name=bench_pool_all_returned
+CH|CHECK|PASS|id=922 name=bench_path_prepared
+CH|CHECK|PASS|id=923 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=3 mode=ipc repetition=0 messages=384 cycles=1506667 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=924 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=925 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=926 name=bench_loan_close
+CH|CHECK|PASS|id=927 name=bench_loan_deinit
+CH|CHECK|PASS|id=928 name=bench_path_prepared
+CH|CHECK|PASS|id=929 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=3 mode=ipc repetition=1 messages=384 cycles=281303 cycles_per_message=732 ticks=2 valid=1
+CH|CHECK|PASS|id=930 name=bench_queue_drained
+CH|CHECK|PASS|id=931 name=bench_queue_deinit
+CH|CHECK|PASS|id=932 name=bench_pool_all_returned
+CH|CHECK|PASS|id=933 name=bench_path_prepared
+CH|CHECK|PASS|id=934 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=3 mode=ipc repetition=1 messages=384 cycles=1506707 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=935 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=936 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=937 name=bench_loan_close
+CH|CHECK|PASS|id=938 name=bench_loan_deinit
+CH|CHECK|PASS|id=939 name=bench_path_prepared
+CH|CHECK|PASS|id=940 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=3 mode=ipc repetition=1 messages=384 cycles=4085532 cycles_per_message=10639 ticks=24 valid=1
+CH|CHECK|PASS|id=941 name=bench_queue_drained
+CH|CHECK|PASS|id=942 name=bench_queue_deinit
+CH|CHECK|PASS|id=943 name=bench_path_prepared
+CH|CHECK|PASS|id=944 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=3 mode=ipc repetition=2 messages=384 cycles=1506675 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=945 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=946 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=947 name=bench_loan_close
+CH|CHECK|PASS|id=948 name=bench_loan_deinit
+CH|CHECK|PASS|id=949 name=bench_path_prepared
+CH|CHECK|PASS|id=950 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=3 mode=ipc repetition=2 messages=384 cycles=4085349 cycles_per_message=10638 ticks=24 valid=1
+CH|CHECK|PASS|id=951 name=bench_queue_drained
+CH|CHECK|PASS|id=952 name=bench_queue_deinit
+CH|CHECK|PASS|id=953 name=bench_path_prepared
+CH|CHECK|PASS|id=954 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=3 mode=ipc repetition=2 messages=384 cycles=280986 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=955 name=bench_queue_drained
+CH|CHECK|PASS|id=956 name=bench_queue_deinit
+CH|CHECK|PASS|id=957 name=bench_pool_all_returned
+CH|CHECK|PASS|id=958 name=bench_path_prepared
+CH|CHECK|PASS|id=959 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=3 mode=e2e repetition=0 messages=384 cycles=16356466 cycles_per_message=42594 ticks=98 valid=1
+CH|CHECK|PASS|id=960 name=bench_queue_drained
+CH|CHECK|PASS|id=961 name=bench_queue_deinit
+CH|CHECK|PASS|id=962 name=bench_path_prepared
+CH|CHECK|PASS|id=963 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=3 mode=e2e repetition=0 messages=384 cycles=12556245 cycles_per_message=32698 ticks=74 valid=1
+CH|CHECK|PASS|id=964 name=bench_queue_drained
+CH|CHECK|PASS|id=965 name=bench_queue_deinit
+CH|CHECK|PASS|id=966 name=bench_pool_all_returned
+CH|CHECK|PASS|id=967 name=bench_path_prepared
+CH|CHECK|PASS|id=968 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=3 mode=e2e repetition=0 messages=384 cycles=13780377 cycles_per_message=35886 ticks=82 valid=1
+CH|CHECK|PASS|id=969 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=970 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=971 name=bench_loan_close
+CH|CHECK|PASS|id=972 name=bench_loan_deinit
+CH|CHECK|PASS|id=973 name=bench_path_prepared
+CH|CHECK|PASS|id=974 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=3 mode=e2e repetition=1 messages=384 cycles=12555997 cycles_per_message=32697 ticks=74 valid=1
+CH|CHECK|PASS|id=975 name=bench_queue_drained
+CH|CHECK|PASS|id=976 name=bench_queue_deinit
+CH|CHECK|PASS|id=977 name=bench_pool_all_returned
+CH|CHECK|PASS|id=978 name=bench_path_prepared
+CH|CHECK|PASS|id=979 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=3 mode=e2e repetition=1 messages=384 cycles=13780363 cycles_per_message=35886 ticks=82 valid=1
+CH|CHECK|PASS|id=980 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=981 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=982 name=bench_loan_close
+CH|CHECK|PASS|id=983 name=bench_loan_deinit
+CH|CHECK|PASS|id=984 name=bench_path_prepared
+CH|CHECK|PASS|id=985 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=3 mode=e2e repetition=1 messages=384 cycles=16356288 cycles_per_message=42594 ticks=97 valid=1
+CH|CHECK|PASS|id=986 name=bench_queue_drained
+CH|CHECK|PASS|id=987 name=bench_queue_deinit
+CH|CHECK|PASS|id=988 name=bench_path_prepared
+CH|CHECK|PASS|id=989 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=3 mode=e2e repetition=2 messages=384 cycles=13780387 cycles_per_message=35886 ticks=82 valid=1
+CH|CHECK|PASS|id=990 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=991 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=992 name=bench_loan_close
+CH|CHECK|PASS|id=993 name=bench_loan_deinit
+CH|CHECK|PASS|id=994 name=bench_path_prepared
+CH|CHECK|PASS|id=995 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=3 mode=e2e repetition=2 messages=384 cycles=16356444 cycles_per_message=42594 ticks=98 valid=1
+CH|CHECK|PASS|id=996 name=bench_queue_drained
+CH|CHECK|PASS|id=997 name=bench_queue_deinit
+CH|CHECK|PASS|id=998 name=bench_path_prepared
+CH|CHECK|PASS|id=999 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=3 mode=e2e repetition=2 messages=384 cycles=12556455 cycles_per_message=32699 ticks=75 valid=1
+CH|CHECK|PASS|id=1000 name=bench_queue_drained
+CH|CHECK|PASS|id=1001 name=bench_queue_deinit
+CH|CHECK|PASS|id=1002 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1003 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=1024 capacity=16 batches=128 messages=2048 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=1004 name=bench_path_prepared
+CH|CHECK|PASS|id=1005 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=16 mode=ipc repetition=0 messages=2048 cycles=21767528 cycles_per_message=10628 ticks=130 valid=1
+CH|CHECK|PASS|id=1006 name=bench_queue_drained
+CH|CHECK|PASS|id=1007 name=bench_queue_deinit
+CH|CHECK|PASS|id=1008 name=bench_path_prepared
+CH|CHECK|PASS|id=1009 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=16 mode=ipc repetition=0 messages=2048 cycles=1484926 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=1010 name=bench_queue_drained
+CH|CHECK|PASS|id=1011 name=bench_queue_deinit
+CH|CHECK|PASS|id=1012 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1013 name=bench_path_prepared
+CH|CHECK|PASS|id=1014 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=16 mode=ipc repetition=0 messages=2048 cycles=7982196 cycles_per_message=3897 ticks=47 valid=1
+CH|CHECK|PASS|id=1015 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1016 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1017 name=bench_loan_close
+CH|CHECK|PASS|id=1018 name=bench_loan_deinit
+CH|CHECK|PASS|id=1019 name=bench_path_prepared
+CH|CHECK|PASS|id=1020 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=16 mode=ipc repetition=1 messages=2048 cycles=1484926 cycles_per_message=725 ticks=9 valid=1
+CH|CHECK|PASS|id=1021 name=bench_queue_drained
+CH|CHECK|PASS|id=1022 name=bench_queue_deinit
+CH|CHECK|PASS|id=1023 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1024 name=bench_path_prepared
+CH|CHECK|PASS|id=1025 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=16 mode=ipc repetition=1 messages=2048 cycles=7982432 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=1026 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1027 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1028 name=bench_loan_close
+CH|CHECK|PASS|id=1029 name=bench_loan_deinit
+CH|CHECK|PASS|id=1030 name=bench_path_prepared
+CH|CHECK|PASS|id=1031 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=16 mode=ipc repetition=1 messages=2048 cycles=21767781 cycles_per_message=10628 ticks=130 valid=1
+CH|CHECK|PASS|id=1032 name=bench_queue_drained
+CH|CHECK|PASS|id=1033 name=bench_queue_deinit
+CH|CHECK|PASS|id=1034 name=bench_path_prepared
+CH|CHECK|PASS|id=1035 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=16 mode=ipc repetition=2 messages=2048 cycles=7982526 cycles_per_message=3897 ticks=48 valid=1
+CH|CHECK|PASS|id=1036 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1037 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1038 name=bench_loan_close
+CH|CHECK|PASS|id=1039 name=bench_loan_deinit
+CH|CHECK|PASS|id=1040 name=bench_path_prepared
+CH|CHECK|PASS|id=1041 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=16 mode=ipc repetition=2 messages=2048 cycles=21767591 cycles_per_message=10628 ticks=129 valid=1
+CH|CHECK|PASS|id=1042 name=bench_queue_drained
+CH|CHECK|PASS|id=1043 name=bench_queue_deinit
+CH|CHECK|PASS|id=1044 name=bench_path_prepared
+CH|CHECK|PASS|id=1045 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=16 mode=ipc repetition=2 messages=2048 cycles=1484600 cycles_per_message=724 ticks=8 valid=1
+CH|CHECK|PASS|id=1046 name=bench_queue_drained
+CH|CHECK|PASS|id=1047 name=bench_queue_deinit
+CH|CHECK|PASS|id=1048 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1049 name=bench_path_prepared
+CH|CHECK|PASS|id=1050 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=16 mode=e2e repetition=0 messages=2048 cycles=87103813 cycles_per_message=42531 ticks=519 valid=1
+CH|CHECK|PASS|id=1051 name=bench_queue_drained
+CH|CHECK|PASS|id=1052 name=bench_queue_deinit
+CH|CHECK|PASS|id=1053 name=bench_path_prepared
+CH|CHECK|PASS|id=1054 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=16 mode=e2e repetition=0 messages=2048 cycles=66886526 cycles_per_message=32659 ticks=398 valid=1
+CH|CHECK|PASS|id=1055 name=bench_queue_drained
+CH|CHECK|PASS|id=1056 name=bench_queue_deinit
+CH|CHECK|PASS|id=1057 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1058 name=bench_path_prepared
+CH|CHECK|PASS|id=1059 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=16 mode=e2e repetition=0 messages=2048 cycles=73426606 cycles_per_message=35852 ticks=437 valid=1
+CH|CHECK|PASS|id=1060 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1061 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1062 name=bench_loan_close
+CH|CHECK|PASS|id=1063 name=bench_loan_deinit
+CH|CHECK|PASS|id=1064 name=bench_path_prepared
+CH|CHECK|PASS|id=1065 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=16 mode=e2e repetition=1 messages=2048 cycles=66886883 cycles_per_message=32659 ticks=398 valid=1
+CH|CHECK|PASS|id=1066 name=bench_queue_drained
+CH|CHECK|PASS|id=1067 name=bench_queue_deinit
+CH|CHECK|PASS|id=1068 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1069 name=bench_path_prepared
+CH|CHECK|PASS|id=1070 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=16 mode=e2e repetition=1 messages=2048 cycles=73426592 cycles_per_message=35852 ticks=437 valid=1
+CH|CHECK|PASS|id=1071 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1072 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1073 name=bench_loan_close
+CH|CHECK|PASS|id=1074 name=bench_loan_deinit
+CH|CHECK|PASS|id=1075 name=bench_path_prepared
+CH|CHECK|PASS|id=1076 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=16 mode=e2e repetition=1 messages=2048 cycles=87103818 cycles_per_message=42531 ticks=519 valid=1
+CH|CHECK|PASS|id=1077 name=bench_queue_drained
+CH|CHECK|PASS|id=1078 name=bench_queue_deinit
+CH|CHECK|PASS|id=1079 name=bench_path_prepared
+CH|CHECK|PASS|id=1080 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=1024 capacity=16 mode=e2e repetition=2 messages=2048 cycles=73426483 cycles_per_message=35852 ticks=437 valid=1
+CH|CHECK|PASS|id=1081 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1082 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1083 name=bench_loan_close
+CH|CHECK|PASS|id=1084 name=bench_loan_deinit
+CH|CHECK|PASS|id=1085 name=bench_path_prepared
+CH|CHECK|PASS|id=1086 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=1024 capacity=16 mode=e2e repetition=2 messages=2048 cycles=87103869 cycles_per_message=42531 ticks=519 valid=1
+CH|CHECK|PASS|id=1087 name=bench_queue_drained
+CH|CHECK|PASS|id=1088 name=bench_queue_deinit
+CH|CHECK|PASS|id=1089 name=bench_path_prepared
+CH|CHECK|PASS|id=1090 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=1024 capacity=16 mode=e2e repetition=2 messages=2048 cycles=66886599 cycles_per_message=32659 ticks=398 valid=1
+CH|CHECK|PASS|id=1091 name=bench_queue_drained
+CH|CHECK|PASS|id=1092 name=bench_queue_deinit
+CH|CHECK|PASS|id=1093 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1094 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=4096 capacity=1 batches=128 messages=128 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=1095 name=bench_path_prepared
+CH|CHECK|PASS|id=1096 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=1 mode=ipc repetition=0 messages=128 cycles=5305010 cycles_per_message=41445 ticks=31 valid=1
+CH|CHECK|PASS|id=1097 name=bench_queue_drained
+CH|CHECK|PASS|id=1098 name=bench_queue_deinit
+CH|CHECK|PASS|id=1099 name=bench_path_prepared
+CH|CHECK|PASS|id=1100 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=1 mode=ipc repetition=0 messages=128 cycles=110888 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=1101 name=bench_queue_drained
+CH|CHECK|PASS|id=1102 name=bench_queue_deinit
+CH|CHECK|PASS|id=1103 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1104 name=bench_path_prepared
+CH|CHECK|PASS|id=1105 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=1 mode=ipc repetition=0 messages=128 cycles=510168 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=1106 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1107 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1108 name=bench_loan_close
+CH|CHECK|PASS|id=1109 name=bench_loan_deinit
+CH|CHECK|PASS|id=1110 name=bench_path_prepared
+CH|CHECK|PASS|id=1111 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=1 mode=ipc repetition=1 messages=128 cycles=110901 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=1112 name=bench_queue_drained
+CH|CHECK|PASS|id=1113 name=bench_queue_deinit
+CH|CHECK|PASS|id=1114 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1115 name=bench_path_prepared
+CH|CHECK|PASS|id=1116 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=1 mode=ipc repetition=1 messages=128 cycles=510175 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=1117 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1118 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1119 name=bench_loan_close
+CH|CHECK|PASS|id=1120 name=bench_loan_deinit
+CH|CHECK|PASS|id=1121 name=bench_path_prepared
+CH|CHECK|PASS|id=1122 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=1 mode=ipc repetition=1 messages=128 cycles=5305233 cycles_per_message=41447 ticks=32 valid=1
+CH|CHECK|PASS|id=1123 name=bench_queue_drained
+CH|CHECK|PASS|id=1124 name=bench_queue_deinit
+CH|CHECK|PASS|id=1125 name=bench_path_prepared
+CH|CHECK|PASS|id=1126 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=1 mode=ipc repetition=2 messages=128 cycles=510158 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=1127 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1128 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1129 name=bench_loan_close
+CH|CHECK|PASS|id=1130 name=bench_loan_deinit
+CH|CHECK|PASS|id=1131 name=bench_path_prepared
+CH|CHECK|PASS|id=1132 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=1 mode=ipc repetition=2 messages=128 cycles=5305337 cycles_per_message=41447 ticks=32 valid=1
+CH|CHECK|PASS|id=1133 name=bench_queue_drained
+CH|CHECK|PASS|id=1134 name=bench_queue_deinit
+CH|CHECK|PASS|id=1135 name=bench_path_prepared
+CH|CHECK|PASS|id=1136 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=1 mode=ipc repetition=2 messages=128 cycles=110913 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=1137 name=bench_queue_drained
+CH|CHECK|PASS|id=1138 name=bench_queue_deinit
+CH|CHECK|PASS|id=1139 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1140 name=bench_path_prepared
+CH|CHECK|PASS|id=1141 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=1 mode=e2e repetition=0 messages=128 cycles=21619992 cycles_per_message=168906 ticks=129 valid=1
+CH|CHECK|PASS|id=1142 name=bench_queue_drained
+CH|CHECK|PASS|id=1143 name=bench_queue_deinit
+CH|CHECK|PASS|id=1144 name=bench_path_prepared
+CH|CHECK|PASS|id=1145 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=1 mode=e2e repetition=0 messages=128 cycles=16423002 cycles_per_message=128304 ticks=98 valid=1
+CH|CHECK|PASS|id=1146 name=bench_queue_drained
+CH|CHECK|PASS|id=1147 name=bench_queue_deinit
+CH|CHECK|PASS|id=1148 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1149 name=bench_path_prepared
+CH|CHECK|PASS|id=1150 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=1 mode=e2e repetition=0 messages=128 cycles=16815711 cycles_per_message=131372 ticks=100 valid=1
+CH|CHECK|PASS|id=1151 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1152 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1153 name=bench_loan_close
+CH|CHECK|PASS|id=1154 name=bench_loan_deinit
+CH|CHECK|PASS|id=1155 name=bench_path_prepared
+CH|CHECK|PASS|id=1156 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=1 mode=e2e repetition=1 messages=128 cycles=16422730 cycles_per_message=128302 ticks=97 valid=1
+CH|CHECK|PASS|id=1157 name=bench_queue_drained
+CH|CHECK|PASS|id=1158 name=bench_queue_deinit
+CH|CHECK|PASS|id=1159 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1160 name=bench_path_prepared
+CH|CHECK|PASS|id=1161 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=1 mode=e2e repetition=1 messages=128 cycles=16815747 cycles_per_message=131373 ticks=100 valid=1
+CH|CHECK|PASS|id=1162 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1163 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1164 name=bench_loan_close
+CH|CHECK|PASS|id=1165 name=bench_loan_deinit
+CH|CHECK|PASS|id=1166 name=bench_path_prepared
+CH|CHECK|PASS|id=1167 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=1 mode=e2e repetition=1 messages=128 cycles=21620108 cycles_per_message=168907 ticks=129 valid=1
+CH|CHECK|PASS|id=1168 name=bench_queue_drained
+CH|CHECK|PASS|id=1169 name=bench_queue_deinit
+CH|CHECK|PASS|id=1170 name=bench_path_prepared
+CH|CHECK|PASS|id=1171 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=1 mode=e2e repetition=2 messages=128 cycles=16815732 cycles_per_message=131372 ticks=100 valid=1
+CH|CHECK|PASS|id=1172 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1173 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1174 name=bench_loan_close
+CH|CHECK|PASS|id=1175 name=bench_loan_deinit
+CH|CHECK|PASS|id=1176 name=bench_path_prepared
+CH|CHECK|PASS|id=1177 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=1 mode=e2e repetition=2 messages=128 cycles=21619733 cycles_per_message=168904 ticks=129 valid=1
+CH|CHECK|PASS|id=1178 name=bench_queue_drained
+CH|CHECK|PASS|id=1179 name=bench_queue_deinit
+CH|CHECK|PASS|id=1180 name=bench_path_prepared
+CH|CHECK|PASS|id=1181 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=1 mode=e2e repetition=2 messages=128 cycles=16422722 cycles_per_message=128302 ticks=97 valid=1
+CH|CHECK|PASS|id=1182 name=bench_queue_drained
+CH|CHECK|PASS|id=1183 name=bench_queue_deinit
+CH|CHECK|PASS|id=1184 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1185 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=4096 capacity=3 batches=128 messages=384 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=1186 name=bench_path_prepared
+CH|CHECK|PASS|id=1187 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=3 mode=ipc repetition=0 messages=384 cycles=15903082 cycles_per_message=41414 ticks=94 valid=1
+CH|CHECK|PASS|id=1188 name=bench_queue_drained
+CH|CHECK|PASS|id=1189 name=bench_queue_deinit
+CH|CHECK|PASS|id=1190 name=bench_path_prepared
+CH|CHECK|PASS|id=1191 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=3 mode=ipc repetition=0 messages=384 cycles=281304 cycles_per_message=732 ticks=2 valid=1
+CH|CHECK|PASS|id=1192 name=bench_queue_drained
+CH|CHECK|PASS|id=1193 name=bench_queue_deinit
+CH|CHECK|PASS|id=1194 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1195 name=bench_path_prepared
+CH|CHECK|PASS|id=1196 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=3 mode=ipc repetition=0 messages=384 cycles=1506703 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=1197 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1198 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1199 name=bench_loan_close
+CH|CHECK|PASS|id=1200 name=bench_loan_deinit
+CH|CHECK|PASS|id=1201 name=bench_path_prepared
+CH|CHECK|PASS|id=1202 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=3 mode=ipc repetition=1 messages=384 cycles=280996 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=1203 name=bench_queue_drained
+CH|CHECK|PASS|id=1204 name=bench_queue_deinit
+CH|CHECK|PASS|id=1205 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1206 name=bench_path_prepared
+CH|CHECK|PASS|id=1207 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=3 mode=ipc repetition=1 messages=384 cycles=1506683 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=1208 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1209 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1210 name=bench_loan_close
+CH|CHECK|PASS|id=1211 name=bench_loan_deinit
+CH|CHECK|PASS|id=1212 name=bench_path_prepared
+CH|CHECK|PASS|id=1213 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=3 mode=ipc repetition=1 messages=384 cycles=15903351 cycles_per_message=41414 ticks=95 valid=1
+CH|CHECK|PASS|id=1214 name=bench_queue_drained
+CH|CHECK|PASS|id=1215 name=bench_queue_deinit
+CH|CHECK|PASS|id=1216 name=bench_path_prepared
+CH|CHECK|PASS|id=1217 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=3 mode=ipc repetition=2 messages=384 cycles=1506694 cycles_per_message=3923 ticks=9 valid=1
+CH|CHECK|PASS|id=1218 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1219 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1220 name=bench_loan_close
+CH|CHECK|PASS|id=1221 name=bench_loan_deinit
+CH|CHECK|PASS|id=1222 name=bench_path_prepared
+CH|CHECK|PASS|id=1223 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=3 mode=ipc repetition=2 messages=384 cycles=15903145 cycles_per_message=41414 ticks=94 valid=1
+CH|CHECK|PASS|id=1224 name=bench_queue_drained
+CH|CHECK|PASS|id=1225 name=bench_queue_deinit
+CH|CHECK|PASS|id=1226 name=bench_path_prepared
+CH|CHECK|PASS|id=1227 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=3 mode=ipc repetition=2 messages=384 cycles=280997 cycles_per_message=731 ticks=1 valid=1
+CH|CHECK|PASS|id=1228 name=bench_queue_drained
+CH|CHECK|PASS|id=1229 name=bench_queue_deinit
+CH|CHECK|PASS|id=1230 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1231 name=bench_path_prepared
+CH|CHECK|PASS|id=1232 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=3 mode=e2e repetition=0 messages=384 cycles=64787009 cycles_per_message=168716 ticks=385 valid=1
+CH|CHECK|PASS|id=1233 name=bench_queue_drained
+CH|CHECK|PASS|id=1234 name=bench_queue_deinit
+CH|CHECK|PASS|id=1235 name=bench_path_prepared
+CH|CHECK|PASS|id=1236 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=3 mode=e2e repetition=0 messages=384 cycles=49204437 cycles_per_message=128136 ticks=293 valid=1
+CH|CHECK|PASS|id=1237 name=bench_queue_drained
+CH|CHECK|PASS|id=1238 name=bench_queue_deinit
+CH|CHECK|PASS|id=1239 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1240 name=bench_path_prepared
+CH|CHECK|PASS|id=1241 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=3 mode=e2e repetition=0 messages=384 cycles=50418813 cycles_per_message=131298 ticks=300 valid=1
+CH|CHECK|PASS|id=1242 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1243 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1244 name=bench_loan_close
+CH|CHECK|PASS|id=1245 name=bench_loan_deinit
+CH|CHECK|PASS|id=1246 name=bench_path_prepared
+CH|CHECK|PASS|id=1247 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=3 mode=e2e repetition=1 messages=384 cycles=49204482 cycles_per_message=128136 ticks=293 valid=1
+CH|CHECK|PASS|id=1248 name=bench_queue_drained
+CH|CHECK|PASS|id=1249 name=bench_queue_deinit
+CH|CHECK|PASS|id=1250 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1251 name=bench_path_prepared
+CH|CHECK|PASS|id=1252 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=3 mode=e2e repetition=1 messages=384 cycles=50418837 cycles_per_message=131299 ticks=300 valid=1
+CH|CHECK|PASS|id=1253 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1254 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1255 name=bench_loan_close
+CH|CHECK|PASS|id=1256 name=bench_loan_deinit
+CH|CHECK|PASS|id=1257 name=bench_path_prepared
+CH|CHECK|PASS|id=1258 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=3 mode=e2e repetition=1 messages=384 cycles=64787876 cycles_per_message=168718 ticks=386 valid=1
+CH|CHECK|PASS|id=1259 name=bench_queue_drained
+CH|CHECK|PASS|id=1260 name=bench_queue_deinit
+CH|CHECK|PASS|id=1261 name=bench_path_prepared
+CH|CHECK|PASS|id=1262 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=4096 capacity=3 mode=e2e repetition=2 messages=384 cycles=50418894 cycles_per_message=131299 ticks=300 valid=1
+CH|CHECK|PASS|id=1263 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1264 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1265 name=bench_loan_close
+CH|CHECK|PASS|id=1266 name=bench_loan_deinit
+CH|CHECK|PASS|id=1267 name=bench_path_prepared
+CH|CHECK|PASS|id=1268 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=4096 capacity=3 mode=e2e repetition=2 messages=384 cycles=64787442 cycles_per_message=168717 ticks=385 valid=1
+CH|CHECK|PASS|id=1269 name=bench_queue_drained
+CH|CHECK|PASS|id=1270 name=bench_queue_deinit
+CH|CHECK|PASS|id=1271 name=bench_path_prepared
+CH|CHECK|PASS|id=1272 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=4096 capacity=3 mode=e2e repetition=2 messages=384 cycles=49204256 cycles_per_message=128136 ticks=292 valid=1
+CH|CHECK|PASS|id=1273 name=bench_queue_drained
+CH|CHECK|PASS|id=1274 name=bench_queue_deinit
+CH|CHECK|PASS|id=1275 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1276 name=bench_shape_fits_fixed_arenas
+CH|CASE|bytes=16384 capacity=1 batches=128 messages=128 repetitions=3 modes=ipc,e2e paths=copy,pool,loan
+CH|CHECK|PASS|id=1277 name=bench_path_prepared
+CH|CHECK|PASS|id=1278 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16384 capacity=1 mode=ipc repetition=0 messages=128 cycles=21064871 cycles_per_message=164569 ticks=125 valid=1
+CH|CHECK|PASS|id=1279 name=bench_queue_drained
+CH|CHECK|PASS|id=1280 name=bench_queue_deinit
+CH|CHECK|PASS|id=1281 name=bench_path_prepared
+CH|CHECK|PASS|id=1282 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16384 capacity=1 mode=ipc repetition=0 messages=128 cycles=110564 cycles_per_message=863 ticks=0 valid=1
+CH|CHECK|PASS|id=1283 name=bench_queue_drained
+CH|CHECK|PASS|id=1284 name=bench_queue_deinit
+CH|CHECK|PASS|id=1285 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1286 name=bench_path_prepared
+CH|CHECK|PASS|id=1287 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16384 capacity=1 mode=ipc repetition=0 messages=128 cycles=510164 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=1288 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1289 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1290 name=bench_loan_close
+CH|CHECK|PASS|id=1291 name=bench_loan_deinit
+CH|CHECK|PASS|id=1292 name=bench_path_prepared
+CH|CHECK|PASS|id=1293 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16384 capacity=1 mode=ipc repetition=1 messages=128 cycles=110888 cycles_per_message=866 ticks=1 valid=1
+CH|CHECK|PASS|id=1294 name=bench_queue_drained
+CH|CHECK|PASS|id=1295 name=bench_queue_deinit
+CH|CHECK|PASS|id=1296 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1297 name=bench_path_prepared
+CH|CHECK|PASS|id=1298 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16384 capacity=1 mode=ipc repetition=1 messages=128 cycles=510158 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=1299 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1300 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1301 name=bench_loan_close
+CH|CHECK|PASS|id=1302 name=bench_loan_deinit
+CH|CHECK|PASS|id=1303 name=bench_path_prepared
+CH|CHECK|PASS|id=1304 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16384 capacity=1 mode=ipc repetition=1 messages=128 cycles=21064805 cycles_per_message=164568 ticks=125 valid=1
+CH|CHECK|PASS|id=1305 name=bench_queue_drained
+CH|CHECK|PASS|id=1306 name=bench_queue_deinit
+CH|CHECK|PASS|id=1307 name=bench_path_prepared
+CH|CHECK|PASS|id=1308 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16384 capacity=1 mode=ipc repetition=2 messages=128 cycles=510175 cycles_per_message=3985 ticks=3 valid=1
+CH|CHECK|PASS|id=1309 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1310 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1311 name=bench_loan_close
+CH|CHECK|PASS|id=1312 name=bench_loan_deinit
+CH|CHECK|PASS|id=1313 name=bench_path_prepared
+CH|CHECK|PASS|id=1314 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16384 capacity=1 mode=ipc repetition=2 messages=128 cycles=21064903 cycles_per_message=164569 ticks=125 valid=1
+CH|CHECK|PASS|id=1315 name=bench_queue_drained
+CH|CHECK|PASS|id=1316 name=bench_queue_deinit
+CH|CHECK|PASS|id=1317 name=bench_path_prepared
+CH|CHECK|PASS|id=1318 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16384 capacity=1 mode=ipc repetition=2 messages=128 cycles=110564 cycles_per_message=863 ticks=0 valid=1
+CH|CHECK|PASS|id=1319 name=bench_queue_drained
+CH|CHECK|PASS|id=1320 name=bench_queue_deinit
+CH|CHECK|PASS|id=1321 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1322 name=bench_path_prepared
+CH|CHECK|PASS|id=1323 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16384 capacity=1 mode=e2e repetition=0 messages=128 cycles=86170186 cycles_per_message=673204 ticks=513 valid=1
+CH|CHECK|PASS|id=1324 name=bench_queue_drained
+CH|CHECK|PASS|id=1325 name=bench_queue_deinit
+CH|CHECK|PASS|id=1326 name=bench_path_prepared
+CH|CHECK|PASS|id=1327 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16384 capacity=1 mode=e2e repetition=0 messages=128 cycles=65243631 cycles_per_message=509715 ticks=389 valid=1
+CH|CHECK|PASS|id=1328 name=bench_queue_drained
+CH|CHECK|PASS|id=1329 name=bench_queue_deinit
+CH|CHECK|PASS|id=1330 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1331 name=bench_path_prepared
+CH|CHECK|PASS|id=1332 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16384 capacity=1 mode=e2e repetition=0 messages=128 cycles=65645841 cycles_per_message=512858 ticks=390 valid=1
+CH|CHECK|PASS|id=1333 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1334 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1335 name=bench_loan_close
+CH|CHECK|PASS|id=1336 name=bench_loan_deinit
+CH|CHECK|PASS|id=1337 name=bench_path_prepared
+CH|CHECK|PASS|id=1338 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16384 capacity=1 mode=e2e repetition=1 messages=128 cycles=65243661 cycles_per_message=509716 ticks=389 valid=1
+CH|CHECK|PASS|id=1339 name=bench_queue_drained
+CH|CHECK|PASS|id=1340 name=bench_queue_deinit
+CH|CHECK|PASS|id=1341 name=bench_pool_all_returned
+CH|CHECK|PASS|id=1342 name=bench_path_prepared
+CH|CHECK|PASS|id=1343 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16384 capacity=1 mode=e2e repetition=1 messages=128 cycles=65645857 cycles_per_message=512858 ticks=390 valid=1
+CH|CHECK|PASS|id=1344 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1345 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1346 name=bench_loan_close
+CH|CHECK|PASS|id=1347 name=bench_loan_deinit
+CH|CHECK|PASS|id=1348 name=bench_path_prepared
+CH|CHECK|PASS|id=1349 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16384 capacity=1 mode=e2e repetition=1 messages=128 cycles=86170113 cycles_per_message=673204 ticks=513 valid=1
+CH|CHECK|PASS|id=1350 name=bench_queue_drained
+CH|CHECK|PASS|id=1351 name=bench_queue_deinit
+CH|CHECK|PASS|id=1352 name=bench_path_prepared
+CH|CHECK|PASS|id=1353 name=bench_api_and_payload_valid
+CH|BENCH|path=loan bytes=16384 capacity=1 mode=e2e repetition=2 messages=128 cycles=65645828 cycles_per_message=512858 ticks=390 valid=1
+CH|CHECK|PASS|id=1354 name=bench_loan_ledger_read
+CH|CHECK|PASS|id=1355 name=bench_loan_all_four_apis_counted
+CH|CHECK|PASS|id=1356 name=bench_loan_close
+CH|CHECK|PASS|id=1357 name=bench_loan_deinit
+CH|CHECK|PASS|id=1358 name=bench_path_prepared
+CH|CHECK|PASS|id=1359 name=bench_api_and_payload_valid
+CH|BENCH|path=copy bytes=16384 capacity=1 mode=e2e repetition=2 messages=128 cycles=86169599 cycles_per_message=673199 ticks=513 valid=1
+CH|CHECK|PASS|id=1360 name=bench_queue_drained
+CH|CHECK|PASS|id=1361 name=bench_queue_deinit
+CH|CHECK|PASS|id=1362 name=bench_path_prepared
+CH|CHECK|PASS|id=1363 name=bench_api_and_payload_valid
+CH|BENCH|path=pool bytes=16384 capacity=1 mode=e2e repetition=2 messages=128 cycles=65243490 cycles_per_message=509714 ticks=388 valid=1
+CH|CHECK|PASS|id=1364 name=bench_queue_drained
+CH|CHECK|PASS|id=1365 name=bench_queue_deinit
+CH|CHECK|PASS|id=1366 name=bench_pool_all_returned
+CH|CHECKSUM|value=bf19f500
+CH|SUMMARY|mode=bench pass=1366 fail=0
+CH|DONE|status=0
