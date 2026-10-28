@@ -1,9 +1,0 @@
-HOST|GROUP|parameters=PASS
-HOST|MODEL|rounds=160 operations=2479 capacity=8 status=PASS
-HOST|GROUP|explanation=PASS operations=9 phases=7
-HOST|GROUP|conservative_history=PASS
-HOST|GROUP|irq_contract=PASS priorities=4
-HOST|GROUP|terminal_publication=PASS stages=3 occupancy=2
-HOST|GROUP|counter_exhaustion=PASS
-HOST|SUMMARY|checks=6176 failures=0 sanitizer=none
-HOST|DONE|status=0

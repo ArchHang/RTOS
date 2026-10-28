@@ -1,4 +1,0 @@
-variant changed -> forced recompile of main.c and variant sources
-built 'boundary' OK -- boundary / contract fixture (hil\fw\Src\boundary_test.c); warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  45540	    124	  44368	  90032	  15fb0	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

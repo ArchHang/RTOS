@@ -1,4 +1,0 @@
-variant changed -> forced recompile of main.c and variant sources
-built 'channel_stress' OK -- multi-producer consumer loan channel with real syscall IRQ traffic; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  43580	    120	  59352	 103052	  1928c	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

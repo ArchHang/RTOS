@@ -1,4 +1,0 @@
-variant changed -> forced recompile of main.c and variant sources
-built 'channel_profile' OK -- instrumented syscall IRQ latency of copy and loan operations; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  48516	    120	  96280	 144916	  23614	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

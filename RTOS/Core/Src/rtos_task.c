@@ -190,8 +190,6 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
 
     /* 加入就绪表(临界区) */
     RTOS_PORT_ENTER_CRITICAL();
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_CREATE, RTOS_DIAG_OP_NONE, tcb,
-        NULL, stack_size, 0U, RTOS_OK, 0U);
     rtos_sched_add_ready(tcb);
     tcb->state = RTOS_TASK_READY;
     if (publish != NULL) *publish = tcb;
@@ -359,8 +357,6 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
         tcb->blocked_on = NULL;
     }
 
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_DELETE, RTOS_DIAG_OP_NONE, tcb,
-        NULL, 0U, 0U, RTOS_OK, 0U);
     tcb->state = RTOS_TASK_DELETED;
     task_unregister(tcb);
 
@@ -456,11 +452,8 @@ void rtos_task_delay(rtos_tick_t ticks)
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     /* 复用 sched_block: 统一处理就绪表移除 + 延时表插入(O(n) 升序) */
     rtos_sched_block(cur, ticks);
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_DELAY, cur,
-        NULL, ticks, 0U, RTOS_OK, 0U);
     rtos_sched_schedule();
     RTOS_PORT_EXIT_CRITICAL();
-    RTOS_INTERNAL_DIAG_RETURN_VOID(RTOS_DIAG_OP_DELAY, cur);
 }
 
 void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period)
@@ -498,16 +491,9 @@ void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period)
         rtos_tcb_t *cur = rtos_kernel.current_tcb;
         /* sched_block(cur, remain) 设置 wake_tick = now + remain，与需求一致 */
         rtos_sched_block(cur, remain);
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_DELAY, cur,
-            NULL, remain, *last_wake_tick, RTOS_OK, 0U);
         rtos_sched_schedule();
     }
     RTOS_PORT_EXIT_CRITICAL();
-#if RTOS_CONFIG_USE_DIAGNOSTICS
-    if (remain > 0U) {
-        RTOS_INTERNAL_DIAG_RETURN_VOID(RTOS_DIAG_OP_DELAY, rtos_kernel.current_tcb);
-    }
-#endif
 }
 
 rtos_tcb_t *rtos_task_get_current(void)
@@ -598,13 +584,6 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
     }
     RTOS_ASSERT_ISR_OK();
 
-#if RTOS_CONFIG_USE_DIAGNOSTICS
-    uint32_t diagnostic_cancelled_wait = (tcb->blocked_on != NULL) ||
-        (tcb->state == RTOS_TASK_DELAYED) || (tcb->state == RTOS_TASK_BLOCKED) ? 1U : 0U;
-    rtos_status_t diagnostic_suspend_result = diagnostic_cancelled_wait != 0U
-        ? RTOS_ERR_DELETED : RTOS_OK;
-#endif
-
     if (tcb->state == RTOS_TASK_READY || tcb->state == RTOS_TASK_RUNNING) {
         rtos_sched_remove_ready(tcb);
     } else if (tcb->state == RTOS_TASK_DELAYED) {
@@ -635,8 +614,6 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
     }
 
     tcb->state = RTOS_TASK_SUSPENDED;
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_SUSPEND, RTOS_DIAG_OP_NONE, tcb,
-        NULL, diagnostic_cancelled_wait, 0U, diagnostic_suspend_result, 0U);
 
     /* [bug fix RACE-1] 若该任务已被选为 next_tcb(PendSV 已 pend 但尚未执行,
      * 例如 ISR give 唤醒后又被更高优先级中断 suspend), 必须失效并重选,
@@ -671,8 +648,6 @@ rtos_status_t rtos_task_resume(rtos_tcb_t *tcb)
     if (tcb->state == RTOS_TASK_SUSPENDED) {
         tcb->state = RTOS_TASK_READY;
         rtos_sched_add_ready(tcb);
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_RESUME, RTOS_DIAG_OP_NONE, tcb,
-            NULL, 0U, 0U, tcb->wait_result, 0U);
         if ((rtos_kernel.sched_state == RTOS_SCHED_RUNNING) &&
             (rtos_kernel.current_tcb != NULL) &&
             (tcb->priority < rtos_kernel.current_tcb->priority)) {
@@ -773,8 +748,6 @@ rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value)
     cur->wait_node.queued_priority = cur->priority;
     cur->wait_result = RTOS_OK;
     rtos_sched_block(cur, timeout);
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_NOTIFY, cur,
-        cur, timeout, 0U, RTOS_OK, 0U);
     rtos_sched_schedule();
     RTOS_PORT_EXIT_CRITICAL();
 
@@ -795,7 +768,7 @@ rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value)
         cur->notify_state = NOTIFY_IDLE;
     }
     RTOS_PORT_EXIT_CRITICAL();
-    return RTOS_INTERNAL_DIAG_RETURN_STATUS(RTOS_DIAG_OP_NOTIFY, cur, result);
+    return result;
 }
 
 /* ============================== 空闲任务 ============================== */

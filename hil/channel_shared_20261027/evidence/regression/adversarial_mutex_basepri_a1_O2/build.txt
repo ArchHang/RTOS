@@ -1,4 +1,0 @@
-variant changed -> forced recompile of main.c and variant sources
-built 'adversarial_mutex' OK -- bounded mutex dependency chains and inherited-priority withdrawal; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  40244	    120	  50168	  90532	  161a4	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

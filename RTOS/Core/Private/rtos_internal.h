@@ -11,29 +11,9 @@
 
 #include "rtos_types.h"
 #include "rtos_sched.h"
-#include "rtos_diag_internal.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#if RTOS_CONFIG_USE_DIAGNOSTICS
-/* Implemented in the diagnostic service, never in the header. Results are
- * captured by value before observation-only exclusion; no old object access. */
-#define RTOS_INTERNAL_DIAG_RETURN_STATUS(operation, task, result) \
-    rtos_internal_diag_return_status((operation), (task), (result))
-#define RTOS_INTERNAL_DIAG_RETURN_VALUE(operation, task, value, result) \
-    rtos_internal_diag_return_value((operation), (task), (value), (result))
-#define RTOS_INTERNAL_DIAG_RETURN_IF(waited, operation, task, result) \
-    ((waited) != RTOS_FALSE \
-        ? rtos_internal_diag_return_status((operation), (task), (result)) : (result))
-#define RTOS_INTERNAL_DIAG_RETURN_VOID(operation, task) \
-    rtos_internal_diag_return_record((operation), (task), 0U, RTOS_OK)
-#else
-#define RTOS_INTERNAL_DIAG_RETURN_STATUS(operation, task, result) (result)
-#define RTOS_INTERNAL_DIAG_RETURN_VALUE(operation, task, value, result) (value)
-#define RTOS_INTERNAL_DIAG_RETURN_IF(waited, operation, task, result) (result)
-#define RTOS_INTERNAL_DIAG_RETURN_VOID(operation, task) ((void)0)
 #endif
 
 /* ============================== 阻塞许可守卫 ============================== */

@@ -62,10 +62,6 @@ typedef enum {
     RTOS_ERR_OVERFLOW = -7, /**< 溢出(队列满/信号量计数超限)。 */
     RTOS_ERR_DELETED = -8, /**< 对象已被删除。 */
     RTOS_ERR_SCHED = -9, /**< 调度器状态错误。 */
-    RTOS_ERR_BUSY = -10, /**< 资源仍被持有，操作不能安全完成。 */
-    RTOS_ERR_CLOSED = -11, /**< 通道已关闭，不能接纳新的数据。 */
-    RTOS_ERR_STALE = -12, /**< 票据已失效、阶段错误或不属于当前对象实例。 */
-    RTOS_ERR_DISABLED = -13, /**< 功能未在当前配置中启用。 */
 } rtos_status_t;
 
 /** @brief 等待方式: 是否阻塞及超时长度。 */

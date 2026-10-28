@@ -6,9 +6,7 @@
 RTOS/
 ├── Core/
 │   ├── Inc/                       # 公共 API、公共类型、配置和端口接口
-│   ├── Private/
-│   │   ├── rtos_internal.h        # 内核协作和阻塞协议，不是应用 API
-│   │   └── rtos_diag_internal.h   # 可裁剪观察点、固定记录输入与私有接口
+│   ├── Private/rtos_internal.h     # 模块间私有协议，不是应用 API
 │   └── Src/
 │       ├── rtos_kernel.c          # 初始化编排、启动入口、版本和默认弱钩子
 │       ├── rtos_sched.c           # 就绪/延时结构、tick、调度决策和切换提交
@@ -18,15 +16,13 @@ RTOS/
 │   ├── rtos_sem.c                 # 信号量计数与令牌授予
 │   ├── rtos_mutex.c               # 互斥所有权、递归与传递优先级继承
 │   ├── rtos_queue.c               # 环形队列、阻塞发送/接收与单次拷贝交接
-│   ├── rtos_event.c               # 事件位条件、ANY/ALL 和消费式清位
-│   └── rtos_channel.c             # 纯 C 共享缓冲、有序区间索引、票据和所有权
+│   └── rtos_event.c               # 事件位条件、ANY/ALL 和消费式清位
 ├── Memory/
 │   ├── rtos_heap.c                # first-fit 通用堆及相邻块合并
 │   └── rtos_mempool.c             # 固定块池；公共头文件仍为 rtos_mem.h
 ├── Services/
 │   ├── rtos_timer.c               # 软件定时器命令队列和服务任务
-│   ├── rtos_perf.c                # DWT 记账、观察注册表和统计查询
-│   └── rtos_diag.c                # 可裁剪有界记录、冻结快照与保守等待解释
+│   └── rtos_perf.c                # DWT 记账、观察注册表和统计查询
 ├── USB/
 │   ├── rtos_usb_osal.c            # RTOS 句柄封装、对象池、USB 堆与 usb_osal_*
 │   ├── rtos_usb_device.c          # 复合设备描述符、CDC/HID、F446 FIFO 策略
@@ -72,17 +68,7 @@ flowchart TB
 
 ## 工程迁移与兼容
 
-源码重组保持原公共函数名、公共头文件名及 `Core/Inc/` 路径兼容，包括固定池仍使用
-`#include "rtos_mem.h"`。重组没有调整原对象布局、TCB/汇编协议或临界区算法。
-后续新增的 `Core/Inc/rtos_channel.h` 与 `IPC/rtos_channel.c` 是独立功能扩展，默认
-`RTOS_CONFIG_USE_CHANNEL=0`；启用时须对应用和全部自研 RTOS 编译单元统一定义为 1。
-另有可选诊断服务 `Core/Inc/rtos_diag.h`、`Services/rtos_diag.c`，默认关闭，
-内核观察点由 `Core/Private/rtos_diag_internal.h` 在预处理阶段裁剪。
-当前编译清单包含 **18 个自研 RTOS C 单元、59 个工程单元**。
-事件提交、故障冻结和等待解释语义见[诊断设计](../docs/rtos_diagnostics_design.md)。
-开启/关闭的成本、实板配置矩阵与故障 SRAM 结果见[验证报告](../docs/rtos_diagnostics_validation_20261027.md)。
-通道的 CPU 原址交接、错误清理、有序区间索引与安全边界见[通道设计](../docs/rtos_channel_design.md)，
-本轮无 DMA 的性能和健壮性验证见[共享内存优化报告](../docs/rtos_channel_shared_20261027.md)。
+公共函数名、公共头文件名及 `Core/Inc/` 路径保持兼容，包括固定池仍使用 `#include "rtos_mem.h"`。本次仅改变源码归属，不借目录整理调整对象布局、TCB/汇编协议或临界区算法。
 
 自行维护编译清单的工程必须同步源码新路径，并移除旧条目，避免缺失或重复链接。`Core/Src/rtos_mem.c` 对应新 `Memory/rtos_mempool.c`；原 USB 两个文件对应新 `USB/` 三文件；旧 `Port/GCC/ARM_CM7/port.c` 对应 `Port/GCC/ARM_CM4F_CM7F/port.c`。不能只收集 `Core/Src/` 就认为已经包含全部 RTOS 功能。
 

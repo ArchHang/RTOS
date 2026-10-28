@@ -1,3 +1,0 @@
-built 'adversarial_wait' OK -- mixed ISR wait races, exact-once handoff and object lifecycle; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  43944	    120	  49416	  93480	  16d28	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,3 +1,0 @@
-built 'channel_checks' OK -- loan channel ownership, lifecycle, wait budgets and API boundaries; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  53064	    120	  47616	 100800	  189c0	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

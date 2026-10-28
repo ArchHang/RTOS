@@ -1,6 +1,0 @@
-REGION|EDGES|adjacent=PASS one_byte_overlap=PASS crossing_query=PASS
-REGION|REORDER|steps=1000 status=PASS
-REGION|PENDING|acquire_reindex=PASS receive_reindex=PASS
-REGION|PROTECTED|removed_owner_noaccess=PASS
-REGION|SUMMARY|checks=1807890 failures=0
-REGION|DONE|status=0

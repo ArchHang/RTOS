@@ -1,4 +1,0 @@
-variant changed -> forced recompile of main.c and variant sources
-built 'channel_checks' OK -- loan channel ownership, lifecycle, wait budgets and API boundaries; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  53020	    120	  47816	 100956	  18a5c	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

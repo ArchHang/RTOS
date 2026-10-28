@@ -11,7 +11,7 @@ Explain the triggering condition, the resulting behavior and the reason
 for the change. Include the validation performed and its limitations.
 ```
 
-按目的使用 `feat`、`fix`、`perf`、`refactor`、`test`、`docs`、`build` 或 `chore`。标题写具体行为，正文说明问题、方案及验证；实际破坏公共接口时明确 `BREAKING CHANGE`。一次提交应包含一个可审阅范围及必要配套代码。修改作者身份和签署信息须准确，不自动添加未实际完成的人工审核或认证声明。
+按目的使用 `fix`、`perf`、`refactor`、`test`、`docs`、`build` 或 `chore`。标题写具体行为，正文说明问题、方案及验证；实际破坏公共接口时明确 `BREAKING CHANGE`。一次提交应包含一个可审阅范围及必要配套代码。修改作者身份和签署信息须准确，不自动添加未实际完成的人工审核或认证声明。
 
 ## 源码与验证
 

@@ -325,10 +325,6 @@ static void process_delayed_tasks(void)
         tcb->next_ready = NULL;
         tcb->prev_ready = NULL;
 
-#if RTOS_CONFIG_USE_DIAGNOSTICS
-        rtos_status_t diagnostic_wake_result = tcb->blocked_on != NULL
-            ? RTOS_ERR_TIMEOUT : RTOS_OK;
-#endif
         /* 对象等待超时: 从对象等待链表移除，防止悬空节点 */
         if (tcb->blocked_on != NULL) {
             if (tcb->wait_node.on_timeout != NULL) {
@@ -369,8 +365,6 @@ static void process_delayed_tasks(void)
         /* 进入就绪态 */
         tcb->state = RTOS_TASK_READY;
         ready_list_push_tail(tcb);
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAKE, RTOS_DIAG_OP_NONE, tcb,
-            NULL, 0U, 0U, diagnostic_wake_result, 0U);
     }
 }
 
@@ -431,8 +425,6 @@ rtos_status_t rtos_sched_start(void)
     rtos_kernel.current_tcb = rtos_kernel.ready_heads[top];
     if (rtos_kernel.current_tcb != NULL) {
         rtos_kernel.current_tcb->state = RTOS_TASK_RUNNING;
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_RUN, RTOS_DIAG_OP_NONE,
-            rtos_kernel.current_tcb, NULL, 0U, 0U, RTOS_OK, 0U);
     }
 
     /* 性能监视器: 初始化窗口基准(在启动调度器前, 中断尚未开) */
@@ -477,11 +469,7 @@ void rtos_sched_schedule(void)
         rtos_kernel.next_tcb = NULL;
         /* A blocked current task can be woken before PendSV saves its stack.
          * It remains on the CPU, so READY must become RUNNING again here. */
-        if (next != NULL && next->state == RTOS_TASK_READY) {
-            next->state = RTOS_TASK_RUNNING;
-            RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_RUN, RTOS_DIAG_OP_NONE, next,
-                NULL, 0U, 0U, RTOS_OK, 0U);
-        }
+        if (next != NULL && next->state == RTOS_TASK_READY) next->state = RTOS_TASK_RUNNING;
     }
 }
 
@@ -532,8 +520,6 @@ void rtos_sched_unblock(rtos_tcb_t *tcb)
     }
     tcb->state = RTOS_TASK_READY;
     ready_list_push_tail(tcb);
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAKE, RTOS_DIAG_OP_NONE, tcb,
-        NULL, 0U, 0U, tcb->wait_result, 0U);
 
     if (rtos_kernel.sched_state != RTOS_SCHED_RUNNING) {
         return;
@@ -693,8 +679,6 @@ rtos_tcb_t *rtos_sched_commit_context_switch(void)
         next->state = RTOS_TASK_RUNNING;
         next->switch_count++;
         rtos_kernel.current_tcb = next;
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_RUN, RTOS_DIAG_OP_NONE, next,
-            NULL, 0U, 0U, RTOS_OK, 0U);
 
 #if RTOS_CONFIG_PERF_HOTPATH_STATS
         /* 性能监视器钩子: 累加 prev 运行周期, 计算调度延迟, 统计切换次数。
@@ -718,10 +702,5 @@ void rtos_sched_context_switch(void)
 
 uint32_t rtos_internal_alloc_task_id(void)
 {
-#if RTOS_CONFIG_USE_DIAGNOSTICS
-    if ((s_next_task_id == 0U) || (s_next_task_id == UINT32_MAX)) {
-        RTOS_DIAG_IDENTITY_EXHAUSTED();
-    }
-#endif
     return s_next_task_id++;
 }

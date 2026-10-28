@@ -1,4 +1,0 @@
-variant changed -> forced recompile of main.c and variant sources
-built 'channel_bench' OK -- copy queue, pointer queue/pool and complete loan channel benchmark; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  44376	    120	  92016	 136512	  21540	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

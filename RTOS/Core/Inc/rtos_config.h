@@ -166,39 +166,6 @@
 #define RTOS_ASSERT_ISR_OK() ((void)0)
 #endif
 
-/* ============================== 有界诊断记录 ============================== */
-
-/** @brief Debug 时按需打开；默认关闭，内核观察点和静态记录缓冲完全移除。
- *         不自动绑定 DEBUG：CubeIDE 的发布工程也可能保留该宏。
- */
-#ifndef RTOS_CONFIG_USE_DIAGNOSTICS
-#define RTOS_CONFIG_USE_DIAGNOSTICS (0)
-#endif
-
-/** @brief 环形记录容量，8..1024 的 2 次幂；M4 每槽 40 字节。
- *         覆盖旧历史会显式计数；不分配堆内存，不在热路径格式化或输出。
- */
-#ifndef RTOS_CONFIG_DIAGNOSTIC_CAPACITY
-#define RTOS_CONFIG_DIAGNOSTIC_CAPACITY (64U)
-#endif
-
-/* ============================== 借用消息通道 ============================== */
-
-/** @brief 固定容量、带所有权票据的零拷贝通道；默认不增加内核状态或热路径代码。 */
-#ifndef RTOS_CONFIG_USE_CHANNEL
-#define RTOS_CONFIG_USE_CHANNEL (0)
-#endif
-
-/** @brief 同时登记的通道上限；登记表独立于可关闭、可能满的 perf 观察表。 */
-#ifndef RTOS_CONFIG_CHANNEL_MAX_CHANNELS
-#define RTOS_CONFIG_CHANNEL_MAX_CHANNELS (8U)
-#endif
-
-/** @brief 单通道块数上限，限制初始化和诊断规模；槽位由调用方提供。 */
-#ifndef RTOS_CONFIG_CHANNEL_MAX_BLOCKS
-#define RTOS_CONFIG_CHANNEL_MAX_BLOCKS (256U)
-#endif
-
 /* ============================== USB 子系统 ============================== */
 
 /** @brief 是否启用 USB 子系统(1=启用, 0=关闭)。

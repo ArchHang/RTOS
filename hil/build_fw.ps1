@@ -16,9 +16,6 @@ param(
     [ValidateRange(6,900)][int] $StressSeconds = 30,
     [ValidateRange(1,64)][int] $StressQueueCapacity = 8,
     [switch] $StressInjectCorruption,
-    [switch] $EnableChannels,
-    [switch] $EnableDiagnostics,
-    [ValidateSet(8,16,32,64,128,256,512,1024)][int] $DiagnosticCapacity = 64,
     [ValidateSet('basepri','primask')][string] $CriticalMask = 'basepri',
     [switch] $DisableAssertions,
     [ValidateSet('O0','O2','O3')][string] $Optimization = 'O2',
@@ -41,77 +38,6 @@ $env:PATH = "$TOOLS;$env:PATH"
 # exclude : Core/Src translation units dropped from this variant
 # extra   : source basenames copied hil\fw\Src -> hil\fwsrc and compiled
 $VARIANTS = @{
-    diagnostic_ring = @{
-        desc = 'minimum-capacity recorder, missing history and IRQ API contracts'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0','DG_RING_ONLY=1')
-        exclude = @('benchmark')
-        extra = @('diagnostic_checks')
-    }
-    diagnostic_fault = @{
-        desc = 'intentional UsageFault preserving committed pre-fault history'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('diagnostic_fault')
-    }
-    diagnostic_checks = @{
-        desc = 'bounded flight recorder and actual kernel wait explanations'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('diagnostic_checks')
-    }
-    diagnostic_bench = @{
-        desc = 'same business workload with diagnostics enabled or erased'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('diagnostic_bench')
-    }
-    channel_profile = @{
-        desc = 'instrumented syscall IRQ latency of copy and loan operations'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('channel_profile','channel_fixture')
-    }
-    channel_stress_negative = @{
-        desc = 'intentional single payload corruption to verify the stress oracle'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0',
-            'CHANNEL_STRESS_INJECT_CORRUPTION=1')
-        exclude = @('benchmark')
-        extra = @('channel_stress','channel_fixture')
-    }
-    channel_checks = @{
-        desc = 'loan channel ownership, lifecycle, wait budgets and API boundaries'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('channel_checks','channel_fixture')
-    }
-    channel_stress = @{
-        desc = 'multi-producer consumer loan channel with real syscall IRQ traffic'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('channel_stress','channel_fixture')
-    }
-    channel_bench = @{
-        desc = 'copy queue, pointer queue/pool and complete loan channel benchmark'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('channel_bench','channel_fixture')
-    }
-    channel_dma = @{
-        desc = 'real DMA2 memory-to-memory loan publication and safe shutdown'
-        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
-            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
-        exclude = @('benchmark')
-        extra = @('channel_dma','channel_fixture')
-    }
     adversarial_registry = @{
         desc = 'maximum mutex owner graph and deletion with multiple owned locks'
         flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
@@ -265,20 +191,11 @@ Initialize-HilBuildTree -ProjectRoot $ROOT -DebugRoot $DBG
 
 # These overrides are opt-in and are propagated to all kernel translation units.
 $configFlags = @()
-if ($EnableDiagnostics) {
-    $configFlags += '-DRTOS_CONFIG_USE_DIAGNOSTICS=1'
-    $configFlags += "-DRTOS_CONFIG_DIAGNOSTIC_CAPACITY=${DiagnosticCapacity}U"
-}
-if ($EnableChannels -or $Variant -like 'channel_*') {
-    $configFlags += '-DRTOS_CONFIG_USE_CHANNEL=1'
-}
 if ($CriticalMask -eq 'primask') { $configFlags += '-DRTOS_CONFIG_USE_BASEPRI=0' }
 if ($DisableAssertions -or $Variant -eq 'basepri_nesting') {
     $configFlags += '-DRTOS_CONFIG_ASSERT_ENABLED=0'
 }
-if ($Variant -in @('basepri','channel_profile')) {
-    $configFlags += '-DRTOS_HIL_CRITICAL_TEST=1'
-}
+if ($Variant -eq 'basepri') { $configFlags += '-DRTOS_HIL_CRITICAL_TEST=1' }
 if ($Variant -eq 'adversarial_lifetime') { $configFlags += '-DRTOS_HIL_OBJECT_LIFETIME=1' }
 $configArgs = $configFlags -join ' '
 
@@ -360,7 +277,7 @@ foreach ($l in $lines) {
 
 if ($cfg.extra.Count -gt 0) {
     $rule = ($out | Where-Object { $_ -match '^\s*arm-none-eabi-gcc' } | Select-Object -First 1)
-    if ($Variant -in @('lowlevel','flash_diag','production_stress','basepri','basepri_guard','basepri_blocking','basepri_nesting','adversarial_mutex','adversarial_wait','adversarial_lifetime','adversarial_mutex_boundary','adversarial_registry') -or $Variant -like 'channel_*' -or $Variant -like 'diagnostic_*') {
+    if ($Variant -in @('lowlevel','flash_diag','production_stress','basepri','basepri_guard','basepri_blocking','basepri_nesting','adversarial_mutex','adversarial_wait','adversarial_lifetime','adversarial_mutex_boundary','adversarial_registry')) {
         # Enforce the requested warning policy for the new low-level fixtures.
         $rule = $rule.Replace('-Wall', '-Wall -Wextra -Werror')
     }
@@ -399,7 +316,7 @@ Set-Content (Join-Path $DBG 'objects.list') -Value $ol
 # the last build and force-recompile the affected translation units when it
 # changes (a stale main.o silently runs the previous scenario).
 $stampFile = Join-Path $DBG '.hil_build_stamp'
-$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$CriticalMask|$DisableAssertions|$Optimization|$EnableChannels|$EnableDiagnostics|$DiagnosticCapacity"
+$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$CriticalMask|$DisableAssertions|$Optimization"
 $prev = if (Test-Path $stampFile) { (Get-Content $stampFile -Raw).Trim() } else { '' }
 if ($prev -ne $stamp) {
     foreach ($f in @('Core\Src\main.o','Core\Src\main.d')) {
@@ -414,21 +331,7 @@ if ($prev -ne $stamp) {
 }
 
 $ErrorActionPreference = 'Continue'  # make 的 clean 提示走 stderr, 会被 Stop 误判为终止错误
-if ($Clean) {
-    & $MAKE -C $DBG clean 2>&1 | Out-Null
-    # CubeIDE's make can run without a compatible `rm` on Windows. Do not let
-    # an ignored clean recipe silently reuse objects in an evidence build.
-    $debugPrefix = [IO.Path]::GetFullPath($DBG).TrimEnd('\') + '\'
-    foreach ($artifact in @(Get-ChildItem -LiteralPath $DBG -Recurse -File |
-            Where-Object { $_.Extension -in @('.o', '.d', '.su', '.cyclo') })) {
-        $artifactPath = [IO.Path]::GetFullPath($artifact.FullName)
-        if (-not $artifactPath.StartsWith($debugPrefix,
-                [StringComparison]::OrdinalIgnoreCase)) {
-            throw "Clean target escapes Debug: $artifactPath"
-        }
-        Remove-Item -LiteralPath $artifactPath -Force -ErrorAction Stop
-    }
-}
+if ($Clean) { & $MAKE -C $DBG clean 2>&1 | Out-Null }
 $ErrorActionPreference = 'Continue'
 $b = & $MAKE -C $DBG all -j8 2>&1
 $code = $LASTEXITCODE

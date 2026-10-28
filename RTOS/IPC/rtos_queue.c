@@ -214,8 +214,6 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
     }
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_QUEUE_SEND, cur,
-        queue, timeout, (uint32_t)to_front, RTOS_OK, 0U);
     RTOS_PORT_EXIT_CRITICAL();
 
     /* 被唤醒: 检查结果
@@ -224,12 +222,10 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
      * - 否则: 队列腾出空间，重试入队。 */
     cur = rtos_kernel.current_tcb;
     if (cur->wait_result != RTOS_OK) {
-        return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-            RTOS_DIAG_OP_QUEUE_SEND, cur, cur->wait_result);
+        return cur->wait_result;
     }
     if (cur->wait_node.transfer_buf == NULL) {
-        return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-            RTOS_DIAG_OP_QUEUE_SEND, cur, RTOS_OK); /* 消息已被接收者直传取走 */
+        return RTOS_OK; /* 消息已被接收者直传取走 */
     }
 
     /* 重试入队: 若槽位被其他任务/ISR 偷走则重新阻塞, 而非返回错误。
@@ -239,15 +235,13 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         RTOS_PORT_ENTER_CRITICAL();
         if (queue->is_initialized == 0U) {
             RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_SEND, cur, RTOS_ERR_PARAM);
+            return RTOS_ERR_PARAM;
         }
         if (queue->count < queue->capacity) {
             queue_storage_push(queue, item, (uint8_t)to_front);
             queue->count++;
             RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_SEND, cur, RTOS_OK);
+            return RTOS_OK;
         }
         cur = rtos_kernel.current_tcb;
         cur->wait_node.transfer_buf = (void *)item;
@@ -256,21 +250,16 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         if (rtos_internal_block_current_on((void *)queue, &queue->send_wait_head, timeout) !=
             RTOS_OK) {
             RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_SEND, cur, RTOS_ERR_SCHED); /* 未入链, 无需清理 */
+            return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
         }
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_QUEUE_SEND, cur,
-            queue, timeout, (uint32_t)to_front, RTOS_OK, 0U);
         RTOS_PORT_EXIT_CRITICAL();
 
         cur = rtos_kernel.current_tcb;
         if (cur->wait_result != RTOS_OK) {
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_SEND, cur, cur->wait_result);
+            return cur->wait_result;
         }
         if (cur->wait_node.transfer_buf == NULL) {
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_SEND, cur, RTOS_OK); /* 消息已被接收者直传取走 */
+            return RTOS_OK; /* 消息已被接收者直传取走 */
         }
     }
 }
@@ -331,8 +320,6 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
     }
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_QUEUE_RECEIVE, cur,
-        queue, timeout, 0U, RTOS_OK, 0U);
     RTOS_PORT_EXIT_CRITICAL();
 
     /* 被唤醒:
@@ -341,12 +328,10 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
      * - 否则: 消息可能被其他任务偷走, 重试出队, 若仍空则重新阻塞。 */
     cur = rtos_kernel.current_tcb;
     if (cur->wait_result != RTOS_OK) {
-        return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-            RTOS_DIAG_OP_QUEUE_RECEIVE, cur, cur->wait_result);
+        return cur->wait_result;
     }
     if (cur->wait_node.transfer_buf == NULL) {
-        return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-            RTOS_DIAG_OP_QUEUE_RECEIVE, cur, RTOS_OK); /* 消息已由发送者直传到 item */
+        return RTOS_OK; /* 消息已由发送者直传到 item */
     }
 
     /* 重试出队: 若消息被偷则重新阻塞, 而非返回错误 */
@@ -354,8 +339,7 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         RTOS_PORT_ENTER_CRITICAL();
         if (queue->is_initialized == 0U) {
             RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_RECEIVE, cur, RTOS_ERR_PARAM);
+            return RTOS_ERR_PARAM;
         }
         if (queue->count > 0U) {
             queue_storage_pop(queue, item);
@@ -363,8 +347,7 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
             /* 出队腾出的空位交给阻塞中的发送者(按 to_front 意图代办入队) */
             queue_wake_sender_on_free_slot(queue);
             RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_RECEIVE, cur, RTOS_OK);
+            return RTOS_OK;
         }
         cur = rtos_kernel.current_tcb;
         cur->wait_node.transfer_buf = item;
@@ -372,21 +355,16 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         if (rtos_internal_block_current_on((void *)queue, &queue->recv_wait_head, timeout) !=
             RTOS_OK) {
             RTOS_PORT_EXIT_CRITICAL();
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_RECEIVE, cur, RTOS_ERR_SCHED); /* 未入链, 无需清理 */
+            return RTOS_ERR_SCHED; /* 未入链, 无需清理 */
         }
-        RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_QUEUE_RECEIVE, cur,
-            queue, timeout, 0U, RTOS_OK, 0U);
         RTOS_PORT_EXIT_CRITICAL();
 
         cur = rtos_kernel.current_tcb;
         if (cur->wait_result != RTOS_OK) {
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_RECEIVE, cur, cur->wait_result);
+            return cur->wait_result;
         }
         if (cur->wait_node.transfer_buf == NULL) {
-            return RTOS_INTERNAL_DIAG_RETURN_STATUS(
-                RTOS_DIAG_OP_QUEUE_RECEIVE, cur, RTOS_OK); /* 消息已由发送者直传到 item */
+            return RTOS_OK; /* 消息已由发送者直传到 item */
         }
     }
 }

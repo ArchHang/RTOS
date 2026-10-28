@@ -272,9 +272,6 @@ rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout)
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_SCHED;
     }
-    RTOS_DIAG_RECORD(RTOS_DIAG_EVENT_WAIT, RTOS_DIAG_OP_MUTEX, cur,
-        mutex, timeout, 0U, RTOS_OK,
-        mutex->owner != NULL ? mutex->owner->task_id : 0U);
     mutex_refresh_priority_graph(NULL);
     RTOS_PORT_EXIT_CRITICAL();
 
@@ -282,7 +279,7 @@ rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout)
      *         无需在此设置, 避免与 give 之间产生竞争窗口。
      *         仅需检查唤醒结果: OK=获得锁, TIMEOUT/DELETED=未获得。 */
     cur = rtos_kernel.current_tcb;
-    return RTOS_INTERNAL_DIAG_RETURN_STATUS(RTOS_DIAG_OP_MUTEX, cur, cur->wait_result);
+    return cur->wait_result;
 }
 
 rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex)

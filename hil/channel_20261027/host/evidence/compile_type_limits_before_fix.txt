@@ -1,5 +1,0 @@
-E:\STM32_Project\CubeIDE\f446_rtos\RTOS\IPC\rtos_channel.c: In function 'channel_configuration_valid':
-E:\STM32_Project\CubeIDE\f446_rtos\RTOS\IPC\rtos_channel.c:138:38: error: comparison is always false due to limited range of data type [-Werror=type-limits]
-  138 |         ((size_t)config->block_count > SIZE_MAX / sizeof(rtos_channel_slot_t)) ||
-      |                                      ^
-cc1.exe: all warnings being treated as errors
