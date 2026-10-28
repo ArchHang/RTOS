@@ -13,6 +13,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 EXAMPLES = ROOT / "docs/ai/examples"
+EXAMPLE_FILES = {"handbook.c", "ipc.c", "memory.c", "observation.c", "task_notify.c",
+                 "timer.c", "usb.c"}
 CORE_HEADERS = ROOT / "RTOS/Core/Inc"
 SOURCE_DIRS = ("Core/Src", "IPC", "Memory", "Services", "USB", "Port/GCC/ARM_CM4F_CM7F")
 INCLUDES = ("RTOS/Core/Inc", "RTOS/Core/Private", "Core/Inc",
@@ -176,7 +178,7 @@ def main():
         result["nm_sha256"] = digest(nm)
         result["example_functions"] = verify_example_names()
         result["compiler_version"] = run([compiler, "--version"], output, "compiler_version")
-        if len(examples) != 6 or len(kernel) != 16:
+        if {path.name for path in examples} != EXAMPLE_FILES or len(kernel) != 16:
             raise ValueError("Unexpected example/kernel inventory")
         for profile in profiles():
             tag = profile["tag"]
@@ -221,7 +223,7 @@ def main():
             if any(name.startswith(("rtos_", "ai_example_")) for name in undefined):
                 raise ValueError("Unresolved own API/example symbols: " + ", ".join(undefined))
             result["partial_links"] += 1
-            profile.update(status="PASS", example_objects=6, kernel_support_objects=16,
+            profile.update(status="PASS", example_objects=len(examples), kernel_support_objects=16,
                            partial_object_sha256=digest(partial), external_undefined_symbols=undefined)
             result["profiles"].append(profile)
             if tag == "base_m1_a1_O2":

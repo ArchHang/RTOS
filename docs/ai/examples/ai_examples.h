@@ -126,4 +126,60 @@ int32_t ai_example_cdc_write(uint8_t busid, const uint8_t *data, uint32_t bytes)
 rtos_status_t ai_example_critical_exchange(volatile uint32_t *target, uint32_t value,
     uint32_t *previous);
 
+/** @brief Last completed pipeline result; processed_count saturates at UINT32_MAX. */
+typedef struct ai_example_handbook_result {
+    uint32_t processed_count;
+    uint32_t sequence;
+    int32_t sample;
+} ai_example_handbook_result_t;
+
+#define AI_EXAMPLE_HANDBOOK_RESULT_READY ((rtos_event_bits_t)1U)
+#define AI_EXAMPLE_HANDBOOK_OPERATION_FAILED ((rtos_event_bits_t)2U)
+
+/** @brief Initialize persistent pipeline objects/worker once before rtos_start.
+ * @return Actual initialization status; a failed startup requires application recovery/reset.
+ * @note rtos_init must have succeeded. No concurrent caller/IRQ may use this pipeline yet.
+ */
+rtos_status_t ai_example_handbook_pipeline_init(void);
+/** @brief Publish a copied message from a running task, waiting at most ten ticks.
+ * @param sequence [in] Application message identity; wrap policy belongs to the application.
+ * @param sample [in] Value copied into the message; no borrowed payload pointer.
+ * @return Actual queue status; TIMEOUT means this message was not accepted.
+ */
+rtos_status_t ai_example_handbook_publish(uint32_t sequence, int32_t sample);
+/** @brief Attempt one copied send from a legal syscall IRQ after pipeline publication.
+ * @param sequence [in] Message identity assigned by this producer.
+ * @param sample [in] Value copied during the call.
+ * @return Actual queue status; caller must count/drop/retry a rejected message appropriately.
+ */
+rtos_status_t ai_example_handbook_publish_from_isr(uint32_t sequence, int32_t sample);
+/** @brief Read the last completed result under a mutex from a running task.
+ * @param result [out] Accessible snapshot; unchanged on failure or before the first result.
+ * @return OK, TIMEOUT before a result/after lock timeout, or the actual lock error.
+ */
+rtos_status_t ai_example_handbook_read_result(ai_example_handbook_result_t *result);
+/** @brief Wait for a coalesced result hint, clearing only the ready bit when satisfied.
+ * @param timeout [in] Tick budget, NO_WAIT or FOREVER; normal finite limit applies.
+ * @return Raw event snapshot; test RESULT_READY explicitly. FAILED alone is not completion.
+ * @note Running task context only. The result mutex, not this hint, protects snapshot access.
+ */
+rtos_event_bits_t ai_example_handbook_wait_hint(rtos_tick_t timeout);
+/** @brief Periodic producer task; never returns and uses a twenty-tick phase.
+ * @param argument [in] Unused, may be NULL; queue storage must remain alive.
+ */
+void ai_example_handbook_periodic(void *argument);
+/** @brief Alternative application entry after BSP preparation; starts this example only.
+ * @return Initialization/creation error; successful scheduler start never returns.
+ * @note Once only, before any RTOS-dependent application IRQ is enabled. Not daily main.c.
+ */
+rtos_status_t ai_example_handbook_start(void);
+/** @brief Suspend/change priority/resume a caller-owned worker at a safe application boundary.
+ * @param worker [in,out] Live, non-idle, non-current worker with persistent storage.
+ * @param priority [in] New valid base priority.
+ * @return Actual failure, otherwise OK; this is not a transactional business rollback.
+ * @note One controller owns lifecycle. Worker is quiescent, holds no resource and is not waiting.
+ *       No concurrent suspend/delete/resume is permitted. Originally suspended state is not kept.
+ */
+rtos_status_t ai_example_handbook_control_worker(rtos_tcb_t *worker, rtos_prio_t priority);
+
 #endif /* RTOS_DOCS_AI_EXAMPLES_H_ */

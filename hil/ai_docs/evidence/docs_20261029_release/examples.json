@@ -1,0 +1,330 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "head": "adad20c967005a4aea9291688969de6345989d94",
+  "finished_local": "2026-10-29T07:30:51.337252+08:00",
+  "validator_sha256": "8C81A40CF2D07D2052BE8F9C6B24AF683E606EDD229EC06DB4D7149B6D5FE45B",
+  "blocks": 39,
+  "unique_functions": 34,
+  "whole_files": 1,
+  "handbook_sha256": "C81843D76E5136052F1F928A83D63089F706E5787A43098B50AA3B1DA13A4412",
+  "entries": [
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_start",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "948795EDAC3D0B7163E6D99A60C9D5CB55A679E0BB3AAF2F14E0A7E8BCB20869",
+      "handbook_line": 221
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_critical_exchange",
+      "source": "docs/ai/examples/observation.c",
+      "source_sha256": "FF25769767C733D8E8619491C8D0AD42AB7D13709D47B9A648BFAB68BBFE5A23",
+      "snippet_sha256": "9999CF87D4CF5D32EA9108E8EC3832C8060DA029A6D66A4FBCD75C275F6CA6CE",
+      "handbook_line": 949
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_notify_from_irq",
+      "source": "docs/ai/examples/task_notify.c",
+      "source_sha256": "D456A0420EFB629B0A72387C0C4E97689DB516C75F309E2BF9BB8CF102B6B491",
+      "snippet_sha256": "6D2C608606BFAD0332E5F294D89E0E00B7EBFC652F04F9A5860270FCDE1A248E",
+      "handbook_line": 1014
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_worker",
+      "source": "docs/ai/examples/task_notify.c",
+      "source_sha256": "D456A0420EFB629B0A72387C0C4E97689DB516C75F309E2BF9BB8CF102B6B491",
+      "snippet_sha256": "3FB6AAA1C09C7EFC0BA0133AB7564186A0284FCD74D33E56C64CCB54A983F885",
+      "handbook_line": 1101
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_control_worker",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "7D6FACC2EACD225C575F8FDC97645D81305D556B3A670ECA0290B6EB50D943D1",
+      "handbook_line": 1162
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_periodic",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "369C58877992A491086EE00B06B70A9D4014CEED3A83ADDF9A0EA5BF96D60345",
+      "handbook_line": 1211
+    },
+    {
+      "kind": "function",
+      "name": "worker_entry",
+      "source": "docs/ai/examples/task_notify.c",
+      "source_sha256": "D456A0420EFB629B0A72387C0C4E97689DB516C75F309E2BF9BB8CF102B6B491",
+      "snippet_sha256": "A5486346FC62F224C0ACA93FB0E6128E661C163AB140214673468408720E6ED7",
+      "handbook_line": 1254
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_signal",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "53F2C97EA401FD6102E43D7C43B856B56F7110822D0C99EB66E46C9BFB6D203A",
+      "handbook_line": 1459
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_signal_from_irq",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "BADD1EACE7E1DF30A649E21A4A09C3539B0DA82B598FF8380715EEFC4AACE5A1",
+      "handbook_line": 1468
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_wait_signal",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "0D106D4A7D229B8D953E501B973AB61B0DF91871B15756795D367CDA605A0ADD",
+      "handbook_line": 1477
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_mutex",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "87B8756576A3020A66A89BD7CE70245DE854310D4E246A60A9664FD173E0552B",
+      "handbook_line": 1628
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_mutex_update",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "B882CAD622B8017986D60AA50C3627C881B8B3F7D8F853B4E3FACEB66A84D5E7",
+      "handbook_line": 1637
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_queue",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "DDE0AB3955FAEDC4544D8FBEF04951C065C7391CB21B9B9015E1D8C701806E53",
+      "handbook_line": 1808
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_queue_roundtrip",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "8F04FDBB6EB93C3198CA324FC4A51CD2828C0AD8C2539FDC8F5B10A206DC47C8",
+      "handbook_line": 1818
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_queue_send_from_irq",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "64C43662BDD49798629C7C5FC1D960BEAF10C0DB2A006B42D2FE5E0D55194E40",
+      "handbook_line": 1842
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_pipeline_init",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "F5550DD41A3FEB155AAFC203151DC62F0A84C5A6A90E94737377E7A1B456FB8C",
+      "handbook_line": 1859
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_publish",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "5E2A553938E018CD47ACBD1D39E7808FA1907AA6BD9834B51F831EF622AEE10F",
+      "handbook_line": 1892
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_publish_from_isr",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "ABD3E423F9171C3FEF1E1A56C27443AF103BD30C011D510E5F7C0260B0FB9698",
+      "handbook_line": 1906
+    },
+    {
+      "kind": "function",
+      "name": "handbook_consumer_task",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "FE151B1AF82A8A164B6015748888A7BE4A1CDA2447BC8FC3264794718AC297CD",
+      "handbook_line": 1919
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_read_result",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "4278D08F6B66D14B2162F454F84C952FA64764AD38D5F5203110E6EBC58E9187",
+      "handbook_line": 1946
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_event",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "1559BF361D1F0103B1F5F77861220CE2A35A22EEF38228C9AB22CDB5EFACD088",
+      "handbook_line": 2081
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_set_event_from_irq",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "B72C49343FC7AF29DA940330C0B2851B5C39C0F10BEDF2D38BEE7E2E8DD0C08C",
+      "handbook_line": 2090
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_wait_event",
+      "source": "docs/ai/examples/ipc.c",
+      "source_sha256": "1DFA32D1A59FD526420CFE1D12A9BC6E4ACD697A2E06D3A3F9B91F875C64EFFC",
+      "snippet_sha256": "1A4849F847FEFA4115F283684AE17FF0E630EFE75513F3F04BAA8FEB83743DA3",
+      "handbook_line": 2099
+    },
+    {
+      "kind": "function",
+      "name": "timer_callback",
+      "source": "docs/ai/examples/timer.c",
+      "source_sha256": "813C30C2B36B1B0A9004ED4AB32F96C5B5059B1924146B3AF509AA01E03B7E34",
+      "snippet_sha256": "928F008704D9B14998E29CC9CC73A8D5D173797C0D01BBBED09F6AC27DE407D9",
+      "handbook_line": 2282
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_timer",
+      "source": "docs/ai/examples/timer.c",
+      "source_sha256": "813C30C2B36B1B0A9004ED4AB32F96C5B5059B1924146B3AF509AA01E03B7E34",
+      "snippet_sha256": "862B48BB87C712B1D29274D77EFB163E845A19734228466206DC2AA22E2F2211",
+      "handbook_line": 2295
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_start_timer",
+      "source": "docs/ai/examples/timer.c",
+      "source_sha256": "813C30C2B36B1B0A9004ED4AB32F96C5B5059B1924146B3AF509AA01E03B7E34",
+      "snippet_sha256": "3937B519F20F88C14E93D8AACE5A8C1CFAE657D3CCE35DFE4E989B666BE4D68F",
+      "handbook_line": 2307
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_stop_timer",
+      "source": "docs/ai/examples/timer.c",
+      "source_sha256": "813C30C2B36B1B0A9004ED4AB32F96C5B5059B1924146B3AF509AA01E03B7E34",
+      "snippet_sha256": "0AB665E3E2DE9DAFB552C1EDFCA4A23D94D2CEE77573E6BB83BF364A3FB4FC59",
+      "handbook_line": 2316
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_request_timer_delete",
+      "source": "docs/ai/examples/timer.c",
+      "source_sha256": "813C30C2B36B1B0A9004ED4AB32F96C5B5059B1924146B3AF509AA01E03B7E34",
+      "snippet_sha256": "4184707FBE8BD9B487888BB3C2E4D2DE99E971EBC20F6604498D0350E6468679",
+      "handbook_line": 2325
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_heap_use",
+      "source": "docs/ai/examples/memory.c",
+      "source_sha256": "67A758EB7E10BA250B395F481FECDBE31CADB0393DB64503F6FB5E2F0070D2C5",
+      "snippet_sha256": "EB9CECC434B87166FE7610EE0A779228FD2602AAB060ABEB13C1B3EEC5AE810A",
+      "handbook_line": 2423
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_prepare_pool",
+      "source": "docs/ai/examples/memory.c",
+      "source_sha256": "67A758EB7E10BA250B395F481FECDBE31CADB0393DB64503F6FB5E2F0070D2C5",
+      "snippet_sha256": "9169B205A45B6444724BDE3D5847CBB17239370A8B716AC06CAB9AE629D222D2",
+      "handbook_line": 2487
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_pool_use",
+      "source": "docs/ai/examples/memory.c",
+      "source_sha256": "67A758EB7E10BA250B395F481FECDBE31CADB0393DB64503F6FB5E2F0070D2C5",
+      "snippet_sha256": "E309535315A331F9C241B1A3BE37C31B1BBCE6DC06A1567DDAE59E85BB3A1605",
+      "handbook_line": 2497
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_observe",
+      "source": "docs/ai/examples/observation.c",
+      "source_sha256": "FF25769767C733D8E8619491C8D0AD42AB7D13709D47B9A648BFAB68BBFE5A23",
+      "snippet_sha256": "EA73672E37A9E658DC808A2D485202CDACE09F02C19EE8F9C15EEEEF113F09B3",
+      "handbook_line": 2626
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_cdc_write",
+      "source": "docs/ai/examples/usb.c",
+      "source_sha256": "3F75AD9FA47772E796EF044D655A8DF04294C0A6CCEF367F59037BD2F2475966",
+      "snippet_sha256": "9668D208F5C2F348B5C3F5CF22DD232F7B681E7153F824BCA72EFB75CC0CC2CF",
+      "handbook_line": 2836
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_pipeline_init",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "F5550DD41A3FEB155AAFC203151DC62F0A84C5A6A90E94737377E7A1B456FB8C",
+      "handbook_line": 3333
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_publish",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "5E2A553938E018CD47ACBD1D39E7808FA1907AA6BD9834B51F831EF622AEE10F",
+      "handbook_line": 3366
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_publish_from_isr",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "ABD3E423F9171C3FEF1E1A56C27443AF103BD30C011D510E5F7C0260B0FB9698",
+      "handbook_line": 3380
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_read_result",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "4278D08F6B66D14B2162F454F84C952FA64764AD38D5F5203110E6EBC58E9187",
+      "handbook_line": 3393
+    },
+    {
+      "kind": "function",
+      "name": "ai_example_handbook_wait_hint",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "2F53692A2A87FE28361B2239B29A239C5E3779C52A4CB9BF3F66E0978BF7D9DD",
+      "handbook_line": 3421
+    },
+    {
+      "kind": "file",
+      "name": "handbook.c",
+      "source": "docs/ai/examples/handbook.c",
+      "source_sha256": "FE73029AFE4D10070FA2BCB44D591F408CBD0E5424F369DBFF04A0FE23938E33",
+      "snippet_sha256": "301092B4B4D05DBD856FC0EAFEE40E9B0998AC5FFF992E3342A7522A07C1FAF0",
+      "handbook_line": 3586
+    }
+  ],
+  "limits": [
+    "Marked C snippets are compared with the actual example sources.",
+    "This is not a compiler, firmware link, execution or hardware test.",
+    "Unmarked mechanism summaries, structures and assembly are outside this check."
+  ]
+}
