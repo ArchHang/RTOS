@@ -1,8 +1,0 @@
-﻿restored E:\STM32_Project\CubeIDE\f446_rtos\Debug\Core\Src\subdir.mk
-restored canonical objects.list
-removed E:\STM32_Project\CubeIDE\f446_rtos\Debug\hil
-removed E:\STM32_Project\CubeIDE\f446_rtos\hil\fwsrc
-removed E:\STM32_Project\CubeIDE\f446_rtos\Debug\.hil_build_stamp
-   text	   data	    bss	    dec	    hex	filename
- 199796	    128	 125952	 325876	  4f8f4	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf
-project restored

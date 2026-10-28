@@ -1,80 +1,97 @@
-# 2026-10-27 源码重组验证
+# 当前布局的回归与验收脚本
 
-本批验证新的源码目录、编译单元边界和构建入口。历史证据不迁移、不重写：重组前基准为提交
-`6602f8fa1b9acb9b12ba27e17f2ffc4fbcb8b03f`。目录和迁移说明见
-[RTOS 源码导览](../../RTOS/README.md)。
+本目录保留源码重组后可用于新批次的构建、复杂 IPC、端口和生产负载脚本。
+目录名表示脚本建立日期，不表示执行时会切换到该日期的内核。源码布局见
+[RTOS 导览](../../RTOS/README.md)，总入口见 [hil/README.md](../README.md)。
 
-本机最终结果为 [独立验收 PASS](verification_summary.json)：145 个实板镜像，193 项严格编译检查。
-完整迁移、失败尝试、性能观测及清理结论见[源码重组报告](../../docs/rtos_source_reorganization_20261027.md)。
+2026-10-28 按用户要求清退本目录旧 `evidence/`、源码身份清单和历史验收摘要，
+不再保留旧固件、IDE 临时工程、预检失败镜像和重复采样。脚本本轮保持原字节，
+没有编译固件、连接板卡或重新执行历史验收。原始输入已不在工程内，不能据历史
+叙述重新宣称整批通过，也不能将脚本保留本身当成运行结果。
 
-## 执行入口
+## 1. 保留文件
 
-在工程根目录运行 Windows PowerShell，编译器和烧录器使用 `hil/` 脚本配置的本机路径。
-硬件为 NUCLEO-F446RE，ST-LINK SWD，COM3 / 115200 / 8N1。
-每次复测选择新的输出目录；脚本拒绝覆盖已有证据。
+| 文件 | 用途 |
+|---|---|
+| `verify_layout.py` | 与 Git 基线 `6602f8fa1b9acb9b12ba27e17f2ffc4fbcb8b03f` 比较函数 token、全局声明、公开头、主函数、第三方源码和链接清单 |
+| `compile_checks.ps1` | 16 个自研 C 单元 × 屏蔽方式 × 断言 × O0/O2/O3，共 192 项严格编译，另有 M7 端口编译 |
+| `evidence_helpers.ps1` | 构建及采集前后记录固件、工程、模板和运行脚本的输入身份 |
+| `run_matrix.ps1` | 48 个复杂 IPC 镜像；`-RegistryOnly` 另选 12 个最大容量镜像 |
+| `run_port_matrix.ps1` | 屏蔽交错、阻塞返回、非法嵌套和 ISR 优先级矩阵 |
+| `run_regressions.ps1` | 功能、生产负载、校验和负向对照与长时间运行 |
+| `verify_results.py` | 对满足固定历史协议的完整证据进行严格离线验收 |
+
+验收器按固定 SHA-256 导入下列两个文件，其原路径与原字节必须保留：
+
+- [基础日志验收器](../basepri_20261025/verify_evidence.py)
+- [复杂并发验收器](../adversarial_20261025/verify_evidence.py)
+
+这些文件没有附带旧批次原始结果。修改分析器后不能继续沿用原分析器身份和通过结论。
+
+## 2. 新批次执行方法
+
+从项目根目录执行 Windows PowerShell；工具链、下载器和默认 COM3 配置见总入口。
+每次使用从未写入过的输出目录，按实际日期替换 `YYYYMMDD`。以下是未来运行示例，
+本轮文件整理没有执行这些命令：
 
 ```powershell
-python hil/refactor_20261027/verify_layout.py
-powershell -File hil/refactor_20261027/compile_checks.ps1 -OutDir hil/refactor_20261027/rerun/compile
-powershell -File hil/refactor_20261027/run_matrix.ps1 -OutDir hil/refactor_20261027/rerun/matrix
-powershell -File hil/refactor_20261027/run_matrix.ps1 -RegistryOnly -ExpectedRegistryChecks 259 -OutDir hil/refactor_20261027/rerun/registry
-powershell -File hil/refactor_20261027/run_port_matrix.ps1 -Suite all -OutDir hil/refactor_20261027/rerun/port
-powershell -File hil/refactor_20261027/run_regressions.ps1 -Suite functional -OutDir hil/refactor_20261027/rerun/regression
-powershell -File hil/refactor_20261027/run_regressions.ps1 -Suite production -OutDir hil/refactor_20261027/rerun/regression
-powershell -File hil/refactor_20261027/run_regressions.ps1 -Suite soak -SoakSeconds 120 -OutDir hil/refactor_20261027/rerun/soak
-powershell -File hil/restore_project.ps1 -Rebuild
+# 只读结构检查；需本地 Git 历史中仍有指定基线。
+python -B hil/refactor_20261027/verify_layout.py
+
+# 编译检查，不连接硬件。M7 项仅编译，不代表 M7 实板测试。
+powershell -NoProfile -File hil/refactor_20261027/compile_checks.ps1 `
+    -OutDir hil/logs/rerun_YYYYMMDD/compile
+
+# 下列命令会构建、烧录并使用串口，需真实 F446 板卡。
+powershell -NoProfile -File hil/refactor_20261027/run_matrix.ps1 `
+    -OutDir hil/logs/rerun_YYYYMMDD/matrix
+powershell -NoProfile -File hil/refactor_20261027/run_matrix.ps1 `
+    -RegistryOnly -ExpectedRegistryChecks 259 `
+    -OutDir hil/logs/rerun_YYYYMMDD/registry
+powershell -NoProfile -File hil/refactor_20261027/run_port_matrix.ps1 `
+    -Suite all -OutDir hil/logs/rerun_YYYYMMDD/port
+powershell -NoProfile -File hil/refactor_20261027/run_regressions.ps1 `
+    -Suite functional -OutDir hil/logs/rerun_YYYYMMDD/regression
+powershell -NoProfile -File hil/refactor_20261027/run_regressions.ps1 `
+    -Suite production -OutDir hil/logs/rerun_YYYYMMDD/regression
+powershell -NoProfile -File hil/refactor_20261027/run_regressions.ps1 `
+    -Suite soak -SoakSeconds 120 -OutDir hil/logs/rerun_YYYYMMDD/soak
+
+# 恢复并重建日常固件；之后另用 run_hil.ps1 重新烧录并检查任务输出。
+powershell -NoProfile -File hil/restore_project.ps1 -Rebuild
 ```
 
-最后一条只恢复、重建日常固件；恢复后仍需用 `run_hil.ps1` 重新烧录，并核对启动和任务输出。
-本批 `verify_results.py` 的严格模式还要求恢复后的源码身份、日常固件与完整构建/串口证据。
-仅有上面部分命令的输出不能生成整批 PASS。默认验收本批 `evidence/`，复测可用
-`--evidence <新路径>`；运行期间用 `--in-progress` 查看缺失项，不能生成成功报告。
+生产负载 `-SoakSeconds` 接受 30–900 秒；运行时间必须记录在新批次中。
+以上命令各自执行检查，但不是生成历史整批严格 PASS 的完整配方。
 
-本批冻结的编译脚本保留首次 CM7 条目的字段形式，完整复测时还需真实执行带参数记录的补充编译。
-在当前工具路径配置不变的电脑，可在严格编译之后运行以下步骤，将新输出保存到新批次：
+## 3. 严格验收的边界
+
+`verify_results.py` 是冻结的历史整批协议验收器，不是任意新目录的通用日志工具。
+它除最终矩阵外，还要求固定的源码身份清单、完整 ELF、构建和下载记录、栈用量记录、
+日常恢复，以及一次特定错误断言映射的失败样例。原 `compile_checks.ps1` 的 M7 记录
+缺少完整参数，历史批次曾通过真实补充编译记录弥补；该补充记录也已清退。
+
+因此，仅执行上面的新测试命令并不自动满足它的所有输入要求。默认 `evidence/`
+已删除，直接执行严格验收会报告缺失，不能绕过检查、复制旧 PASS 或伪造被清退的
+失败样例来生成新成功结论。未来需要重新建立完整验收协议时，应先审核新批次的
+输入约定及独立判据，再运行和记录；本轮没有修改该验收器或放宽任何判据。
+
+离线查看一个新批次目前缺哪些输入，可使用：
 
 ```powershell
-$cm7 = Get-Content hil/refactor_20261027/evidence/compile/cm7_supplement.json -Raw | ConvertFrom-Json
-$cm7Arguments = @($cm7.arguments)
-$cm7Output = & $cm7.compiler @cm7Arguments 2>&1
-$cm7.exit_code = $LASTEXITCODE
-$cm7.passed = ($cm7.exit_code -eq 0)
-$cm7.warnings = @($cm7Output | Select-String 'warning:').Count
-$cm7.sha256 = (Get-FileHash -LiteralPath $cm7.source).Hash
-$cm7Output | Out-File hil/refactor_20261027/rerun/compile/compile_cm7_supplement.txt -Encoding utf8
-$cm7 | ConvertTo-Json -Depth 5 | Set-Content hil/refactor_20261027/rerun/compile/cm7_supplement.json -Encoding utf8
-if (-not $cm7.passed) { throw 'CM7 supplementary compilation failed' }
+python -B hil/refactor_20261027/verify_results.py `
+    --evidence hil/logs/rerun_YYYYMMDD --in-progress
 ```
 
-这里重用的是实际编译参数，新的成功状态、诊断日志和源码摘要来自再次执行，不复制旧通过结论。
+`--in-progress` 不会写出成功报告。缺少输入不是通过，叙述摘要不能替代原始证据。
 
-## 检查层次
+## 4. 采样纪律
 
-- 结构检查：263 个函数定义 token、63 项全局/静态声明、16 个公开头文件、主函数及第三方源码。
-  任务 ID 原型由局部 `extern` 移至私有头；两个 USB 毫秒转换 wrapper 合并为已有 inline。
-- 编译：16 个自研单元 × 两种屏蔽方式 × 两种断言设置 × O0/O2/O3，共 192 项；另有 M7 端口编译。
-  本次首轮 M7 记录缺少参数，真实重跑并在 `cm7_supplement.json` 补录；不是 M7 硬件测试。
-- 复杂 IPC：48 个继承/混合等待/生命周期/边界镜像，加 12 个最大互斥图容量镜像。
-- 端口：12 个屏蔽交错、12 个阻塞返回、6 个非法嵌套、44 个 ISR 优先级与断言镜像。
-- 功能与生产：5 个功能/底层/基准镜像，3 个 30 秒业务配置、1 个校验和负向对照及 120 秒压力。
+每个镜像记录实际源码与构建输入，构建后核对身份未变化，再核对烧录、串口结束行、
+检查数量和不变量。负向对照必须命中特定预期失败，不能与正常通过合并计数。
+只允许报告实际执行的层次：结构检查、编译、离线解析、寄存器观察或真实硬件测试。
+恢复日常构建后还须重新下载与核对任务进展；只生成日常 ELF 不等于已恢复板上状态。
 
-`evidence_helpers.ps1` 在每次构建前后对固件 C/H/S、链接脚本、工程配置、模板和运行脚本取快照。
-离线 Python 分析器不参与固件编译，身份单列于验收输出。独立验收复用固定摘要的历史原始日志规则，
-仅适配 USB 断言来源的新文件名；历史分析器文件保持不变。
-
-## 证据约束
-
-`preflight/build_first_audit.txt` 保留首次完整链接结果：25 条原有演示代码未使用声明警告，另有
-启动汇编 `-x assembler-with-cpp` 位于输入文件之后的警告。后者已在当前权威模板中修正为先指定
-语言再给输入文件。自研内核严格编译不得存在警告；整工程的既有演示声明警告不记作内核零警告。
-
-`preflight/before_guard_mapping_fix/` 保留 103 份早期 capture：case 13 把 CDC 查询的断言来源错误映射
-到 OSAL，内核在正确的 device 入口断言，但夹具报 FAIL。修正映射并单独 smoke 通过后，最终 145 个镜像
-全部重新采样，未沿用早期 PASS。日常采集另有结束文本不匹配记录，保留于
-`preflight/daily_terminator_mismatch/`；核对 main 的 `task 0 running` 实际输出后重新采集通过。
-
-文本日志、manifest、结果索引与方法入库；ELF、Debug 目标和 `.su` 为本机证据，遵守现有忽略规则。
-隔离 IDE 的 38 份文本构建规则/对象清单精准放行；原始 `.recorded`、XML、生成规则和固定摘要分析器通过
-`.gitattributes` 保留字节，二进制仍不入库。
-缺少保留 ELF 时严格验收不能完成。原始文件换行改变后也不能直接沿用本机摘要。
-有限 HIL 覆盖不能证明没有任何 BUG；USB 包装测试和日常 DWC2 初始化不等于物理 USB 主机互操作。
+USB 包装测试不等于物理 USB 主机互操作，M7 交叉编译不等于 M7 硬件验证，
+有限矩阵不能证明不存在任何 BUG。后续执行产生的新结果使用独立批次管理，
+叙述性更新追加每日记录，不再创建一批旧工程副本和按每次运行命名的报告。

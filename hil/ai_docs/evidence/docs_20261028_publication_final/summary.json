@@ -1,0 +1,1913 @@
+{
+  "status": "PASS",
+  "baseline": "87bfbe4a6efc50f9b828128c713a1b5af2900ef8",
+  "current_head": "13f52991c67deb863709ddebb417fbcac51f2b80",
+  "primary_headers": 16,
+  "primary_callables": 159,
+  "primary_variables": 4,
+  "documented_records": 193,
+  "supplemental_records": 30,
+  "contract_errors": [],
+  "unparsed_declarations": [],
+  "parameter_name_observations": [
+    {
+      "name": "rtos_get_version",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_init",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_start",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_create",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb_out",
+        "stack_size",
+        "entry",
+        "arg",
+        "priority",
+        "name"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_create_static",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb",
+        "stack_buf",
+        "stack_size",
+        "entry",
+        "arg",
+        "priority",
+        "name"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_delete",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_yield",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_delay",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "ticks"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_delay_until",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "last_wake_tick",
+        "period"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_get_current",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_get_priority",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_set_priority",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb",
+        "prio"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_suspend",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_resume",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_notify",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb",
+        "value",
+        "type"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_notify_wait",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "timeout",
+        "recv_value"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_idle_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_idle_task",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "arg"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_stack_overflow_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_task_delete_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_assert_fail",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "parameters": [
+        "cond",
+        "file",
+        "line"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_init",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_start",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_schedule",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_add_ready",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_remove_ready",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_block",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [
+        "tcb",
+        "ticks"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_unblock",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_remove_delayed",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_tick",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_suspend",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_resume",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_get_tick_count",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_get_state",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sched_context_switch",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_critical_nesting_error",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [
+        "nesting"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_critical_test_hook",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [
+        "stage"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_enter_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_exit_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_in_isr",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_init_stack",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [
+        "stack_top",
+        "stack_size",
+        "entry",
+        "arg"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_context_switch",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_start_first_task",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_start_scheduler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_sys_tick_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_pend_sv_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_svc_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_disable_interrupts",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_enable_interrupts",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_isr_priority",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_get_interrupt_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_set_interrupt_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [
+        "mask"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_get_critical_nesting",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_ASSERT",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "parameters": [
+        "cond"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_ASSERT_ISR_STATE_OK",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "parameters": [
+        "in_isr"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_ASSERT_ISR_OK",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_PORT_ENTER_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_PORT_EXIT_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_PORT_IN_ISR",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_PORT_DISABLE_INTERRUPTS",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_PORT_ENABLE_INTERRUPTS",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "RTOS_PORT_CRITICAL_TEST_HOOK",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [
+        "stage"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "SystemCoreClock",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_crit_nest",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_port_saved_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_kernel",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sem_init",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "parameters": [
+        "sem",
+        "init_cnt",
+        "max_cnt"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sem_take",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "parameters": [
+        "sem",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sem_give",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sem_get_count",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_sem_deinit",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mutex_init",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mutex_take",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "parameters": [
+        "mutex",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mutex_give",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mutex_deinit",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_queue_init",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "parameters": [
+        "queue",
+        "storage",
+        "item_size",
+        "capacity"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_queue_send",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "parameters": [
+        "queue",
+        "item",
+        "timeout",
+        "to_front"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_queue_recv",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "parameters": [
+        "queue",
+        "item",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_queue_get_count",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "parameters": [
+        "queue"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_queue_get_free",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "parameters": [
+        "queue"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_queue_deinit",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "parameters": [
+        "queue"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_event_init",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "parameters": [
+        "event"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_event_set",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "parameters": [
+        "event",
+        "bits"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_event_clear",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "parameters": [
+        "event",
+        "bits"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_event_wait",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "parameters": [
+        "event",
+        "bits",
+        "mode",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_event_get",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "parameters": [
+        "event"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_event_deinit",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "parameters": [
+        "event"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mempool_init",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "parameters": [
+        "pool",
+        "base",
+        "block_size",
+        "block_count"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mempool_alloc",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "parameters": [
+        "pool"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mempool_free",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "parameters": [
+        "pool",
+        "block"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_mempool_get_free",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "parameters": [
+        "pool"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_init",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_alloc",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [
+        "size"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_free",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [
+        "ptr"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_get_free",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_get_max_alloc",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_get_alloc_count",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_heap_get_free_count",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_create",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [
+        "timer",
+        "name",
+        "callback",
+        "arg",
+        "period",
+        "mode"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_start",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_stop",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_change_period",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [
+        "timer",
+        "period"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_delete",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_service_task",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [
+        "arg"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_timer_init",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_init",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_reset",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_system",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "stats"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_memory",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "stats"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_task",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "tcb",
+        "stats"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_task_registry_count",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_task_at",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "index"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_all_tasks",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "stats_array",
+        "max_count",
+        "actual_count"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_cpu_usage",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_switch_rate",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_get_cycles",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_init_cycles",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_cycles_to_us",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "cycles"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_on_context_switch",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "prev",
+        "next"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_on_pend_switch",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_on_task_created",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_on_task_deleted",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "tcb"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_register_pool",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [
+        "pool"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_perf_on_scheduler_start",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_timeout_ticks",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "ms"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_sem_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "init_count",
+        "max_count"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_sem_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_sem_take",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "sem",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_sem_give",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_sem_reset",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mutex_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mutex_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mutex_take",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mutex_give",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mq_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "max_msgs"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mq_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "mq"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mq_send",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "mq",
+        "addr",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_mq_recv",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "mq",
+        "addr",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_thread_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "name",
+        "stack_size",
+        "prio",
+        "entry",
+        "arg"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_thread_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "thread"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_thread_schedule_other",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_timer_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "name",
+        "ms",
+        "cb",
+        "arg",
+        "is_periodic"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_timer_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_timer_delete_checked",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_timer_start",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_timer_stop",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_init",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_register_isr",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "irqn",
+        "handler",
+        "arg"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_irq_dispatch",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "irqn"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_malloc",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "size"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_free",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "ptr"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_msleep",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "ms"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_init",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid",
+        "reg_base"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_isr",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_is_connected",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_write",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid",
+        "data",
+        "len",
+        "timeout_ms"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_read",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid",
+        "buf",
+        "len",
+        "timeout_ms"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_available",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_cdc_flush_rx",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_msc_get_stats",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid",
+        "reads",
+        "writes"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_hid_write",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid",
+        "data",
+        "len",
+        "timeout_ms"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "rtos_usb_hid_read",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "parameters": [
+        "busid",
+        "buf",
+        "len",
+        "timeout_ms"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_thread_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "name",
+        "stack_size",
+        "prio",
+        "entry",
+        "args"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_thread_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "thread"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_thread_schedule_other",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_sem_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "initial_count"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_sem_create_counting",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "max_count"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_sem_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_sem_take",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "sem",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_sem_give",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_sem_reset",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "sem"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mutex_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mutex_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mutex_take",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mutex_give",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "mutex"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mq_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "max_msgs"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mq_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "mq"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mq_send",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "mq",
+        "addr"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_mq_recv",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "mq",
+        "addr",
+        "timeout"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_timer_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "name",
+        "timeout_ms",
+        "handler",
+        "argument",
+        "is_period"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_timer_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_timer_start",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_timer_stop",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "timer"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_enter_critical_section",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_leave_critical_section",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "flag"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_msleep",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "delay"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_malloc",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "size"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usb_osal_free",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "parameters": [
+        "ptr"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "CONFIG_USB_PRINTF",
+      "header": "RTOS/Core/Inc/usb_config.h",
+      "parameters": [],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "dwc2_get_user_fifo_config",
+      "header": "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_param.h",
+      "parameters": [
+        "reg_base",
+        "config"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usbd_msc_get_cap",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "parameters": [
+        "busid",
+        "lun",
+        "block_num",
+        "block_size"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usbd_msc_sector_read",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "parameters": [
+        "busid",
+        "lun",
+        "sector",
+        "buffer",
+        "length"
+      ],
+      "not_found_in_prose": []
+    },
+    {
+      "name": "usbd_msc_sector_write",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "parameters": [
+        "busid",
+        "lun",
+        "sector",
+        "buffer",
+        "length"
+      ],
+      "not_found_in_prose": []
+    }
+  ],
+  "parameter_observation_limit": "Lexical parameter-name presence in prose is reported, not used to infer semantic completeness or correctness.",
+  "negative_controls": [
+    {
+      "case": "missing_record",
+      "status": "PASS",
+      "scope": "in-memory documentation-validator negative control",
+      "expected_rejections": [
+        "Missing callable contract: ('RTOS/Core/Inc/rtos_queue.h', 'rtos_queue_send')"
+      ]
+    },
+    {
+      "case": "wrong_signature",
+      "status": "PASS",
+      "scope": "in-memory documentation-validator negative control",
+      "expected_rejections": [
+        "Signature differs from primary source declaration: rtos_queue_send",
+        "Markdown prototype differs or is missing: rtos_queue_send"
+      ]
+    },
+    {
+      "case": "missing_anchor",
+      "status": "PASS",
+      "scope": "in-memory documentation-validator negative control",
+      "expected_rejections": [
+        "Missing API anchor: rtos_queue_send"
+      ]
+    }
+  ],
+  "markdown": {
+    "documents": 27,
+    "local_links": 815,
+    "external_links_not_fetched": 17,
+    "errors": [],
+    "legacy_master_anchors": 126,
+    "missing_legacy_anchors": []
+  },
+  "production": {
+    "status": "PASS",
+    "protected_files": 258,
+    "changed_or_missing": [],
+    "new_production_files": [],
+    "excluded_generated_paths": [
+      "hil/templates/subdir.mk.last_variant"
+    ],
+    "excluded_retired_hil_batches": [
+      "hil/archive_docs/",
+      "hil/archive_tests/",
+      "hil/audit_20261012/",
+      "hil/perf_20261012/",
+      "hil/lowlevel_20261012/",
+      "hil/production_20261012/"
+    ],
+    "excluded_retired_hil_tools": [
+      "hil/adversarial_20261025/compile_checks.ps1",
+      "hil/adversarial_20261025/finalize_batch.ps1",
+      "hil/adversarial_20261025/run_matrix.ps1",
+      "hil/basepri_20261025/compile_checks.ps1",
+      "hil/basepri_20261025/run_matrix.ps1",
+      "hil/basepri_20261025/run_regressions.ps1"
+    ],
+    "retired_hil_paths_still_present": [],
+    "sha256": {
+      ".cproject": "2CFBD4B871BD61E274EB762376ED68E1EA263FB9D7F29B107135E921142C58F7",
+      ".project": "826BBCE9F98F923ADC285A812311B55947F120F5F66E4D1C767176BF1A499B0F",
+      "AI/output/int8/ai_app.c": "09DA775FF919C28FD5B1A6819CD0B2C73F0AD58BED665FF4F7FBCBD487BE4D4E",
+      "AI/output/int8/ai_app.h": "C304F3485B169E46F1F8C6A3C6A7E48397DBCEA9976145CA3A3113B51026F350",
+      "AI/output/int8/ai_param.c": "83F3AA15D7A45177DF1D9933119A6547EB0DF319DC5AD32307C71000AB5B539E",
+      "AI/output/int8/ai_param.h": "B882A6C66540ADD29C1AB869E4B13D2A531DAAFDD07D794447724A2993C1B160",
+      "AI/output/int8/conv.c": "D1632798B4FDF828B48FDD9DFCA292F527DD5D2B408F51AE5226BE2E61150F90",
+      "AI/output/int8/conv.h": "A85775C54411D1D4D707484693F2760514868C72EC1F82BB6F6136224FD43BA4",
+      "Core/Inc/asm_test.h": "CDDD81D8A48A0C8A7AB4B8EF74EEDDA12748621D55DCD97F8CC62FFA01A10F0D",
+      "Core/Inc/benchmark.h": "CA0E86144BBA059340DB9AB9EF74D47CB1C0CFC631228A34B22DCBEFF995E09F",
+      "Core/Inc/gpio.h": "CD5A5F75903537CBA4460073B40E3B0D18D4AF6DD7522C5A0756F0B9261E03AF",
+      "Core/Inc/main.h": "913CD305F3B65DCCC17E5018875067CF58B4DAB9911697C3CAF607037A2DB82B",
+      "Core/Inc/selftest.h": "B860B57A6D213F5035ECE126358288150EBFA43B1B79B381B67E38412FE0D23D",
+      "Core/Inc/stm32f4xx_hal_conf.h": "9555C83922B0FE45979B8BB9809E91862457340EA04B66F45AA09EB8428E3D08",
+      "Core/Inc/stm32f4xx_it.h": "FEEB997872497C87C89AA66D6A9151D45DE755D0B17BAA7BDCDB897F12C408A2",
+      "Core/Inc/usart.h": "EC1E03F523C18E0CEB4737208E770C89E3DCA606FFFF1FEAF4B33E119E0C19D2",
+      "Core/Inc/usb_otg.h": "75C3898567A1752638536BDC838D41C434815C85C7A5CFE0D7F3413CFA5D7E70",
+      "Core/Src/asm_test.c": "115769459353846AB9D9BCBB3C2B629627E5F1ADEB1F2BA60B0D416939675013",
+      "Core/Src/benchmark.c": "5973C3C2AF5E8720BC186CF8E9286EF42B002DD994E6C2E15E26C6C340443E61",
+      "Core/Src/gpio.c": "CDFFC2C2756E97B61F865C4E31B3A232A0FD80E9DE23FE32D8B4F39F17CD5054",
+      "Core/Src/main.c": "32319220E9243D731F958B657780DEFD4C552E259A2D4C8A84956A940F922156",
+      "Core/Src/selftest.c": "D2745D9EB632D08DC7D2B814DDE8E2030A475DA839C446DE023D17ECE6B56FF7",
+      "Core/Src/stm32f4xx_hal_msp.c": "9DE753FEB303F63BB2D42E33E3E7B0A35BE5666FEDF29300A9F869FDAB213B3A",
+      "Core/Src/stm32f4xx_it.c": "6F49883E374252AFC8CC1ADFC4512EA4AF6B3DE2BD75FDEC4F7936576CABD037",
+      "Core/Src/syscalls.c": "AB00C3DF1417D6249B5C9C13C4E7B926F1FEC9CD10961861D3F3C8D34983B913",
+      "Core/Src/sysmem.c": "67F3125E749700183D510A14CB979E5ACEE05EBE29D1972ECEAA55AA4AC25366",
+      "Core/Src/system_stm32f4xx.c": "A31929EAB936AC98DB060C18917118ACF79DC96E1F03ED4B57D614535DD06D70",
+      "Core/Src/usart.c": "265D95FECB6380D10DCEEB86B236A23C3976BF8AEB8F06E5689191156BD7EECA",
+      "Core/Src/usb_otg.c": "B173C4D3F15493D4E72DFE446EFDB9FE0A6DDED0A204707B80D87ABB70EA9324",
+      "Core/Startup/startup_stm32f446retx.s": "5C0526639E302FA4559FACF9F6229E5C330B984325A61FE68EB4BD6A0F461868",
+      "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f446xx.h": "801BAE2A07FB7D61CE78512CEE4D0C761E7B6CC7A3C7C74437A59A05AF70E58A",
+      "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h": "A19EDEA6B2F4DF2AB3C567782C4D313A52319C4303BD56AD7DD1D0E077014657",
+      "Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h": "02C067D5A135F540C03215DC834B1E60A97BBD4E55BFD3994B0C82A15EA3012A",
+      "Drivers/CMSIS/Include/cachel1_armv7.h": "2E336A64F60A9C0EAF5A08E2C4845D94DA86C3FD84D219D0D0C9F530E63BC9C3",
+      "Drivers/CMSIS/Include/cmsis_armcc.h": "5BC0D7ED8E36E9BCB868C4042FFF350C702ECA305DF4162FB00384789E35EE1C",
+      "Drivers/CMSIS/Include/cmsis_armclang.h": "D5DA2B48204F0D0CF1FF38FFCCB527E5706CD0A091FF0A331EB41D6596C33FE5",
+      "Drivers/CMSIS/Include/cmsis_armclang_ltm.h": "3E8FFB284F4F155DE3EA93841CCA853B41D5E812B53E52C64C3D4A67B7F1EC7C",
+      "Drivers/CMSIS/Include/cmsis_compiler.h": "B51963D271C1571CA3463654C76AA7EA50C4EAC5D0A2710DF10414AC64D9E0F8",
+      "Drivers/CMSIS/Include/cmsis_gcc.h": "43BFD1FE69FBBC2CA70AAF7D43CC3E20F16E0C7F66E1BDEF9B51AF6DC14B2617",
+      "Drivers/CMSIS/Include/cmsis_iccarm.h": "2D255C8429E507E52CB603F2970BED4CC4A6CDCC3EB7FC7997385ABAD7364837",
+      "Drivers/CMSIS/Include/cmsis_version.h": "184C19FD3EE73632EDF35A0B4D49CD48BE75FBF49E6CCB19D9DB05FA83BEA4B3",
+      "Drivers/CMSIS/Include/core_armv81mml.h": "A40954BCCBF202BD65EE721EA688122561E005C9F9F9D18E082280C5B897D0E4",
+      "Drivers/CMSIS/Include/core_armv8mbl.h": "458B1E6788079DED52ADC7D06383701C865CA97B67C5E7A0A44884194F91A842",
+      "Drivers/CMSIS/Include/core_armv8mml.h": "5A68204FA31CDA7D04D41C9CEAF3F4B1217908F59366F757EE778181C7CC8CB9",
+      "Drivers/CMSIS/Include/core_cm0.h": "AC13CB645F108666A0E57C93467872660D6BC860A839F840DC870B7A5863B4BF",
+      "Drivers/CMSIS/Include/core_cm0plus.h": "A09FA9C6B8B21D1920BCE15B98AA56182B027E9278CCA0B154812BAC2AEA3CFA",
+      "Drivers/CMSIS/Include/core_cm1.h": "944BF0C4F940EEF30A632CD99D5DCFE8270E8A8431EB98C0F081BCF4F61F728E",
+      "Drivers/CMSIS/Include/core_cm23.h": "77822E9738885394EC52FCA6F617452B823A0B55E2664EE225E65576CF0E8F2D",
+      "Drivers/CMSIS/Include/core_cm3.h": "C9937781259A8897ADF514445441C68570087D6A72A558D8A4AFE75CDB62DBD2",
+      "Drivers/CMSIS/Include/core_cm33.h": "225C47C36230EDAA314F1E7A45B38279F6AB4D58FAEB132226DB35F7007D58AA",
+      "Drivers/CMSIS/Include/core_cm35p.h": "206B427589981B78169C1D9B73E898E4E8DE4EFBD76FD0C2DF7DF81D645B9FA2",
+      "Drivers/CMSIS/Include/core_cm4.h": "F5B63D52DD1557B15CA414CB59C264F595A7B5669DB2A5878DFFE22F4CAEDC8C",
+      "Drivers/CMSIS/Include/core_cm55.h": "5707F716CF03F7E80151108AE94601FCFDF362DD2D830876040213318F6DEE3A",
+      "Drivers/CMSIS/Include/core_cm7.h": "E974D0A91752487D0154457CD422C37667328E9DDB7BA4FA2FED479A63577F63",
+      "Drivers/CMSIS/Include/core_cm85.h": "75BC123889F0F5CA33C4D16B6CBDD580A3572663C899FADB2C8E28F6A5E6FEAD",
+      "Drivers/CMSIS/Include/core_sc000.h": "C81377A69A4EA8ECAEAD42194F2CE8AB59BD4EE7BD638E423F5B1F5EC283D154",
+      "Drivers/CMSIS/Include/core_sc300.h": "73DD461C12C7D3A693840DF3084FD8F85122095C6F21FA3D779B0F3ECEAEBAD5",
+      "Drivers/CMSIS/Include/core_starmc1.h": "92D8661F2947D00DA91653D04794CDE0593FDAAFB3438842A0477775716AAFC5",
+      "Drivers/CMSIS/Include/mpu_armv7.h": "29206B52EE02290ED6F5A5415EBD4187DE802CF176D9B3CB844390D8E5571372",
+      "Drivers/CMSIS/Include/mpu_armv8.h": "2C7D22A344CEDCC1E35380D1F76F0E6C55DA5E3101E6A41FD85497D1841FE8C9",
+      "Drivers/CMSIS/Include/pac_armv81.h": "D76F5CC0C59A59E035115F700B8E8D95B7B98ECB99A2924E885F82A94903D984",
+      "Drivers/CMSIS/Include/pmu_armv8.h": "CEA8C105C5F41BA831FE4D9E8E39758068CD4C414383348DC2835D6BE447CCA0",
+      "Drivers/CMSIS/Include/tz_context.h": "45565C8CB04C653AABAF3CCEDDFC848B6A0DE28C20D4F7E3D475A992C7EEE788",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h": "8C2D2FEB90E8ED88FE5756F3F1616A2B67AA1CD0858DA8B130ED69607688C8C0",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h": "6942F40453FEE331E026179CFAC4C0F24FFE6313FEDCB68AF9C3382F702DBAF5",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h": "D96DBA22903ABDA49D66CAD29AC0C49357E6A27CF9CB03DFD8C6DB71B61A7FCA",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h": "C8EB3F7B393F8C5A0C32E16CCFA101C83DDB59E96BD42239B8A5C5D4DA83E97F",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h": "71C38DFD65C5415B388375147E5317C7AC018B39893D6FD0AC1C897F4313329C",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h": "3EE15423D73AC394DE39E7B65821775966389B13749FF0849894548AB6968676",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_exti.h": "61E8F76BDB45DEDF38FEF592504E10418CA410952C7A209CD271B45AC835833A",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h": "10BE06C6E06FCF4EB11E236641948AED861898FEA235C606AE221FA72BC46638",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h": "7C206F5DBED3C147A6F090AB808933132A1B06B8339623AD7174FD0A222E981C",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h": "F18A6EABC99F56483566F9231CA33C780AFA98BC93929E60BB419B5E544EEE2A",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h": "0B40FC83363B64D3C7396A202BE7A914CEAA7735AB0FA81D566ED320102B23FB",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h": "4091BEEFC5BF8B250F376D400F43CA028EF7378E1C7BA5C9EB5DE64EC74231C0",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h": "6694ECB5F99106582053B1080EA192B9685131A789C37E14CD75E0952C6D6026",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h": "3DCB909D0AAFBA72741AB372C038EE0086E4B21DEC0D876DA48FC2646E17D209",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h": "D6F6ABC4AF3D5A1CA59D886F5A9154E44F257A43AF77C7F18173F160825ED6B5",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h": "1794B88C5E080858C0205A2E94340C0250AC9171B3A3F01CAD6D050005A1B09D",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h": "EB6911D964B1CF8A83993B19C8FEB9845E8793D7C0E5D643390B53207C8B078E",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h": "49F0C8068524E1DE248738530CFF3BBE630DC4784B6E8B5568FBC7E1A154F772",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h": "63F00354E2A5E8D3A8D211FC736517273E12B99A1EB782AA7A2670CB1264A16D",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h": "AA6695D64677E8A7B46D719DA3D81049290F42383C17E76271605BC68143FD1E",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h": "42528BC9CAA6E2FE96B7E6D7B3FCDF35D8D85AE38D33195A233E18A072F157A1",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_bus.h": "95A518139F74D14A4477519B5172675347990E9FA637BD3948C69BD475BD7C88",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_cortex.h": "D8B268CA207E51864D1A71CE14FFF316C57D09E62A04D0C28310B4A1008E6F17",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_dma.h": "39E89050700E16304E04643E29C162B6AAA9F3BFE53880CD78C255CE46104E82",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_exti.h": "6DA580D41EBDCFD7349E29666A2E561C8E2C2E01F6E7EF29DFEC6EBF6AE237DF",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_gpio.h": "E46857F5F9A5F5A2D13CA2D6925DC9E66DFA7FC56A2CC72E54B891BDB88E2F16",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_pwr.h": "229AF558BFEEF8BB88D2224277B083C3B927C5C2612991FDEBA00DAD56255ABC",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_rcc.h": "605960F2E8E57A702B912475F9C154BB58711B58C8F2FF27DD4E75B5D767DC4E",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_system.h": "D634A419A55E99B4A641FECC055E1F602D8A418BD7D822CF2F812A0965AC9A3E",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usart.h": "982C4448C49DDC7C6C71BD788E5354F05E96ACA5E98EDD0626F8FFCAEFC65E79",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h": "B9B9F9DA33ABF806BF1A79018138EF6CAB3E4E657316C299740809D86F239758",
+      "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_utils.h": "535CB625CFCD461D6054549BF04D25EF939EC5754F77731A5F9FD92728280DED",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c": "97E715CDA2A34BD564B59CE4BA9B16BD29651F8F229161105AAEC666D76EA91A",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c": "9AAA0F19137D700616BEC01A5A806786C24E3F3386120365C5D2ADDAA4055505",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c": "A345A1B1FE0221C827D5AD21D5A0F5387296BC2C075E06E5B8539C23DA5678E4",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c": "90CAFB5A5B17A46B478770EF4ABDC9A641CB395419ABBB80F288138A63D44582",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c": "F56651F86E5D89E8BBA3BCB331353E00F291DB15C902927A205D81BBE8951E6D",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c": "8BF12EEB6E6CFC12A17587ED6D761724E0835A4A3DC0F6B14A8D1CA068BCB55B",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c": "51A70DEB9B19DD43F6F202430FAE052F2DEB26C39232C09C79230C8D8A61F773",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c": "D3B426E8CB9D617F9064D2B0CEA2A1D02B7BB6A74CBA3F094779D6E922E477E3",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c": "408908B15477B6CE2B0B9703CAABCB053293D98F2F109D6E6940E076A6A3902B",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c": "9084FE7346BAD811D9F4C71BC04002CFFC5BD9D0583DFA2E9306250399A919F4",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c": "1DB062FD007CE9BD838DA2C7B97DE938A661DA237AA3FE52D0B7FD4C15AF59BC",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c": "D779468A95DF34421BF6C8417136A79AA910753381A644AFA9ED10B185AE18B5",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c": "4409DDDC0D2019F918D0DDEBECF659F06D4DE3F9AA28566621A16EA47203331F",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c": "F3AC468E2F415ADB74281107C0DEC1448008950B64A7BB11C14CBE3EE1A936DE",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c": "526324811FA113C3EADFA84CD24EA5E607AD8E8BF003A2085456C04B734CA25E",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c": "A7DEA3B10A771A380915007B9ECE123654C6BD2A40F611102220DF9BFDD143E4",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c": "4471B582D56545FBD48725401249B4A2A728CCC0D933B3F1A02E2B09DDA8D8FA",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c": "A74ED3A9A13A4FCBAADA9E6F88F7D4FCABE2A75852A6CE4C09F8D4314A2E851A",
+      "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c": "A4A3827FBA7AD9D0DF9457A87E1BF31EDE88EEEB9DC750B3FFF639F59C8DFF5C",
+      "RTOS/Core/Inc/rtos.h": "01E19E658A605721A8D98124F97E17CBDB42053B1F3E62AE2980AC8BC917D895",
+      "RTOS/Core/Inc/rtos_config.h": "E2CC58492A9B73F189B7FDFFB57DB135360B3189DE7EAA66B63029906EABF96E",
+      "RTOS/Core/Inc/rtos_event.h": "302261ACBC52501A64598D508FF970FB59C230A796E46AC433175EF9F4D57CD9",
+      "RTOS/Core/Inc/rtos_heap.h": "C078D7B2C7BCBB4778749C7085FC96BCE9B94ECD93DBE01741955D820F781884",
+      "RTOS/Core/Inc/rtos_mem.h": "8CBA9D3FC371D0AC4B66F6D3D0B9D32A7B785F142C1191396333FAF4D3639A39",
+      "RTOS/Core/Inc/rtos_mutex.h": "977B323F11C398FF361C4CA743F82DE3D7B9AE2C48AA9F1652CF37E72AF0098D",
+      "RTOS/Core/Inc/rtos_perf.h": "ACCC5190E82EE6073FF2FEE9A9956826F0E3B2241EFEA6A4BB80C4DD6B658AF6",
+      "RTOS/Core/Inc/rtos_port.h": "A3C16C4FA859BFCC00976203F16AFCD5A5CE67CBD5D46D79AE9ED70E15092AF7",
+      "RTOS/Core/Inc/rtos_queue.h": "6C17C212D2331285CDC5D8A33DFBA41009FCB61701B29E42131BD9A9D5F67A03",
+      "RTOS/Core/Inc/rtos_sched.h": "AA002AF74B81E1FECDCE4A241CACA6E35582D479C9C7ABBBCBE6951E74956B87",
+      "RTOS/Core/Inc/rtos_sem.h": "C939DB573AFB96C69A73AF0FB11E07AE4626B1D944277927D231C663F1084FCB",
+      "RTOS/Core/Inc/rtos_task.h": "C8D84480FAE71DB6014B82C1591A7F13EF84379CD4D94E9D1568499FAD9CAA6A",
+      "RTOS/Core/Inc/rtos_timer.h": "08EFD7946D7C4F7B6C0BC46BE0945A84B4F898E552CD75340299505ED0494AEF",
+      "RTOS/Core/Inc/rtos_types.h": "9E6C068ECD109864A1B5A9FAC246ECDB6D9DE155E1AA80119299A50835263884",
+      "RTOS/Core/Inc/rtos_usb.h": "2A644B90216B586F3EC87257821C5EE80637F0CACB9B9C5A6FDF5B407E6C292C",
+      "RTOS/Core/Inc/usb_config.h": "AE3B02B57D215E1B05ABA9959821BF65943AA0179B6D77914608224E59484808",
+      "RTOS/Core/Private/rtos_internal.h": "F661E722596FC76C8B54F5D305490CDADFB6174F1E82B1899873464119300ACE",
+      "RTOS/Core/Src/rtos_kernel.c": "71CDA95E9E7CAFB609A4D28F50B96A6E3A49A07CBFF8A8F51662B09C92ED79AD",
+      "RTOS/Core/Src/rtos_sched.c": "884534D72A7DFBA8FC79291B42078B735F74D66D5F18C502F23468A205C22077",
+      "RTOS/Core/Src/rtos_task.c": "F5D5235FA9BEE78123596D83E7AE3BC2D91948C6E4542099FD7167FC0D01D8A2",
+      "RTOS/Core/Src/rtos_wait.c": "9E8F7272981C6603B4319BFFC2A166E4606B26BC73974A3659B8EE7D00655AF5",
+      "RTOS/IPC/rtos_event.c": "2A0E7B374346221B3C82B857035C4276DC124EFEE64D487EBC199DB923F9E39F",
+      "RTOS/IPC/rtos_mutex.c": "191442BFF89EE21C40AD09C8B381B88352EC48961FB74A7C7ECB330A59596576",
+      "RTOS/IPC/rtos_queue.c": "BDDD9B16B93D93E16104C92576D14FDE856EC2C8161FA29F19DB37E546883C7E",
+      "RTOS/IPC/rtos_sem.c": "1524B5F6B2AB57C9CFB423C1E7063B10F39EC4FAD01FF87F20FA67A37DB83472",
+      "RTOS/Memory/rtos_heap.c": "A921CAD9AD68228B43E6A2BA9C1DE0B6872F518F3FEDA42DC10CE0AD4B2704B7",
+      "RTOS/Memory/rtos_mempool.c": "DCA8B20A084AABA983CDF3AF1CBE138BB939CCD3A9DEA6B52C971CE60D0B9676",
+      "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c": "62DD808EAA422CAFE4037E038A09DFD9A81C1EB12CE4B587FE26715D36850037",
+      "RTOS/Services/rtos_perf.c": "7CAC634F4DF772B29A63A149A35B8EEAAAD45BE47CED83197891B19B33FC7597",
+      "RTOS/Services/rtos_timer.c": "CA6A6A02F36F2966AD3A6590AECA3C2FDBEDC28C8A0F2FBA66F062836F164CD3",
+      "RTOS/USB/rtos_usb_device.c": "64BA99A6D5CE9CC769F6565E67D5840860E69919E0EAB0B7FF2A7F22795986BD",
+      "RTOS/USB/rtos_usb_msc.c": "367F59978D6D86CC4AD840F1B11DC1AF89DE9B0A6D90AD8C320C8A96F8D90C7A",
+      "RTOS/USB/rtos_usb_osal.c": "36C2FAB53BA8B60C5EA3EFA43F3018A9315BDA709547776AC1974FF8543DF6AE",
+      "RTOS/lib/third/CherryUSB/class/cdc/usb_cdc.h": "A8D25B954D5DBFD0D03659651C79AF342ABE8E5B993FEFA278CD8246FA64E476",
+      "RTOS/lib/third/CherryUSB/class/cdc/usbd_cdc.h": "556229FCBDC505D927D3D82F5423463B78A182B948B4C9E8A59B294EAEBCB06B",
+      "RTOS/lib/third/CherryUSB/class/cdc/usbd_cdc_acm.c": "CF483B1962B7C8D4C1047935D40C6EF14ED3D6E78DD72D6B22879FF682972879",
+      "RTOS/lib/third/CherryUSB/class/cdc/usbd_cdc_acm.h": "BFCC0101C13F537658AB09F480F22E65003385D25FAD7FB4D57DA33F7908E8DA",
+      "RTOS/lib/third/CherryUSB/class/hid/usb_hid.h": "3925B14520270D8B6913AA7FD015968FBF23493D7C28C9A7997E26FE0A1928FB",
+      "RTOS/lib/third/CherryUSB/class/hid/usbd_hid.c": "AC421271E0F2E4B0A47507BE66A9F0BFBEC896EAFF7D34C2FF7C2A16C7D3E312",
+      "RTOS/lib/third/CherryUSB/class/hid/usbd_hid.h": "C66EB3C05DF008F0AB96DF5C466A6648A4ACE95153D543F63039135EF8B4A9F4",
+      "RTOS/lib/third/CherryUSB/class/msc/usb_msc.h": "C7156BF55615113CD79EC9A6B33D81EB3B3B29A0FC410BDD4F98500EEF76476B",
+      "RTOS/lib/third/CherryUSB/class/msc/usb_scsi.h": "66C45017BDA142CBCAFE403D027F00A87880FF48EAF519CA0F4C67DAD4188BB8",
+      "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.c": "B1151AC36D6244D85CDB6306BE6F3BF01A1ED76DC2A5C5B0933A5B027C014BEE",
+      "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h": "02BA26C9907BD6D4FEC6F52BB4D0897FEA28F4964B60262A0C60D3159EC47F18",
+      "RTOS/lib/third/CherryUSB/common/usb_dc.h": "B086BEABB5DA7871E1311D2D48FC1EB910902352B6C647D98C87991DD8156932",
+      "RTOS/lib/third/CherryUSB/common/usb_dcache.h": "69325427AD4C3A3A426793190BE6B7DA775FDFB044C73B409EF273D3746AAF70",
+      "RTOS/lib/third/CherryUSB/common/usb_def.h": "DBFBEAC7E6541DCB486A4C521BCEB3D69EC8A1EDD4B3796AA24BAD230194E15A",
+      "RTOS/lib/third/CherryUSB/common/usb_errno.h": "58CFB7DE877FEAA747FECEEDDC26C11E4C93485C8E9456058FA4ADB6CF7A9631",
+      "RTOS/lib/third/CherryUSB/common/usb_hc.h": "359B3EA61FABFE683CC10E284AA45AC95A8C61898D83846002C93C99A1E63CC5",
+      "RTOS/lib/third/CherryUSB/common/usb_list.h": "2BA9F6B76D7785B8D700BC46FA57D63902664CCF0608A0AB3CAB9A74E8A2C61D",
+      "RTOS/lib/third/CherryUSB/common/usb_log.h": "F2EBBFF64EE9346E8C3FEDB01C75B826CAB0B347F61979B4853AA53D24DA236D",
+      "RTOS/lib/third/CherryUSB/common/usb_memcpy.h": "660CA7AB49F88BE0354113EB86B3DF71617A797313E83497513252ECAF5901C5",
+      "RTOS/lib/third/CherryUSB/common/usb_mempool.h": "4DC698C07E23FE2C42594AB03F1AB679D42BDEDC6513F0480123B42EFB394AFB",
+      "RTOS/lib/third/CherryUSB/common/usb_osal.h": "FDC134BFB481DE6706B2B99D65EBACCC98F580E7E3437A2E9AF8910B0A776DBC",
+      "RTOS/lib/third/CherryUSB/common/usb_otg.h": "AE2C0F768468D12CA125E8D4DE305FD32F5DC2589FB700E82982E529E6C49B62",
+      "RTOS/lib/third/CherryUSB/common/usb_ringbuffer.h": "992E142365FC6C1662ADCE2BCA1BD43049D30D36B34F50242D88CF88AB665798",
+      "RTOS/lib/third/CherryUSB/common/usb_util.h": "C62FC34CE1ABF2D81219DBF4BFC77EACDD837DA60E737D6511A5261854CB0465",
+      "RTOS/lib/third/CherryUSB/common/usb_version.h": "90AAC36E7FED7687A25CBAB32129C8DF6C2B64591D7F1CB3FB6D2DBD1073D5F5",
+      "RTOS/lib/third/CherryUSB/core/usbd_core.c": "FFE65C6569C8CE52E33464E7AC5636AA0FA4A4AC52BF883F3483E944E6A2AF5B",
+      "RTOS/lib/third/CherryUSB/core/usbd_core.h": "7F2D455E2D32E9E0F66F8C88718C1E64AFD0B2F5F58E97BC6B513D0AFC5176E1",
+      "RTOS/lib/third/CherryUSB/port/dwc2/usb_dc_dwc2.c": "4D6AF696F51434947D200AE55AB4DC9F9D87E443709AA242C2F8DC1C02991D85",
+      "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_param.h": "893902A4ED7AD4A963005037E66A3D20E694EEBB388429F8480BF44EC17F1A75",
+      "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_reg.h": "02DC261AD23F64ECB27DF358928474091DBF8BE6D997ADEAFED631179D22BD6E",
+      "RTOS/lib/third/CherryUSB/port/dwc2/usb_glue_st.c": "EA6E07536116E5FFC29BEA0A1E2A6DF8B53674C589B6BCC04263401BDD9B3A00",
+      "STM32F446RETX_FLASH.ld": "1ABCC98019258405AC9F91EFC942B0E1A0BBDBF48C86494C0CBD68640D303593",
+      "STM32F446RETX_RAM.ld": "846E9FE62BFE56D2353AC2632AA62618219E3BF88B5FE1724BEC3EC3F436320E",
+      "f446_rtos.ioc": "79D0132442B9D28088EEA96B31E795A95AADD088B8226B9D4E429AAB40DF5DEB",
+      "hil/adversarial_20261025/verify_evidence.py": "3447F08BF7FA6FF6CA13D77260AD2D583268077A61D77B974DF902FB31FB4897",
+      "hil/basepri_20261025/verify_evidence.py": "9AFE41ACC36726438E64F5AC7C8408AD5EBF077F4E974872964AAB62DE7959A2",
+      "hil/build_fw.ps1": "A0822ED2DBE46EDC243E9CFF90C62AA9CF9DDAEFFB255C3511C318306D1B0942",
+      "hil/build_layout.ps1": "7CC9536380A321C911D4E6CD43DF504217381F60316BF5C90B904F02C9232397",
+      "hil/fw/Inc/adversarial_registry.h": "A7A94B652663D8A63FEBDF98D02B73A7643EABDFD9F78B4037DB0FD5C9B3D7AD",
+      "hil/fw/Inc/audit_ipc.h": "5D043EFDA16F08B2864867CEBDF1B3D6A2ACBF0C9223713BE235E0FB0FEF8862",
+      "hil/fw/Inc/audit_memory_timer.h": "515F3258696E382844D3E0C4976F3F12901A9D947D388CBC77007F60656DC367",
+      "hil/fw/Inc/audit_regressions.h": "50DF88F3876581C3CA64099AB14A3B9207E120859F415E19FDB4E2B87E4E181D",
+      "hil/fw/Inc/audit_usb_port.h": "07FE533C548F3B277C658C34E3381B0039629D1EC5A63DC20566FBBAE46A7A84",
+      "hil/fw/Inc/basepri_regressions.h": "8BB6C8BB6C0D7FEB3EF3A2D446690F95EBDDEAF3BF314429FA67485B57D0F762",
+      "hil/fw/Inc/boundary_test.h": "8668F15AE820EB38FA71C839F9D439C2E4002B9359CB49DD840981ABEF4AA1EE",
+      "hil/fw/Inc/diag_scenarios.h": "9092172657E3DF63304BF01C7E71E184E1299DE3FCFF0E76D7314C9B3D038789",
+      "hil/fw/Inc/flash_diag.h": "9665602CF9CED3EA9CA5D2BA12A2FE4F060BB4D6CEEB917A843A26F68E27500A",
+      "hil/fw/Inc/kern_port.h": "4F2698A801CF8F32C3107877841F791531A6958B6B84B7A7F8952B44318DE8A0",
+      "hil/fw/Inc/lowlevel_checks.h": "4F77939D09A2D63DDAB37D75CA12DE76F95A6B30623C032A10EDDD0230D1ACC7",
+      "hil/fw/Inc/perf_probes.h": "3C3D00FF7E37644DB6F795DD462CEEC42B90A0385C3CD6C27AA6229681C53E5B",
+      "hil/fw/Inc/production_highirq.h": "ECCCCFCB820F7A7A2D2E463A5385B0AB4AEE9F3B71105B0252588B71AAB7B734",
+      "hil/fw/Inc/production_irq.h": "FB803E97CD3C751FA05EA66D2BE1A48410045FEC031EA6E5214B1413EC5FCEA6",
+      "hil/fw/Inc/production_stress.h": "29285AA9309F6EE0932FF82EF980E4B0DF2C74A4A600313184A39CDBF539CCB9",
+      "hil/fw/Inc/test_framework.h": "E73D8E08BDA01DDC6AAB597C286B0DD7EF19515BBBB1EB2711680F58739A5C49",
+      "hil/fw/Inc/test_scenarios.h": "3FAB8760F4ECB6AF8D94FC4E03FDDE55174775EDAC19DFC0D0F7FC4D66E090F7",
+      "hil/fw/Port/ARM/lowlevel_fpu_probe.c": "71286BF7C05FE712020E3FDC6FEAFD12D7ABAFA6723EC8020CA0826CF566F7CC",
+      "hil/fw/Src/adversarial_lifetime.c": "8B0DF5E1EF10478C817F6EAAF004128D0784EAF03332AE0A170F30B9AA582EF3",
+      "hil/fw/Src/adversarial_mutex.c": "BF1BFA7F821551CC1C020A2347D58135256116C615FF593FCF31C4F4AFC29273",
+      "hil/fw/Src/adversarial_mutex_boundary.c": "88DEA908861EAEDF3C90781900278E9E1B3EF69119A1420CB0ED967A3F7C03F6",
+      "hil/fw/Src/adversarial_registry.c": "58E72001062155E48C8F5B49862F6861709AA12EF0B1E8B7A70F0AF9BD1E43FF",
+      "hil/fw/Src/adversarial_wait.c": "D177F88A25A60722A94143A94F0F3DFDC61CB375C313393ABC780D209A5F808B",
+      "hil/fw/Src/audit_ipc.c": "2704875912B41669B6772D20E360BCE94F4BBFA1EDC0933A7A2343FAD2897448",
+      "hil/fw/Src/audit_memory_timer.c": "ED20893A4EDD605126186693598B3D2FE23F4E0008F17F82D9EB81DBADEAAB7E",
+      "hil/fw/Src/audit_regressions.c": "A99FF26C18A982848E16D3EBFC0428F52FA4A5F69D70C1B46E59163B6BBC15DD",
+      "hil/fw/Src/audit_usb_port.c": "31CABCBF05BB794217DD977C0149EA4D0CABD0AA581AECC8A835033453B79DF7",
+      "hil/fw/Src/basepri_blocking.c": "1D06713366872C915154FFEEBCD6FD553B9BBB8C2DC990306BFC2BB56EC9C0E0",
+      "hil/fw/Src/basepri_guard.c": "751B7E6CC2F5BCF5EFE5E6F609276BCF785B55B66BD68845AED9D742F260D5E0",
+      "hil/fw/Src/basepri_nesting.c": "5B4E70E73507778B2C57E75DF2B96354C39044C257726B6F56B02FC1F0322AED",
+      "hil/fw/Src/basepri_regressions.c": "B43FC1EC96450555B8744F28E5D780B3244E5810EAC843058565FEFF4672193B",
+      "hil/fw/Src/boundary_test.c": "80E5E98DBA3D158E08D79BB008900812719EF4685EA776B6B91EBC5E66CF431C",
+      "hil/fw/Src/diag_scenarios.c": "9E46921C197E92B46018DC259705771F489341F83ECAA9935D44E666255B5073",
+      "hil/fw/Src/flash_diag.c": "D1262F69788F289FBEAB039CE7F7EF5C49FFD1F190DCDE6B8B5F9432DBCB2CBC",
+      "hil/fw/Src/kern_port_rtos.c": "6BD5A634D13B5ED2184049BE899EF53F016753ABBD634575206105674340660C",
+      "hil/fw/Src/lowlevel_checks.c": "9B18DB61773EA8A04CB76D3562F484E78C3BB7FD2638C85ED2FDE308D9D60586",
+      "hil/fw/Src/perf_probes.c": "D0EC29718AB6207F8CF05C4C6EE242C72965104CE3B071DD48B29F62BAF149F0",
+      "hil/fw/Src/production_highirq.c": "DBBAD6C085C427E1E3D41DBA79BB657ED41D5B22E896E7F2A78E2A3AC8C7353E",
+      "hil/fw/Src/production_irq.c": "2F7D221ADD1A88F0C49E336BC2C16E5F3515EC113DF451E7BD9D380A662F7BE5",
+      "hil/fw/Src/production_stress.c": "1AED21F9B574A40B9CF4D9CF61E2B2BD4F9035B7DD32C2AC8A4ABE65FBB242E3",
+      "hil/fw/Src/test_framework.c": "7166C5120A7B2802563E7C37CBC5A83E3BA0DB05E865718D5889F0383ADF4442",
+      "hil/fw/Src/test_scenarios.c": "6360BB0E1D17287C75927BC63EA066259DA01E063EB5E758EA94F03A404C9376",
+      "hil/refactor_20261027/compile_checks.ps1": "A92411D85660B36A7894A680A8555EDD6B64C23029488DA0C7497B90C4F299C7",
+      "hil/refactor_20261027/evidence_helpers.ps1": "D034EC790D928ABF744BFCCCE565FD64DA644D7FD0D1D90D9E4F5706F74747F9",
+      "hil/refactor_20261027/run_matrix.ps1": "046EB1A3096AE176C02937366BA9991C77B81A3B1F43E6F9608DD993D1774594",
+      "hil/refactor_20261027/run_port_matrix.ps1": "C1FC83D45F488292A887F491CCE96FD09357F78D28FDF81EF63B9B371921C210",
+      "hil/refactor_20261027/run_regressions.ps1": "80DD287AF604911D16427B2245418C79E3D451E836EF4AA7F321002601D93ADA",
+      "hil/refactor_20261027/verify_layout.py": "EA21FE8F20B4204A36679760919DF1D594D943E4C26A6A169DBEAA5CBB91A54F",
+      "hil/refactor_20261027/verify_results.py": "BDE0B521734F9C23C95589842B455BB6B57750E88710537700EF7F95946BD02E",
+      "hil/repeat_run.ps1": "E7CCE5F7CA5B3D9F3339DC381D169EED2FC5F5495A2CEBDA2DB59AEE12B80693",
+      "hil/repro_all.ps1": "5EEFD79558557DA610768E37C7B045276F828776525231DA415FCE01ECCB30E9",
+      "hil/restore_project.ps1": "2C31B1971ECD0AC8CF822FE68E8D99BB13016C9690F47D73220B06360277435B",
+      "hil/run_hil.ps1": "B4C617901EE41BE0483B911B5236541639E50F7AD452227478A7FD9D5F7C5BEC",
+      "hil/run_scenarios.ps1": "FBADC2C72A66A449B13BAD82C941A02AAE15E6057BD0B925C0C46D2E52EE6B38",
+      "hil/templates/AI_output_int8.mk": "8549043819176C34270214F0C11B5388357CE27738311E02B5BA2EFBCABE7998",
+      "hil/templates/Core_Startup.mk": "72AD1791551C8AAE96CCA969D9B2C734C679C135F8854BB179812B476C98140C",
+      "hil/templates/Drivers_STM32F4xx_HAL_Driver_Src.mk": "C7AE09E8DFC2E5A19975E576A719E5771DB421551B9B1A38FC6626056A87B7AA",
+      "hil/templates/RTOS_Core_Src.mk": "F2A68BD3D0D595022986383ED80F7B47F419F888B578495D5A94E497FCC21345",
+      "hil/templates/RTOS_IPC.mk": "C328D1DB59F3496CF099A6A1DD5B05ADC241F02819FB053683D433FEDD9B0909",
+      "hil/templates/RTOS_Memory.mk": "E62F936CCE3452D0A3E04B300E1B99A5DDC2430BD55FE7F2920C232C44000140",
+      "hil/templates/RTOS_Port_GCC_ARM_CM4F_CM7F.mk": "A86C3ACC74A806A5A9F022089BC6AE77FA5E8E9CD5B9F15BCEE303BF0D4BAC0D",
+      "hil/templates/RTOS_Services.mk": "B968F14296F2DA125FD96DD8DCCE9519AF100318A28C5A8B2EC6A95D0A377317",
+      "hil/templates/RTOS_USB.mk": "7883FD3B5600EB7E417D567A29F347E854C40969BF1386602E6B35232CDF515A",
+      "hil/templates/RTOS_lib_third_CherryUSB_class_cdc.mk": "3EFCF8EAA92E0C3C6076072512037CBD02F65195ECC0ABA6E27A0D12FDCA8254",
+      "hil/templates/RTOS_lib_third_CherryUSB_class_hid.mk": "84174042D6A278304E091F6FE1808D589DBC3B495FF574E2D46733931C575675",
+      "hil/templates/RTOS_lib_third_CherryUSB_class_msc.mk": "838C924DAD192CE680303C6D520A431AD82AA8FE15E7537FAF7678B201B382F4",
+      "hil/templates/RTOS_lib_third_CherryUSB_core.mk": "286970E73D5CA7A474B83BE598893EA1693949B2BE5816357BB0A1FB446297E9",
+      "hil/templates/RTOS_lib_third_CherryUSB_port_dwc2.mk": "9A3A023DEDA266EE103669A054DB1464EA691C45CB51A3A3C5877E205109AF4B",
+      "hil/templates/makefile.template": "5C4FB69DAA4903C5E1014DBD5B8BE5D2FE5B2919C967257E377ACCB62D7055C4",
+      "hil/templates/objects.list.template": "8677E395EA66548BE5721B2172E141F5A2C827861C8D721A4BB73BD8C3291A50",
+      "hil/templates/objects.mk.template": "8EA67E394047EBA728E14CC2E05D3495C6E41824D255D01B6FC223CE82B813B4",
+      "hil/templates/sources.mk.template": "8F17FFEECE568E30544DF61EF1675BC7F1419F31C324C8AB3BC3980CEDE9B205",
+      "hil/templates/subdir.mk.template": "EFD48BC3A91096927614615D230B9D40E0C7673D8DE201D6E6FE5D0C48E5E2E5"
+    }
+  },
+  "document_identity_stable": true,
+  "changed_documents": [],
+  "production_identity_stable": true,
+  "changed_during_production_check": [],
+  "document_sha256": {
+    "AGENTS.md": "802E7572322E1BFDF437A983571AD3D7BFC57FA6AA91F585942A498653B795A2",
+    "CONTRIBUTING.md": "7749B420909AF7211B8EC233D3CEB3E5072D563032AC095F45683F8D11368AEF",
+    "docs/ai/contracts_ipc_memory.md": "E3876D322210D17CB144D8EA28DF301846C232E87C43558B86F0997820A91106",
+    "docs/ai/contracts_kernel.md": "814F40B0CE2B186443E7892283B2F560E3C5C8C18DA4A65313B7BFA6A84B9C8C",
+    "docs/ai/contracts_services_usb.md": "F1186E7C920DB803E7601513ACADBD8F52419204AE8400B4B6EDFDFE322E1550",
+    "docs/ai/debugging.md": "9DD8A22B148E19E82B7F43DD53B6584E1DFB38CF0EA6EEF01040C2D80529077C",
+    "docs/ai/examples/README.md": "5F84E5302785BC84CCEBBA99A3F1B433662A6B12BF31FC6CAA993F024F91A829",
+    "docs/ai/metadata_ipc_memory.json": "CBFB99F8E60EA5756DD10CA80652F6FAA8A9FEC73BCA7B64673B58A583AA9BFC",
+    "docs/ai/metadata_kernel.json": "AB21FBB569A1FC63755EC936F9D900601F864DE0F98E039F6ECFED1531E5FC6F",
+    "docs/ai/metadata_services_usb.json": "624A4243148EC7D129A56131E6F74CA8F3E33FDE630B92FD2F06A9FFCDFC2156",
+    "docs/ai/README.md": "11C1CEFF82182FAE7DFB37AC7104B69C15A07227673B18F5A2555C578AB47BD2",
+    "docs/compilation_pipeline.md": "8212B012416DBD8FF74D9930A4129FCBDB9E6657BA4E5E313DDE0993AE099A98",
+    "docs/freertos_design.md": "560FA9D56F006256C9C030B989134BF93340757C084B40B5810A92D7FF577236",
+    "docs/hardfault_debug.md": "F3F1C657E62F061E515F353C81E316957BF3D5EA2FFF4CA51A69EA1C2541AB9E",
+    "docs/images/README.md": "6F91D99300CD874F8079E753347C158B80C708A3974243DE7BDBAA40E32ADD17",
+    "docs/logs/2026-10-12.md": "8AEEE2677C7578E11E09E06A4DB31A079DCB15F9BBEE8869481169EFC019814E",
+    "docs/logs/2026-10-13.md": "5666651BDB30F900F04E7730ADB0B9C8D7F43ADE413DD0BF440F32BAD1605513",
+    "docs/logs/2026-10-25.md": "4E80B6B13B562ABB351B00ECA6F3BAE3B1740948579DB585921A30B69E8DA53A",
+    "docs/logs/2026-10-26.md": "7CE873E16043DCE7FAECB401852674AB3366D98713C968683AFCAC6E6749FF6F",
+    "docs/logs/2026-10-27.md": "C19C0544A5B796CF4166614E2C7E73D53007037D3EC8B6E337C84B9AEEF99C80",
+    "docs/logs/2026-10-28.md": "69CA8F958562C3E100F25175F5323EE9EDC6C3484696764C2938CE084939C450",
+    "docs/README.md": "9E3F3418F770394BB3028A79A0D91CCA1673EAA3A6EFD5BAE08216A89DC0C55F",
+    "docs/rtos_design.md": "4B9267E2D5C4E45EFDD3E51F1A91FE21D23E43A6DC4D772DAE2EEE9E78DF2557",
+    "docs/rtos_performance_report.md": "4CC663783DB9BCE98388672310A885D501A0CF7D0E69B20EF79DB65D7C362147",
+    "docs/rtos_testing_report.md": "8A8C21635E8DD4120689F24318B8E0FB19353846511A8574B009FCB6D1A461DE",
+    "hil/ai_docs/check_contracts.py": "80D8C3E2A8AC8A14FCD8D89E01CD0BC40435ED6F50794DA6F29A4CBE63A09F40",
+    "hil/ai_docs/README.md": "CDD5EF226327E96D04F768227135D093AA4F05685B9ADD957F5B22735350464A",
+    "hil/README.md": "69F7079573325E30793CB628ABCC9B82B871E0E7872C1C527AF7195BCCCCD85E",
+    "hil/refactor_20261027/README.md": "631D8D7D892D7AC747BECB15A505ABDDC5F3FC85F923433F281F5A7110B2D697",
+    "README.md": "803D4780BEE386221C23E0660DBB703675E8E85BAE5FAE021D9A5DFC3D9A1D2E",
+    "RTOS/README.md": "083B9C6AB01EF276F7DDBF0104C4E3FEDDB0A5E72765DDAD1C1D61A92B29CF5F"
+  },
+  "limits": [
+    "No compiler, firmware link, serial, debug probe or board access.",
+    "Source declaration coverage is independent of the curated metadata.",
+    "This checker does not prove natural-language semantics, all bugs, or runtime behavior."
+  ],
+  "finished_local": "2026-10-28T22:08:50.668700+08:00",
+  "python": {
+    "version": "3.9.13 (main, Aug 25 2022, 23:51:50) [MSC v.1916 64 bit (AMD64)]",
+    "executable": "E:\\ProgramData\\Anaconda3\\python.exe"
+  }
+}

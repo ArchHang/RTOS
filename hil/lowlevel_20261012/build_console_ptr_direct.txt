@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'perf' OK -- controlled performance comparison plus mutex robustness probes; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  36780	    120	  51520	  88420	  15964	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

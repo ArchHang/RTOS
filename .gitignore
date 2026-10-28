@@ -24,13 +24,16 @@ Release/
 Thumbs.db
 desktop.ini
 
-# HIL 测试台的构建中间产物与历史日志(权威夹具 hil/fw/、当前日志 hil/logs/current/ 保留入库)
+# 可再生测试输出；权威夹具 hil/fw/ 与模板 hil/templates/ 保留入库。
 hil/fwsrc/
 hil/templates/subdir.mk.last_variant
-hil/logs/archive/
-# Local rollback copies are not authoritative source or published test evidence.
-hil/backup_precleanup/
+hil/logs/
+hil/**/rerun/
+hil/**/.objects/
+hil/refactor_20261027/evidence/
+**/__pycache__/
+*.pyc
 
-# Publish isolated IDE text evidence; binary extensions remain ignored.
-!hil/refactor_20261027/evidence/ide/generated/debug/
-!hil/refactor_20261027/evidence/ide/generated/release/
+# 旧文档分发副本不作为权威资料。
+docs/*.embed.md
+docs/*.extracted.md

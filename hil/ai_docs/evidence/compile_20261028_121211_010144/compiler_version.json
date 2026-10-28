@@ -1,0 +1,10 @@
+{
+  "command": [
+    "E:\\ST\\STM32CubeIDE_1.13.2\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\\tools\\bin\\arm-none-eabi-gcc.exe",
+    "--version"
+  ],
+  "cwd": "E:\\STM32_Project\\CubeIDE\\f446_rtos",
+  "returncode": 0,
+  "stdout": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712\r\nCopyright (C) 2021 Free Software Foundation, Inc.\r\nThis is free software; see the source for copying conditions.  There is NO\r\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\r\n\r\n",
+  "stderr": ""
+}

@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'basepri_blocking' OK -- blocking return values must be read after the pending context switch; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  39044	    120	  41984	  81148	  13cfc	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'basepri_nesting' OK -- assertion-disabled invalid critical nesting preserves caller state; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  33196	    120	  41728	  75044	  12524	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,6 +1,0 @@
-{
-  "reason": "Uncompiled registry fixture declaration changed after capture; strict full-input identity rejected the original capture. Kernel and production sources unchanged. Retest required.",
-  "recorded_fixture_sha256": "1D75BCDFAAD0A6E7545F4B8F4A7706A61323BE4416175367CF66007563B3B1FA",
-  "original_evidence_preserved": true,
-  "accepted_as_final": false
-}

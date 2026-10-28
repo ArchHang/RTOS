@@ -1,7 +1,0 @@
-restored all canonical make rules, source inventory, and object list
-removed E:\STM32_Project\CubeIDE\f446_rtos\Debug\hil
-removed E:\STM32_Project\CubeIDE\f446_rtos\hil\fwsrc
-removed E:\STM32_Project\CubeIDE\f446_rtos\Debug\.hil_build_stamp
-   text	   data	    bss	    dec	    hex	filename
- 205488	    128	 125952	 331568	  50f30	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf
-project restored

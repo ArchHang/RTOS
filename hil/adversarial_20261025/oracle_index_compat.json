@@ -1,8 +1,0 @@
-{
-  "reason": "Normalize the legacy one-image soak index from an object to an in-memory one-element array; no persisted capture or test result changed. Exact tag coverage and every raw acceptance check remain mandatory.",
-  "path": "hil/adversarial_20261025/verify_evidence.py",
-  "before_sha256": "A90B86681D9767FA321ECFB5BA24F72F6B554F572AE229E24590B1E40889A2A5",
-  "after_sha256": "3447F08BF7FA6FF6CA13D77260AD2D583268077A61D77B974DF902FB31FB4897",
-  "other_manifest_inputs_unchanged": true,
-  "firmware_sources_unchanged": true
-}

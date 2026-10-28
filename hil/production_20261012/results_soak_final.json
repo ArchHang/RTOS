@@ -1,8 +1,0 @@
-﻿{
-    "tag":  "production_20261012_soak_final_1",
-    "sha256":  "4CE304DC46B64E36F8C6A080DFB502D2FF9D556A66B1B13090A69A52EF50B9E5",
-    "seed":  3735928559,
-    "seconds":  900,
-    "capacity":  8,
-    "result":  "passed"
-}

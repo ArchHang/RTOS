@@ -1,0 +1,4179 @@
+{
+  "schema_version": 1,
+  "baseline": "87bfbe4a6efc50f9b828128c713a1b5af2900ef8",
+  "primary_scope": "all callable declarations/header inlines/function-like macros and declared external variables in RTOS/Core/Inc/*.h; all conditional branches scanned",
+  "supplemental_scope": "documented CherryUSB bridge/callback symbols only; not the complete third-party API",
+  "semantic_review": "manual source review is required; declaration matching does not prove contract semantics",
+  "entries": [
+    {
+      "name": "rtos_get_version",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_get_version",
+      "classification": "application",
+      "kind": "function",
+      "signature": "const char *rtos_get_version(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_get_version",
+          "kind": "function",
+          "signature": "const char *rtos_get_version(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_init",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_init",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_init(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_init(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_start",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_start",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_start(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_start",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_start(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "RTOS_ASSERT",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "implementation": "RTOS/Core/Inc/rtos_config.h",
+      "anchor": "api-RTOS_ASSERT",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_ASSERT(cond)",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_ASSERT",
+          "kind": "macro",
+          "signature": "#define RTOS_ASSERT(cond) do {                                                                                                    if (!(cond))                                                                                            rtos_assert_fail(#cond, __FILE__, __LINE__);                                                } while (0)",
+          "parameters": "cond"
+        },
+        {
+          "name": "RTOS_ASSERT",
+          "kind": "macro",
+          "signature": "#define RTOS_ASSERT(cond) ((void)0)",
+          "parameters": "cond"
+        }
+      ]
+    },
+    {
+      "name": "RTOS_ASSERT_ISR_OK",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "implementation": "RTOS/Core/Inc/rtos_config.h",
+      "anchor": "api-RTOS_ASSERT_ISR_OK",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_ASSERT_ISR_OK()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_ASSERT_ISR_OK",
+          "kind": "macro",
+          "signature": "#define RTOS_ASSERT_ISR_OK() RTOS_ASSERT_ISR_STATE_OK(RTOS_PORT_IN_ISR())",
+          "parameters": ""
+        },
+        {
+          "name": "RTOS_ASSERT_ISR_OK",
+          "kind": "macro",
+          "signature": "#define RTOS_ASSERT_ISR_OK() ((void)0)",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "RTOS_ASSERT_ISR_STATE_OK",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "implementation": "RTOS/Core/Inc/rtos_config.h",
+      "anchor": "api-RTOS_ASSERT_ISR_STATE_OK",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_ASSERT_ISR_STATE_OK(in_isr)",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_ASSERT_ISR_STATE_OK",
+          "kind": "macro",
+          "signature": "#define RTOS_ASSERT_ISR_STATE_OK(in_isr) RTOS_ASSERT(((in_isr) == RTOS_FALSE) ||                                                               (rtos_port_isr_priority() >= RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY))",
+          "parameters": "in_isr"
+        },
+        {
+          "name": "RTOS_ASSERT_ISR_STATE_OK",
+          "kind": "macro",
+          "signature": "#define RTOS_ASSERT_ISR_STATE_OK(in_isr) ((void)0)",
+          "parameters": "in_isr"
+        }
+      ]
+    },
+    {
+      "name": "rtos_event_clear",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_clear",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_clear(rtos_event_t *event, rtos_event_bits_t bits);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_event_clear",
+          "kind": "function",
+          "signature": "rtos_event_bits_t rtos_event_clear(rtos_event_t *event, rtos_event_bits_t bits);",
+          "parameters": "rtos_event_t *event, rtos_event_bits_t bits"
+        }
+      ]
+    },
+    {
+      "name": "rtos_event_deinit",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_event_deinit(rtos_event_t *event);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_event_deinit",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_event_deinit(rtos_event_t *event);",
+          "parameters": "rtos_event_t *event"
+        }
+      ]
+    },
+    {
+      "name": "rtos_event_get",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_get",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_get(const rtos_event_t *event);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_event_get",
+          "kind": "function",
+          "signature": "rtos_event_bits_t rtos_event_get(const rtos_event_t *event);",
+          "parameters": "const rtos_event_t *event"
+        }
+      ]
+    },
+    {
+      "name": "rtos_event_init",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_event_init(rtos_event_t *event);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_event_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_event_init(rtos_event_t *event);",
+          "parameters": "rtos_event_t *event"
+        }
+      ]
+    },
+    {
+      "name": "rtos_event_set",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_set",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_set(rtos_event_t *event, rtos_event_bits_t bits);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_event_set",
+          "kind": "function",
+          "signature": "rtos_event_bits_t rtos_event_set(rtos_event_t *event, rtos_event_bits_t bits);",
+          "parameters": "rtos_event_t *event, rtos_event_bits_t bits"
+        }
+      ]
+    },
+    {
+      "name": "rtos_event_wait",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_wait",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t bits, uint32_t mode, rtos_tick_t timeout);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_event_wait",
+          "kind": "function",
+          "signature": "rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t bits, uint32_t mode, rtos_tick_t timeout);",
+          "parameters": "rtos_event_t *event, rtos_event_bits_t bits, uint32_t mode,\n                                  rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_alloc",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_alloc",
+      "classification": "public",
+      "signature": "void *rtos_heap_alloc(uint32_t size);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_alloc",
+          "kind": "function",
+          "signature": "void *rtos_heap_alloc(uint32_t size);",
+          "parameters": "uint32_t size"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_free",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_free",
+      "classification": "public",
+      "signature": "void rtos_heap_free(void *ptr);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_free",
+          "kind": "function",
+          "signature": "void rtos_heap_free(void *ptr);",
+          "parameters": "void *ptr"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_get_alloc_count",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_alloc_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_alloc_count(void);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_get_alloc_count",
+          "kind": "function",
+          "signature": "uint32_t rtos_heap_get_alloc_count(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_get_free",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_free",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_free(void);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_get_free",
+          "kind": "function",
+          "signature": "uint32_t rtos_heap_get_free(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_get_free_count",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_free_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_free_count(void);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_get_free_count",
+          "kind": "function",
+          "signature": "uint32_t rtos_heap_get_free_count(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_get_max_alloc",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_max_alloc",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_max_alloc(void);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_get_max_alloc",
+          "kind": "function",
+          "signature": "uint32_t rtos_heap_get_max_alloc(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_heap_init",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_heap_init(void);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_heap_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_heap_init(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mempool_alloc",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_alloc",
+      "classification": "public",
+      "signature": "void *rtos_mempool_alloc(rtos_mempool_t *pool);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mempool_alloc",
+          "kind": "function",
+          "signature": "void *rtos_mempool_alloc(rtos_mempool_t *pool);",
+          "parameters": "rtos_mempool_t *pool"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mempool_free",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_free",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mempool_free(rtos_mempool_t *pool, void *block);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mempool_free",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_mempool_free(rtos_mempool_t *pool, void *block);",
+          "parameters": "rtos_mempool_t *pool, void *block"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mempool_get_free",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_get_free",
+      "classification": "public",
+      "signature": "uint32_t rtos_mempool_get_free(const rtos_mempool_t *pool);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mempool_get_free",
+          "kind": "function",
+          "signature": "uint32_t rtos_mempool_get_free(const rtos_mempool_t *pool);",
+          "parameters": "const rtos_mempool_t *pool"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mempool_init",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mempool_init(rtos_mempool_t *pool, void *base, uint32_t block_size, uint32_t block_count);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mempool_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_mempool_init(rtos_mempool_t *pool, void *base, uint32_t block_size, uint32_t block_count);",
+          "parameters": "rtos_mempool_t *pool, void *base, uint32_t block_size,\n                                uint32_t block_count"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mutex_deinit",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_deinit(rtos_mutex_t *mutex);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mutex_deinit",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_mutex_deinit(rtos_mutex_t *mutex);",
+          "parameters": "rtos_mutex_t *mutex"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mutex_give",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_give",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mutex_give",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex);",
+          "parameters": "rtos_mutex_t *mutex"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mutex_init",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mutex_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex);",
+          "parameters": "rtos_mutex_t *mutex"
+        }
+      ]
+    },
+    {
+      "name": "rtos_mutex_take",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_take",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_mutex_take",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout);",
+          "parameters": "rtos_mutex_t *mutex, rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_cycles_to_us",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_cycles_to_us",
+      "classification": "internal-timing",
+      "signature": "uint32_t rtos_perf_cycles_to_us(uint32_t cycles);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_cycles_to_us(c) (0U)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_cycles_to_us",
+          "kind": "macro",
+          "signature": "#define rtos_perf_cycles_to_us(c) (0U)",
+          "parameters": "c"
+        },
+        {
+          "name": "rtos_perf_cycles_to_us",
+          "kind": "function",
+          "signature": "uint32_t rtos_perf_cycles_to_us(uint32_t cycles);",
+          "parameters": "uint32_t cycles"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_all_tasks",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_all_tasks",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t max_count, uint32_t *actual_count);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_all_tasks(a, m, c) ((void)(a), (void)(m), (void)(c), (rtos_status_t)RTOS_ERR_PARAM)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_all_tasks",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_all_tasks(a, m, c) ((void)(a), (void)(m), (void)(c), (rtos_status_t)RTOS_ERR_PARAM)",
+          "parameters": "a, m, c"
+        },
+        {
+          "name": "rtos_perf_get_all_tasks",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t max_count, uint32_t *actual_count);",
+          "parameters": "rtos_perf_task_t *stats_array, uint32_t max_count,\n                                      uint32_t *actual_count"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_cpu_usage",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_cpu_usage",
+      "classification": "application",
+      "signature": "uint32_t rtos_perf_get_cpu_usage(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_cpu_usage() (0U)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_cpu_usage",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_cpu_usage() (0U)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_get_cpu_usage",
+          "kind": "function",
+          "signature": "uint32_t rtos_perf_get_cpu_usage(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_cycles",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_cycles",
+      "classification": "internal-timing",
+      "signature": "uint32_t rtos_perf_get_cycles(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_cycles() (0U)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_cycles",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_cycles() (0U)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_get_cycles",
+          "kind": "function",
+          "signature": "uint32_t rtos_perf_get_cycles(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_memory",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_memory",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_memory(rtos_perf_memory_t *stats);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_memory(s) ((void)(s), (rtos_status_t)RTOS_ERR_PARAM)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_memory",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_memory(s) ((void)(s), (rtos_status_t)RTOS_ERR_PARAM)",
+          "parameters": "s"
+        },
+        {
+          "name": "rtos_perf_get_memory",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_perf_get_memory(rtos_perf_memory_t *stats);",
+          "parameters": "rtos_perf_memory_t *stats"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_switch_rate",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_switch_rate",
+      "classification": "application",
+      "signature": "uint32_t rtos_perf_get_switch_rate(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_switch_rate() (0U)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_switch_rate",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_switch_rate() (0U)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_get_switch_rate",
+          "kind": "function",
+          "signature": "uint32_t rtos_perf_get_switch_rate(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_system",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_system",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_system(s) ((void)(s), (rtos_status_t)RTOS_ERR_PARAM)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_system",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_system(s) ((void)(s), (rtos_status_t)RTOS_ERR_PARAM)",
+          "parameters": "s"
+        },
+        {
+          "name": "rtos_perf_get_system",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats);",
+          "parameters": "rtos_perf_system_t *stats"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_get_task",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_task",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_task(t, s) ((void)(t), (void)(s), (rtos_status_t)RTOS_ERR_PARAM)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_get_task",
+          "kind": "macro",
+          "signature": "#define rtos_perf_get_task(t, s) ((void)(t), (void)(s), (rtos_status_t)RTOS_ERR_PARAM)",
+          "parameters": "t, s"
+        },
+        {
+          "name": "rtos_perf_get_task",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats);",
+          "parameters": "rtos_tcb_t *tcb, rtos_perf_task_t *stats"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_init",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_init",
+      "classification": "initialization-internal",
+      "signature": "rtos_status_t rtos_perf_init(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_init() ((rtos_status_t)RTOS_OK)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_init",
+          "kind": "macro",
+          "signature": "#define rtos_perf_init() ((rtos_status_t)RTOS_OK)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_perf_init(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_init_cycles",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_init_cycles",
+      "classification": "internal-timing",
+      "signature": "void rtos_perf_init_cycles(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_init_cycles() ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_init_cycles",
+          "kind": "macro",
+          "signature": "#define rtos_perf_init_cycles() ((void)0)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_init_cycles",
+          "kind": "function",
+          "signature": "void rtos_perf_init_cycles(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_on_context_switch",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_context_switch",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_context_switch(rtos_tcb_t *prev, rtos_tcb_t *next);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_context_switch(p, n) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_on_context_switch",
+          "kind": "macro",
+          "signature": "#define rtos_perf_on_context_switch(p, n) ((void)0)",
+          "parameters": "p, n"
+        },
+        {
+          "name": "rtos_perf_on_context_switch",
+          "kind": "function",
+          "signature": "void rtos_perf_on_context_switch(rtos_tcb_t *prev, rtos_tcb_t *next);",
+          "parameters": "rtos_tcb_t *prev, rtos_tcb_t *next"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_on_pend_switch",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_pend_switch",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_pend_switch(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_pend_switch() ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_on_pend_switch",
+          "kind": "macro",
+          "signature": "#define rtos_perf_on_pend_switch() ((void)0)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_on_pend_switch",
+          "kind": "function",
+          "signature": "void rtos_perf_on_pend_switch(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_on_scheduler_start",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_scheduler_start",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_scheduler_start(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_scheduler_start() ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_on_scheduler_start",
+          "kind": "macro",
+          "signature": "#define rtos_perf_on_scheduler_start() ((void)0)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_on_scheduler_start",
+          "kind": "function",
+          "signature": "void rtos_perf_on_scheduler_start(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_on_task_created",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_task_created",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_task_created(rtos_tcb_t *tcb);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_task_created(t) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_on_task_created",
+          "kind": "macro",
+          "signature": "#define rtos_perf_on_task_created(t) ((void)0)",
+          "parameters": "t"
+        },
+        {
+          "name": "rtos_perf_on_task_created",
+          "kind": "function",
+          "signature": "void rtos_perf_on_task_created(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_on_task_deleted",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_task_deleted",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_task_deleted(rtos_tcb_t *tcb);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_task_deleted(t) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_on_task_deleted",
+          "kind": "macro",
+          "signature": "#define rtos_perf_on_task_deleted(t) ((void)0)",
+          "parameters": "t"
+        },
+        {
+          "name": "rtos_perf_on_task_deleted",
+          "kind": "function",
+          "signature": "void rtos_perf_on_task_deleted(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_register_pool",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_register_pool",
+      "classification": "internal-observer",
+      "signature": "void rtos_perf_register_pool(rtos_mempool_t *pool);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_register_pool(p) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_register_pool",
+          "kind": "macro",
+          "signature": "#define rtos_perf_register_pool(p) ((void)0)",
+          "parameters": "p"
+        },
+        {
+          "name": "rtos_perf_register_pool",
+          "kind": "function",
+          "signature": "void rtos_perf_register_pool(rtos_mempool_t *pool);",
+          "parameters": "rtos_mempool_t *pool"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_reset",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_reset",
+      "classification": "application",
+      "signature": "void rtos_perf_reset(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_reset() ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_reset",
+          "kind": "macro",
+          "signature": "#define rtos_perf_reset() ((void)0)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_reset",
+          "kind": "function",
+          "signature": "void rtos_perf_reset(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_task_at",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_task_at",
+      "classification": "internal-observer",
+      "signature": "rtos_tcb_t *rtos_perf_task_at(uint32_t index);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_task_at(i) ((rtos_tcb_t *)NULL)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_task_at",
+          "kind": "macro",
+          "signature": "#define rtos_perf_task_at(i) ((rtos_tcb_t *)NULL)",
+          "parameters": "i"
+        },
+        {
+          "name": "rtos_perf_task_at",
+          "kind": "function",
+          "signature": "rtos_tcb_t *rtos_perf_task_at(uint32_t index);",
+          "parameters": "uint32_t index"
+        }
+      ]
+    },
+    {
+      "name": "rtos_perf_task_registry_count",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_task_registry_count",
+      "classification": "internal-observer",
+      "signature": "uint32_t rtos_perf_task_registry_count(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_task_registry_count() (0U)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_perf_task_registry_count",
+          "kind": "macro",
+          "signature": "#define rtos_perf_task_registry_count() (0U)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_perf_task_registry_count",
+          "kind": "function",
+          "signature": "uint32_t rtos_perf_task_registry_count(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_CRITICAL_TEST_HOOK",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_CRITICAL_TEST_HOOK",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_CRITICAL_TEST_HOOK(stage)",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_CRITICAL_TEST_HOOK",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_CRITICAL_TEST_HOOK(stage) rtos_port_critical_test_hook(stage)",
+          "parameters": "stage"
+        },
+        {
+          "name": "RTOS_PORT_CRITICAL_TEST_HOOK",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_CRITICAL_TEST_HOOK(stage) ((void)0)",
+          "parameters": "stage"
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_DISABLE_INTERRUPTS",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_DISABLE_INTERRUPTS",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_DISABLE_INTERRUPTS()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_DISABLE_INTERRUPTS",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_DISABLE_INTERRUPTS() rtos_port_disable_interrupts()",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_ENABLE_INTERRUPTS",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_ENABLE_INTERRUPTS",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_ENABLE_INTERRUPTS()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_ENABLE_INTERRUPTS",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_ENABLE_INTERRUPTS() rtos_port_enable_interrupts()",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_ENTER_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_ENTER_CRITICAL",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_ENTER_CRITICAL()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_ENTER_CRITICAL",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_ENTER_CRITICAL() rtos_port_enter_critical()",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_EXIT_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_EXIT_CRITICAL",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_EXIT_CRITICAL()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_EXIT_CRITICAL",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_EXIT_CRITICAL() rtos_port_exit_critical()",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_IN_ISR",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_IN_ISR",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_IN_ISR()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_IN_ISR",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_IN_ISR() rtos_port_in_isr()",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "SystemCoreClock",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "Core/Src/system_stm32f4xx.c",
+      "anchor": "api-SystemCoreClock",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern uint32_t SystemCoreClock;",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "SystemCoreClock",
+          "kind": "variable",
+          "signature": "extern uint32_t SystemCoreClock;",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_context_switch",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_context_switch",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "void rtos_port_context_switch(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_context_switch",
+          "kind": "function",
+          "signature": "void rtos_port_context_switch(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_crit_nest",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_crit_nest",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern volatile uint32_t rtos_port_crit_nest;",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_crit_nest",
+          "kind": "variable",
+          "signature": "extern volatile uint32_t rtos_port_crit_nest;",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_critical_nesting_error",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_critical_nesting_error",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_port_critical_nesting_error(uint32_t nesting);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_critical_nesting_error",
+          "kind": "function",
+          "signature": "void rtos_port_critical_nesting_error(uint32_t nesting);",
+          "parameters": "uint32_t nesting"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_critical_test_hook",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "hil/fw/Src/basepri_regressions.c",
+      "anchor": "api-rtos_port_critical_test_hook",
+      "classification": "hil_only",
+      "kind": "function",
+      "signature": "void rtos_port_critical_test_hook(uint32_t stage);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_critical_test_hook",
+          "kind": "function",
+          "signature": "void rtos_port_critical_test_hook(uint32_t stage);",
+          "parameters": "uint32_t stage"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_disable_interrupts",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_disable_interrupts",
+      "classification": "port_lowlevel",
+      "kind": "function",
+      "signature": "void rtos_port_disable_interrupts(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_disable_interrupts",
+          "kind": "function",
+          "signature": "void rtos_port_disable_interrupts(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_enable_interrupts",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_enable_interrupts",
+      "classification": "port_lowlevel",
+      "kind": "function",
+      "signature": "void rtos_port_enable_interrupts(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_enable_interrupts",
+          "kind": "function",
+          "signature": "void rtos_port_enable_interrupts(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_enter_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_enter_critical",
+      "classification": "inline_port",
+      "kind": "inline",
+      "signature": "static inline void rtos_port_enter_critical(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_enter_critical",
+          "kind": "inline",
+          "signature": "static inline void rtos_port_enter_critical(void)",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_exit_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_exit_critical",
+      "classification": "inline_port",
+      "kind": "inline",
+      "signature": "static inline void rtos_port_exit_critical(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_exit_critical",
+          "kind": "inline",
+          "signature": "static inline void rtos_port_exit_critical(void)",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_get_critical_nesting",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_get_critical_nesting",
+      "classification": "port_observation",
+      "kind": "function",
+      "signature": "uint32_t rtos_port_get_critical_nesting(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_get_critical_nesting",
+          "kind": "function",
+          "signature": "uint32_t rtos_port_get_critical_nesting(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_get_interrupt_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_get_interrupt_mask",
+      "classification": "port_observation",
+      "kind": "function",
+      "signature": "uint32_t rtos_port_get_interrupt_mask(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_get_interrupt_mask",
+          "kind": "function",
+          "signature": "uint32_t rtos_port_get_interrupt_mask(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_in_isr",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_in_isr",
+      "classification": "inline_port",
+      "kind": "inline",
+      "signature": "static inline rtos_bool_t rtos_port_in_isr(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_in_isr",
+          "kind": "inline",
+          "signature": "static inline rtos_bool_t rtos_port_in_isr(void)",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_init_stack",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_init_stack",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "rtos_stack_t *rtos_port_init_stack(rtos_stack_t *stack_top, uint32_t stack_size, rtos_task_func_t entry, void *arg);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_init_stack",
+          "kind": "function",
+          "signature": "rtos_stack_t *rtos_port_init_stack(rtos_stack_t *stack_top, uint32_t stack_size, rtos_task_func_t entry, void *arg);",
+          "parameters": "rtos_stack_t *stack_top, uint32_t stack_size,\n                                   rtos_task_func_t entry, void *arg"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_isr_priority",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_isr_priority",
+      "classification": "port_observation",
+      "kind": "function",
+      "signature": "uint32_t rtos_port_isr_priority(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_isr_priority",
+          "kind": "function",
+          "signature": "uint32_t rtos_port_isr_priority(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_pend_sv_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_pend_sv_handler",
+      "classification": "exception_entry",
+      "kind": "function",
+      "signature": "void rtos_port_pend_sv_handler(void) __attribute__((naked));",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_pend_sv_handler",
+          "kind": "function",
+          "signature": "void rtos_port_pend_sv_handler(void) __attribute__((naked));",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_saved_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_saved_mask",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern volatile uint32_t rtos_port_saved_mask;",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_saved_mask",
+          "kind": "variable",
+          "signature": "extern volatile uint32_t rtos_port_saved_mask;",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_set_interrupt_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_set_interrupt_mask",
+      "classification": "port_lowlevel",
+      "kind": "function",
+      "signature": "void rtos_port_set_interrupt_mask(uint32_t mask);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_set_interrupt_mask",
+          "kind": "function",
+          "signature": "void rtos_port_set_interrupt_mask(uint32_t mask);",
+          "parameters": "uint32_t mask"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_start_first_task",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_start_first_task",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "void rtos_port_start_first_task(void) __attribute__((noreturn));",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_start_first_task",
+          "kind": "function",
+          "signature": "void rtos_port_start_first_task(void) __attribute__((noreturn));",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_start_scheduler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_start_scheduler",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "void rtos_port_start_scheduler(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_start_scheduler",
+          "kind": "function",
+          "signature": "void rtos_port_start_scheduler(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_svc_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_svc_handler",
+      "classification": "exception_entry",
+      "kind": "function",
+      "signature": "void rtos_port_svc_handler(void) __attribute__((naked));",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_svc_handler",
+          "kind": "function",
+          "signature": "void rtos_port_svc_handler(void) __attribute__((naked));",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_sys_tick_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_sys_tick_handler",
+      "classification": "exception_entry",
+      "kind": "function",
+      "signature": "void rtos_port_sys_tick_handler(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_sys_tick_handler",
+          "kind": "function",
+          "signature": "void rtos_port_sys_tick_handler(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_queue_deinit",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_deinit(rtos_queue_t *queue);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_queue_deinit",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_queue_deinit(rtos_queue_t *queue);",
+          "parameters": "rtos_queue_t *queue"
+        }
+      ]
+    },
+    {
+      "name": "rtos_queue_get_count",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_get_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_queue_get_count(const rtos_queue_t *queue);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_queue_get_count",
+          "kind": "function",
+          "signature": "uint32_t rtos_queue_get_count(const rtos_queue_t *queue);",
+          "parameters": "const rtos_queue_t *queue"
+        }
+      ]
+    },
+    {
+      "name": "rtos_queue_get_free",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_get_free",
+      "classification": "public",
+      "signature": "uint32_t rtos_queue_get_free(const rtos_queue_t *queue);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_queue_get_free",
+          "kind": "function",
+          "signature": "uint32_t rtos_queue_get_free(const rtos_queue_t *queue);",
+          "parameters": "const rtos_queue_t *queue"
+        }
+      ]
+    },
+    {
+      "name": "rtos_queue_init",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_size, uint32_t capacity);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_queue_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_size, uint32_t capacity);",
+          "parameters": "rtos_queue_t *queue, void *storage, uint32_t item_size,\n                              uint32_t capacity"
+        }
+      ]
+    },
+    {
+      "name": "rtos_queue_recv",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_recv",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_queue_recv",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout);",
+          "parameters": "rtos_queue_t *queue, void *item, rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_queue_send",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_send",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t timeout, rtos_bool_t to_front);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_queue_send",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t timeout, rtos_bool_t to_front);",
+          "parameters": "rtos_queue_t *queue, const void *item, rtos_tick_t timeout,\n                              rtos_bool_t to_front"
+        }
+      ]
+    },
+    {
+      "name": "rtos_kernel",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_kernel",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern rtos_kernel_t rtos_kernel;",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_kernel",
+          "kind": "variable",
+          "signature": "extern rtos_kernel_t rtos_kernel;",
+          "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_add_ready",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_add_ready",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_add_ready(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_add_ready",
+          "kind": "function",
+          "signature": "void rtos_sched_add_ready(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_block",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_block",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_block(rtos_tcb_t *tcb, rtos_tick_t ticks);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_block",
+          "kind": "function",
+          "signature": "void rtos_sched_block(rtos_tcb_t *tcb, rtos_tick_t ticks);",
+          "parameters": "rtos_tcb_t *tcb, rtos_tick_t ticks"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_context_switch",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_context_switch",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_context_switch(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_context_switch",
+          "kind": "function",
+          "signature": "void rtos_sched_context_switch(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_get_state",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_get_state",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_sched_state_t rtos_sched_get_state(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_get_state",
+          "kind": "function",
+          "signature": "rtos_sched_state_t rtos_sched_get_state(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_get_tick_count",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_get_tick_count",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_tick_t rtos_sched_get_tick_count(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_get_tick_count",
+          "kind": "function",
+          "signature": "rtos_tick_t rtos_sched_get_tick_count(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_init",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_init",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_sched_init(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_sched_init(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_remove_delayed",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_remove_delayed",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_remove_delayed(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_remove_delayed",
+          "kind": "function",
+          "signature": "void rtos_sched_remove_delayed(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_remove_ready",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_remove_ready",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_remove_ready(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_remove_ready",
+          "kind": "function",
+          "signature": "void rtos_sched_remove_ready(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_resume",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_resume",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_sched_resume(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_resume",
+          "kind": "function",
+          "signature": "void rtos_sched_resume(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_schedule",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_schedule",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_schedule(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_schedule",
+          "kind": "function",
+          "signature": "void rtos_sched_schedule(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_start",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_start",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_sched_start(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_start",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_sched_start(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_suspend",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_suspend",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_sched_suspend(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_suspend",
+          "kind": "function",
+          "signature": "void rtos_sched_suspend(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_tick",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_tick",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_tick(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_tick",
+          "kind": "function",
+          "signature": "void rtos_sched_tick(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sched_unblock",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_unblock",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_unblock(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sched_unblock",
+          "kind": "function",
+          "signature": "void rtos_sched_unblock(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sem_deinit",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_deinit(rtos_sem_t *sem);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sem_deinit",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_sem_deinit(rtos_sem_t *sem);",
+          "parameters": "rtos_sem_t *sem"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sem_get_count",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_get_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_sem_get_count(const rtos_sem_t *sem);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sem_get_count",
+          "kind": "function",
+          "signature": "uint32_t rtos_sem_get_count(const rtos_sem_t *sem);",
+          "parameters": "const rtos_sem_t *sem"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sem_give",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_give",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_give(rtos_sem_t *sem);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sem_give",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_sem_give(rtos_sem_t *sem);",
+          "parameters": "rtos_sem_t *sem"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sem_init",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_init(rtos_sem_t *sem, uint32_t init_cnt, uint32_t max_cnt);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sem_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_sem_init(rtos_sem_t *sem, uint32_t init_cnt, uint32_t max_cnt);",
+          "parameters": "rtos_sem_t *sem, uint32_t init_cnt, uint32_t max_cnt"
+        }
+      ]
+    },
+    {
+      "name": "rtos_sem_take",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_take",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout);",
+      "document": "docs/ai/contracts_ipc_memory.md",
+      "metadata": "docs/ai/metadata_ipc_memory.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_sem_take",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout);",
+          "parameters": "rtos_sem_t *sem, rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_assert_fail",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_assert_fail",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_assert_fail(const char *cond, const char *file, int line);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_assert_fail",
+          "kind": "function",
+          "signature": "void rtos_assert_fail(const char *cond, const char *file, int line);",
+          "parameters": "const char *cond, const char *file, int line"
+        }
+      ]
+    },
+    {
+      "name": "rtos_idle_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_idle_hook",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_idle_hook(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_idle_hook",
+          "kind": "function",
+          "signature": "void rtos_idle_hook(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_idle_task",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_idle_task",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_idle_task(void *arg);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_idle_task",
+          "kind": "function",
+          "signature": "void rtos_idle_task(void *arg);",
+          "parameters": "void *arg"
+        }
+      ]
+    },
+    {
+      "name": "rtos_stack_overflow_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_stack_overflow_hook",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_stack_overflow_hook(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_stack_overflow_hook",
+          "kind": "function",
+          "signature": "void rtos_stack_overflow_hook(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_create",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_create",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_task_func_t entry, void *arg, rtos_prio_t priority, const char *name);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_create",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_task_func_t entry, void *arg, rtos_prio_t priority, const char *name);",
+          "parameters": "rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_task_func_t entry,\n                               void *arg, rtos_prio_t priority, const char *name"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_create_static",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_create_static",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, uint32_t stack_size, rtos_task_func_t entry, void *arg, rtos_prio_t priority, const char *name);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_create_static",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, uint32_t stack_size, rtos_task_func_t entry, void *arg, rtos_prio_t priority, const char *name);",
+          "parameters": "rtos_tcb_t *tcb, rtos_stack_t *stack_buf, uint32_t stack_size,\n                                      rtos_task_func_t entry, void *arg, rtos_prio_t priority,\n                                      const char *name"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_delay",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_delay",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_task_delay(rtos_tick_t ticks);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_delay",
+          "kind": "function",
+          "signature": "void rtos_task_delay(rtos_tick_t ticks);",
+          "parameters": "rtos_tick_t ticks"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_delay_until",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_delay_until",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_delay_until",
+          "kind": "function",
+          "signature": "void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period);",
+          "parameters": "rtos_tick_t *last_wake_tick, rtos_tick_t period"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_delete",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_delete",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_delete(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_delete",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_delete(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_delete_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_task_delete_hook",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_task_delete_hook(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_delete_hook",
+          "kind": "function",
+          "signature": "void rtos_task_delete_hook(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_get_current",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_get_current",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_tcb_t *rtos_task_get_current(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_get_current",
+          "kind": "function",
+          "signature": "rtos_tcb_t *rtos_task_get_current(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_get_priority",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_get_priority",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_prio_t rtos_task_get_priority(const rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_get_priority",
+          "kind": "function",
+          "signature": "rtos_prio_t rtos_task_get_priority(const rtos_tcb_t *tcb);",
+          "parameters": "const rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_notify",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_notify",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_notify(rtos_tcb_t *tcb, uint32_t value, rtos_notify_type_t type);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_notify",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_notify(rtos_tcb_t *tcb, uint32_t value, rtos_notify_type_t type);",
+          "parameters": "rtos_tcb_t *tcb, uint32_t value, rtos_notify_type_t type"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_notify_wait",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_notify_wait",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_notify_wait",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value);",
+          "parameters": "rtos_tick_t timeout, uint32_t *recv_value"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_resume",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_resume",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_resume(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_resume",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_resume(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_set_priority",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_set_priority",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_set_priority",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio);",
+          "parameters": "rtos_tcb_t *tcb, rtos_prio_t prio"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_suspend",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_suspend",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_suspend",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb);",
+          "parameters": "rtos_tcb_t *tcb"
+        }
+      ]
+    },
+    {
+      "name": "rtos_task_yield",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_yield",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_task_yield(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_task_yield",
+          "kind": "function",
+          "signature": "void rtos_task_yield(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_change_period",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_change_period",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_change_period(rtos_timer_t *timer, rtos_tick_t period);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_change_period",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_timer_change_period(rtos_timer_t *timer, rtos_tick_t period);",
+          "parameters": "rtos_timer_t *timer, rtos_tick_t period"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_create",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_create",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_create(rtos_timer_t *timer, const char *name, rtos_timer_cb_t callback, void *arg, rtos_tick_t period, rtos_timer_mode_t mode);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_create",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_timer_create(rtos_timer_t *timer, const char *name, rtos_timer_cb_t callback, void *arg, rtos_tick_t period, rtos_timer_mode_t mode);",
+          "parameters": "rtos_timer_t *timer, const char *name, rtos_timer_cb_t callback,\n                                void *arg, rtos_tick_t period, rtos_timer_mode_t mode"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_delete",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_delete",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_delete(rtos_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_delete",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_timer_delete(rtos_timer_t *timer);",
+          "parameters": "rtos_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_init",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_init",
+      "classification": "initialization-internal",
+      "signature": "rtos_status_t rtos_timer_init(void);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_timer_init(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_service_task",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_service_task",
+      "classification": "internal-task-entry",
+      "signature": "void rtos_timer_service_task(void *arg);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_service_task",
+          "kind": "function",
+          "signature": "void rtos_timer_service_task(void *arg);",
+          "parameters": "void *arg"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_start",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_start",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_start(rtos_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_start",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_timer_start(rtos_timer_t *timer);",
+          "parameters": "rtos_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "rtos_timer_stop",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_stop",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_stop(rtos_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_timer_stop",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_timer_stop(rtos_timer_t *timer);",
+          "parameters": "rtos_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_available",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_available",
+      "classification": "application",
+      "signature": "uint32_t rtos_usb_cdc_available(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_available(busid) ((uint32_t)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_available",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_available(busid) ((uint32_t)0)",
+          "parameters": "busid"
+        },
+        {
+          "name": "rtos_usb_cdc_available",
+          "kind": "function",
+          "signature": "uint32_t rtos_usb_cdc_available(uint8_t busid);",
+          "parameters": "uint8_t busid"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_flush_rx",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_flush_rx",
+      "classification": "application",
+      "signature": "void rtos_usb_cdc_flush_rx(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_flush_rx(busid) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_flush_rx",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_flush_rx(busid) ((void)0)",
+          "parameters": "busid"
+        },
+        {
+          "name": "rtos_usb_cdc_flush_rx",
+          "kind": "function",
+          "signature": "void rtos_usb_cdc_flush_rx(uint8_t busid);",
+          "parameters": "uint8_t busid"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_init",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_init",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_init(busid, reg_base) ((rtos_status_t)RTOS_OK)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_init",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_init(busid, reg_base) ((rtos_status_t)RTOS_OK)",
+          "parameters": "busid, reg_base"
+        },
+        {
+          "name": "rtos_usb_cdc_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base);",
+          "parameters": "uint8_t busid, uintptr_t reg_base"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_is_connected",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_is_connected",
+      "classification": "application",
+      "signature": "bool rtos_usb_cdc_is_connected(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_is_connected(busid) ((bool)false)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_is_connected",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_is_connected(busid) ((bool)false)",
+          "parameters": "busid"
+        },
+        {
+          "name": "rtos_usb_cdc_is_connected",
+          "kind": "function",
+          "signature": "bool rtos_usb_cdc_is_connected(uint8_t busid);",
+          "parameters": "uint8_t busid"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_isr",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_isr",
+      "classification": "application",
+      "signature": "void rtos_usb_cdc_isr(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_isr(busid) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_isr",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_isr(busid) ((void)0)",
+          "parameters": "busid"
+        },
+        {
+          "name": "rtos_usb_cdc_isr",
+          "kind": "function",
+          "signature": "void rtos_usb_cdc_isr(uint8_t busid);",
+          "parameters": "uint8_t busid"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_read",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_read",
+      "classification": "application",
+      "signature": "int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_read(busid, b, l, t) ((int)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_read",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_read(busid, b, l, t) ((int)0)",
+          "parameters": "busid, b, l, t"
+        },
+        {
+          "name": "rtos_usb_cdc_read",
+          "kind": "function",
+          "signature": "int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms);",
+          "parameters": "uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_write",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_write",
+      "classification": "application",
+      "signature": "int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_write(busid, d, l, t) ((int)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_cdc_write",
+          "kind": "macro",
+          "signature": "#define rtos_usb_cdc_write(busid, d, l, t) ((int)0)",
+          "parameters": "busid, d, l, t"
+        },
+        {
+          "name": "rtos_usb_cdc_write",
+          "kind": "function",
+          "signature": "int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);",
+          "parameters": "uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_free",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_free",
+      "classification": "application",
+      "signature": "void rtos_usb_free(void *ptr);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_free(ptr) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_free",
+          "kind": "macro",
+          "signature": "#define rtos_usb_free(ptr) ((void)0)",
+          "parameters": "ptr"
+        },
+        {
+          "name": "rtos_usb_free",
+          "kind": "function",
+          "signature": "void rtos_usb_free(void *ptr);",
+          "parameters": "void *ptr"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_hid_read",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_hid_read",
+      "classification": "application",
+      "signature": "int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_hid_read(busid, b, l, t) ((int)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_hid_read",
+          "kind": "macro",
+          "signature": "#define rtos_usb_hid_read(busid, b, l, t) ((int)0)",
+          "parameters": "busid, b, l, t"
+        },
+        {
+          "name": "rtos_usb_hid_read",
+          "kind": "function",
+          "signature": "int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms);",
+          "parameters": "uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_hid_write",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_hid_write",
+      "classification": "application",
+      "signature": "int rtos_usb_hid_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_hid_write(busid, d, l, t) ((int)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_hid_write",
+          "kind": "macro",
+          "signature": "#define rtos_usb_hid_write(busid, d, l, t) ((int)0)",
+          "parameters": "busid, d, l, t"
+        },
+        {
+          "name": "rtos_usb_hid_write",
+          "kind": "function",
+          "signature": "int rtos_usb_hid_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);",
+          "parameters": "uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_init",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_init",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_usb_init(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_init() ((rtos_status_t)RTOS_OK)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_init",
+          "kind": "macro",
+          "signature": "#define rtos_usb_init() ((rtos_status_t)RTOS_OK)",
+          "parameters": ""
+        },
+        {
+          "name": "rtos_usb_init",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_init(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_irq_dispatch",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_irq_dispatch",
+      "classification": "application",
+      "signature": "void rtos_usb_irq_dispatch(uint32_t irqn);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_irq_dispatch(irqn) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_irq_dispatch",
+          "kind": "macro",
+          "signature": "#define rtos_usb_irq_dispatch(irqn) ((void)0)",
+          "parameters": "irqn"
+        },
+        {
+          "name": "rtos_usb_irq_dispatch",
+          "kind": "function",
+          "signature": "void rtos_usb_irq_dispatch(uint32_t irqn);",
+          "parameters": "uint32_t irqn"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_malloc",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_malloc",
+      "classification": "application",
+      "signature": "void *rtos_usb_malloc(size_t size);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_malloc(size) ((void *)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_malloc",
+          "kind": "macro",
+          "signature": "#define rtos_usb_malloc(size) ((void *)0)",
+          "parameters": "size"
+        },
+        {
+          "name": "rtos_usb_malloc",
+          "kind": "function",
+          "signature": "void *rtos_usb_malloc(size_t size);",
+          "parameters": "size_t size"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mq_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_mq_t *rtos_usb_mq_create(uint32_t max_msgs);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mq_create",
+          "kind": "function",
+          "signature": "rtos_usb_mq_t *rtos_usb_mq_create(uint32_t max_msgs);",
+          "parameters": "uint32_t max_msgs"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mq_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_mq_delete(rtos_usb_mq_t *mq);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mq_delete",
+          "kind": "function",
+          "signature": "void rtos_usb_mq_delete(rtos_usb_mq_t *mq);",
+          "parameters": "rtos_usb_mq_t *mq"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mq_recv",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_recv",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mq_recv(rtos_usb_mq_t *mq, uintptr_t *addr, rtos_tick_t timeout);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mq_recv",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_mq_recv(rtos_usb_mq_t *mq, uintptr_t *addr, rtos_tick_t timeout);",
+          "parameters": "rtos_usb_mq_t *mq, uintptr_t *addr, rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mq_send",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_send",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mq_send(rtos_usb_mq_t *mq, uintptr_t addr, rtos_tick_t timeout);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mq_send",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_mq_send(rtos_usb_mq_t *mq, uintptr_t addr, rtos_tick_t timeout);",
+          "parameters": "rtos_usb_mq_t *mq, uintptr_t addr, rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_msc_get_stats",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-rtos_usb_msc_get_stats",
+      "classification": "application",
+      "signature": "void rtos_usb_msc_get_stats(uint8_t busid, uint32_t *reads, uint32_t *writes);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_msc_get_stats(busid, r, w) do { if (r) *(r) = 0U; if (w) *(w) = 0U; } while (0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_msc_get_stats",
+          "kind": "macro",
+          "signature": "#define rtos_usb_msc_get_stats(busid, r, w) do {                                                                                                    if (r)                                                                                                  *(r) = 0U;                                                                                      if (w)                                                                                                  *(w) = 0U;                                                                                  } while (0)",
+          "parameters": "busid, r, w"
+        },
+        {
+          "name": "rtos_usb_msc_get_stats",
+          "kind": "function",
+          "signature": "void rtos_usb_msc_get_stats(uint8_t busid, uint32_t *reads, uint32_t *writes);",
+          "parameters": "uint8_t busid, uint32_t *reads, uint32_t *writes"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_msleep",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_msleep",
+      "classification": "application",
+      "signature": "void rtos_usb_msleep(uint32_t ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_msleep(ms) ((void)0)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_msleep",
+          "kind": "macro",
+          "signature": "#define rtos_usb_msleep(ms) ((void)0)",
+          "parameters": "ms"
+        },
+        {
+          "name": "rtos_usb_msleep",
+          "kind": "function",
+          "signature": "void rtos_usb_msleep(uint32_t ms);",
+          "parameters": "uint32_t ms"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mutex_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_mutex_t *rtos_usb_mutex_create(void);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mutex_create",
+          "kind": "function",
+          "signature": "rtos_usb_mutex_t *rtos_usb_mutex_create(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mutex_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_mutex_delete(rtos_usb_mutex_t *mutex);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mutex_delete",
+          "kind": "function",
+          "signature": "void rtos_usb_mutex_delete(rtos_usb_mutex_t *mutex);",
+          "parameters": "rtos_usb_mutex_t *mutex"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mutex_give",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_give",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mutex_give(rtos_usb_mutex_t *mutex);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mutex_give",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_mutex_give(rtos_usb_mutex_t *mutex);",
+          "parameters": "rtos_usb_mutex_t *mutex"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_mutex_take",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_take",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mutex_take(rtos_usb_mutex_t *mutex);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_mutex_take",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_mutex_take(rtos_usb_mutex_t *mutex);",
+          "parameters": "rtos_usb_mutex_t *mutex"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_register_isr",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_register_isr",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handler, void *arg);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_register_isr(irqn, h, arg) ((rtos_status_t)RTOS_OK)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_register_isr",
+          "kind": "macro",
+          "signature": "#define rtos_usb_register_isr(irqn, h, arg) ((rtos_status_t)RTOS_OK)",
+          "parameters": "irqn, h, arg"
+        },
+        {
+          "name": "rtos_usb_register_isr",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handler, void *arg);",
+          "parameters": "uint32_t irqn, rtos_usb_isr_handler_t handler, void *arg"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_sem_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_sem_t *rtos_usb_sem_create(uint32_t init_count, uint32_t max_count);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_sem_create",
+          "kind": "function",
+          "signature": "rtos_usb_sem_t *rtos_usb_sem_create(uint32_t init_count, uint32_t max_count);",
+          "parameters": "uint32_t init_count, uint32_t max_count"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_sem_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_sem_delete(rtos_usb_sem_t *sem);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_sem_delete",
+          "kind": "function",
+          "signature": "void rtos_usb_sem_delete(rtos_usb_sem_t *sem);",
+          "parameters": "rtos_usb_sem_t *sem"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_sem_give",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_give",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_sem_give(rtos_usb_sem_t *sem);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_sem_give",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_sem_give(rtos_usb_sem_t *sem);",
+          "parameters": "rtos_usb_sem_t *sem"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_sem_reset",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_reset",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_sem_reset(rtos_usb_sem_t *sem);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_sem_reset",
+          "kind": "function",
+          "signature": "void rtos_usb_sem_reset(rtos_usb_sem_t *sem);",
+          "parameters": "rtos_usb_sem_t *sem"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_sem_take",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_take",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_sem_take(rtos_usb_sem_t *sem, rtos_tick_t timeout);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_sem_take",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_sem_take(rtos_usb_sem_t *sem, rtos_tick_t timeout);",
+          "parameters": "rtos_usb_sem_t *sem, rtos_tick_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_thread_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_thread_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_thread_t *rtos_usb_thread_create(const char *name, uint32_t stack_size, rtos_prio_t prio, rtos_task_func_t entry, void *arg);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_thread_create",
+          "kind": "function",
+          "signature": "rtos_usb_thread_t *rtos_usb_thread_create(const char *name, uint32_t stack_size, rtos_prio_t prio, rtos_task_func_t entry, void *arg);",
+          "parameters": "const char *name, uint32_t stack_size, rtos_prio_t prio,\n                                          rtos_task_func_t entry, void *arg"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_thread_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_thread_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_thread_delete(rtos_usb_thread_t *thread);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_thread_delete",
+          "kind": "function",
+          "signature": "void rtos_usb_thread_delete(rtos_usb_thread_t *thread);",
+          "parameters": "rtos_usb_thread_t *thread"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_thread_schedule_other",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_thread_schedule_other",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_thread_schedule_other(void);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_thread_schedule_other",
+          "kind": "function",
+          "signature": "void rtos_usb_thread_schedule_other(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_timeout_ticks",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/Core/Inc/rtos_usb.h",
+      "anchor": "api-rtos_usb_timeout_ticks",
+      "classification": "conversion-inline",
+      "signature": "static inline rtos_tick_t rtos_usb_timeout_ticks(uint32_t ms)",
+      "kind": "inline",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_timeout_ticks",
+          "kind": "inline",
+          "signature": "static inline rtos_tick_t rtos_usb_timeout_ticks(uint32_t ms)",
+          "parameters": "uint32_t ms"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_timer_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_timer_t *rtos_usb_timer_create(const char *name, uint32_t ms, rtos_timer_cb_t cb, void *arg, bool is_periodic);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_timer_create",
+          "kind": "function",
+          "signature": "rtos_usb_timer_t *rtos_usb_timer_create(const char *name, uint32_t ms, rtos_timer_cb_t cb, void *arg, bool is_periodic);",
+          "parameters": "const char *name, uint32_t ms, rtos_timer_cb_t cb,\n                                        void *arg, bool is_periodic"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_timer_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_timer_delete(rtos_usb_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_timer_delete",
+          "kind": "function",
+          "signature": "void rtos_usb_timer_delete(rtos_usb_timer_t *timer);",
+          "parameters": "rtos_usb_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_timer_delete_checked",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_delete_checked",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_timer_delete_checked(rtos_usb_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_timer_delete_checked",
+          "kind": "function",
+          "signature": "rtos_status_t rtos_usb_timer_delete_checked(rtos_usb_timer_t *timer);",
+          "parameters": "rtos_usb_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_timer_start",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_start",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_timer_start(rtos_usb_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_timer_start",
+          "kind": "function",
+          "signature": "void rtos_usb_timer_start(rtos_usb_timer_t *timer);",
+          "parameters": "rtos_usb_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "rtos_usb_timer_stop",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_stop",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_timer_stop(rtos_usb_timer_t *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_usb_timer_stop",
+          "kind": "function",
+          "signature": "void rtos_usb_timer_stop(rtos_usb_timer_t *timer);",
+          "parameters": "rtos_usb_timer_t *timer"
+        }
+      ]
+    },
+    {
+      "name": "CONFIG_USB_PRINTF",
+      "header": "RTOS/Core/Inc/usb_config.h",
+      "implementation": "RTOS/Core/Inc/usb_config.h",
+      "anchor": "api-CONFIG_USB_PRINTF",
+      "classification": "configuration-macro",
+      "signature": "#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)",
+      "kind": "macro",
+      "variants": [
+        "#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)"
+      ],
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "CONFIG_USB_PRINTF",
+          "kind": "macro",
+          "signature": "#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)",
+          "parameters": "..."
+        }
+      ]
+    },
+    {
+      "name": "usbd_msc_get_cap",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-usbd_msc_get_cap",
+      "classification": "driver-callback",
+      "signature": "void usbd_msc_get_cap(uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usbd_msc_get_cap",
+          "kind": "function",
+          "signature": "void usbd_msc_get_cap(uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size);",
+          "parameters": "uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size"
+        }
+      ]
+    },
+    {
+      "name": "usbd_msc_sector_read",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-usbd_msc_sector_read",
+      "classification": "driver-callback",
+      "signature": "int usbd_msc_sector_read(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usbd_msc_sector_read",
+          "kind": "function",
+          "signature": "int usbd_msc_sector_read(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length);",
+          "parameters": "uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length"
+        }
+      ]
+    },
+    {
+      "name": "usbd_msc_sector_write",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-usbd_msc_sector_write",
+      "classification": "driver-callback",
+      "signature": "int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usbd_msc_sector_write",
+          "kind": "function",
+          "signature": "int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length);",
+          "parameters": "uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_enter_critical_section",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_enter_critical_section",
+      "classification": "third-party-bridge",
+      "signature": "size_t usb_osal_enter_critical_section(void);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_enter_critical_section",
+          "kind": "function",
+          "signature": "size_t usb_osal_enter_critical_section(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_free",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_free",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_free(void *ptr);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_free",
+          "kind": "function",
+          "signature": "void usb_osal_free(void *ptr);",
+          "parameters": "void *ptr"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_leave_critical_section",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_leave_critical_section",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_leave_critical_section(size_t flag);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_leave_critical_section",
+          "kind": "function",
+          "signature": "void usb_osal_leave_critical_section(size_t flag);",
+          "parameters": "size_t flag"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_malloc",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_malloc",
+      "classification": "third-party-bridge",
+      "signature": "void *usb_osal_malloc(size_t size);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_malloc",
+          "kind": "function",
+          "signature": "void *usb_osal_malloc(size_t size);",
+          "parameters": "size_t size"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mq_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_mq_t usb_osal_mq_create(uint32_t max_msgs);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mq_create",
+          "kind": "function",
+          "signature": "usb_osal_mq_t usb_osal_mq_create(uint32_t max_msgs);",
+          "parameters": "uint32_t max_msgs"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mq_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_mq_delete(usb_osal_mq_t mq);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mq_delete",
+          "kind": "function",
+          "signature": "void usb_osal_mq_delete(usb_osal_mq_t mq);",
+          "parameters": "usb_osal_mq_t mq"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mq_recv",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_recv",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mq_recv(usb_osal_mq_t mq, uintptr_t *addr, uint32_t timeout);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mq_recv",
+          "kind": "function",
+          "signature": "int usb_osal_mq_recv(usb_osal_mq_t mq, uintptr_t *addr, uint32_t timeout);",
+          "parameters": "usb_osal_mq_t mq, uintptr_t *addr, uint32_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mq_send",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_send",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mq_send(usb_osal_mq_t mq, uintptr_t addr);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mq_send",
+          "kind": "function",
+          "signature": "int usb_osal_mq_send(usb_osal_mq_t mq, uintptr_t addr);",
+          "parameters": "usb_osal_mq_t mq, uintptr_t addr"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_msleep",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_msleep",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_msleep(uint32_t delay);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_msleep",
+          "kind": "function",
+          "signature": "void usb_osal_msleep(uint32_t delay);",
+          "parameters": "uint32_t delay"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mutex_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_mutex_t usb_osal_mutex_create(void);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mutex_create",
+          "kind": "function",
+          "signature": "usb_osal_mutex_t usb_osal_mutex_create(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mutex_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_mutex_delete(usb_osal_mutex_t mutex);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mutex_delete",
+          "kind": "function",
+          "signature": "void usb_osal_mutex_delete(usb_osal_mutex_t mutex);",
+          "parameters": "usb_osal_mutex_t mutex"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mutex_give",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_give",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mutex_give(usb_osal_mutex_t mutex);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mutex_give",
+          "kind": "function",
+          "signature": "int usb_osal_mutex_give(usb_osal_mutex_t mutex);",
+          "parameters": "usb_osal_mutex_t mutex"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_mutex_take",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_take",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mutex_take(usb_osal_mutex_t mutex);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_mutex_take",
+          "kind": "function",
+          "signature": "int usb_osal_mutex_take(usb_osal_mutex_t mutex);",
+          "parameters": "usb_osal_mutex_t mutex"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_sem_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_sem_t usb_osal_sem_create(uint32_t initial_count);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_sem_create",
+          "kind": "function",
+          "signature": "usb_osal_sem_t usb_osal_sem_create(uint32_t initial_count);",
+          "parameters": "uint32_t initial_count"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_sem_create_counting",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_create_counting",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_sem_t usb_osal_sem_create_counting(uint32_t max_count);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_sem_create_counting",
+          "kind": "function",
+          "signature": "usb_osal_sem_t usb_osal_sem_create_counting(uint32_t max_count);",
+          "parameters": "uint32_t max_count"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_sem_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_sem_delete(usb_osal_sem_t sem);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_sem_delete",
+          "kind": "function",
+          "signature": "void usb_osal_sem_delete(usb_osal_sem_t sem);",
+          "parameters": "usb_osal_sem_t sem"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_sem_give",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_give",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_sem_give(usb_osal_sem_t sem);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_sem_give",
+          "kind": "function",
+          "signature": "int usb_osal_sem_give(usb_osal_sem_t sem);",
+          "parameters": "usb_osal_sem_t sem"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_sem_reset",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_reset",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_sem_reset(usb_osal_sem_t sem);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_sem_reset",
+          "kind": "function",
+          "signature": "void usb_osal_sem_reset(usb_osal_sem_t sem);",
+          "parameters": "usb_osal_sem_t sem"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_sem_take",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_take",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_sem_take(usb_osal_sem_t sem, uint32_t timeout);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_sem_take",
+          "kind": "function",
+          "signature": "int usb_osal_sem_take(usb_osal_sem_t sem, uint32_t timeout);",
+          "parameters": "usb_osal_sem_t sem, uint32_t timeout"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_thread_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_thread_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_thread_t usb_osal_thread_create(const char *name, uint32_t stack_size, uint32_t prio, usb_thread_entry_t entry, void *args);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_thread_create",
+          "kind": "function",
+          "signature": "usb_osal_thread_t usb_osal_thread_create(const char *name, uint32_t stack_size, uint32_t prio, usb_thread_entry_t entry, void *args);",
+          "parameters": "const char *name, uint32_t stack_size, uint32_t prio, usb_thread_entry_t entry, void *args"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_thread_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_thread_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_thread_delete(usb_osal_thread_t thread);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_thread_delete",
+          "kind": "function",
+          "signature": "void usb_osal_thread_delete(usb_osal_thread_t thread);",
+          "parameters": "usb_osal_thread_t thread"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_thread_schedule_other",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_thread_schedule_other",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_thread_schedule_other(void);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_thread_schedule_other",
+          "kind": "function",
+          "signature": "void usb_osal_thread_schedule_other(void);",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_timer_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_create",
+      "classification": "third-party-bridge",
+      "signature": "struct usb_osal_timer *usb_osal_timer_create(const char *name, uint32_t timeout_ms, usb_timer_handler_t handler, void *argument, bool is_period);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_timer_create",
+          "kind": "function",
+          "signature": "struct usb_osal_timer *usb_osal_timer_create(const char *name, uint32_t timeout_ms, usb_timer_handler_t handler, void *argument, bool is_period);",
+          "parameters": "const char *name, uint32_t timeout_ms, usb_timer_handler_t handler, void *argument, bool is_period"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_timer_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_timer_delete(struct usb_osal_timer *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_timer_delete",
+          "kind": "function",
+          "signature": "void usb_osal_timer_delete(struct usb_osal_timer *timer);",
+          "parameters": "struct usb_osal_timer *timer"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_timer_start",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_start",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_timer_start(struct usb_osal_timer *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_timer_start",
+          "kind": "function",
+          "signature": "void usb_osal_timer_start(struct usb_osal_timer *timer);",
+          "parameters": "struct usb_osal_timer *timer"
+        }
+      ]
+    },
+    {
+      "name": "usb_osal_timer_stop",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_stop",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_timer_stop(struct usb_osal_timer *timer);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "usb_osal_timer_stop",
+          "kind": "function",
+          "signature": "void usb_osal_timer_stop(struct usb_osal_timer *timer);",
+          "parameters": "struct usb_osal_timer *timer"
+        }
+      ]
+    },
+    {
+      "name": "dwc2_get_user_fifo_config",
+      "header": "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_param.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-dwc2_get_user_fifo_config",
+      "classification": "driver-callback",
+      "signature": "void dwc2_get_user_fifo_config(uint32_t reg_base, struct usb_dwc2_user_fifo_config *config);",
+      "kind": "function",
+      "document": "docs/ai/contracts_services_usb.md",
+      "metadata": "docs/ai/metadata_services_usb.json",
+      "scope": "supplemental-bridge",
+      "source_forms": [
+        {
+          "name": "dwc2_get_user_fifo_config",
+          "kind": "function",
+          "signature": "void dwc2_get_user_fifo_config(uint32_t reg_base, struct usb_dwc2_user_fifo_config *config);",
+          "parameters": "uint32_t reg_base, struct usb_dwc2_user_fifo_config *config"
+        }
+      ]
+    }
+  ]
+}

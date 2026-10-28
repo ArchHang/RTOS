@@ -1,0 +1,283 @@
+{
+  "baseline": "87bfbe4a6efc50f9b828128c713a1b5af2900ef8",
+  "document": "docs/ai/contracts_ipc_memory.md",
+  "scope": "source-reviewed callable API discovery; semantics live in Markdown",
+  "symbols": [
+    {
+      "name": "rtos_sem_init",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_init(rtos_sem_t *sem, uint32_t init_cnt, uint32_t max_cnt);"
+    },
+    {
+      "name": "rtos_sem_take",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_take",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout);"
+    },
+    {
+      "name": "rtos_sem_give",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_give",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_give(rtos_sem_t *sem);"
+    },
+    {
+      "name": "rtos_sem_get_count",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_get_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_sem_get_count(const rtos_sem_t *sem);"
+    },
+    {
+      "name": "rtos_sem_deinit",
+      "header": "RTOS/Core/Inc/rtos_sem.h",
+      "implementation": "RTOS/IPC/rtos_sem.c",
+      "anchor": "api-rtos_sem_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_sem_deinit(rtos_sem_t *sem);"
+    },
+    {
+      "name": "rtos_mutex_init",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex);"
+    },
+    {
+      "name": "rtos_mutex_take",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_take",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout);"
+    },
+    {
+      "name": "rtos_mutex_give",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_give",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex);"
+    },
+    {
+      "name": "rtos_mutex_deinit",
+      "header": "RTOS/Core/Inc/rtos_mutex.h",
+      "implementation": "RTOS/IPC/rtos_mutex.c",
+      "anchor": "api-rtos_mutex_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mutex_deinit(rtos_mutex_t *mutex);"
+    },
+    {
+      "name": "rtos_queue_init",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_init(rtos_queue_t *queue, void *storage, uint32_t item_size, uint32_t capacity);"
+    },
+    {
+      "name": "rtos_queue_send",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_send",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t timeout, rtos_bool_t to_front);"
+    },
+    {
+      "name": "rtos_queue_recv",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_recv",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout);"
+    },
+    {
+      "name": "rtos_queue_get_count",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_get_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_queue_get_count(const rtos_queue_t *queue);"
+    },
+    {
+      "name": "rtos_queue_get_free",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_get_free",
+      "classification": "public",
+      "signature": "uint32_t rtos_queue_get_free(const rtos_queue_t *queue);"
+    },
+    {
+      "name": "rtos_queue_deinit",
+      "header": "RTOS/Core/Inc/rtos_queue.h",
+      "implementation": "RTOS/IPC/rtos_queue.c",
+      "anchor": "api-rtos_queue_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_queue_deinit(rtos_queue_t *queue);"
+    },
+    {
+      "name": "rtos_event_init",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_event_init(rtos_event_t *event);"
+    },
+    {
+      "name": "rtos_event_set",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_set",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_set(rtos_event_t *event, rtos_event_bits_t bits);"
+    },
+    {
+      "name": "rtos_event_clear",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_clear",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_clear(rtos_event_t *event, rtos_event_bits_t bits);"
+    },
+    {
+      "name": "rtos_event_wait",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_wait",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_wait(rtos_event_t *event, rtos_event_bits_t bits, uint32_t mode, rtos_tick_t timeout);"
+    },
+    {
+      "name": "rtos_event_get",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_get",
+      "classification": "public",
+      "signature": "rtos_event_bits_t rtos_event_get(const rtos_event_t *event);"
+    },
+    {
+      "name": "rtos_event_deinit",
+      "header": "RTOS/Core/Inc/rtos_event.h",
+      "implementation": "RTOS/IPC/rtos_event.c",
+      "anchor": "api-rtos_event_deinit",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_event_deinit(rtos_event_t *event);"
+    },
+    {
+      "name": "rtos_mempool_init",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mempool_init(rtos_mempool_t *pool, void *base, uint32_t block_size, uint32_t block_count);"
+    },
+    {
+      "name": "rtos_mempool_alloc",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_alloc",
+      "classification": "public",
+      "signature": "void *rtos_mempool_alloc(rtos_mempool_t *pool);"
+    },
+    {
+      "name": "rtos_mempool_free",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_free",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_mempool_free(rtos_mempool_t *pool, void *block);"
+    },
+    {
+      "name": "rtos_mempool_get_free",
+      "header": "RTOS/Core/Inc/rtos_mem.h",
+      "implementation": "RTOS/Memory/rtos_mempool.c",
+      "anchor": "api-rtos_mempool_get_free",
+      "classification": "public",
+      "signature": "uint32_t rtos_mempool_get_free(const rtos_mempool_t *pool);"
+    },
+    {
+      "name": "rtos_heap_init",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_init",
+      "classification": "public",
+      "signature": "rtos_status_t rtos_heap_init(void);"
+    },
+    {
+      "name": "rtos_heap_alloc",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_alloc",
+      "classification": "public",
+      "signature": "void *rtos_heap_alloc(uint32_t size);"
+    },
+    {
+      "name": "rtos_heap_free",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_free",
+      "classification": "public",
+      "signature": "void rtos_heap_free(void *ptr);"
+    },
+    {
+      "name": "rtos_heap_get_free",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_free",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_free(void);"
+    },
+    {
+      "name": "rtos_heap_get_max_alloc",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_max_alloc",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_max_alloc(void);"
+    },
+    {
+      "name": "rtos_heap_get_alloc_count",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_alloc_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_alloc_count(void);"
+    },
+    {
+      "name": "rtos_heap_get_free_count",
+      "header": "RTOS/Core/Inc/rtos_heap.h",
+      "implementation": "RTOS/Memory/rtos_heap.c",
+      "anchor": "api-rtos_heap_get_free_count",
+      "classification": "public",
+      "signature": "uint32_t rtos_heap_get_free_count(void);"
+    }
+  ],
+  "reviewed_sources": {
+    "RTOS/Core/Inc/rtos_config.h": "E2CC58492A9B73F189B7FDFFB57DB135360B3189DE7EAA66B63029906EABF96E",
+    "RTOS/Core/Inc/rtos_event.h": "302261ACBC52501A64598D508FF970FB59C230A796E46AC433175EF9F4D57CD9",
+    "RTOS/Core/Inc/rtos_heap.h": "C078D7B2C7BCBB4778749C7085FC96BCE9B94ECD93DBE01741955D820F781884",
+    "RTOS/Core/Inc/rtos_mem.h": "8CBA9D3FC371D0AC4B66F6D3D0B9D32A7B785F142C1191396333FAF4D3639A39",
+    "RTOS/Core/Inc/rtos_mutex.h": "977B323F11C398FF361C4CA743F82DE3D7B9AE2C48AA9F1652CF37E72AF0098D",
+    "RTOS/Core/Inc/rtos_queue.h": "6C17C212D2331285CDC5D8A33DFBA41009FCB61701B29E42131BD9A9D5F67A03",
+    "RTOS/Core/Inc/rtos_sem.h": "C939DB573AFB96C69A73AF0FB11E07AE4626B1D944277927D231C663F1084FCB",
+    "RTOS/Core/Private/rtos_internal.h": "F661E722596FC76C8B54F5D305490CDADFB6174F1E82B1899873464119300ACE",
+    "RTOS/Core/Src/rtos_sched.c": "884534D72A7DFBA8FC79291B42078B735F74D66D5F18C502F23468A205C22077",
+    "RTOS/Core/Src/rtos_task.c": "F5D5235FA9BEE78123596D83E7AE3BC2D91948C6E4542099FD7167FC0D01D8A2",
+    "RTOS/Core/Src/rtos_wait.c": "9E8F7272981C6603B4319BFFC2A166E4606B26BC73974A3659B8EE7D00655AF5",
+    "RTOS/IPC/rtos_event.c": "2A0E7B374346221B3C82B857035C4276DC124EFEE64D487EBC199DB923F9E39F",
+    "RTOS/IPC/rtos_mutex.c": "191442BFF89EE21C40AD09C8B381B88352EC48961FB74A7C7ECB330A59596576",
+    "RTOS/IPC/rtos_queue.c": "BDDD9B16B93D93E16104C92576D14FDE856EC2C8161FA29F19DB37E546883C7E",
+    "RTOS/IPC/rtos_sem.c": "1524B5F6B2AB57C9CFB423C1E7063B10F39EC4FAD01FF87F20FA67A37DB83472",
+    "RTOS/Memory/rtos_heap.c": "A921CAD9AD68228B43E6A2BA9C1DE0B6872F518F3FEDA42DC10CE0AD4B2704B7",
+    "RTOS/Memory/rtos_mempool.c": "DCA8B20A084AABA983CDF3AF1CBE138BB939CCD3A9DEA6B52C971CE60D0B9676",
+    "RTOS/Services/rtos_perf.c": "7CAC634F4DF772B29A63A149A35B8EEAAAD45BE47CED83197891B19B33FC7597"
+  }
+}

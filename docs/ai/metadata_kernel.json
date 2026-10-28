@@ -1,0 +1,600 @@
+{
+  "baseline": "87bfbe4a6efc50f9b828128c713a1b5af2900ef8",
+  "description": "Discovery index only; semantic contracts are in contracts_kernel.md",
+  "records": [
+    {
+      "name": "rtos_get_version",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_get_version",
+      "classification": "application",
+      "kind": "function",
+      "signature": "const char *rtos_get_version(void);"
+    },
+    {
+      "name": "rtos_init",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_init",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_init(void);"
+    },
+    {
+      "name": "rtos_start",
+      "header": "RTOS/Core/Inc/rtos.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_start",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_start(void);"
+    },
+    {
+      "name": "rtos_task_create",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_create",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_task_func_t entry, void *arg, rtos_prio_t priority, const char *name);"
+    },
+    {
+      "name": "rtos_task_create_static",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_create_static",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, uint32_t stack_size, rtos_task_func_t entry, void *arg, rtos_prio_t priority, const char *name);"
+    },
+    {
+      "name": "rtos_task_delete",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_delete",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_delete(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_task_yield",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_yield",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_task_yield(void);"
+    },
+    {
+      "name": "rtos_task_delay",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_delay",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_task_delay(rtos_tick_t ticks);"
+    },
+    {
+      "name": "rtos_task_delay_until",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_delay_until",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period);"
+    },
+    {
+      "name": "rtos_task_get_current",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_get_current",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_tcb_t *rtos_task_get_current(void);"
+    },
+    {
+      "name": "rtos_task_get_priority",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_get_priority",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_prio_t rtos_task_get_priority(const rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_task_set_priority",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_set_priority",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio);"
+    },
+    {
+      "name": "rtos_task_suspend",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_suspend",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_task_resume",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_resume",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_resume(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_task_notify",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_notify",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_notify(rtos_tcb_t *tcb, uint32_t value, rtos_notify_type_t type);"
+    },
+    {
+      "name": "rtos_task_notify_wait",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_task_notify_wait",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value);"
+    },
+    {
+      "name": "rtos_idle_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_idle_hook",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_idle_hook(void);"
+    },
+    {
+      "name": "rtos_idle_task",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_task.c",
+      "anchor": "api-rtos_idle_task",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_idle_task(void *arg);"
+    },
+    {
+      "name": "rtos_stack_overflow_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_stack_overflow_hook",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_stack_overflow_hook(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_task_delete_hook",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_task_delete_hook",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_task_delete_hook(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_assert_fail",
+      "header": "RTOS/Core/Inc/rtos_task.h",
+      "implementation": "RTOS/Core/Src/rtos_kernel.c",
+      "anchor": "api-rtos_assert_fail",
+      "classification": "weak_hook",
+      "kind": "function",
+      "signature": "void rtos_assert_fail(const char *cond, const char *file, int line);"
+    },
+    {
+      "name": "rtos_sched_init",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_init",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_sched_init(void);"
+    },
+    {
+      "name": "rtos_sched_start",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_start",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "rtos_status_t rtos_sched_start(void);"
+    },
+    {
+      "name": "rtos_sched_schedule",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_schedule",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_schedule(void);"
+    },
+    {
+      "name": "rtos_sched_add_ready",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_add_ready",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_add_ready(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_sched_remove_ready",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_remove_ready",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_remove_ready(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_sched_block",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_block",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_block(rtos_tcb_t *tcb, rtos_tick_t ticks);"
+    },
+    {
+      "name": "rtos_sched_unblock",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_unblock",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_unblock(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_sched_remove_delayed",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_remove_delayed",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_remove_delayed(rtos_tcb_t *tcb);"
+    },
+    {
+      "name": "rtos_sched_tick",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_tick",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_tick(void);"
+    },
+    {
+      "name": "rtos_sched_suspend",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_suspend",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_sched_suspend(void);"
+    },
+    {
+      "name": "rtos_sched_resume",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_resume",
+      "classification": "application",
+      "kind": "function",
+      "signature": "void rtos_sched_resume(void);"
+    },
+    {
+      "name": "rtos_sched_get_tick_count",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_get_tick_count",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_tick_t rtos_sched_get_tick_count(void);"
+    },
+    {
+      "name": "rtos_sched_get_state",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_get_state",
+      "classification": "application",
+      "kind": "function",
+      "signature": "rtos_sched_state_t rtos_sched_get_state(void);"
+    },
+    {
+      "name": "rtos_sched_context_switch",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_sched_context_switch",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_sched_context_switch(void);"
+    },
+    {
+      "name": "rtos_port_critical_nesting_error",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_critical_nesting_error",
+      "classification": "internal_export",
+      "kind": "function",
+      "signature": "void rtos_port_critical_nesting_error(uint32_t nesting);"
+    },
+    {
+      "name": "rtos_port_critical_test_hook",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "hil/fw/Src/basepri_regressions.c",
+      "anchor": "api-rtos_port_critical_test_hook",
+      "classification": "hil_only",
+      "kind": "function",
+      "signature": "void rtos_port_critical_test_hook(uint32_t stage);"
+    },
+    {
+      "name": "rtos_port_enter_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_enter_critical",
+      "classification": "inline_port",
+      "kind": "inline",
+      "signature": "static inline void rtos_port_enter_critical(void);"
+    },
+    {
+      "name": "rtos_port_exit_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_exit_critical",
+      "classification": "inline_port",
+      "kind": "inline",
+      "signature": "static inline void rtos_port_exit_critical(void);"
+    },
+    {
+      "name": "rtos_port_in_isr",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_in_isr",
+      "classification": "inline_port",
+      "kind": "inline",
+      "signature": "static inline rtos_bool_t rtos_port_in_isr(void);"
+    },
+    {
+      "name": "rtos_port_init_stack",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_init_stack",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "rtos_stack_t *rtos_port_init_stack(rtos_stack_t *stack_top, uint32_t stack_size, rtos_task_func_t entry, void *arg);"
+    },
+    {
+      "name": "rtos_port_context_switch",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_context_switch",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "void rtos_port_context_switch(void);"
+    },
+    {
+      "name": "rtos_port_start_first_task",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_start_first_task",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "void rtos_port_start_first_task(void) __attribute__((noreturn));"
+    },
+    {
+      "name": "rtos_port_start_scheduler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_start_scheduler",
+      "classification": "port_internal",
+      "kind": "function",
+      "signature": "void rtos_port_start_scheduler(void);"
+    },
+    {
+      "name": "rtos_port_sys_tick_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_sys_tick_handler",
+      "classification": "exception_entry",
+      "kind": "function",
+      "signature": "void rtos_port_sys_tick_handler(void);"
+    },
+    {
+      "name": "rtos_port_pend_sv_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_pend_sv_handler",
+      "classification": "exception_entry",
+      "kind": "function",
+      "signature": "void rtos_port_pend_sv_handler(void) __attribute__((naked));"
+    },
+    {
+      "name": "rtos_port_svc_handler",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_svc_handler",
+      "classification": "exception_entry",
+      "kind": "function",
+      "signature": "void rtos_port_svc_handler(void) __attribute__((naked));"
+    },
+    {
+      "name": "rtos_port_disable_interrupts",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_disable_interrupts",
+      "classification": "port_lowlevel",
+      "kind": "function",
+      "signature": "void rtos_port_disable_interrupts(void);"
+    },
+    {
+      "name": "rtos_port_enable_interrupts",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_enable_interrupts",
+      "classification": "port_lowlevel",
+      "kind": "function",
+      "signature": "void rtos_port_enable_interrupts(void);"
+    },
+    {
+      "name": "rtos_port_isr_priority",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_isr_priority",
+      "classification": "port_observation",
+      "kind": "function",
+      "signature": "uint32_t rtos_port_isr_priority(void);"
+    },
+    {
+      "name": "rtos_port_get_interrupt_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_get_interrupt_mask",
+      "classification": "port_observation",
+      "kind": "function",
+      "signature": "uint32_t rtos_port_get_interrupt_mask(void);"
+    },
+    {
+      "name": "rtos_port_set_interrupt_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_set_interrupt_mask",
+      "classification": "port_lowlevel",
+      "kind": "function",
+      "signature": "void rtos_port_set_interrupt_mask(uint32_t mask);"
+    },
+    {
+      "name": "rtos_port_get_critical_nesting",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_get_critical_nesting",
+      "classification": "port_observation",
+      "kind": "function",
+      "signature": "uint32_t rtos_port_get_critical_nesting(void);"
+    },
+    {
+      "name": "RTOS_ASSERT",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "implementation": "RTOS/Core/Inc/rtos_config.h",
+      "anchor": "api-RTOS_ASSERT",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_ASSERT(cond)"
+    },
+    {
+      "name": "RTOS_ASSERT_ISR_STATE_OK",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "implementation": "RTOS/Core/Inc/rtos_config.h",
+      "anchor": "api-RTOS_ASSERT_ISR_STATE_OK",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_ASSERT_ISR_STATE_OK(in_isr)"
+    },
+    {
+      "name": "RTOS_ASSERT_ISR_OK",
+      "header": "RTOS/Core/Inc/rtos_config.h",
+      "implementation": "RTOS/Core/Inc/rtos_config.h",
+      "anchor": "api-RTOS_ASSERT_ISR_OK",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_ASSERT_ISR_OK()"
+    },
+    {
+      "name": "RTOS_PORT_ENTER_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_ENTER_CRITICAL",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_ENTER_CRITICAL()"
+    },
+    {
+      "name": "RTOS_PORT_EXIT_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_EXIT_CRITICAL",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_EXIT_CRITICAL()"
+    },
+    {
+      "name": "RTOS_PORT_IN_ISR",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_IN_ISR",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_IN_ISR()"
+    },
+    {
+      "name": "RTOS_PORT_DISABLE_INTERRUPTS",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_DISABLE_INTERRUPTS",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_DISABLE_INTERRUPTS()"
+    },
+    {
+      "name": "RTOS_PORT_ENABLE_INTERRUPTS",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_ENABLE_INTERRUPTS",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_ENABLE_INTERRUPTS()"
+    },
+    {
+      "name": "RTOS_PORT_CRITICAL_TEST_HOOK",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_CRITICAL_TEST_HOOK",
+      "classification": "macro",
+      "kind": "macro",
+      "signature": "RTOS_PORT_CRITICAL_TEST_HOOK(stage)"
+    },
+    {
+      "name": "SystemCoreClock",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "Core/Src/system_stm32f4xx.c",
+      "anchor": "api-SystemCoreClock",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern uint32_t SystemCoreClock;"
+    },
+    {
+      "name": "rtos_port_crit_nest",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_crit_nest",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern volatile uint32_t rtos_port_crit_nest;"
+    },
+    {
+      "name": "rtos_port_saved_mask",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Port/GCC/ARM_CM4F_CM7F/port.c",
+      "anchor": "api-rtos_port_saved_mask",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern volatile uint32_t rtos_port_saved_mask;"
+    },
+    {
+      "name": "rtos_kernel",
+      "header": "RTOS/Core/Inc/rtos_sched.h",
+      "implementation": "RTOS/Core/Src/rtos_sched.c",
+      "anchor": "api-rtos_kernel",
+      "classification": "variable",
+      "kind": "variable",
+      "signature": "extern rtos_kernel_t rtos_kernel;"
+    }
+  ]
+}

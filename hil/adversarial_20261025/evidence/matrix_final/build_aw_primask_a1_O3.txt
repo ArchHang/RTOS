@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'adversarial_wait' OK -- mixed ISR wait races, exact-once handoff and object lifecycle; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  52316	    120	  49408	 101844	  18dd4	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

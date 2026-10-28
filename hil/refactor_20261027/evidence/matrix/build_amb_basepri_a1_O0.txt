@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'adversarial_mutex_boundary' OK -- recursive count overflow, owner deletion and finite mutex dependency cycles; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  59832	    120	  46624	 106576	  1a050	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

@@ -1,1 +1,0 @@
-Discarded measurement baseline_bench: snapshot copies preserved source timestamps; make reused kernel objects from combined. Only benchmark.c rebuilt with baseline port header. This is a mixed image, not a valid baseline. Replaced by clean_base_bench with forced RTOS/Core/HIL object recompilation.

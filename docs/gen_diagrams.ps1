@@ -38,6 +38,7 @@ foreach ($doc in $Docs) {
     $raw = [System.IO.File]::ReadAllText($markdownPath).Replace("`r`n", "`n").Replace("`r", "`n")
     $lines = $raw -split "`n"
     $documentCount = 0
+    $inlineCount = 0
     for ($lineIndex = 0; $lineIndex -lt $lines.Count; $lineIndex++) {
         if ($lines[$lineIndex].Trim() -ne '```mermaid') { continue }
         $sourceLine = $lineIndex + 1
@@ -47,6 +48,20 @@ foreach ($doc in $Docs) {
         if ($imageLine -ge 0 -and $lines[$imageLine].Trim() -match '^<details>\s*<summary>.*</summary>\s*$') {
             $imageLine--
             while ($imageLine -ge 0 -and [string]::IsNullOrWhiteSpace($lines[$imageLine])) { $imageLine-- }
+        }
+        # Explicit native diagrams have no PNG output to generate. Validate their
+        # source fence while keeping missing PNG pairings an error elsewhere.
+        if ($imageLine -ge 0 -and $lines[$imageLine].Trim() -eq '<!-- diagram:inline -->') {
+            $inlineSource = New-Object System.Collections.Generic.List[string]
+            $lineIndex++
+            while ($lineIndex -lt $lines.Count -and $lines[$lineIndex].Trim() -ne '```') {
+                $inlineSource.Add($lines[$lineIndex])
+                $lineIndex++
+            }
+            if ($lineIndex -ge $lines.Count) { throw "${docFile}:$sourceLine Inline Mermaid fence is not closed." }
+            if ([string]::IsNullOrWhiteSpace(($inlineSource -join "`n"))) { throw "${docFile}:$sourceLine Inline Mermaid source is empty." }
+            $inlineCount++
+            continue
         }
         if ($imageLine -lt 0 -or $lines[$imageLine].Trim() -notmatch '^!\[[^\]]*\]\((?<Target>[^)]+)\)$') {
             throw "${docFile}:$sourceLine Mermaid block needs an immediately preceding PNG image link (optional details/summary wrapper allowed)."
@@ -71,7 +86,7 @@ foreach ($doc in $Docs) {
         $diagrams.Add([pscustomobject]@{ Document = $docFile; Line = $sourceLine; File = $imageFile; Path = $imagePath; Source = $source -join "`n" })
         $documentCount++
     }
-    Write-Host "$docFile : $documentCount paired Mermaid block(s)"
+    Write-Host "$docFile : $documentCount paired Mermaid block(s), $inlineCount native block(s)"
 }
 $selectedNames = @{}
 foreach ($imageFile in $OnlyImages) {

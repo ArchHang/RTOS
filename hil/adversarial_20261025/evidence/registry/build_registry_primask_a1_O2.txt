@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'adversarial_registry' OK -- maximum mutex owner graph and deletion with multiple owned locks; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  40296	    120	  52744	  93160	  16be8	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf

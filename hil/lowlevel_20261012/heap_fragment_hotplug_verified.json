@@ -1,9 +1,0 @@
-﻿{
-    "tag":  "lowlevel_20261012_heap_fragment_hotplug",
-    "sha256":  "07B09BCEAED3A7423F027E3E7EE159FE3050841BAE644D7654045AFB750E7100",
-    "expected_diagnostic_failure":  true,
-    "hardware_headers_match":  true,
-    "physical_free_bytes":  28504,
-    "payload_free_bytes":  28488,
-    "extra_header_bytes":  8
-}

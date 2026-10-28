@@ -4,13 +4,10 @@
 
 **当前验证平台**：STM32F446RET6（Cortex-M4F @ 168MHz，STM32CubeIDE + GCC）。内核代码不含任何 ST 头文件引用；换一颗 Cortex-M3/M4/M7 芯片只需替换移植层与目标 SDK 工程，见[移植指南](#移植到其他芯片)。
 
-**2026-10-13 验证汇总**：已完成内核及 USB 处理路径修复、底层性能优化和 16 任务／双硬件中断综合压力测试。五轮正常压力测试逐条验证 2,433,735 条成功接纳消息，161 项验收检查在每轮均通过；包含 15 分钟持续运行和单包损坏检出对照。日常固件已恢复。详细改动、性能收益与退步、验证范围及证据入口见[本次交付汇总](docs/rtos_release_20261013.md)。物理 USB 总线传输未包含在本轮验证中。
-
-**2026-10-25 临界区修复**：进出临界区时以短暂 PRIMASK 事务保护共享计数、保存槽位和屏蔽恢复，并在退出恢复屏蔽后执行 ISB，保证已请求的 PendSV 先于阻塞 API 的后续结果读取被识别。默认 BASEPRI 模式的主体仍允许优先级 0–4 的纯硬件 ISR 抢占；这些 ISR 仍不得调用操作内核对象的 API，关闭断言也不放宽契约。缺陷复现、此前测试缺口及新增验证范围见 [BASEPRI 修复报告](docs/rtos_basepri_fix_20261025.md)。
-
-**2026-10-26 复杂并发加固**：补充锁链、循环依赖、任务删除、ISR 销毁窗口及多等待者交接测试；修复传递优先级继承、对象状态检查窗口和递归计数溢出。复现方法、配置矩阵、业务压力及清理记录见[复杂并发测试报告](docs/rtos_adversarial_20261026.md)。
-
-本批已复现缺陷、修复行为、验证结果和保留状态统一整理在[缺陷修复汇总](docs/rtos_fix_summary_20261026.md)。源码目录按职责重组后的文件归属、阅读顺序及迁移要求见[源码导览](RTOS/README.md)，过程与验收状态见[源码重组记录](docs/rtos_source_reorganization_20261027.md)；历史报告保留测试当时的路径。
+当前功能与边界以[设计手册](docs/rtos_design.md)、[公共API契约](docs/ai/README.md)及源码为准。
+[文档导航](docs/README.md)按用途区分现行手册、参考资料和每日日志；历史修复与测试结论统一放在
+`docs/logs/YYYY-MM-DD.md`。旧测试工程、构建副本和大批历史结果已清理，保留权威夹具及复测工具，
+见[HIL入口](hil/README.md)。历史实测不等于本轮重新验证，物理USB传输仍须单独验证。
 
 ```mermaid
 flowchart TB
@@ -25,7 +22,7 @@ flowchart TB
     port -->|tick / 切换提交| core
 ```
 
-> 当前架构、寄存器现场、API 契约及工程集成见 [设计手册](docs/rtos_design.md)，配有状态、等待归属和执行时序图；修复、优化及实板验证结果见 [交付汇总](docs/rtos_release_20261013.md)。
+> 当前架构、寄存器现场、API 契约及工程集成见 [设计手册](docs/rtos_design.md)，配有状态、等待归属和执行时序图；修复、优化及历史验证结论按日期查阅[文档导航](docs/README.md)。
 
 ---
 
@@ -164,8 +161,8 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 │   ├── model/cnn2c.py       # PyTorch→C 转换工具(支持 int8 动态量化)
 │   ├── model/voice_classifier.pth  # 训练好的说话人分类模型
 │   └── output/int8/         # 生成的 C 推理代码(param/app/算子库, 已编入固件)
-├── docs/                    # 设计、历史分析、审计、优化与验证报告
-├── hil/                     # 实板测试夹具、脚本及原始文本证据
+├── docs/                    # 现行手册、AI契约、参考资料与logs每日日志
+├── hil/                     # 权威测试夹具、复测工具与最新AI编译证据
 ├── Drivers/                 # ST HAL + CMSIS(Apache-2.0, 仅演示工程用)
 └── .cproject / .project     # CubeIDE 工程配置
 ```
@@ -182,7 +179,7 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 | `RTOS_CONFIG_MAX_PRIORITIES` | 32 | 优先级数（决定就绪表 RAM） |
 | `RTOS_CONFIG_MAX_TASKS` | 16 | 用于派生性能注册表容量，不是内核静态任务池或创建数量上限 |
 | `RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE` | 18 | 默认 `MAX_TASKS + 2`；超过容量的任务仍可创建，但注册表观测不完整 |
-| `RTOS_CONFIG_USE_TIMERS` | 1 | 软件定时器（关 = 零开销） |
+| `RTOS_CONFIG_USE_TIMERS` | 1 | 控制定时器自动初始化；关闭不自动移除定时器实现 |
 | `RTOS_CONFIG_USE_PERF_MONITOR` | 1 | 性能监视器（DWT 周期级） |
 | `RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW` | 2 | 栈溢出检测（0/1/2 三档） |
 | `RTOS_CONFIG_USE_USB` | 1 | USB 子系统总开关 |
@@ -191,27 +188,18 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 ## 文档
 
-| 文档 | 内容 |
-|---|---|
-| [rtos_fix_summary_20261026.md](docs/rtos_fix_summary_20261026.md) | **当前修复总览**：五项已复现缺陷、契约加固、最终验证及提交范围 |
-| [源码导览](RTOS/README.md) | 当前目录职责、模块边界、阅读顺序和手工构建迁移 |
-| [rtos_source_reorganization_20261027.md](docs/rtos_source_reorganization_20261027.md) | 源码重组映射、兼容与构建检查、测试迁移错误及最终验收状态 |
-| [rtos_design.md](docs/rtos_design.md) | **当前架构与实现手册**（16 章）：调度不变式 / PendSV 与 FPU 栈帧 / IPC 契约与寿命 / USB 适配 / 统计边界 / API 上下文矩阵 / 资源预算与业务关停 |
-| [rtos_performance_report.md](docs/rtos_performance_report.md) | **性能测试报告**：微基准 BM0–BM7 + 系统级场景 S1–S5 + 与 FreeRTOS V10.3.1 的逐项对照；含布局敏感性与已作废结论的更正记录 |
-| [rtos_testing_report.md](docs/rtos_testing_report.md) | **历史测试汇总**：基础功能与边界夹具、早期审计取证、方法教训及覆盖缺口；后续终验见下列带日期的报告 |
-| [rtos_basepri_fix_20261025.md](docs/rtos_basepri_fix_20261025.md) | **BASEPRI 临界区修复**：确定性交错复现、出口 ISB 与阻塞返回同步、优先级契约守卫及新增综合 IRQ 验证范围 |
-| [rtos_adversarial_20261026.md](docs/rtos_adversarial_20261026.md) | **复杂并发回归**：传递继承、销毁窗口、递归边界、60 配置与 900 秒业务压力 |
-| [hardfault_debug.md](docs/hardfault_debug.md) | HardFault 寄存器级诊断手册（CFSR 逐位 / 栈帧归因 / 任务 vs ISR 判定） |
-| [freertos_design.md](docs/freertos_design.md) | FreeRTOS V10.4.6 逐段核对的源码剖析（23 章）+ 互斥锁 / 竞争 / 崩溃排障大全 |
-| [compilation_pipeline.md](docs/compilation_pipeline.md) | 编译链接原理（从预处理到 map 文件） |
-| [rtos_release_20261013.md](docs/rtos_release_20261013.md) | **2026-10-13 交付汇总**：该批改动分类、真实验证结果、证据范围和复现条件 |
-| [rtos_audit_20261012.md](docs/rtos_audit_20261012.md) | 源码审计、调度／IPC／定时器／USB 修复与专项回归 |
-| [rtos_optimization_20261012.md](docs/rtos_optimization_20261012.md) | 第一阶段性能试验、保留方案、撤回方案与测量局限 |
-| [rtos_lowlevel_optimization_20261012.md](docs/rtos_lowlevel_optimization_20261012.md) | 当前底层实现、PendSV／信号量优化和上下文／FPU 检查 |
-| [rtos_production_stress_20261013.md](docs/rtos_production_stress_20261013.md) | 16 任务、两路真实定时器中断、混合 IPC、背压恢复及 900 秒压力运行 |
+从[文档导航](docs/README.md)选择阅读路径，常用入口如下：
 
-> 传统测试套件的**一键复现在 `hil\`**：`powershell -ExecutionPolicy Bypass -File hil\repro_all.ps1`
-> （自动切换固件变体、烧录、抓串口）。后续优化与综合压力使用独立入口，见 [HIL 说明](hil/README.md)。历史版本报告归档在 `hil\archive_docs\`。
+| 入口 | 用途 |
+|---|---|
+| [设计手册](docs/rtos_design.md) | 当前架构、不变式、IPC、端口、USB、资源预算和边界 |
+| [AI项目入口](AGENTS.md) / [API契约与检索](docs/ai/README.md) | 精确原型、调用上下文、生命周期、示例与调试指南 |
+| [源码导览](RTOS/README.md) | 目录职责、阅读顺序和手工构建集成 |
+| [故障诊断](docs/hardfault_debug.md) | 异常寄存器、栈帧与现有故障示例 |
+| [HIL说明](hil/README.md) | 当前夹具、编译/采集入口及验证限制 |
+| [测试方法与教训](docs/rtos_testing_report.md) / [历史性能参考](docs/rtos_performance_report.md) | 旧测量的适用范围、失效结论和测试器教训 |
+| [FreeRTOS设计参考](docs/freertos_design.md) / [编译原理](docs/compilation_pipeline.md) | 专题学习资料 |
+| [每日日志](docs/README.md#daily-logs) | 按日期汇总修复、结果、失败和清理记录 |
 
 ## 当前边界与已知限制
 

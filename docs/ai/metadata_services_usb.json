@@ -1,0 +1,977 @@
+{
+  "baseline": "87bfbe4a6efc50f9b828128c713a1b5af2900ef8",
+  "headers": [
+    "RTOS/Core/Inc/rtos_timer.h",
+    "RTOS/Core/Inc/rtos_perf.h",
+    "RTOS/Core/Inc/rtos_usb.h",
+    "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+    "RTOS/Core/Inc/usb_config.h",
+    "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_param.h",
+    "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h"
+  ],
+  "symbols": [
+    {
+      "name": "rtos_timer_create",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_create",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_create(rtos_timer_t *timer, const char *name, rtos_timer_cb_t callback, void *arg, rtos_tick_t period, rtos_timer_mode_t mode);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_timer_start",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_start",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_start(rtos_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_timer_stop",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_stop",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_stop(rtos_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_timer_change_period",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_change_period",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_change_period(rtos_timer_t *timer, rtos_tick_t period);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_timer_delete",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_delete",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_timer_delete(rtos_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_timer_service_task",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_service_task",
+      "classification": "internal-task-entry",
+      "signature": "void rtos_timer_service_task(void *arg);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_timer_init",
+      "header": "RTOS/Core/Inc/rtos_timer.h",
+      "implementation": "RTOS/Services/rtos_timer.c",
+      "anchor": "api-rtos_timer_init",
+      "classification": "initialization-internal",
+      "signature": "rtos_status_t rtos_timer_init(void);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_perf_init",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_init",
+      "classification": "initialization-internal",
+      "signature": "rtos_status_t rtos_perf_init(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_init() ((rtos_status_t)RTOS_OK)"
+      ]
+    },
+    {
+      "name": "rtos_perf_reset",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_reset",
+      "classification": "application",
+      "signature": "void rtos_perf_reset(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_reset() ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_system",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_system",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_system(s) ((void)(s), (rtos_status_t)RTOS_ERR_PARAM)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_memory",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_memory",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_memory(rtos_perf_memory_t *stats);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_memory(s) ((void)(s), (rtos_status_t)RTOS_ERR_PARAM)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_task",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_task",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_task(t, s) ((void)(t), (void)(s), (rtos_status_t)RTOS_ERR_PARAM)"
+      ]
+    },
+    {
+      "name": "rtos_perf_task_registry_count",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_task_registry_count",
+      "classification": "internal-observer",
+      "signature": "uint32_t rtos_perf_task_registry_count(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_task_registry_count() (0U)"
+      ]
+    },
+    {
+      "name": "rtos_perf_task_at",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_task_at",
+      "classification": "internal-observer",
+      "signature": "rtos_tcb_t *rtos_perf_task_at(uint32_t index);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_task_at(i) ((rtos_tcb_t *)NULL)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_all_tasks",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_all_tasks",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t max_count, uint32_t *actual_count);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_all_tasks(a, m, c) ((void)(a), (void)(m), (void)(c), (rtos_status_t)RTOS_ERR_PARAM)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_cpu_usage",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_cpu_usage",
+      "classification": "application",
+      "signature": "uint32_t rtos_perf_get_cpu_usage(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_cpu_usage() (0U)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_switch_rate",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_switch_rate",
+      "classification": "application",
+      "signature": "uint32_t rtos_perf_get_switch_rate(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_switch_rate() (0U)"
+      ]
+    },
+    {
+      "name": "rtos_perf_get_cycles",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_get_cycles",
+      "classification": "internal-timing",
+      "signature": "uint32_t rtos_perf_get_cycles(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_get_cycles() (0U)"
+      ]
+    },
+    {
+      "name": "rtos_perf_init_cycles",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_init_cycles",
+      "classification": "internal-timing",
+      "signature": "void rtos_perf_init_cycles(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_init_cycles() ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_cycles_to_us",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_cycles_to_us",
+      "classification": "internal-timing",
+      "signature": "uint32_t rtos_perf_cycles_to_us(uint32_t cycles);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_cycles_to_us(c) (0U)"
+      ]
+    },
+    {
+      "name": "rtos_perf_on_context_switch",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_context_switch",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_context_switch(rtos_tcb_t *prev, rtos_tcb_t *next);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_context_switch(p, n) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_on_pend_switch",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_pend_switch",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_pend_switch(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_pend_switch() ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_on_task_created",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_task_created",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_task_created(rtos_tcb_t *tcb);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_task_created(t) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_on_task_deleted",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_task_deleted",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_task_deleted(rtos_tcb_t *tcb);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_task_deleted(t) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_register_pool",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_register_pool",
+      "classification": "internal-observer",
+      "signature": "void rtos_perf_register_pool(rtos_mempool_t *pool);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_register_pool(p) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_perf_on_scheduler_start",
+      "header": "RTOS/Core/Inc/rtos_perf.h",
+      "implementation": "RTOS/Services/rtos_perf.c",
+      "anchor": "api-rtos_perf_on_scheduler_start",
+      "classification": "internal-kernel-hook",
+      "signature": "void rtos_perf_on_scheduler_start(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_perf_on_scheduler_start() ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_timeout_ticks",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/Core/Inc/rtos_usb.h",
+      "anchor": "api-rtos_usb_timeout_ticks",
+      "classification": "conversion-inline",
+      "signature": "static inline rtos_tick_t rtos_usb_timeout_ticks(uint32_t ms)",
+      "kind": "inline"
+    },
+    {
+      "name": "rtos_usb_sem_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_sem_t *rtos_usb_sem_create(uint32_t init_count, uint32_t max_count);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_sem_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_sem_delete(rtos_usb_sem_t *sem);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_sem_take",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_take",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_sem_take(rtos_usb_sem_t *sem, rtos_tick_t timeout);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_sem_give",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_give",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_sem_give(rtos_usb_sem_t *sem);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_sem_reset",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_sem_reset",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_sem_reset(rtos_usb_sem_t *sem);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mutex_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_mutex_t *rtos_usb_mutex_create(void);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mutex_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_mutex_delete(rtos_usb_mutex_t *mutex);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mutex_take",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_take",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mutex_take(rtos_usb_mutex_t *mutex);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mutex_give",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mutex_give",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mutex_give(rtos_usb_mutex_t *mutex);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mq_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_mq_t *rtos_usb_mq_create(uint32_t max_msgs);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mq_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_mq_delete(rtos_usb_mq_t *mq);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mq_send",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_send",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mq_send(rtos_usb_mq_t *mq, uintptr_t addr, rtos_tick_t timeout);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_mq_recv",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_mq_recv",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_mq_recv(rtos_usb_mq_t *mq, uintptr_t *addr, rtos_tick_t timeout);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_thread_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_thread_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_thread_t *rtos_usb_thread_create(const char *name, uint32_t stack_size, rtos_prio_t prio, rtos_task_func_t entry, void *arg);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_thread_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_thread_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_thread_delete(rtos_usb_thread_t *thread);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_thread_schedule_other",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_thread_schedule_other",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_thread_schedule_other(void);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_timer_create",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_create",
+      "classification": "osal-adapter",
+      "signature": "rtos_usb_timer_t *rtos_usb_timer_create(const char *name, uint32_t ms, rtos_timer_cb_t cb, void *arg, bool is_periodic);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_timer_delete",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_delete",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_timer_delete(rtos_usb_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_timer_delete_checked",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_delete_checked",
+      "classification": "osal-adapter",
+      "signature": "rtos_status_t rtos_usb_timer_delete_checked(rtos_usb_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_timer_start",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_start",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_timer_start(rtos_usb_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_timer_stop",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_timer_stop",
+      "classification": "osal-adapter",
+      "signature": "void rtos_usb_timer_stop(rtos_usb_timer_t *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "rtos_usb_init",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_init",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_usb_init(void);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_init() ((rtos_status_t)RTOS_OK)"
+      ]
+    },
+    {
+      "name": "rtos_usb_register_isr",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_register_isr",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handler, void *arg);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_register_isr(irqn, h, arg) ((rtos_status_t)RTOS_OK)"
+      ]
+    },
+    {
+      "name": "rtos_usb_irq_dispatch",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_irq_dispatch",
+      "classification": "application",
+      "signature": "void rtos_usb_irq_dispatch(uint32_t irqn);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_irq_dispatch(irqn) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_malloc",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_malloc",
+      "classification": "application",
+      "signature": "void *rtos_usb_malloc(size_t size);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_malloc(size) ((void *)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_free",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_free",
+      "classification": "application",
+      "signature": "void rtos_usb_free(void *ptr);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_free(ptr) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_msleep",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-rtos_usb_msleep",
+      "classification": "application",
+      "signature": "void rtos_usb_msleep(uint32_t ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_msleep(ms) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_init",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_init",
+      "classification": "application",
+      "signature": "rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_init(busid, reg_base) ((rtos_status_t)RTOS_OK)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_isr",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_isr",
+      "classification": "application",
+      "signature": "void rtos_usb_cdc_isr(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_isr(busid) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_is_connected",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_is_connected",
+      "classification": "application",
+      "signature": "bool rtos_usb_cdc_is_connected(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_is_connected(busid) ((bool)false)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_write",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_write",
+      "classification": "application",
+      "signature": "int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_write(busid, d, l, t) ((int)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_read",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_read",
+      "classification": "application",
+      "signature": "int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_read(busid, b, l, t) ((int)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_available",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_available",
+      "classification": "application",
+      "signature": "uint32_t rtos_usb_cdc_available(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_available(busid) ((uint32_t)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_cdc_flush_rx",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_cdc_flush_rx",
+      "classification": "application",
+      "signature": "void rtos_usb_cdc_flush_rx(uint8_t busid);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_cdc_flush_rx(busid) ((void)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_msc_get_stats",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-rtos_usb_msc_get_stats",
+      "classification": "application",
+      "signature": "void rtos_usb_msc_get_stats(uint8_t busid, uint32_t *reads, uint32_t *writes);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_msc_get_stats(busid, r, w) do { if (r) *(r) = 0U; if (w) *(w) = 0U; } while (0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_hid_write",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_hid_write",
+      "classification": "application",
+      "signature": "int rtos_usb_hid_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_hid_write(busid, d, l, t) ((int)0)"
+      ]
+    },
+    {
+      "name": "rtos_usb_hid_read",
+      "header": "RTOS/Core/Inc/rtos_usb.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-rtos_usb_hid_read",
+      "classification": "application",
+      "signature": "int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeout_ms);",
+      "kind": "function",
+      "variants": [
+        "#define rtos_usb_hid_read(busid, b, l, t) ((int)0)"
+      ]
+    },
+    {
+      "name": "usb_osal_thread_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_thread_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_thread_t usb_osal_thread_create(const char *name, uint32_t stack_size, uint32_t prio, usb_thread_entry_t entry, void *args);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_thread_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_thread_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_thread_delete(usb_osal_thread_t thread);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_thread_schedule_other",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_thread_schedule_other",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_thread_schedule_other(void);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_sem_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_sem_t usb_osal_sem_create(uint32_t initial_count);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_sem_create_counting",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_create_counting",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_sem_t usb_osal_sem_create_counting(uint32_t max_count);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_sem_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_sem_delete(usb_osal_sem_t sem);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_sem_take",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_take",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_sem_take(usb_osal_sem_t sem, uint32_t timeout);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_sem_give",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_give",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_sem_give(usb_osal_sem_t sem);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_sem_reset",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_sem_reset",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_sem_reset(usb_osal_sem_t sem);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mutex_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_mutex_t usb_osal_mutex_create(void);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mutex_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_mutex_delete(usb_osal_mutex_t mutex);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mutex_take",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_take",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mutex_take(usb_osal_mutex_t mutex);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mutex_give",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mutex_give",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mutex_give(usb_osal_mutex_t mutex);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mq_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_create",
+      "classification": "third-party-bridge",
+      "signature": "usb_osal_mq_t usb_osal_mq_create(uint32_t max_msgs);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mq_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_mq_delete(usb_osal_mq_t mq);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mq_send",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_send",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mq_send(usb_osal_mq_t mq, uintptr_t addr);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_mq_recv",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_mq_recv",
+      "classification": "third-party-bridge",
+      "signature": "int usb_osal_mq_recv(usb_osal_mq_t mq, uintptr_t *addr, uint32_t timeout);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_timer_create",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_create",
+      "classification": "third-party-bridge",
+      "signature": "struct usb_osal_timer *usb_osal_timer_create(const char *name, uint32_t timeout_ms, usb_timer_handler_t handler, void *argument, bool is_period);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_timer_delete",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_delete",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_timer_delete(struct usb_osal_timer *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_timer_start",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_start",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_timer_start(struct usb_osal_timer *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_timer_stop",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_timer_stop",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_timer_stop(struct usb_osal_timer *timer);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_enter_critical_section",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_enter_critical_section",
+      "classification": "third-party-bridge",
+      "signature": "size_t usb_osal_enter_critical_section(void);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_leave_critical_section",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_leave_critical_section",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_leave_critical_section(size_t flag);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_msleep",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_msleep",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_msleep(uint32_t delay);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_malloc",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_malloc",
+      "classification": "third-party-bridge",
+      "signature": "void *usb_osal_malloc(size_t size);",
+      "kind": "function"
+    },
+    {
+      "name": "usb_osal_free",
+      "header": "RTOS/lib/third/CherryUSB/common/usb_osal.h",
+      "implementation": "RTOS/USB/rtos_usb_osal.c",
+      "anchor": "api-usb_osal_free",
+      "classification": "third-party-bridge",
+      "signature": "void usb_osal_free(void *ptr);",
+      "kind": "function"
+    },
+    {
+      "name": "CONFIG_USB_PRINTF",
+      "header": "RTOS/Core/Inc/usb_config.h",
+      "implementation": "RTOS/Core/Inc/usb_config.h",
+      "anchor": "api-CONFIG_USB_PRINTF",
+      "classification": "configuration-macro",
+      "signature": "#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)",
+      "kind": "macro",
+      "variants": [
+        "#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)"
+      ]
+    },
+    {
+      "name": "dwc2_get_user_fifo_config",
+      "header": "RTOS/lib/third/CherryUSB/port/dwc2/usb_dwc2_param.h",
+      "implementation": "RTOS/USB/rtos_usb_device.c",
+      "anchor": "api-dwc2_get_user_fifo_config",
+      "classification": "driver-callback",
+      "signature": "void dwc2_get_user_fifo_config(uint32_t reg_base, struct usb_dwc2_user_fifo_config *config);",
+      "kind": "function"
+    },
+    {
+      "name": "usbd_msc_get_cap",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-usbd_msc_get_cap",
+      "classification": "driver-callback",
+      "signature": "void usbd_msc_get_cap(uint8_t busid, uint8_t lun, uint32_t *block_num, uint32_t *block_size);",
+      "kind": "function"
+    },
+    {
+      "name": "usbd_msc_sector_read",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-usbd_msc_sector_read",
+      "classification": "driver-callback",
+      "signature": "int usbd_msc_sector_read(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length);",
+      "kind": "function"
+    },
+    {
+      "name": "usbd_msc_sector_write",
+      "header": "RTOS/lib/third/CherryUSB/class/msc/usbd_msc.h",
+      "implementation": "RTOS/USB/rtos_usb_msc.c",
+      "anchor": "api-usbd_msc_sector_write",
+      "classification": "driver-callback",
+      "signature": "int usbd_msc_sector_write(uint8_t busid, uint8_t lun, uint32_t sector, uint8_t *buffer, uint32_t length);",
+      "kind": "function"
+    }
+  ]
+}

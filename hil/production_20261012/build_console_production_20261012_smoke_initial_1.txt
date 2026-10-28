@@ -1,4 +1,0 @@
-﻿variant changed -> forced recompile of main.c and variant sources
-built 'production_stress' OK -- industrial pipeline: sixteen priorities, shared IPC and nested timer IRQs; warnings=25
-   text	   data	    bss	    dec	    hex	filename
-  45132	    120	  62440	 107692	  1a4ac	E:\STM32_Project\CubeIDE\f446_rtos\Debug\f446_rtos.elf
