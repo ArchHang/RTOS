@@ -1,0 +1,1 @@
+H743|FAULT|kind=hard|cfsr=00000400|hfsr=40000000|bfar=00000000|mmfar=00000000

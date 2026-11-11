@@ -1,0 +1,29 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+TTB|BEGIN|clock_hz=168000000|tick_hz=1000
+TTB|CASE|PASS|kind=sem|mutexes=0|waiters=1|n=48|avg=250|min=250|max=260
+TTB|CASE|PASS|kind=queue|mutexes=0|waiters=1|n=48|avg=241|min=241|max=246
+TTB|CASE|PASS|kind=sem|mutexes=0|waiters=4|n=48|avg=563|min=563|max=563
+TTB|CASE|PASS|kind=queue|mutexes=0|waiters=4|n=48|avg=528|min=528|max=538
+TTB|CASE|PASS|kind=sem|mutexes=0|waiters=8|n=48|avg=975|min=975|max=980
+TTB|CASE|PASS|kind=queue|mutexes=0|waiters=8|n=48|avg=904|min=904|max=904
+TTB|CASE|PASS|kind=sem|mutexes=0|waiters=16|n=48|avg=1799|min=1799|max=1809
+TTB|CASE|PASS|kind=queue|mutexes=0|waiters=16|n=48|avg=1656|min=1656|max=1661
+TTB|CASE|PASS|kind=sem|mutexes=8|waiters=1|n=48|avg=250|min=250|max=260
+TTB|CASE|PASS|kind=queue|mutexes=8|waiters=1|n=48|avg=241|min=241|max=246
+TTB|CASE|PASS|kind=sem|mutexes=8|waiters=4|n=48|avg=563|min=563|max=563
+TTB|CASE|PASS|kind=queue|mutexes=8|waiters=4|n=48|avg=528|min=528|max=538
+TTB|CASE|PASS|kind=sem|mutexes=8|waiters=8|n=48|avg=975|min=975|max=980
+TTB|CASE|PASS|kind=queue|mutexes=8|waiters=8|n=48|avg=904|min=904|max=904
+TTB|CASE|PASS|kind=sem|mutexes=8|waiters=16|n=48|avg=1799|min=1799|max=1809
+TTB|CASE|PASS|kind=queue|mutexes=8|waiters=16|n=48|avg=1656|min=1656|max=1661
+TTB|DONE|pass=16|fail=0

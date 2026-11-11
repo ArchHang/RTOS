@@ -2,7 +2,7 @@
  * @file production_irq.c
  * @brief Real TIM6/TIM7 interrupts driving shared production stress IPC objects.
  *
- * TIM6 uses an 84 MHz APB1 timer clock, 1 MHz counter, 1000 us period, priority 7.
+ * TIM6 uses the board's APB1 timer clock, 1 MHz counter, 1000 us period, priority 7.
  * TIM7 uses the same clock and a 701 us period, priority 6. Both priorities are
  * within the kernel syscall range. Vector names retain the CMSIS startup ABI.
  * The fixture rejects occupied timers/DAC IRQ use rather than taking them over.
@@ -16,9 +16,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "production_stress.h"
+#include "production_timer_target.h"
 #include "rtos_event.h"
 #include "rtos_port.h"
 #include "rtos_queue.h"
@@ -29,14 +28,14 @@
 #error "production_irq.c requires FIRMWARE_PRODUCTION_STRESS=1"
 #endif
 
-#if !defined(STM32F446xx) || !defined(__ARM_ARCH_7EM__)
-#error "production_irq.c supports only STM32F446 Cortex-M4 stress firmware"
+#if !defined(__ARM_ARCH_7EM__)
+#error "production_irq.c requires Armv7E-M stress firmware"
 #endif
 
-#define PRODUCTION_IRQ_TIMER_CLOCK_HZ (84000000U)
 #define PRODUCTION_IRQ_COUNTER_CLOCK_HZ (1000000U)
 #define PRODUCTION_IRQ_FORCE_INTERVAL (128U)
-#define PRODUCTION_IRQ_CLOCK_MASK ((uint32_t)(RCC_APB1ENR_TIM6EN | RCC_APB1ENR_TIM7EN))
+#define PRODUCTION_IRQ_CLOCK_MASK \
+    ((uint32_t)(PRODUCTION_TIMER_TIM6_ENABLE | PRODUCTION_TIMER_TIM7_ENABLE))
 
 typedef struct production_timer_state {
     uint32_t cr1;
@@ -85,12 +84,7 @@ static rtos_status_t check_config(const production_irq_config_t *config)
         || (config->queue->item_size != (uint32_t)sizeof(production_packet_t))) {
         return RTOS_ERR_PARAM;
     }
-    /* TIMPRE=0 doubles PCLK1 when APB1 is divided; this variant requires /4. */
-    if ((HAL_RCC_GetPCLK1Freq() != (PRODUCTION_IRQ_TIMER_CLOCK_HZ / 2U))
-        || (SystemCoreClock != 168000000U)
-        || ((RCC->CFGR & RCC_CFGR_PPRE1) != RCC_CFGR_PPRE1_DIV4)
-        || ((RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE) != 0U)
-        || (NVIC_GetPriorityGrouping() != 3U)
+    if (!PRODUCTION_TIMER_PROFILE_VALID() || (NVIC_GetPriorityGrouping() != 3U)
         || ((timer_priorities[1] << (8U - __NVIC_PRIO_BITS))
             < RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)) {
         return RTOS_ERR_PARAM;
@@ -101,8 +95,8 @@ static rtos_status_t check_config(const production_irq_config_t *config)
 static rtos_bool_t are_timers_idle(void)
 {
     /* TIM6 shares its vector with DAC underrun: no other producer may own it. */
-    if (((RCC->APB1ENR & RCC_APB1ENR_DACEN) != 0U)
-        && ((DAC->CR & (DAC_CR_DMAUDRIE1 | DAC_CR_DMAUDRIE2)) != 0U)) {
+    if (((PRODUCTION_TIMER_APB_ENABLE & PRODUCTION_TIMER_DAC_ENABLE) != 0U)
+        && ((PRODUCTION_TIMER_DAC->CR & (DAC_CR_DMAUDRIE1 | DAC_CR_DMAUDRIE2)) != 0U)) {
         return RTOS_FALSE;
     }
     for (uint32_t index = 0U; index < 2U; index++) {
@@ -141,7 +135,7 @@ static void configure_timer(uint32_t index)
     timer->CR1 = 0U;
     timer->CR2 = 0U;
     timer->DIER = 0U;
-    timer->PSC = (PRODUCTION_IRQ_TIMER_CLOCK_HZ / PRODUCTION_IRQ_COUNTER_CLOCK_HZ) - 1U;
+    timer->PSC = (PRODUCTION_TIMER_CLOCK_HZ / PRODUCTION_IRQ_COUNTER_CLOCK_HZ) - 1U;
     timer->ARR = timer_periods_us[index] - 1U;
     timer->CNT = 0U;
     timer->EGR = TIM_EGR_UG;
@@ -199,13 +193,13 @@ rtos_status_t production_irq_start(const production_irq_config_t *config)
         __set_PRIMASK(primask);
         return RTOS_ERR_ALREADY;
     }
-    saved_clock_mask = RCC->APB1ENR & PRODUCTION_IRQ_CLOCK_MASK;
-    RCC->APB1ENR |= PRODUCTION_IRQ_CLOCK_MASK;
+    saved_clock_mask = PRODUCTION_TIMER_APB_ENABLE & PRODUCTION_IRQ_CLOCK_MASK;
+    PRODUCTION_TIMER_APB_ENABLE |= PRODUCTION_IRQ_CLOCK_MASK;
     /* Complete the RCC clock write before reading the timer peripheral. */
-    (void)RCC->APB1ENR;
+    (void)PRODUCTION_TIMER_APB_ENABLE;
     __DSB();
     if (are_timers_idle() == RTOS_FALSE) {
-        RCC->APB1ENR = (RCC->APB1ENR & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
+        PRODUCTION_TIMER_APB_ENABLE = (PRODUCTION_TIMER_APB_ENABLE & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
         __DSB();
         __set_PRIMASK(primask);
         return RTOS_ERR_ALREADY;
@@ -213,7 +207,7 @@ rtos_status_t production_irq_start(const production_irq_config_t *config)
     status = production_highirq_start();
     if (status != RTOS_OK) {
         /* TIM6/TIM7 have only had their clocks enabled, not been configured. */
-        RCC->APB1ENR = (RCC->APB1ENR & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
+        PRODUCTION_TIMER_APB_ENABLE = (PRODUCTION_TIMER_APB_ENABLE & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
         __DSB();
         __set_PRIMASK(primask);
         return status;
@@ -275,9 +269,9 @@ rtos_status_t production_irq_stop(void)
             status = RTOS_ERR_PARAM;
         }
     }
-    RCC->APB1ENR = (RCC->APB1ENR & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
+    PRODUCTION_TIMER_APB_ENABLE = (PRODUCTION_TIMER_APB_ENABLE & ~PRODUCTION_IRQ_CLOCK_MASK) | saved_clock_mask;
     __DSB();
-    if ((RCC->APB1ENR & PRODUCTION_IRQ_CLOCK_MASK) != saved_clock_mask) {
+    if ((PRODUCTION_TIMER_APB_ENABLE & PRODUCTION_IRQ_CLOCK_MASK) != saved_clock_mask) {
         irq_snapshot.api_error_count++;
         status = RTOS_ERR_PARAM;
     }

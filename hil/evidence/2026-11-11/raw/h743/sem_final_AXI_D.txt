@@ -1,0 +1,16 @@
+H743|BOOT|cpu_hz=480000000|hclk_hz=240000000|pclk1_hz=120000000|pclk2_hz=120000000|timpre=0|baud=921600|cpuid=411fc271|idcode=20036450|flash_kib=2048
+H743|LAYOUT|kernel=24005ae0|task_stack=240000a0|msp=2001ffa8|ccr=00050200|actlr=00001000|icache=0|dcache=1|mpu_rbar=24000000|mpu_rasr=130b0025|grouping=3
+H743|READY|entry=audit_regressions_task|priority=9|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+SWB|META|clock_hz=480000000
+SWB|GIVE|waiters=1|high_enrolled=first|n=128|avg=600|min=600|max=614|PASS
+SWB|GIVE|waiters=2|high_enrolled=first|n=128|avg=564|min=564|max=564|PASS
+SWB|GIVE|waiters=2|high_enrolled=last|n=128|avg=564|min=564|max=564|PASS
+SWB|GIVE|waiters=8|high_enrolled=first|n=128|avg=564|min=564|max=564|PASS
+SWB|GIVE|waiters=8|high_enrolled=last|n=128|avg=564|min=564|max=564|PASS
+SWB|GIVE|waiters=16|high_enrolled=first|n=128|avg=564|min=564|max=578|PASS
+SWB|GIVE|waiters=16|high_enrolled=last|n=128|avg=564|min=564|max=578|PASS
+SWB|PRIORITY_FIFO|PASS
+SWB|STALE_BITMAP_PRIORITY_FIFO|PASS
+SWB|EMPTY_BITMAP_PRIORITY_FIFO|PASS
+SWB|TIMEOUT_BITMAP|PASS
+SWB|DONE|pass=11|fail=0

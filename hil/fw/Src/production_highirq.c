@@ -18,18 +18,17 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
+#include "production_timer_target.h"
 
 #if (!defined(FIRMWARE_PRODUCTION_STRESS) || (FIRMWARE_PRODUCTION_STRESS != 1)) \
     && !defined(FIRMWARE_BASEPRI_BLOCKING) && !defined(FIRMWARE_ADVERSARIAL_WAIT)
 #error "production_highirq.c requires a dedicated stress or blocking-test firmware"
 #endif
 
-#if !defined(STM32F446xx) || !defined(__ARM_ARCH_7EM__)
-#error "production_highirq.c requires the STM32F446 Cortex-M4 target"
+#if !defined(__ARM_ARCH_7EM__)
+#error "production_highirq.c requires Armv7E-M stress firmware"
 #endif
 
-#define PRODUCTION_HIGHIRQ_TIMER_CLOCK_HZ (84000000U)
 #define PRODUCTION_HIGHIRQ_COUNTER_CLOCK_HZ (1000000U)
 #define PRODUCTION_HIGHIRQ_SHORT_PERIOD_US (37U)
 #define PRODUCTION_HIGHIRQ_LONG_PERIOD_US (71U)
@@ -62,11 +61,7 @@ static rtos_status_t check_start_context(void)
         || (__get_FAULTMASK() != 0U)) {
         return RTOS_ERR_SCHED;
     }
-    if ((SystemCoreClock != 168000000U)
-        || (HAL_RCC_GetPCLK1Freq() != PRODUCTION_HIGHIRQ_TIMER_CLOCK_HZ / 2U)
-        || ((RCC->CFGR & RCC_CFGR_PPRE1) != RCC_CFGR_PPRE1_DIV4)
-        || ((RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE) != 0U)
-        || (NVIC_GetPriorityGrouping() != 3U)) {
+    if (!PRODUCTION_TIMER_PROFILE_VALID() || (NVIC_GetPriorityGrouping() != 3U)) {
         return RTOS_ERR_PARAM;
     }
     return RTOS_OK;
@@ -128,7 +123,7 @@ static uint32_t configure_timer(void)
     TIM2->CR1 = TIM_CR1_ARPE;
     TIM2->CR2 = 0U;
     TIM2->DIER = 0U;
-    TIM2->PSC = PRODUCTION_HIGHIRQ_TIMER_CLOCK_HZ / PRODUCTION_HIGHIRQ_COUNTER_CLOCK_HZ
+    TIM2->PSC = PRODUCTION_TIMER_CLOCK_HZ / PRODUCTION_HIGHIRQ_COUNTER_CLOCK_HZ
         - 1U;
     TIM2->ARR = PRODUCTION_HIGHIRQ_SHORT_PERIOD_US - 1U;
     TIM2->CNT = 0U;
@@ -162,12 +157,12 @@ rtos_status_t production_highirq_start(void)
         __set_PRIMASK(primask);
         return RTOS_ERR_ALREADY;
     }
-    saved_timer.clock = RCC->APB1ENR & RCC_APB1ENR_TIM2EN;
-    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-    (void)RCC->APB1ENR;
+    saved_timer.clock = PRODUCTION_TIMER_APB_ENABLE & PRODUCTION_TIMER_TIM2_ENABLE;
+    PRODUCTION_TIMER_APB_ENABLE |= PRODUCTION_TIMER_TIM2_ENABLE;
+    (void)PRODUCTION_TIMER_APB_ENABLE;
     __DSB();
     if (timer_is_idle() == 0U) {
-        RCC->APB1ENR = (RCC->APB1ENR & ~RCC_APB1ENR_TIM2EN) | saved_timer.clock;
+        PRODUCTION_TIMER_APB_ENABLE = (PRODUCTION_TIMER_APB_ENABLE & ~PRODUCTION_TIMER_TIM2_ENABLE) | saved_timer.clock;
         __DSB();
         __set_PRIMASK(primask);
         return RTOS_ERR_ALREADY;
@@ -312,9 +307,9 @@ rtos_status_t production_highirq_stop(void)
     forced_pending = 0U;
     highirq_state.is_running = 0U;
     mismatch = restore_timer();
-    RCC->APB1ENR = (RCC->APB1ENR & ~RCC_APB1ENR_TIM2EN) | saved_timer.clock;
+    PRODUCTION_TIMER_APB_ENABLE = (PRODUCTION_TIMER_APB_ENABLE & ~PRODUCTION_TIMER_TIM2_ENABLE) | saved_timer.clock;
     __DSB();
-    if ((RCC->APB1ENR & RCC_APB1ENR_TIM2EN) != saved_timer.clock) {
+    if ((PRODUCTION_TIMER_APB_ENABLE & PRODUCTION_TIMER_TIM2_ENABLE) != saved_timer.clock) {
         mismatch |= PRODUCTION_HIGHIRQ_RESTORE_CLOCK;
     }
     highirq_state.restore_mismatch = mismatch;

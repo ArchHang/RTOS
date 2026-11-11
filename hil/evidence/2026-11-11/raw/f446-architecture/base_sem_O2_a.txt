@@ -1,0 +1,24 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+SWB|META|clock_hz=168000000
+SWB|GIVE|waiters=1|high_enrolled=first|n=128|avg=291|min=291|max=295|PASS
+SWB|GIVE|waiters=2|high_enrolled=first|n=128|avg=354|min=354|max=354|PASS
+SWB|GIVE|waiters=2|high_enrolled=last|n=128|avg=337|min=337|max=337|PASS
+SWB|GIVE|waiters=8|high_enrolled=first|n=128|avg=409|min=409|max=409|PASS
+SWB|GIVE|waiters=8|high_enrolled=last|n=128|avg=403|min=403|max=407|PASS
+SWB|GIVE|waiters=16|high_enrolled=first|n=128|avg=489|min=489|max=489|PASS
+SWB|GIVE|waiters=16|high_enrolled=last|n=128|avg=491|min=491|max=495|PASS
+SWB|PRIORITY_FIFO|PASS
+SWB|STALE_BITMAP_PRIORITY_FIFO|PASS
+SWB|EMPTY_BITMAP_PRIORITY_FIFO|PASS
+SWB|TIMEOUT_BITMAP|PASS
+SWB|DONE|pass=11|fail=0

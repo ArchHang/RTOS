@@ -1,0 +1,41 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+TRB|CHECK|setup|PASS
+TRB|NOTIFY|active=1|path=newest|N=512|avg=119|min=119|max=334|PASS
+TRB|NOTIFY|active=1|path=oldest|N=512|avg=119|min=119|max=181|PASS
+TRB|NOTIFY|active=1|path=sweep|N=512|avg=119|min=119|max=181|PASS
+TRB|CHECK|cleanup|PASS
+TRB|CHECK|setup|PASS
+TRB|NOTIFY|active=8|path=newest|N=512|avg=119|min=119|max=181|PASS
+TRB|NOTIFY|active=8|path=oldest|N=512|avg=119|min=119|max=181|PASS
+TRB|NOTIFY|active=8|path=sweep|N=512|avg=120|min=119|max=181|PASS
+TRB|CHECK|cleanup|PASS
+TRB|CHECK|setup|PASS
+TRB|NOTIFY|active=16|path=newest|N=512|avg=119|min=119|max=181|PASS
+TRB|NOTIFY|active=16|path=oldest|N=512|avg=125|min=125|max=187|PASS
+TRB|NOTIFY|active=16|path=sweep|N=512|avg=120|min=119|max=187|PASS
+TRB|CHECK|cleanup|PASS
+TRB|CHECK|setup|PASS
+TRB|NOTIFY|active=32|path=newest|N=512|avg=119|min=119|max=334|PASS
+TRB|NOTIFY|active=32|path=oldest|N=512|avg=125|min=125|max=187|PASS
+TRB|NOTIFY|active=32|path=sweep|N=512|avg=123|min=119|max=187|PASS
+TRB|HASH|used=15|max_depth=4|collision_a=1|collision_b=6|miss=33
+TRB|CHECK|collision_identity|PASS
+TRB|NOTIFY|active=32|path=collision_oldest|N=512|avg=137|min=137|max=199|PASS
+TRB|NOTIFY|active=32|path=same_bucket_miss|N=512|avg=117|min=117|max=331|PASS
+TRB|CHECK|duplicate_reservation|PASS
+TRB|CHECK|cross_bucket_stack_overlap|PASS
+TRB|CHECK|arbitrary_address|PASS
+TRB|CHECK|cleanup|PASS
+TRB|CHECK|deleted_address|PASS
+TRB|CHECK|same_address_recreated|PASS
+TRB|DONE|pass=28|fail=0

@@ -1,0 +1,4 @@
+PASS seed=00000001 steps=200000
+PASS seed=12345678 steps=200000
+PASS seed=a5a5a5a5 steps=200000
+PASS seed=deadbeef steps=200000

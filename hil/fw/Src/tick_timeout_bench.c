@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "stm32f4xx.h"
+#include "hil_target.h"
 
 #include "adversarial_registry.h"
 #include "rtos.h"

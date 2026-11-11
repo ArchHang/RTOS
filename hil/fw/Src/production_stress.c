@@ -20,8 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-
+#include "hil_target.h"
 #include "production_irq.h"
 #include "rtos.h"
 #include "rtos_heap.h"
@@ -648,8 +647,7 @@ static uint32_t stress_tcb_index(const rtos_tcb_t *tcb)
     return STRESS_WORKERS;
 }
 
-static uint32_t stress_list_check(rtos_wait_node_t **head, const void *object,
-                                  uint32_t is_ordered, uint32_t *bitmap)
+static uint32_t stress_list_check(rtos_wait_node_t **head, const void *object, uint32_t *bitmap)
 {
     rtos_wait_node_t *node = *head;
     rtos_wait_node_t *previous = NULL;
@@ -674,9 +672,12 @@ static uint32_t stress_list_check(rtos_wait_node_t **head, const void *object,
             stress_record_failure("WAIT_LINK_MEMBERSHIP", (int32_t)index, 0);
             break;
         }
-        if ((is_ordered != 0U) && (previous != NULL)
-            && (previous->tcb->priority > tcb->priority)) {
+        if ((node->queued_priority != tcb->priority) ||
+            ((previous != NULL) && (previous->queued_priority > node->queued_priority))) {
             stress_record_failure("WAIT_LINK_PRIORITY", (int32_t)index, 0);
+        }
+        if ((node->is_mutex_wait != RTOS_FALSE) != (object == &resource_mutex)) {
+            stress_record_failure("WAIT_LINK_TYPE", (int32_t)index, 0);
         }
         visited |= 1U << index;
         priority_bits |= 1U << tcb->priority;
@@ -706,24 +707,24 @@ static void stress_update_peak(uint32_t value, uint32_t *peak)
 static void stress_observe(void)
 {
     RTOS_PORT_ENTER_CRITICAL();
-    uint32_t count = stress_list_check(&data_queue.recv_wait_head, &data_queue, 1U, NULL);
+    uint32_t count = stress_list_check(&data_queue.recv_wait_head, &data_queue, NULL);
     stress_update_peak(count, &shared_state.queue_receive_peak);
-    count = stress_list_check(&data_queue.send_wait_head, &data_queue, 1U, NULL);
+    count = stress_list_check(&data_queue.send_wait_head, &data_queue, NULL);
     stress_update_peak(count, &shared_state.queue_send_peak);
     uint32_t bitmap = 0U;
-    count = stress_list_check(&irq_sem.wait_head, &irq_sem, 0U, &bitmap);
+    count = stress_list_check(&irq_sem.wait_head, &irq_sem, &bitmap);
     stress_update_peak(count, &shared_state.sem_peak);
     if (bitmap != irq_sem.wait_bitmap) {
         stress_record_failure("IRQ_SEM_BITMAP", (int32_t)irq_sem.wait_bitmap, (int32_t)bitmap);
     }
-    count = stress_list_check(&lease_sem.wait_head, &lease_sem, 0U, &bitmap);
+    count = stress_list_check(&lease_sem.wait_head, &lease_sem, &bitmap);
     stress_update_peak(count, &shared_state.lease_peak);
     if (bitmap != lease_sem.wait_bitmap) {
         stress_record_failure("LEASE_BITMAP", (int32_t)lease_sem.wait_bitmap, (int32_t)bitmap);
     }
-    count = stress_list_check(&shared_event.wait_head, &shared_event, 1U, NULL);
+    count = stress_list_check(&shared_event.wait_head, &shared_event, NULL);
     stress_update_peak(count, &shared_state.event_peak);
-    count = stress_list_check(&resource_mutex.wait_head, &resource_mutex, 1U, NULL);
+    count = stress_list_check(&resource_mutex.wait_head, &resource_mutex, NULL);
     stress_update_peak(count, &shared_state.mutex_peak);
     if (resource_mutex.owner != NULL) {
         uint32_t owner_index = stress_tcb_index(resource_mutex.owner);

@@ -1,0 +1,14 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+STB|CASE|PASS|path=empty|n=128|avg=187|min=187|p50=187|p95=187|max=206
+STB|CASE|PASS|path=future|n=128|avg=223|min=223|p50=223|p95=223|max=260
+STB|DONE|pass=2|fail=0

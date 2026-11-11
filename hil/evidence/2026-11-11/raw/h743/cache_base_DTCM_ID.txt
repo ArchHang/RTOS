@@ -1,0 +1,13 @@
+H743|BOOT|cpu_hz=480000000|hclk_hz=240000000|pclk1_hz=120000000|pclk2_hz=120000000|timpre=0|baud=921600|cpuid=411fc271|idcode=20036450|flash_kib=2048
+H743|LAYOUT|kernel=20002338|task_stack=200000a0|msp=2001ffa8|ccr=00070200|actlr=00001000|icache=1|dcache=1|mpu_rbar=24000000|mpu_rasr=130b0025|grouping=3
+H743|READY|entry=h743_bench_run|priority=9|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+CACHE|GEOM|icache=1|dcache=1|line=32|i_bytes=16384|d_bytes=16384|ccr=00070200|dwt=40000001
+CACHE|LAYOUT|kernel=20002338|kernel_bytes=244|common_lines=3|current_offset=144|ready_offset=12|axi=24000000|dtcm=2000b740
+CACHE|CASE|axi_packed_warm|PASS|n=128|invalidated=0|avg=26|min=26|p50=26|p95=26|max=30
+CACHE|CASE|axi_spread_warm|PASS|n=128|invalidated=0|avg=27|min=27|p50=27|p95=27|max=30
+CACHE|CASE|axi_packed_cold|PASS|n=128|invalidated=1|avg=33|min=33|p50=33|p95=33|max=41
+CACHE|CASE|axi_spread_cold|PASS|n=128|invalidated=1|avg=51|min=51|p50=51|p95=51|max=57
+CACHE|CASE|dtcm_packed|PASS|n=128|invalidated=0|avg=26|min=26|p50=26|p95=26|max=29
+CACHE|CASE|dtcm_spread|PASS|n=128|invalidated=0|avg=27|min=27|p50=27|p95=27|max=30
+CACHE|CASE|kernel_no_switch_warm|PASS|n=128|invalidated=0|avg=31|min=31|p50=31|p95=31|max=34
+CACHE|DONE|pass=7|fail=0

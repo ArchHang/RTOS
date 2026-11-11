@@ -15,6 +15,7 @@ param(
     [uint32] $StressSeed = 1,
     [ValidateRange(6,900)][int] $StressSeconds = 30,
     [ValidateRange(1,64)][int] $StressQueueCapacity = 8,
+    [ValidateSet(512,768)][int] $CdcRxCapacity = 768,
     [switch] $StressInjectCorruption,
     [ValidateSet('basepri','primask')][string] $CriticalMask = 'basepri',
     [switch] $DisableAssertions,
@@ -44,6 +45,34 @@ $env:PATH = "$TOOLS;$env:PATH"
 # exclude : Core/Src translation units dropped from this variant
 # extra   : source basenames copied hil\fw\Src -> hil\fwsrc and compiled
 $VARIANTS = @{
+    systick_empty_bench = @{
+        desc = 'Measure real SysTick with empty and future-only delay queues'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('systick_empty_bench')
+    }
+    task_registry_bench = @{
+        desc = 'DWT timing of task notification by registered handle'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('task_registry_bench')
+    }
+    usb_cdc_cursor_regression = @{
+        desc = 'CDC byte delivery across receive cursor wrap'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('usb_cdc_cursor_regression')
+    }
+    usb_osal_priority_regression = @{
+        desc = 'USB scheduling helper preserves inherited mutex priority'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('usb_osal_priority_regression')
+    }
     sem_wake_bench = @{
         desc = 'DWT timing of signal delivery with multiple real waiters'
         flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
@@ -78,6 +107,13 @@ $VARIANTS = @{
             'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
         exclude = @('benchmark')
         extra = @('tick_timeout_bench')
+    }
+    wrap_ipc_regression = @{
+        desc = 'Real SysTick rollover with simultaneous IPC timeout and IRQ completion'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('wrap_ipc_regression')
     }
     pool_free_bench = @{
         desc = 'DWT timing of fixed pool block validation and release'
@@ -338,6 +374,9 @@ if ($DisableAssertions -or $Variant -eq 'basepri_nesting') {
 }
 if ($Variant -eq 'basepri') { $configFlags += '-DRTOS_HIL_CRITICAL_TEST=1' }
 if ($Variant -eq 'adversarial_lifetime') { $configFlags += '-DRTOS_HIL_OBJECT_LIFETIME=1' }
+if ($Variant -eq 'usb_cdc_cursor_regression') {
+    $configFlags += @('-DRTOS_HIL_USB_CDC_CURSOR_TEST=1', "-DRTOS_CONFIG_USB_CDC_RX_BUF_SIZE=$($CdcRxCapacity)U")
+}
 $configArgs = $configFlags -join ' '
 
 # The audit injects a real syscall-priority IRQ at the PendSV decision window.
@@ -361,11 +400,15 @@ if ($Variant -eq 'audit') {
 if ($Variant -eq 'basepri_guard') {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_assert_fail')
 }
+if ($Variant -eq 'usb_cdc_cursor_regression') {
+    $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections',
+        '-Wl,--gc-sections -Wl,--wrap=usbd_ep_start_read')
+}
 if ($Variant -in @('timer_supervisor','timer_dispatch_bench')) {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections',
         '-Wl,--gc-sections -Wl,--wrap=rtos_queue_recv -Wl,--wrap=rtos_internal_queue_recv_until')
 }
-if ($Variant -eq 'tick_timeout_bench') {
+if ($Variant -in @('tick_timeout_bench','wrap_ipc_regression','systick_empty_bench')) {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_sched_tick')
 }
 [System.IO.File]::WriteAllText($auditLinkMk, $auditLinkRaw)
@@ -428,7 +471,9 @@ foreach ($l in $lines) {
 
 if ($cfg.extra.Count -gt 0) {
     $rule = ($out | Where-Object { $_ -match '^\s*arm-none-eabi-gcc' } | Select-Object -First 1)
-    if ($Variant -in @('sem_wake_bench','timer_dispatch_bench','perf_snapshot_bench',
+    if ($Variant -in @('systick_empty_bench','task_registry_bench',
+        'usb_cdc_cursor_regression','usb_osal_priority_regression',
+        'wrap_ipc_regression','sem_wake_bench','timer_dispatch_bench','perf_snapshot_bench',
         'mutex_release_bench','tick_timeout_bench','pool_free_bench','adc_capture',
         'bus_recovery','timer_supervisor','uart_pipeline','queue_copy','fault_diagnostics','startup_clock',
         'robustness','robustness_msp','lowlevel','flash_diag','production_stress','basepri','basepri_guard',

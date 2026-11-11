@@ -1,0 +1,28 @@
+--- a/RTOS/USB/rtos_usb_device.c
++++ b/RTOS/USB/rtos_usb_device.c
+@@ -1009,4 +1009,25 @@
+ }
+ #endif
+ 
++#if defined(RTOS_HIL_USB_CDC_CURSOR_TEST)
++/* Seed an empty test ring and inject bytes through the real receive callback. */
++void rtos_usb_cdc_cursor_test_seed(uint32_t total)
++{
++    rtos_usb_cdc_dev_t *dev = &s_cdc_dev[0];
++    memset(dev->rx_buf, 0, sizeof(dev->rx_buf));
++    dev->rx_head = total;
++    dev->rx_tail = total;
++}
++
++bool rtos_usb_cdc_cursor_test_push(const uint8_t *data, uint32_t count)
++{
++    if ((data == NULL) || (count > RTOS_CONFIG_USB_CDC_EP_OUT_BUF_SIZE)) {
++        return false;
++    }
++    memcpy(s_cdc_dev[0].ep_out_buf, data, count);
++    rtos_usb_cdc_bulk_out(0U, CDC_OUT_EP, count);
++    return true;
++}
++#endif
++
+ #endif /* RTOS_CONFIG_USE_USB */

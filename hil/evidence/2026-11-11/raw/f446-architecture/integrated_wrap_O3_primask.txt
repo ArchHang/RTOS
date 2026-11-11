@@ -1,0 +1,29 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+WRAP|BEGIN|rounds=16|workers=12
+WRAP|ROUND|PASS|n=1|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=2|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=3|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=4|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=5|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=6|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=7|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=8|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=9|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=10|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=11|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=12|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=13|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=14|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=15|systick=3|irq=1|irq_tick=0
+WRAP|ROUND|PASS|n=16|systick=3|irq=1|irq_tick=0
+WRAP|DONE|pass=16|fail=0

@@ -1,0 +1,6 @@
+H743|BOOT|cpu_hz=480000000|hclk_hz=240000000|pclk1_hz=120000000|pclk2_hz=120000000|timpre=0|baud=921600|cpuid=411fc271|idcode=20036450|flash_kib=2048
+H743|LAYOUT|kernel=240026ec|task_stack=240000a0|msp=2001ffa8|ccr=00070200|actlr=00001000|icache=1|dcache=1|mpu_rbar=24000000|mpu_rasr=130b0025|grouping=3
+H743|READY|entry=audit_regressions_task|priority=9|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+STB|CASE|PASS|path=empty|n=128|avg=38|min=36|p50=36|p95=50|max=132
+STB|CASE|PASS|path=future|n=128|avg=42|min=40|p50=40|p95=53|max=113
+STB|DONE|pass=2|fail=0

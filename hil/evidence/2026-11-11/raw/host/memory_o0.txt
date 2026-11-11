@@ -1,0 +1,14 @@
+host_pointer_bytes=8 host_pointer_alignment=8
+PASS family=heap seed=0x00000001 operations=200000 alloc=92895 free=92895 exhausted=14594 complete_reuse=8 rejection=0 peak_live=64 checked_bytes=67863463
+pool seed=0x00000001 request=1 stride=8 blocks=1
+PASS family=pool seed=0x00000001 operations=200000 alloc=100008 free=100008 exhausted=8 complete_reuse=8 rejection=504 peak_live=1 checked_bytes=803200
+PASS family=heap seed=0x12345678 operations=200000 alloc=92663 free=92663 exhausted=15027 complete_reuse=8 rejection=0 peak_live=67 checked_bytes=67885959
+pool seed=0x12345678 request=9 stride=16 blocks=7
+PASS family=pool seed=0x12345678 operations=200000 alloc=100068 free=100068 exhausted=8 complete_reuse=8 rejection=535 peak_live=7 checked_bytes=1645280
+PASS family=heap seed=0xa5a5a5a5 operations=200000 alloc=93148 free=93148 exhausted=14083 complete_reuse=8 rejection=0 peak_live=66 checked_bytes=67863822
+pool seed=0xa5a5a5a5 request=33 stride=40 blocks=32
+PASS family=pool seed=0xa5a5a5a5 operations=200000 alloc=100330 free=100330 exhausted=8 complete_reuse=8 rejection=733 peak_live=32 checked_bytes=4507200
+PASS family=heap seed=0xdeadbeef operations=200000 alloc=92926 free=92926 exhausted=14512 complete_reuse=8 rejection=0 peak_live=64 checked_bytes=68074799
+pool seed=0xdeadbeef request=129 stride=136 blocks=96
+PASS family=pool seed=0xdeadbeef operations=200000 alloc=100965 free=100965 exhausted=8 complete_reuse=8 rejection=1244 peak_live=96 checked_bytes=18803496
+PASS random_memory 8 seed/backend cases

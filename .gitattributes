@@ -3,6 +3,9 @@ hil/**/*.txt -text -whitespace
 hil/**/*.json -text -whitespace
 hil/**/*.log -text -whitespace
 hil/**/*.csv -text -whitespace
+hil/evidence/**/*.patch -text -whitespace
+hil/evidence/**/replay/**/*.c -text whitespace=cr-at-eol
+hil/evidence/**/replay/**/*.h -text whitespace=cr-at-eol
 
 # Preserve canonical CubeIDE-generated templates as recorded.
 hil/templates/** -whitespace

@@ -1,0 +1,60 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+RB|BEGIN|basepri=1|assert=1|preempt=0|hotpath=1
+RB|CHECK|memory.heap_free_setup|PASS
+RB|CHECK|memory.heap_invalid_free_unchanged|PASS
+RB|CHECK|memory.heap_double_free_unchanged|PASS
+RB|CHECK|memory.heap_adjacent_setup|PASS
+RB|CHECK|memory.heap_adjacent_capacity|PASS
+RB|CHECK|memory.heap_live_separator_blocks_merge|PASS
+RB|CHECK|memory.heap_adjacent_allocation|PASS
+RB|CHECK|memory.heap_adjacent_preserves_live_payload|PASS
+RB|CHECK|memory.heap_full_capacity_recovered|PASS
+RB|CHECK|memory.heap_full_size_reallocation|PASS
+RB|CHECK|memory.pool_odd_size_init|PASS
+RB|CHECK|memory.pool_every_block_aligned|PASS
+RB|CHECK|memory.pool_odd_size_exhausted|PASS
+RB|CHECK|memory.pool_odd_size_restored|PASS
+RB|CHECK|core_static_storage_create|PASS
+RB|CHECK|core_static_overlapping_stack_rejected|PASS
+RB|CHECK|core_static_overlap_cleanup|PASS
+RB|CHECK|core_static_adjacent_stack_accepted|PASS
+RB|CHECK|core_static_adjacent_cleanup|PASS
+RB|CHECK|core_static_storage_cleanup|PASS
+RB|CHECK|core_dynamic_stack_pressure_setup|PASS
+RB|CHECK|core_dynamic_stack_pressure_no_mem|PASS
+RB|CHECK|core_dynamic_stack_pressure_rollback|PASS
+RB|CHECK|core_stack_guard_task_created|PASS
+RB|CHECK|core_stack_guard_probe_is_delayed|PASS
+RB|CHECK|core_physical_stack_guard_reported|PASS
+RB|CHECK|core_stack_guard_task_cleanup|PASS
+RB|CHECK|core_masked_wait_sem_created|PASS
+RB|CHECK|core_nested_wait_rejected|PASS
+RB|CHECK|core_primask_wait_rejected|PASS
+RB|CHECK|core_basepri_wait_rejected|PASS
+RB|CHECK|core_faultmask_wait_rejected|PASS
+RB|CHECK|core_masked_available_resource_accepted|PASS
+RB|CHECK|core_unmasked_finite_wait_times_out|PASS
+RB|CHECK|core_masked_wait_sem_cleanup|PASS
+RB|CHECK|core_cooperative_higher_ready|PASS
+RB|CHECK|core_cooperative_tick_does_not_preempt|PASS
+RB|CHECK|core_cooperative_yield_picks_higher_ready|PASS
+RB|CHECK|core_cooperative_idle_dispatches_wake|PASS
+RB|CHECK|usb_osal_first_init|PASS
+RB|CHECK|usb_osal_repeat_setup|PASS
+RB|CHECK|usb_osal_repeat_rejected|PASS
+RB|CHECK|usb_osal_repeat_preserves_bytes|PASS
+RB|CHECK|usb_osal_repeat_preserves_block_owner|PASS
+RB|CHECK|usb_osal_repeat_preserves_live_semaphore|PASS
+RB|CHECK|perf_running_slice_sample_without_switch|PASS
+RB|CHECK|perf_running_slice_updates_cpu_and_cycles|PASS
+RB|DONE|pass=47|fail=0

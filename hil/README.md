@@ -6,7 +6,9 @@
 [rtos_design.md](../docs/rtos_design.md)。
 
 测试结论和归档范围按日期记录。本次交付所用验证入口、覆盖和结果见
-[工程交付报告](../docs/logs/2026-11-11.md#delivery-report)。
+[工程交付报告](../docs/logs/2026-11-11.md#delivery-report)，长时间压力与加速回绕的
+结果见 [F446 长时并发与回绕回归](../docs/logs/2026-11-11.md#long-soak)。
+本批保留的 [实测证据与复跑入口](evidence/2026-11-11/README.md) 集中记录 F446、H743 及宿主结果。
 
 ## 1. 目录与职责
 
@@ -49,6 +51,7 @@ hil/
 | 单个变体构建 | `build_fw.ps1` | 否，需 ARM GCC 与 make |
 | 单个镜像下载与串口采集 | `run_hil.ps1` | 是 |
 | 恢复日常构建规则 | `restore_project.ps1` | 否；重建需工具链，重新下载需板卡 |
+| STM32H743 Cortex-M7 实测、Flash 备份与恢复 | [h743](h743/README.md) | 是，ST-LINK V3 与 USART1 VCP |
 
 历史验收器按当时的字段和原始批次工作。当前实板复测应选择表中相应入口，使用新的
 输出目录，并保留源码身份、构建、固件、下载和原始日志。
@@ -79,6 +82,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File hil/run_hil.ps1 `
     -Elf Debug/f446_rtos.elf -Tag production_01 -Seconds 950 `
     -Terminator 'STRESS\|DONE\|' -OutDir hil/logs/rerun_YYYYMMDD
 
+# 回归多 IPC 在 Tick 0 的超时、交付与资源清理。
+powershell -NoProfile -ExecutionPolicy Bypass -File hil/build_fw.ps1 `
+    -Variant wrap_ipc_regression -Optimization O3 -CriticalMask primask -DisableAssertions
+powershell -NoProfile -ExecutionPolicy Bypass -File hil/run_hil.ps1 `
+    -Elf Debug/f446_rtos.elf -Tag wrap_ipc_01 -Seconds 20 `
+    -Terminator 'WRAP\|DONE\|pass=16\|fail=0' -OutDir hil/logs/rerun_YYYYMMDD
+
 # 恢复规则并重建日常固件；该命令本身不会将日常固件重新烧录。
 powershell -NoProfile -ExecutionPolicy Bypass -File hil/restore_project.ps1 -Rebuild
 powershell -NoProfile -ExecutionPolicy Bypass -File hil/run_hil.ps1 `
@@ -102,12 +112,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File hil/run_hil.ps1 `
 | `selftest` | 功能回归；真实 USART 中断需上位机回发 `X` | `ST\|SUMMARY` |
 | `boundary` | API 参数、上下文及边界契约 | `BT\|SUMMARY` |
 | `audit` | IPC、内存、定时器、USB 包装及端口回归 | `AT\|DONE` |
+| `wrap_ipc_regression` | 12 个并发等待者跨过 Tick 0，真实 SysTick 与 NVIC EXTI1 验证摘链、交付和迟到通知 | `WRAP\|DONE\|pass=16\|fail=0` |
+| `usb_osal_priority_regression` | 让步期间保留基础优先级，持锁继承和解锁回退 | `UPR\|DONE\|pass=9\|fail=0` |
+| `usb_cdc_cursor_regression` | 512/768 字节接收环的逻辑计数回绕、物理折返、满载有序和清空。使用 `-CdcRxCapacity 512` 或 `768` | `CDCWR\|DONE\|pass=4\|fail=0` |
 | `robustness_msp` | 首任务 MSP、单次真实 PendSV 与 32 轮阻塞恢复 | `MSP\|DONE` |
 | `robustness` | 任务栈、屏蔽、协作调度、堆/固定池及服务 | `RB\|DONE` |
 | `wake_bench` | 常规 BM0–BM7 加 1000 次 PendSV 前信号量 give 周期 | `BM\|DONE` |
 | `mutex_release_bench` | 1 或 8 把已注册锁时的空等待最终释放；另验递归、其他锁继承和真实交接 | `MRB\|DONE` |
 | `tick_timeout_bench` | 0 或 8 把无关注册锁、1/4/8/16 个信号量或队列等待者同 tick 超时 | `TTB\|DONE` |
-| `sem_wake_bench` | 真实等待者的优先级/FIFO 交付、位图回退和超时清位；只计给出到 PendSV 前 | `SWB\|DONE` |
+| `sem_wake_bench` | 真实等待者的优先级/FIFO 交付、观测位图篡改对照与超时清位；计时到 PendSV 前 | `SWB\|DONE` |
+| `task_registry_bench` | 1、8、16、32 个登记任务的通知，覆盖哈希碰撞、非法地址与同址重建 | `TRB\|DONE\|pass=28\|fail=0` |
+| `systick_empty_bench` | 真实 SysTick 无到期的空链和未来截止链首，各采 128 次调度器周期 | `STB\|DONE\|pass=2\|fail=0` |
 | `timer_dispatch_bench` | 命令排空到永久或绝对截止等待入口，验证回调时刻及屏蔽状态 | `TDB\|DONE` |
 | `perf_snapshot_bench` | 单条及 1/8/16 条任务快照，验证容量、字段和屏蔽恢复；可加 `-PerfHotpath` | `PSB\|DONE` |
 | `pool_free_bench` | 36/64 字节块、0/31 个空闲节点的归还计时及非法地址、重复归还检查 | `PFB\|DONE` |

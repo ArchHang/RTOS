@@ -1,0 +1,35 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+SUP|setup|PASS|actual=0|expect=0
+SUP|output_task|PASS|actual=0|expect=0
+SUP|load_task|PASS|actual=0|expect=0
+SUP|grant_report|PASS|actual=0|expect=0
+SUP|grant_enables_gpio|PASS|actual=1|expect=1
+SUP|load_gate_released|PASS|actual=0|expect=0
+SUP|load_runs_once|PASS|actual=1|expect=1
+SUP|preemption_crosses_deadline|PASS|actual=55|expect=55
+SUP|expired_report|PASS|actual=0|expect=0
+SUP|expiry_disables_gpio|PASS|actual=0|expect=0
+SUP|no_second_sleep_after_preemption|PASS|actual=0|expect=4
+SUP|housekeeping_start|PASS|actual=0|expect=0
+SUP|initial_lease_granted|PASS|actual=0|expect=0
+SUP|renewed_lease_granted|PASS|actual=0|expect=0
+SUP|renew_keeps_gpio_high|PASS|actual=1|expect=1
+SUP|renewed_lease_expires|PASS|actual=0|expect=0
+SUP|only_new_deadline_expires|PASS|actual=40|expect=40
+SUP|housekeeping_self_stop|PASS|actual=0|expect=0
+SUP|housekeeping_runs_exactly_three_times|PASS|actual=3|expect=3
+SUP|no_lost_reports_or_extra_expiries|PASS|actual=2|expect=2
+SUP|delete_lease_accepted|PASS|actual=0|expect=0
+SUP|delete_housekeeping_accepted|PASS|actual=0|expect=0
+SUP|delete_output_task|PASS|actual=0|expect=0
+SUP|DONE|pass=23|fail=0
