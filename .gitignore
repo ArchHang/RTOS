@@ -28,6 +28,7 @@ desktop.ini
 hil/fwsrc/
 hil/templates/subdir.mk.last_variant
 hil/logs/
+hil/ai_docs/evidence/
 hil/**/rerun/
 hil/**/.objects/
 hil/refactor_20261027/evidence/
