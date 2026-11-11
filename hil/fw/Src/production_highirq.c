@@ -378,12 +378,18 @@ void TIM2_IRQHandler(void)
         return;
     }
     natural = (TIM2->SR & TIM_SR_UIF) != 0U ? 1U : 0U;
-    TIM2->SR = ~(uint32_t)TIM_SR_UIF;
+    if (natural != 0U) {
+        /* A software-pended entry must not clear an update it did not see. */
+        TIM2->SR = ~(uint32_t)TIM_SR_UIF;
+        (void)TIM2->SR;
+        __DSB();
+    }
     forced = forced_pending;
     forced_pending = 0U;
     highirq_state.entries++;
     highirq_state.natural_updates += natural;
     highirq_state.forced_observed += forced;
+    highirq_state.coincident_entries += natural & forced;
     highirq_state.last_basepri = __get_BASEPRI();
     highirq_state.last_ipsr = __get_IPSR();
     highirq_state.priority = NVIC_GetPriority(TIM2_IRQn);

@@ -226,8 +226,8 @@ static const struct usb_descriptor s_cdc_descriptor = {
 typedef struct {
     volatile bool connected; /* 主机已配置 */
     volatile bool tx_busy; /* TX DMA 传输进行中(回调清除) */
-    volatile uint32_t tx_done_seq; /* TX 完成序号(仅 IN 回调完成分支递增,
-                                    * 写者用它区分"真完成"与"事件唤醒") */
+    volatile bool tx_has_failed; /* IN 回调报告当前块的终止错误 */
+    volatile uint32_t tx_done_seq; /* 当前块成功或失败都结束等待，连接事件只更新 session */
     volatile uint32_t session_seq; /* RESET/断开/重新配置使在途操作失效 */
     rtos_usb_sem_t *rx_sem; /* RX 数据可用信号量 */
     rtos_usb_sem_t *tx_sem; /* TX 完成信号量 */
@@ -419,8 +419,27 @@ static void rtos_usb_cdc_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 }
 
 /* ---- IN 端点回调(发送完成) ---- */
-/* 安全优化: 仅在 tx_busy=true 时给信号量, 防止陈旧回调(超时后迟到的完成)
- * 产生虚假信号污染下一次发送。 */
+static void cdc_handle_in_completion(uint8_t busid, uint32_t nbytes, uint16_t mps)
+{
+    rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
+    if (!dev->tx_busy) {
+        return;
+    }
+
+    bool is_zlp_required = (nbytes != 0U) && (mps != 0U) && ((nbytes % mps) == 0U);
+    if (is_zlp_required && (usbd_ep_start_write(busid, CDC_IN_EP, NULL, 0U) == 0)) {
+        return; /* The accepted ZLP will complete through this callback again. */
+    }
+
+    /* A rejected ZLP cannot produce another completion, so finish this block here. */
+    dev->tx_has_failed = is_zlp_required;
+    dev->tx_busy = false;
+    dev->tx_done_seq++;
+    if (dev->tx_sem != NULL) {
+        /* A full semaphore already contains a wakeup. The sequence carries the result. */
+        (void)rtos_usb_sem_give(dev->tx_sem);
+    }
+}
 
 static void rtos_usb_cdc_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
@@ -428,23 +447,7 @@ static void rtos_usb_cdc_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)
         return;
     }
     RTOS_ASSERT_ISR_OK();
-    rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
-
-    /* ZLP 处理: 当发送长度是 MPS 整数倍且非零时, 需补发零长度包。
-     * 防御: usbd_get_ep_mps 在端点未配置时返回 0, 需避免除零。 */
-    uint16_t mps = usbd_get_ep_mps(busid, ep);
-    if ((nbytes > 0U) && (mps > 0U) && ((nbytes % mps) == 0U)) {
-        usbd_ep_start_write(busid, CDC_IN_EP, NULL, 0U);
-    } else {
-        /* 仅在有活跃发送时才通知, 避免陈旧信号 */
-        if (dev->tx_busy) {
-            dev->tx_busy = false;
-            dev->tx_done_seq++; /* 真完成标记: 区别于 RESET/DISCONNECT 的事件唤醒 */
-            if (dev->tx_sem != NULL) {
-                rtos_usb_sem_give(dev->tx_sem);
-            }
-        }
-    }
+    cdc_handle_in_completion(busid, nbytes, usbd_get_ep_mps(busid, ep));
 }
 
 /* ---- HID IN 端点回调(报告发送完成) ---- */
@@ -706,6 +709,7 @@ int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
             break;
         }
         rtos_usb_sem_reset(dev->tx_sem);
+        dev->tx_has_failed = false;
         dev->tx_busy = true;
         uint32_t seq = dev->tx_done_seq;
 
@@ -723,7 +727,7 @@ int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
                 goto done;
             }
         }
-        if (session != dev->session_seq) {
+        if ((session != dev->session_seq) || dev->tx_has_failed) {
             break;
         }
         total_sent += chunk;
@@ -969,6 +973,13 @@ int rtos_usb_audit_begin(void)
 void rtos_usb_audit_event(uint8_t event)
 {
     rtos_usb_cdc_event_handler(0U, event);
+}
+
+/** @brief Inject a CDC endpoint completion with a test-transport packet size. */
+void rtos_usb_audit_cdc_in(uint32_t nbytes, uint16_t mps)
+{
+    RTOS_ASSERT_ISR_OK();
+    cdc_handle_in_completion(0U, nbytes, mps);
 }
 
 void rtos_usb_audit_hid_rx(const uint8_t *data, uint32_t length)

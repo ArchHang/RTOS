@@ -78,16 +78,15 @@ static void ready_list_push_tail(rtos_tcb_t *tcb)
         tcb->next_ready = tcb;
         tcb->prev_ready = tcb;
         rtos_kernel.ready_heads[prio] = tcb;
+        rtos_kernel.ready_bitmap |= (1UL << prio);
     } else {
-        /* 插入到 head 之前(即尾部) */
+        /* 插入到 head 之前(即尾部)，该优先级的位已经置位。 */
         rtos_tcb_t *tail = head->prev_ready;
         tcb->next_ready = head;
         tcb->prev_ready = tail;
         tail->next_ready = tcb;
         head->prev_ready = tcb;
     }
-    /* 置位就绪位图 */
-    rtos_kernel.ready_bitmap |= (1UL << prio);
 }
 
 /**
@@ -391,79 +390,61 @@ rtos_status_t rtos_sched_init(void)
 
 rtos_status_t rtos_sched_start(void)
 {
-    if (RTOS_PORT_IN_ISR()) return RTOS_ERR_ISR;
-    if (rtos_kernel.sched_state != RTOS_SCHED_NOT_STARTED) return RTOS_ERR_ALREADY;
+    if (RTOS_PORT_IN_ISR()) {
+        return RTOS_ERR_ISR;
+    }
+    if (rtos_kernel.sched_state != RTOS_SCHED_NOT_STARTED) {
+        return RTOS_ERR_ALREADY;
+    }
     /* Startup uses BASEPRI even when ordinary critical sections use PRIMASK:
      * SVC must run while SysTick/PendSV wait for the first valid PSP. */
     uint32_t previous_mask;
-    __asm volatile("mrs %0, basepri" : "=r"(previous_mask) :: "memory");
-
-    /* [bug fix RACE-2] 先屏蔽 syscall 级中断再置 RUNNING: 原实现置位后、SVC 加载
-     * PSP 前存在 ~0.5µs 裸奔窗口, 若 HAL 时代的 SysTick 恰在此窗口到期, PendSV 会
-     * 用未初始化的 PSP 保存上下文(启动即崩, 概率 ~0.05%)。BASEPRI=0x50 屏蔽
-     * SysTick/PendSV(优先级 15), SVC(优先级 0)不受影响; SVC handler 末尾已有
-     * 清 BASEPRI 逻辑, 首任务仍以全中断运行。 */
-    {
-        uint32_t mask = (uint32_t)RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY;
-        __asm volatile("msr basepri_max, %0\n isb" : : "r"(mask) : "memory");
-    }
-
-    rtos_kernel.sched_state = RTOS_SCHED_RUNNING;
+    const uint32_t mask = (uint32_t)RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY;
+    __asm__ __volatile__("mrs %[mask], basepri" : [mask] "=r"(previous_mask) :: "memory");
+    __asm__ __volatile__("msr basepri_max, %[mask]\n isb" :: [mask] "r"(mask) : "memory");
 
     /* 选定第一个任务(最高优先级就绪任务) */
-    rtos_prio_t top = find_highest_priority(rtos_kernel.ready_bitmap);
-    /* [缺陷修复 BS-1] 补上界判断, 与 rtos_sched_schedule / rtos_sched_tick 同口径。
-     * find_highest_priority 在就绪位图为空时返回 MAX_PRIORITIES(=32), 而
-     * ready_heads[] 只有 32 个元素 —— 原实现直接索引 ready_heads[32], 是
-     * 越界读(该布局下恰好落到相邻的 delay_head 成员, 不会立刻崩, 但语义错误)。
-     * 空就绪集在正常流程不可达(idle 恒就绪), 此处属加固。 */
-    if (top >= RTOS_CONFIG_MAX_PRIORITIES) {
-        rtos_kernel.sched_state = RTOS_SCHED_NOT_STARTED;
-        __asm volatile("msr basepri, %0" : : "r"(previous_mask) : "memory");
-        return RTOS_ERR_SCHED;
-    }
-    rtos_kernel.current_tcb = rtos_kernel.ready_heads[top];
-    if (rtos_kernel.current_tcb != NULL) {
-        rtos_kernel.current_tcb->state = RTOS_TASK_RUNNING;
+    const rtos_prio_t top = find_highest_priority(rtos_kernel.ready_bitmap);
+    rtos_tcb_t *first_tcb = (top < RTOS_CONFIG_MAX_PRIORITIES) ? rtos_kernel.ready_heads[top] : NULL;
+    rtos_status_t status = RTOS_ERR_SCHED;
+    if (first_tcb != NULL) {
+        status = rtos_internal_port_prepare_scheduler();
+        if (status == RTOS_OK) {
+            first_tcb->state = RTOS_TASK_RUNNING;
+            rtos_kernel.current_tcb = first_tcb;
+            rtos_kernel.sched_state = RTOS_SCHED_RUNNING;
+            rtos_perf_on_scheduler_start();
+            rtos_port_start_first_task();
+        }
     }
 
-    /* 性能监视器: 初始化窗口基准(在启动调度器前, 中断尚未开) */
-    rtos_perf_on_scheduler_start();
-
-    /* 配置并启动 SysTick/PendSV，加载首个任务栈并切换 */
-    rtos_port_start_scheduler();
-    rtos_port_start_first_task();
-
-    /* 不应到达此处 */
-    while (1) {
-    }
+    __asm__ __volatile__("msr basepri, %[mask]\n isb" :: [mask] "r"(previous_mask) : "memory");
+    return status;
 }
 
-void rtos_sched_schedule(void)
+static inline void schedule_ready_priority(rtos_prio_t top, rtos_bool_t is_explicit_yield)
 {
-    if (rtos_kernel.sched_state != RTOS_SCHED_RUNNING) return;
-    /* 必须在临界区内调用 */
-    rtos_prio_t top = find_highest_priority(rtos_kernel.ready_bitmap);
-
     if (top >= RTOS_CONFIG_MAX_PRIORITIES) {
         return; /* 无就绪任务(理论上 idle 总在) */
     }
 
     rtos_tcb_t *next = rtos_kernel.ready_heads[top];
 
-    if (next != rtos_kernel.current_tcb) {
-#if RTOS_CONFIG_USE_PREEMPTION
+    rtos_tcb_t *current = rtos_kernel.current_tcb;
+    if (next != current) {
+#if !RTOS_CONFIG_USE_PREEMPTION
+        /* Idle is always dispatchable; it may be waiting for the IRQ that made
+         * the selected task ready. An active application task yields itself. */
+        if ((is_explicit_yield == RTOS_FALSE) && (current != rtos_kernel.idle_tcb) &&
+            (current->state == RTOS_TASK_RUNNING)) {
+            return;
+        }
+#else
+        (void)is_explicit_yield;
+#endif
         rtos_kernel.next_tcb = next;
         rtos_kernel.switch_count++;
         rtos_port_context_switch();
-#else
-        /* 非抢占: 仅在当前任务主动让出时切换，由 yield 显式调用 */
-        if (rtos_kernel.current_tcb->state != RTOS_TASK_RUNNING) {
-            rtos_kernel.next_tcb = next;
-            rtos_kernel.switch_count++;
-            rtos_port_context_switch();
-        }
-#endif
     } else {
         /* Cancel an earlier choice invalidated by a wake or priority change. */
         rtos_kernel.next_tcb = NULL;
@@ -471,6 +452,29 @@ void rtos_sched_schedule(void)
          * It remains on the CPU, so READY must become RUNNING again here. */
         if (next != NULL && next->state == RTOS_TASK_READY) next->state = RTOS_TASK_RUNNING;
     }
+}
+
+void rtos_sched_schedule(void)
+{
+    if (rtos_kernel.sched_state == RTOS_SCHED_RUNNING) {
+        schedule_ready_priority(find_highest_priority(rtos_kernel.ready_bitmap), RTOS_FALSE);
+    }
+}
+
+void rtos_internal_sched_yield(void)
+{
+    rtos_tcb_t *current = rtos_kernel.current_tcb;
+    const rtos_prio_t priority = current->priority;
+    rtos_tcb_t *head = rtos_kernel.ready_heads[priority];
+
+    if (head == current) {
+        ready_list_rotate(priority);
+    } else if (current->next_ready != head) {
+        /* A cooperative task can change priority without losing the CPU. */
+        ready_list_remove(current);
+        ready_list_push_tail(current);
+    }
+    schedule_ready_priority(find_highest_priority(rtos_kernel.ready_bitmap), RTOS_TRUE);
 }
 
 void rtos_sched_add_ready(rtos_tcb_t *tcb)
@@ -525,29 +529,11 @@ void rtos_sched_unblock(rtos_tcb_t *tcb)
         return;
     }
 
-    /* 是否需要抢占?
-     *
-     * [perf G1] 原实现无条件比较 `tcb->priority < current_tcb->priority`,
-     * 只要成立就调用 rtos_sched_schedule() —— 而后者会做一次**完整位图选择**
-     * (RBIT+CLZ)。问题是"被唤醒者比当前任务优先级高"并不等于"需要切换":
-     * 就绪集中可能还有一个**比被唤醒者更高**的任务已经就绪(它在阻塞期间被
-     * 唤醒、或被 tick 唤醒)。此时位图选择等于白做。
-     *
-     * 判据改为直接比较**被唤醒者优先级**与**就绪集中的最高优先级**:
-     *   - 就绪位图刚在 ready_list_push_tail 里置位, 位 p 已包含本任务;
-     *   - 因此若 ctz(bitmap) == tcb->priority, 则被唤醒者就是新的最高优先级
-     *     就绪者, 必然需要切换 → 调 sched_schedule();
-     *   - 否则就绪集中已有更高优先级任务, 它要么正在运行(RUNNING), 要么
-     *     早前已被选中为 next_tcb —— 两种情况下本次唤醒都不改变"谁该运行",
-     *     **无需重算**, 直接返回。
-     *
-     * 正确性依据: 本函数在临界区内、由 IPC 的 give/set 路径调用。被唤醒者
-     * 入链后, 若它不是最高就绪优先级, 则最高就绪优先级在本次调用前后不变,
-     * 故"当前正在运行的任务是否仍是最该运行的任务"这一结论也不变。
-     *
-     * 实测收益(见 OPT_LOG Round 4): 唤醒路径净开销 947 → 见下轮数据。 */
-    if (__builtin_ctz(rtos_kernel.ready_bitmap) == (int)tcb->priority) {
-        rtos_sched_schedule();
+    /* 就绪位图刚置位。若更高优先级已经就绪，追加任务不影响其队头。
+     * 复用本次选择，保留同级 FIFO 及当前任务在 PendSV 前重新就绪的处理。 */
+    rtos_prio_t top = (rtos_prio_t)__builtin_ctz(rtos_kernel.ready_bitmap);
+    if (top == tcb->priority) {
+        schedule_ready_priority(top, RTOS_FALSE);
     }
 }
 
@@ -574,6 +560,14 @@ void rtos_sched_tick(void)
     /* 唤醒到期任务(可能将更高优先级任务放入就绪表) */
     process_delayed_tasks();
 
+#if !RTOS_CONFIG_USE_PREEMPTION
+    /* Also preserves an explicit yield already queued before this tick. */
+    if ((rtos_kernel.current_tcb != rtos_kernel.idle_tcb) &&
+        (rtos_kernel.current_tcb->state == RTOS_TASK_RUNNING)) {
+        return;
+    }
+#endif
+
     /* 单次调度决策: 选取最高优先级就绪任务。
      * 相比"先时间片轮转再查最高优先级"的旧实现，本路径只做一次
      * find_highest_priority 与至多一次 context_switch，避免冗余轮转
@@ -591,8 +585,12 @@ void rtos_sched_tick(void)
         rtos_kernel.next_tcb = next;
         rtos_kernel.switch_count++;
         rtos_port_context_switch();
+    } else if ((cur != NULL) && (cur->state == RTOS_TASK_READY)) {
+        /* Tick may complete the current task's wait before its first switch. */
+        rtos_kernel.next_tcb = NULL;
+        cur->state = RTOS_TASK_RUNNING;
     }
-#if RTOS_CONFIG_USE_TIME_SLICING
+#if RTOS_CONFIG_USE_PREEMPTION && RTOS_CONFIG_USE_TIME_SLICING
     else if ((cur != NULL) && (cur->state == RTOS_TASK_RUNNING)) {
         /* 同优先级时间片轮转: 当前链表多于一个任务时把 head 移到链尾 */
         rtos_tcb_t *head = rtos_kernel.ready_heads[top];

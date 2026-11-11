@@ -8,11 +8,12 @@
  *          FreeRTOS 版取相反语义(数值大=高), 相对拓扑一致。
  *
  * 输出: BM|<id>|<name>|N=<n>|avg=<>|min=<>|max=<>  (单位: CPU 周期)
- * ISR 测试: 上位机看到 "BM|7|ARM" 行后回发 100 个任意字节。
+ * ISR 测试由 TIM6 触发，串口仅用于报告结果。
  */
 #include "benchmark.h"
 #include "rtos.h"
 #include "main.h"
+#include <stdbool.h>
 #include <stdio.h>
 #if FIRMWARE_PERF
 #include "perf_probes.h"
@@ -33,6 +34,10 @@
 #define BM_N_CREATE   500     /* 任务创建/删除次数 */
 #define BM_N_DELAY1   500     /* delay(1) 次数 */
 #define BM_N_ISR      100     /* ISR 唤醒样本数 */
+
+#ifndef RTOS_HIL_BENCH_OPT
+#define RTOS_HIL_BENCH_OPT (-1)
+#endif
 
 static inline uint32_t bm_dwt(void)
 {
@@ -442,6 +447,67 @@ static void bm_isr_wake(void)
     rtos_task_delete(th);
 }
 
+#if FIRMWARE_WAKE_BENCH
+enum { BM_READY_SAMPLES = 1000U };
+
+static rtos_sem_t ready_sem;
+static rtos_tcb_t ready_waiter;
+static _Alignas(8) rtos_stack_t ready_stack[256U];
+
+static void bm_ready_wait(void *arg)
+{
+    (void)arg;
+    while (rtos_sem_take(&ready_sem, RTOS_WAIT_FOREVER) == RTOS_OK) {
+        /* The next take parks before the controller resumes. */
+    }
+}
+
+static void bm_ready_give(void)
+{
+    rtos_status_t status = rtos_sem_init(&ready_sem, 0U, 1U);
+    if (status != RTOS_OK) {
+        (void)printf("BM|FAIL|ready_sem_init=%ld\r\n", (long)status);
+        return;
+    }
+    status = rtos_task_create_static(&ready_waiter, ready_stack, 256U, bm_ready_wait,
+                                     NULL, 6U, "bm-ready");
+    if (status != RTOS_OK) {
+        (void)printf("BM|FAIL|ready_task_create=%ld\r\n", (long)status);
+        if (rtos_sem_deinit(&ready_sem) != RTOS_OK) {
+            (void)printf("BM|FAIL|ready_sem_cleanup\r\n");
+        }
+        return;
+    }
+
+    bm_stats_t stats;
+    bm_stats_reset(&stats);
+    for (uint32_t sample = 0U; sample < BM_READY_SAMPLES; ++sample) {
+        RTOS_PORT_ENTER_CRITICAL();
+        const bool is_waiting = (ready_waiter.state == RTOS_TASK_BLOCKED)
+                                && (ready_waiter.blocked_on == &ready_sem);
+        uint32_t start = bm_dwt();
+        status = rtos_sem_give(&ready_sem);
+        uint32_t elapsed = bm_dwt() - start;
+        const bool is_selected = rtos_kernel.next_tcb == &ready_waiter;
+        RTOS_PORT_EXIT_CRITICAL();
+        if (!is_waiting || (status != RTOS_OK) || !is_selected) {
+            (void)printf("BM|FAIL|ready_give_precondition=%lu\r\n", (unsigned long)sample);
+            break;
+        }
+        bm_stats_add(&stats, elapsed);
+    }
+    if (stats.cnt == BM_READY_SAMPLES) {
+        bm_stats_report(&stats, "8", "sem_give_before_pendsv");
+    }
+    if (rtos_task_delete(&ready_waiter) != RTOS_OK) {
+        (void)printf("BM|FAIL|ready_task_delete\r\n");
+    }
+    if (rtos_sem_deinit(&ready_sem) != RTOS_OK) {
+        (void)printf("BM|FAIL|ready_sem_cleanup\r\n");
+    }
+}
+#endif
+
 /* ============================== 主流程 ============================== */
 
 void bench_task(void *arg)
@@ -454,7 +520,8 @@ void bench_task(void *arg)
     DWT->CYCCNT = 0;
 
     rtos_task_delay(100); /* 系统稳定 */
-    printf("BM|META|target|f446_rtos (custom RTOS) 168MHz -O2\r\n");
+    (void)printf("BM|META|target=f446|clock_hz=%lu|optimization=%d\r\n",
+                 (unsigned long)SystemCoreClock, (int)RTOS_HIL_BENCH_OPT);
 
     bm_critical_section(); /* BM0 */
     bm_yield_switch();     /* BM1 */
@@ -464,6 +531,9 @@ void bench_task(void *arg)
     bm_task_create_delete(); /* BM5 */
     bm_delay1();           /* BM6 */
     bm_isr_wake();         /* BM7 */
+#if FIRMWARE_WAKE_BENCH
+    bm_ready_give();       /* BM8 */
+#endif
 
 #if FIRMWARE_LOWLEVEL_CHECKS
     lowlevel_checks_run();

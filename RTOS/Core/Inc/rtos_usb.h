@@ -246,9 +246,10 @@ void rtos_usb_timer_stop(rtos_usb_timer_t *timer);
 
 /**
  * @brief 初始化 USB 子系统。
- * @return RTOS_OK 或错误码。
- * @note  在 rtos_init() 之后、rtos_start() 之前调用一次。
- *        内部清零对象池与 ISR 表, 不创建任务(任务由 USB 协议栈 create)。
+ * @return RTOS_OK，重复成功初始化返回 RTOS_ERR_ALREADY，中断调用返回 RTOS_ERR_ISR，
+ *         内存池初始化失败返回其错误码。
+ * @note  在 rtos_init() 之后，建议在启动调度器和启用 USB 中断之前初始化。
+ *        首次成功后保留已有对象与 ISR 表，不创建任务。
  */
 rtos_status_t rtos_usb_init(void);
 
@@ -272,6 +273,8 @@ rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handle
  * @brief USB 中断分发。
  * @param irqn 中断号(与注册时一致)。
  * @details 在用户 USB IRQHandler 中调用, 查表执行注册的处理函数。
+ *          在同一个短临界区读取函数和参数，随后恢复原中断屏蔽再调用函数。
+ *          替换注册时，应让旧函数和参数保持有效，直到已取快照的分发调用结束。
  *          典型用法:
  *            void OTG_FS_IRQHandler(void) { rtos_usb_irq_dispatch(OTG_FS_IRQn); }
  *          若未注册对应 irqn, 本函数空操作(安全)。
@@ -365,6 +368,7 @@ bool rtos_usb_cdc_is_connected(uint8_t busid);
  * @param timeout_ms 超时(毫秒)。0=不等待(若 TX 忙则返回 0), 0xFFFFFFFF=永久等待。
  * @return 实际发送字节数, 0=超时或未连接或失败。
  * @note  内部自动处理 ZLP(当 len 为端点 MPS 整数倍时补发零包)。
+ *        若驱动拒绝提交 ZLP，唤醒写任务并返回此前已完成块的字节数。
  *        多任务调用安全(内部用互斥锁串行化)。
  */
 int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_t timeout_ms);

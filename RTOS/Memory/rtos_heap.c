@@ -5,28 +5,27 @@
  * @details 采用 first-fit + 块合并策略, 实现简单且适合 RTOS 中等规模分配。
  *
  *          设计权衡:
- *            - 复杂度: 分配 O(n)/释放 O(1) 合并 O(n), n=空闲块数。
- *              对于 RTOS_CONFIG_HEAP_SIZE=32KB 与典型任务数(<30), 性能足够。
- *            - 碎片: 通过合并相邻空闲块减少外部碎片; 内部碎片由对齐产生(<=7B/块)。
+ *            - 复杂度: 分配 O(n)、释放 O(1)，n 为物理块总数。
+ *            - 碎片: 合并相邻空闲块减少外部碎片，对齐和无法拆分的尾部产生内部碎片。
  *            - 实时性: 临界区持有时间 = O(n) 链表遍历, 可预测。
  *
  *          块布局(已 8 字节对齐):
  *            ┌─────────────────┐
- *            │ header_t        │  magic + size(高 bit = free 标志)
+ *            │ block header    │  magic + size(高 bit = free 标志)
  *            ├─────────────────┤
  *            │ user data       │  <- rtos_heap_alloc 返回此处
  *            │ ...             │
  *            └─────────────────┘
  *
- *          header_t 大小 = 8 字节(uint32_t magic + uint32_t size), 用户数据天然
+ *          块头大小 = 8 字节(uint32_t magic + uint32_t size), 用户数据天然
  *          8 字节对齐。size 字段最高 bit(0x80000000)作为空闲标志:
  *            - 1 = 空闲
  *            - 0 = 已分配
  *          实际块大小 = size & ~FREE_BIT。
  *
- *          合并策略: 释放时检查下一块(通过当前块大小定位)是否空闲并合并。
- *          前向合并需遍历空闲链表查找前驱, 暂不实现(单向遍历成本高),
- *          在 alloc 路径中已部分抵消(连续空闲会被请求消耗)。
+ *          合并策略: 释放时最多合并紧邻的下一块，保持固定成本。
+ *          分配时按地址扫描，单块不够时合并足够长的连续空闲段。
+ *          最大单次分配查询按相同规则统计空闲段，不修改块布局。
  *
  *          线程安全: 所有操作在 RTOS_PORT_ENTER/EXIT_CRITICAL 内完成。
  *          BASEPRI 屏蔽 syscall 级中断, 保证链表操作原子性。
@@ -35,18 +34,17 @@
 #include "rtos_port.h"
 #include "rtos_config.h"
 #include "rtos_task.h" /* rtos_assert_fail declaration for ISR API guards */
-#include <string.h>
 
 /* ============================== 内部常量与类型 ============================== */
 
 /** @brief 块 header 魔数(用于检测越界/双重释放)。 */
-#define RTOS_HEAP_MAGIC (0xA5A5A5A5UL)
+#define RTOS_HEAP_MAGIC UINT32_C(0xA5A5A5A5)
 
 /** @brief size 字段空闲标志位(最高 bit)。 */
-#define RTOS_HEAP_FREE_BIT (0x80000000UL)
+#define RTOS_HEAP_FREE_BIT UINT32_C(0x80000000)
 
 /** @brief 块大小掩码(去掉空闲位)。 */
-#define RTOS_HEAP_SIZE_MASK (~RTOS_HEAP_FREE_BIT)
+#define RTOS_HEAP_SIZE_MASK UINT32_C(0x7FFFFFFF)
 
 /** @brief 最小分配大小(字节, 含 header)。小于此值的请求按此值分配。 */
 #define RTOS_HEAP_MIN_BLOCK (16U)
@@ -55,10 +53,15 @@
 #define RTOS_HEAP_ALIGN (8U)
 
 /** @brief header 结构。 */
-typedef struct {
+typedef struct heap_block_header {
     uint32_t magic; /**< 魔数(校验合法性)。 */
     uint32_t size; /**< 块总大小(含 header), 高 bit 为空闲标志。 */
-} header_t;
+} heap_block_header_t;
+
+#define RTOS_HEAP_HEADER_SIZE ((uint32_t)sizeof(heap_block_header_t))
+
+_Static_assert(sizeof(heap_block_header_t) == RTOS_HEAP_ALIGN,
+               "heap header must preserve payload alignment");
 
 /* ============================== 内部状态 ============================== */
 
@@ -68,8 +71,8 @@ static uint8_t s_heap_buf[RTOS_CONFIG_HEAP_SIZE] __attribute__((aligned(RTOS_HEA
 /** @brief 已初始化标志(防止重复初始化)。 */
 static rtos_bool_t s_inited = RTOS_FALSE;
 
-/** @brief 堆总大小(字节)。 */
-static uint32_t s_heap_total = 0U;
+/** @brief 去除末尾不足一个对齐单位的字节后，堆的可用容量。 */
+static const size_t s_heap_total = sizeof(s_heap_buf) & ~((size_t)RTOS_HEAP_ALIGN - 1U);
 
 /** @brief 堆空闲字节数(粗略, 不含 header 开销)。 */
 static uint32_t s_heap_free = 0U;
@@ -83,93 +86,63 @@ static uint32_t s_free_count = 0U;
 /* ============================== 内部函数 ============================== */
 
 /** @brief 向上对齐到 RTOS_HEAP_ALIGN 字节。 */
-static inline uint32_t align_up(uint32_t n)
+static inline uint32_t align_up(uint32_t size)
 {
-    return (n + (RTOS_HEAP_ALIGN - 1U)) & ~(uint32_t)(RTOS_HEAP_ALIGN - 1U);
+    return (size + (RTOS_HEAP_ALIGN - 1U)) & ~(uint32_t)(RTOS_HEAP_ALIGN - 1U);
 }
 
-/** @brief 计算块用户数据指针(跳过 header)。 */
-static inline void *block_to_user(header_t *hdr)
+static inline heap_block_header_t *block_at(uint32_t offset)
 {
-    return (void *)((uint8_t *)hdr + sizeof(header_t));
+    return (heap_block_header_t *)(s_heap_buf + offset);
 }
 
-/** @brief 由用户指针反查 header。 */
-static inline header_t *user_to_block(void *ptr)
+/* The caller supplies an aligned offset no greater than s_heap_total. */
+static inline uint32_t block_checked_size(uint32_t offset)
 {
-    return (header_t *)((uint8_t *)ptr - sizeof(header_t));
-}
-
-/** @brief 取下一块(按当前块大小定位)。NULL 表示到达堆末尾。 */
-static inline header_t *block_next(header_t *hdr)
-{
-    uint8_t *next = (uint8_t *)hdr + (hdr->size & RTOS_HEAP_SIZE_MASK);
-    if (next >= s_heap_buf + s_heap_total) {
-        return NULL;
+    uint32_t remaining = (uint32_t)s_heap_total - offset;
+    if (remaining < RTOS_HEAP_MIN_BLOCK) {
+        return 0U;
     }
-    return (header_t *)next;
-}
 
-/** @brief 标记块为空闲/已分配。 */
-static inline void block_set_free(header_t *hdr, rtos_bool_t is_free)
-{
-    if (is_free) {
-        hdr->size |= RTOS_HEAP_FREE_BIT;
-    } else {
-        hdr->size &= ~RTOS_HEAP_FREE_BIT;
+    const heap_block_header_t *header = block_at(offset);
+    uint32_t size = header->size & RTOS_HEAP_SIZE_MASK;
+    if ((header->magic != RTOS_HEAP_MAGIC) || (size < RTOS_HEAP_MIN_BLOCK) ||
+        (size > remaining) || ((size & (RTOS_HEAP_ALIGN - 1U)) != 0U)) {
+        return 0U;
     }
+    return size;
 }
 
-/** @brief 块是否空闲。 */
-static inline rtos_bool_t block_is_free(const header_t *hdr)
+static inline rtos_bool_t block_is_free(const heap_block_header_t *header)
 {
-    return (hdr->size & RTOS_HEAP_FREE_BIT) ? RTOS_TRUE : RTOS_FALSE;
+    return (header->size & RTOS_HEAP_FREE_BIT) != 0U;
 }
 
-/**
- * @brief 分裂块: 若空闲块远大于请求, 将尾部切分为新空闲块。
- * @param hdr   待分裂的空闲块(将被分配)。
- * @param need  实际需要的块大小(含 header, 已对齐)。
- */
-static void block_split(header_t *hdr, uint32_t need)
+/* Split only when the tail is large enough; return the actual allocated size. */
+static uint32_t block_split(uint32_t offset, uint32_t size, uint32_t need)
 {
-    uint32_t total = hdr->size & RTOS_HEAP_SIZE_MASK;
-    /* 仅当剩余 >= MIN_BLOCK + sizeof(header) 才分裂(否则浪费空间在 header 上) */
-    if (total >= need + RTOS_HEAP_MIN_BLOCK + sizeof(header_t)) {
-        header_t *new_blk = (header_t *)((uint8_t *)hdr + need);
-        new_blk->magic = RTOS_HEAP_MAGIC;
-        new_blk->size = total - need;
-        block_set_free(new_blk, RTOS_TRUE);
-        hdr->size = need; /* 已分配块不带 FREE 位 */
-        /* [bug fix BUG-7] 分裂产生了一个新 header, 空闲字节账目必须同步扣减:
-         * 原空闲块 1 个 header, split 后变 2 个, 新 header 的 8 字节从用户
-         * 可用空间变为元数据。原实现不扣账 → 每次 split 账面虚增 8 字节,
-         * 长期运行 s_heap_free 持续膨胀超堆大小(实测 500 轮后 40216 > 32768)。 */
-        s_heap_free -= sizeof(header_t);
+    uint32_t remaining = size - need;
+    if (remaining < RTOS_HEAP_MIN_BLOCK + RTOS_HEAP_HEADER_SIZE) {
+        return size;
     }
-    /* 否则不分裂, 整块分配(略浪费, 但避免产生过小碎片) */
+
+    heap_block_header_t *tail = block_at(offset + need);
+    tail->magic = RTOS_HEAP_MAGIC;
+    tail->size = remaining | RTOS_HEAP_FREE_BIT;
+    s_heap_free -= RTOS_HEAP_HEADER_SIZE;
+    return need;
 }
 
-/**
- * @brief 与下一块合并(若下一块空闲)。
- * @param hdr 当前块(已空闲)。
- */
-static void block_merge_next(header_t *hdr)
+/* Commit a run already validated under the same lock, reclaiming each absorbed header. */
+static void block_join_run(uint32_t offset, uint32_t first_size, uint32_t run_size)
 {
-    header_t *next = block_next(hdr);
-    if ((next != NULL) && block_is_free(next)) {
-        /* 合并: 当前块大小 += 下一块总大小 */
-        uint32_t next_size = next->size & RTOS_HEAP_SIZE_MASK;
-        hdr->size = (hdr->size & RTOS_HEAP_SIZE_MASK) + next_size;
-        block_set_free(hdr, RTOS_TRUE);
-        /* 清除下一块魔数(防止误用, 防御性) */
-        next->magic = 0;
-        /* [bug fix BUG-7] 合并回收了 next 的 header 字节, 必须入账:
-         * 原实现不调 s_heap_free, 每轮 free+merge→alloc 整块后账面净减
-         * 8 字节, 长期运行 s_heap_free 下溢回绕成 ~4GB 荒谬值,
-         * 监控/准入逻辑全错。 */
-        s_heap_free += sizeof(header_t);
+    for (uint32_t size = first_size; size < run_size;) {
+        heap_block_header_t *next = block_at(offset + size);
+        size += next->size & RTOS_HEAP_SIZE_MASK;
+        next->magic = 0U;
+        s_heap_free += RTOS_HEAP_HEADER_SIZE;
     }
+    block_at(offset)->size = run_size | RTOS_HEAP_FREE_BIT;
 }
 
 /* ============================== 公共 API ============================== */
@@ -180,19 +153,17 @@ rtos_status_t rtos_heap_init(void)
         return RTOS_OK; /* 已初始化, 幂等 */
     }
 
-    /* 首块 header 占据堆起始, 用户数据紧跟其后 */
-    s_heap_total = RTOS_CONFIG_HEAP_SIZE;
-    /* 确保总大小至少能容纳 header + 最小块 */
-    if (s_heap_total < sizeof(header_t) + RTOS_HEAP_MIN_BLOCK) {
+    if ((s_heap_total < RTOS_HEAP_HEADER_SIZE + RTOS_HEAP_MIN_BLOCK) ||
+        (s_heap_total > RTOS_HEAP_SIZE_MASK)) {
         return RTOS_ERR_PARAM;
     }
 
-    header_t *first = (header_t *)s_heap_buf;
+    uint32_t usable = (uint32_t)s_heap_total;
+    heap_block_header_t *first = block_at(0U);
     first->magic = RTOS_HEAP_MAGIC;
-    first->size = s_heap_total;
-    block_set_free(first, RTOS_TRUE);
+    first->size = usable | RTOS_HEAP_FREE_BIT;
 
-    s_heap_free = s_heap_total - sizeof(header_t);
+    s_heap_free = usable - RTOS_HEAP_HEADER_SIZE;
     s_alloc_count = 0U;
     s_free_count = 0U;
     s_inited = RTOS_TRUE;
@@ -202,50 +173,48 @@ rtos_status_t rtos_heap_init(void)
 void *rtos_heap_alloc(uint32_t size)
 {
     RTOS_ASSERT_ISR_OK();
-    if (!s_inited || (size == 0U)) {
+    if (!s_inited || (size == 0U) || (size > s_heap_total - RTOS_HEAP_HEADER_SIZE)) {
         return NULL;
     }
 
-    /* [bug fix BUG-5] 输入域上限校验: size 接近 2^32 时 align_up 的加法回绕,
-     * 原实现会把 ~4GB 请求"成功"缩成 16 字节小块, 调用方按请求尺寸 memcpy
-     * 即静默堆溢出。任何 > 堆大小的请求本就必失败, 直接拒绝。 */
-    if (size > (0xFFFFFFF0U - sizeof(header_t) - RTOS_HEAP_ALIGN)) {
-        return NULL;
-    }
-
-    /* 块总大小 = header + 用户数据(向上对齐 8) */
-    uint32_t need = align_up(size) + sizeof(header_t);
-    if (need < RTOS_HEAP_MIN_BLOCK) {
-        need = RTOS_HEAP_MIN_BLOCK;
-    }
-
+    uint32_t need = align_up(size) + RTOS_HEAP_HEADER_SIZE;
     void *user = NULL;
     RTOS_PORT_ENTER_CRITICAL();
 
-    /* first-fit 遍历: 从堆起始扫描, 找第一个足够大的空闲块 */
-    header_t *hdr = (header_t *)s_heap_buf;
-    while ((uint8_t *)hdr < s_heap_buf + s_heap_total) {
-        if (hdr->magic != RTOS_HEAP_MAGIC) {
-            /* 堆损坏(越界写) */
+    for (uint32_t offset = 0U; offset < s_heap_total;) {
+        uint32_t block_size = block_checked_size(offset);
+        if (block_size == 0U) {
             break;
         }
+        heap_block_header_t *header = block_at(offset);
+        if (!block_is_free(header)) {
+            offset += block_size;
+            continue;
+        }
 
-        uint32_t blk_size = hdr->size & RTOS_HEAP_SIZE_MASK;
-        if (block_is_free(hdr) && (blk_size >= need)) {
-            /* 命中: 分裂(若可), 标记已分配 */
-            block_split(hdr, need);
-            block_set_free(hdr, RTOS_FALSE);
-            s_heap_free -= (hdr->size & RTOS_HEAP_SIZE_MASK) - sizeof(header_t);
+        /* Ordinary single-block fits do no run scan. Leave failed runs intact. */
+        uint32_t run_size = block_size;
+        while (run_size < need) {
+            uint32_t next_offset = offset + run_size;
+            uint32_t next_size = block_checked_size(next_offset);
+            if ((next_size == 0U) || !block_is_free(block_at(next_offset))) {
+                break;
+            }
+            run_size += next_size;
+        }
+
+        if (run_size >= need) {
+            if (run_size != block_size) {
+                block_join_run(offset, block_size, run_size);
+            }
+            uint32_t used = block_split(offset, run_size, need);
+            header->size = used;
+            s_heap_free -= used - RTOS_HEAP_HEADER_SIZE;
             s_alloc_count++;
-            user = block_to_user(hdr);
+            user = s_heap_buf + offset + RTOS_HEAP_HEADER_SIZE;
             break;
         }
-
-        /* 跳到下一块 */
-        if (blk_size == 0U) {
-            break; /* 防御性: 避免死循环 */
-        }
-        hdr = (header_t *)((uint8_t *)hdr + blk_size);
+        offset += run_size;
     }
 
     RTOS_PORT_EXIT_CRITICAL();
@@ -262,34 +231,36 @@ void rtos_heap_free(void *ptr)
         return;
     }
 
-    /* 合法性检查: 指针必须在堆范围内 */
-    uint8_t *p = (uint8_t *)ptr;
-    if ((p < s_heap_buf + sizeof(header_t)) || (p >= s_heap_buf + s_heap_total)) {
-        return; /* 越界指针, 忽略 */
+    uintptr_t address = (uintptr_t)ptr;
+    uintptr_t base = (uintptr_t)s_heap_buf;
+    if (address < base) {
+        return;
+    }
+    uintptr_t payload_offset = address - base;
+    if ((payload_offset < RTOS_HEAP_HEADER_SIZE) || (payload_offset >= s_heap_total) ||
+        ((payload_offset & (RTOS_HEAP_ALIGN - 1U)) != 0U)) {
+        return;
     }
 
     RTOS_PORT_ENTER_CRITICAL();
 
-    header_t *hdr = user_to_block(ptr);
-    if (hdr->magic != RTOS_HEAP_MAGIC) {
-        /* 双重释放或越界写 */
-        RTOS_PORT_EXIT_CRITICAL();
-        return;
-    }
-    if (block_is_free(hdr)) {
-        /* 双重释放 */
+    uint32_t offset = (uint32_t)payload_offset - RTOS_HEAP_HEADER_SIZE;
+    uint32_t size = block_checked_size(offset);
+    heap_block_header_t *header = block_at(offset);
+    if ((size == 0U) || block_is_free(header)) {
         RTOS_PORT_EXIT_CRITICAL();
         return;
     }
 
-    /* 标记为空闲, 累计空闲字节 */
-    uint32_t blk_size = hdr->size & RTOS_HEAP_SIZE_MASK;
-    s_heap_free += blk_size - sizeof(header_t);
+    header->size = size | RTOS_HEAP_FREE_BIT;
+    s_heap_free += size - RTOS_HEAP_HEADER_SIZE;
     s_free_count++;
-    block_set_free(hdr, RTOS_TRUE);
 
-    /* 与下一块合并(若下一块也空闲) */
-    block_merge_next(hdr);
+    uint32_t next_offset = offset + size;
+    uint32_t next_size = block_checked_size(next_offset);
+    if ((next_size != 0U) && block_is_free(block_at(next_offset))) {
+        block_join_run(offset, size, size + next_size);
+    }
 
     RTOS_PORT_EXIT_CRITICAL();
 }
@@ -308,37 +279,28 @@ uint32_t rtos_heap_get_max_alloc(void)
 
     RTOS_PORT_ENTER_CRITICAL();
 
-    /* 必须取**最大单块连续空闲块**, 而不是空闲字节总和:
-     * first-fit 只会在一个连续块内满足请求, 总和会把碎片高估成可用容量,
-     * 导致调用方据此放行的请求实际返回 ERR_NO_MEM(而非参数错误)。
-     * 遍历方式与 rtos_heap_alloc 完全一致(逐块按 size 前进)。 */
     uint32_t largest = 0U;
-    header_t *hdr = (header_t *)s_heap_buf;
-
-    while ((uint8_t *)hdr < s_heap_buf + s_heap_total) {
-        if (hdr->magic != RTOS_HEAP_MAGIC) {
-            break; /* 堆损坏, 停止统计 */
+    uint32_t run_size = 0U;
+    for (uint32_t offset = 0U; offset < s_heap_total;) {
+        uint32_t size = block_checked_size(offset);
+        if (size == 0U) {
+            break;
         }
 
-        uint32_t blk_size = hdr->size & RTOS_HEAP_SIZE_MASK;
-        if (blk_size == 0U) {
-            break; /* 防御性: 避免死循环 */
-        }
-
-        if (block_is_free(hdr)) {
-            /* 该块可供用户使用的字节 = 块大小 - 块头 */
-            uint32_t payload = blk_size - sizeof(header_t);
-            if (payload > largest) {
-                largest = payload;
+        if (block_is_free(block_at(offset))) {
+            run_size += size;
+            if (run_size > largest) {
+                largest = run_size;
             }
+        } else {
+            run_size = 0U;
         }
-        hdr = (header_t *)((uint8_t *)hdr + blk_size);
+        offset += size;
     }
 
     RTOS_PORT_EXIT_CRITICAL();
 
-    /* 请求会被 align_up 到 RTOS_HEAP_ALIGN, 故上界向下对齐 */
-    return largest & ~((uint32_t)RTOS_HEAP_ALIGN - 1U);
+    return (largest == 0U) ? 0U : largest - RTOS_HEAP_HEADER_SIZE;
 }
 
 uint32_t rtos_heap_get_alloc_count(void)

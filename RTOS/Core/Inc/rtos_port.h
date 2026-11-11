@@ -33,7 +33,7 @@ extern "C" {
 /**
  * @brief 系统主频(Hz)。
  * @details  由用户工程(如 STM32CubeMX 生成的 system_stm32xx.c)定义并初始化。
- *           移植层在 rtos_port_start_scheduler() 中读取此值配置 SysTick。
+ *           移植层在启动时读取此值配置 SysTick。
  *           用户必须在启动调度器前完成时钟配置并设置此变量。
  */
 extern uint32_t SystemCoreClock;
@@ -234,6 +234,8 @@ void rtos_port_start_first_task(void) __attribute__((noreturn));
 /**
  * @brief 启动调度器: 使能 FPU 惰性堆栈, 配置 SysTick 周期中断。
  * @details 中断优先级由用户工程配置(见移植文档), 本函数不设置 PendSV/SysTick 优先级。
+ * @note 保留的端口内部入口。非法 Tick 周期触发调试断言，且端口配置保持原值。
+ *       应用使用 rtos_start() 取得配置错误码。
  */
 void rtos_port_start_scheduler(void);
 

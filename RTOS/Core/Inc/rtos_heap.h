@@ -4,7 +4,7 @@
  *
  * @details 提供线程安全的通用堆分配器, 用于动态创建任务 TCB 与栈
  *          等场景。分配器采用 first-fit 策略 + 块合并,
- *          在保证实时性(O(n) 最坏复杂度, n = 空闲块数)的同时减少碎片。
+ *          分配最坏 O(n)，n 为物理块总数，释放 O(1)。
  *
  *          堆内存在 rtos_init() 阶段一次性初始化, 使用静态缓冲区
  *          RTOS_CONFIG_HEAP_SIZE 字节, 不依赖 C 标准库 malloc。
@@ -18,12 +18,12 @@
  *
  *          块布局(已对齐):
  *            ┌──────────┐
- *            │ header_t │  size + magic(0xA5A5A5A5)
+ *            │ block hdr│  size + magic(0xA5A5A5A5)
  *            ├──────────┤
  *            │ user data│  返回给用户的指针指向此处
  *            │ ...      │
  *            └──────────┘
- *          header 大小 = sizeof(header_t), 8 字节对齐保证用户数据 8 字节对齐。
+ *          块头为 8 字节，用户数据为 8 字节对齐。
  */
 #ifndef RTOS_HEAP_H_
 #define RTOS_HEAP_H_
@@ -38,27 +38,27 @@ extern "C" {
 
 /**
  * @brief 初始化堆。
- * @details 使用内部静态缓冲区(RTOS_CONFIG_HEAP_SIZE 字节)构建空闲链表。
+ * @details 使用内部静态缓冲区(RTOS_CONFIG_HEAP_SIZE 字节)构建首块，容量向下对齐到 8 字节。
  *          必须在 rtos_init() 中调用一次, 之后 rtos_heap_alloc/free 可用。
  *          仅供启动阶段调用, 不允许与运行中的堆操作并发。
- *          重复调用会被忽略(返回 RTOS_OK)。
+ * @return 成功或重复调用返回 RTOS_OK，向下对齐后容量不足或超限返回 RTOS_ERR_PARAM。
  */
 rtos_status_t rtos_heap_init(void);
 
 /**
  * @brief 分配 size 字节内存。
  * @param size 请求字节数, 内部向上对齐到 8 字节边界。
- * @return 成功返回 8 字节对齐的指针; 失败(堆空/size=0)返回 NULL。
+ * @return 成功返回 8 字节对齐的指针，无法满足请求或 size=0 时返回 NULL。
  *
  * @note 线程安全, ISR 调用须满足本模块的系统调用优先级约束。
- *       临界区包含 O(n) 遍历, 建议在任务上下文调用。
+ *       临界区包含 O(n) 遍历，需要时合并连续空闲块，建议在任务上下文调用。
  */
 void *rtos_heap_alloc(uint32_t size);
 
 /**
  * @brief 释放 rtos_heap_alloc 返回的指针。
  * @param ptr 之前分配的指针, NULL 时无操作。
- * @note 释放后会与相邻空闲块合并以减少碎片。
+ * @note O(1)，最多合并紧邻的下一块。调用方必须传入仍有效的原始分配地址或 NULL。
  *       ISR 调用须满足本模块的系统调用优先级约束。
  */
 void rtos_heap_free(void *ptr);
@@ -71,19 +71,12 @@ uint32_t rtos_heap_get_free(void);
 /**
  * @brief 查询当前**单次可分配的最大字节数**。
  *
- * @return 当前**最大单块连续空闲块**可供用户使用的字节数(已扣除该块的块头,
- *         并向下对齐到 8 字节); 堆未初始化时返回 0。
+ * @return 当前最大连续空闲段合并后可提供的 8 字节对齐用户容量，未初始化时返回 0。
  *
- * @details 与 rtos_heap_get_free 的区别: 后者是空闲字节总和, 直接用它会高估 ——
- *          分配器是 first-fit, 只会在**一个连续块**内满足请求, 碎片化时空闲
- *          总和远大于任何单块。本函数返回的是"在堆状态不变的前提下, 一次
- *          rtos_heap_alloc(size) 当且仅当 size <= 本返回值时可能成功"。
+ * @details 对连续空闲段只扣一个块头。rtos_heap_get_free 汇总现有空闲块的用户容量，
+ *          排除所有现存块头。本查询不修改块布局，也不保留分配空间。
  *
- *          用途: 调用方(如 rtos_task_create)需要在校验阶段判断"某尺寸是否
- *          可能满足", 用本函数可避免给出实际不可达的假上界
- *          (见 rtos_task_create 的边界修复说明)。
- *
- * @note 本函数在临界区内遍历块链, 复杂度 O(空闲块数), 与 rtos_heap_alloc
+ * @note 本函数在临界区内遍历块链，复杂度 O(物理块总数)，与 rtos_heap_alloc
  *       同级; 仅供创建/校验等非热路径使用。ISR 调用须满足本模块的
  *       系统调用优先级约束, 关闭断言不放宽该约束。
  */

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the baseline AI manuals without compiling or accessing hardware.
+"""Validate AI manuals against the working tree without compiling or accessing hardware.
 
 The scanner inventories every conditional callable declaration, header inline,
 and function-like macro in Core/Inc. It checks coverage and declaration tokens,
@@ -25,7 +25,8 @@ METADATA = tuple(ROOT / "docs/ai" / ("metadata_" + name + ".json")
                  for name in ("kernel", "ipc_memory", "services_usb"))
 INDEX = ROOT / "docs/ai/api_index.json"
 # Retired experiment runners were removed with their complete historical batches.
-# Active firmware, canonical build inputs and retained HIL tools remain protected.
+# Keep the historical source comparison available for documentation-only changes.
+GENERATED_HIL = ("hil/logs/", "hil/fwsrc/")
 RETIRED_HIL_BATCHES = (
     "hil/archive_docs/", "hil/archive_tests/", "hil/audit_20261012/",
     "hil/perf_20261012/", "hil/lowlevel_20261012/", "hil/production_20261012/",
@@ -343,7 +344,8 @@ def markdown_files():
     paths = set((ROOT / "docs").rglob("*.md")) | set((ROOT / "hil").rglob("*.md"))
     paths.update(ROOT / name for name in ("AGENTS.md", "README.md", "CONTRIBUTING.md",
                                          "RTOS/README.md"))
-    return sorted(path for path in paths if path.is_file())
+    return sorted(path for path in paths
+                  if path.is_file() and not path.relative_to(ROOT).as_posix().startswith(GENERATED_HIL))
 
 
 def check_links(paths):
@@ -387,7 +389,7 @@ def check_links(paths):
 
 
 def protected(path):
-    if path.startswith(RETIRED_HIL_BATCHES) or path in RETIRED_HIL_TOOLS:
+    if path.startswith(GENERATED_HIL + RETIRED_HIL_BATCHES) or path in RETIRED_HIL_TOOLS:
         return False
     if path == "hil/templates/subdir.mk.last_variant":
         # restore_project writes this ignored diagnostic copy; no canonical
@@ -405,7 +407,16 @@ def protected(path):
     return path in (".project", ".cproject") or ("/" not in path and suffix in (".ld", ".ioc"))
 
 
-def check_production():
+def source_identities():
+    paths = set()
+    for directory in ("RTOS", "Core", "Drivers", "AI", "hil"):
+        paths.update(path.relative_to(ROOT).as_posix() for path in (ROOT / directory).rglob("*")
+                     if path.is_file() and protected(path.relative_to(ROOT).as_posix()))
+    paths.update(path.name for path in ROOT.iterdir() if path.is_file() and protected(path.name))
+    return {name: sha(ROOT / name) for name in sorted(paths)}
+
+
+def check_production(identities, require_unchanged_source):
     entries = git("ls-tree", "-r", "-z", BASELINE).split(b"\0")
     references = []
     for entry in entries:
@@ -417,8 +428,9 @@ def check_production():
             references.append((relative, metadata.split()[2]))
     process = subprocess.Popen(["git", "cat-file", "--batch"], cwd=str(ROOT),
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    errors = []
-    identities = {}
+    changed = []
+    missing = []
+    reference_names = set()
     try:
         for relative, identity in references:
             process.stdin.write(identity + b"\n")
@@ -428,26 +440,26 @@ def check_production():
             original = process.stdout.read(size)
             if len(original) != size or process.stdout.read(1) != b"\n":
                 raise ValueError("Truncated Git blob stream")
-            path = ROOT / relative
+            reference_names.add(relative)
             expected = hashlib.sha256(original).hexdigest().upper()
-            identities[relative] = expected
-            if not path.is_file() or sha(path) != expected:
-                errors.append(relative)
+            if relative not in identities:
+                missing.append(relative)
+            elif identities[relative] != expected:
+                changed.append(relative)
     finally:
         process.stdin.close()
         process.wait()
     if process.returncode:
         raise ValueError("Git blob reader failed")
-    # Existing files must be unchanged; new firmware/build files are also forbidden.
-    actual = set()
-    for directory in ("RTOS", "Core", "Drivers", "AI", "hil"):
-        actual.update(path.relative_to(ROOT).as_posix() for path in (ROOT / directory).rglob("*")
-                      if path.is_file() and protected(path.relative_to(ROOT).as_posix()))
-    extra = sorted(actual - set(identities))
+    extra = sorted(identities.keys() - reference_names)
     retired_present = sorted(path for path in (*RETIRED_HIL_BATCHES, *RETIRED_HIL_TOOLS)
                              if (ROOT / path).exists())
-    return {"status": "PASS" if not errors and not extra and not retired_present else "FAIL",
-            "protected_files": len(references), "changed_or_missing": errors, "new_production_files": extra,
+    is_valid = not retired_present and not (require_unchanged_source and (changed or missing or extra))
+    return {"status": "PASS" if is_valid else "FAIL",
+            "require_unchanged_source": require_unchanged_source,
+            "reference_files": len(references), "current_files": len(identities),
+            "changed_from_baseline": changed, "missing_from_baseline": missing,
+            "new_production_files": extra,
             "excluded_generated_paths": ["hil/templates/subdir.mk.last_variant"],
             "excluded_retired_hil_batches": list(RETIRED_HIL_BATCHES),
             "excluded_retired_hil_tools": sorted(RETIRED_HIL_TOOLS),
@@ -469,9 +481,10 @@ def make_index(records, catalog, primary_keys):
             "entries": entries}
 
 
-def inspect(write_index):
+def inspect(write_index, require_unchanged_source):
     watched = set(markdown_files()) | set(METADATA) | {Path(__file__).resolve()}
     before = {path.relative_to(ROOT).as_posix(): sha(path) for path in sorted(watched)}
+    source_before = source_identities()
     records, documents = load_records()
     headers = sorted((ROOT / "RTOS/Core/Inc").glob("*.h"))
     primary_headers = {path.relative_to(ROOT).as_posix() for path in headers}
@@ -496,13 +509,14 @@ def inspect(write_index):
             errors.append("Generated api_index.json is missing/stale; use --write-index explicitly")
     controls = negative_controls(records, documents, catalog, primary_keys)
     links = check_links(markdown_files())
-    production = check_production()
+    production = check_production(source_before, require_unchanged_source)
     identities = {path.relative_to(ROOT).as_posix(): sha(path)
                   for path in sorted(set(markdown_files()) | set(METADATA) | {Path(__file__).resolve()})}
     changed = sorted(name for name in set(before) | set(identities)
                      if before.get(name) != identities.get(name))
-    changed_production = [name for name, identity in production["sha256"].items()
-                          if not (ROOT / name).is_file() or sha(ROOT / name) != identity]
+    source_after = source_identities()
+    changed_production = sorted(name for name in source_before.keys() | source_after.keys()
+                                if source_before.get(name) != source_after.get(name))
     passed = not errors and not changed and not changed_production and not links["errors"] and not links["missing_legacy_anchors"] and production["status"] == "PASS" and all(row["status"] == "PASS" for row in controls)
     return {"status": "PASS" if passed else "FAIL", "baseline": BASELINE,
             "current_head": git("rev-parse", "HEAD").decode().strip(),
@@ -526,13 +540,15 @@ def inspect(write_index):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write-index", action="store_true")
+    parser.add_argument("--require-unchanged-source", action="store_true",
+                        help="also require production and HIL inputs to match the historical baseline")
     parser.add_argument("--out-dir", type=Path)
     arguments = parser.parse_args()
     directory = arguments.out_dir or HERE / "evidence" / ("docs_" + datetime.now().strftime("%Y%m%d_%H%M%S_%f"))
     directory = directory.resolve()
     directory.mkdir(parents=True, exist_ok=False)
     try:
-        result = inspect(arguments.write_index)
+        result = inspect(arguments.write_index, arguments.require_unchanged_source)
     except (OSError, ValueError, KeyError, TypeError, IndexError, subprocess.SubprocessError) as error:
         result = {"status": "FAIL", "reason": str(error), "scope": "documentation validation; no hardware"}
     result["finished_local"] = datetime.now().astimezone().isoformat()

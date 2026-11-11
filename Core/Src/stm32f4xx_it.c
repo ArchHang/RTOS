@@ -22,11 +22,16 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>        /* fault_output 默认实现: printf + fflush */
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "rtos_port.h"
 #include "rtos_sched.h"   /* rtos_kernel.current_tcb (故障任务归因) */
 #include "rtos_task.h"    /* rtos_tcb_t 完整定义(name/stack_base/...) */
 #include "rtos_config.h"  /* RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW */
+#if defined(FIRMWARE_UART_PIPELINE)
+#include "uart_pipeline.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +72,13 @@ void HardFault_Handler(void)  __attribute__((naked));
 void MemManage_Handler(void)  __attribute__((naked));
 void BusFault_Handler(void)   __attribute__((naked));
 void UsageFault_Handler(void) __attribute__((naked));
+/*
+ * The optional vector wrappers must preserve EXC_RETURN in LR and leave MSP
+ * and the task's r4-r11 untouched. A C prologue at -O0 cannot be unwound by
+ * the tail branch because the port returns directly from the exception.
+ */
+void SVC_Handler(void)        __attribute__((naked));
+void PendSV_Handler(void)     __attribute__((naked));
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -76,9 +88,9 @@ void UsageFault_Handler(void) __attribute__((naked));
 /*                                                                      */
 /* 采集: EXC_RETURN 判 PSP/MSP → 硬件压栈帧(R0-R3/R12/LR/PC/xPSR)       */
 /* 解码: CFSR(MMFSR/BFSR/UFSR)/HFSR/MMAR/BFAR 逐位翻译                  */
-/* 归因: 线程模式故障 → rtos_kernel.current_tcb 任务名/优先级/栈边界    */
+/* 归因: Thread 使用 PSP 时读取当前任务名、优先级及栈边界              */
 /* 输出: fault_output 弱函数(默认 USART2 寄存器直写, 用户可覆盖)        */
-/* 防护: 嵌套故障自报告(故障中再故障不级联 LOCKUP)                      */
+/* 防护: 可进入嵌套异常时保留首次快照并输出简报                          */
 /* ==================================================================== */
 
 /* ---------- 异常入口硬件压栈帧(基本帧 8 字, ARMv7-M 固定布局) ---------- */
@@ -102,11 +114,12 @@ volatile struct
     uint32_t      sp, exc_return;
     fault_frame_t frame;
     uint8_t       frame_valid;
+    uint32_t      basepri, primask, faultmask, crit_depth;
 } g_fault;
 
 /* ---------- 原始输出通道: USART2 寄存器轮询直写(零库依赖) ----------
- * 直接操作 USART2->SR/DR, 不经 newlib/HAL/中断 —— 这是故障上下文中
- * 唯一安全的输出方式。TXE 等待有上限(时钟异常时不至于死等)。
+ * 直接操作 USART2->SR/DR，无需 HAL tick、UART 中断或 stdio 锁推进。
+ * TXE 超时丢弃当前字符。
  * 末尾冲刷(TC 等待)由 fault_report 收尾处完成, 保证停机前最后一位
  * 字节移出移位寄存器。 */
 #define FAULT_UART      USART2
@@ -115,8 +128,10 @@ volatile struct
 static void fault_raw_putc(char c)
 {
     uint32_t guard = FAULT_TXE_GUARD;
-    while (((FAULT_UART->SR & USART_SR_TXE) == 0U) && (--guard != 0U)) {
-        /* 等发送数据寄存器空 */
+    while ((FAULT_UART->SR & USART_SR_TXE) == 0U) {
+        if (--guard == 0U) {
+            return;
+        }
     }
     FAULT_UART->DR = (uint8_t)c;
 }
@@ -137,30 +152,14 @@ static void fault_raw_puthex32(uint32_t v)
     }
 }
 
-/* ---------- 故障文本输出口: 弱函数, 用户可重定义 ----------
- * fault_output 是诊断模块唯一的文本出口, 所有报告内容都经它送出。
- *
- * 默认实现: printf + fflush(stdout)。
- *   - fflush 逐段强制刷新, 规避 stdout 行缓冲在停机时丢失尾部无换行
- *     输出的问题(2026-08 实测教训, 见 docs/hardfault_debug.md 5.1 节);
- *   - 前提: CCR.UNALIGN_TRP 已关闭(main.c)——库代码的非对齐字访问
- *     优化不再构成故障源。若重新开启该陷阱, 请覆盖本函数(见下)。
- *
- * 残余风险(可接受): 故障若恰好发生在 UART/HAL/stdio 内部, 本通道可能
- * 失效。此时嵌套保护(fault_report 入口)自动切换到零依赖的
- * fault_raw_* 寄存器直写通道报告嵌套故障, 系统不会进入 LOCKUP。
- *
- * 用户覆盖方式: 在任意 .c 定义同名强符号(需先声明原型):
- *     void fault_output(const char *str);
- * 可选通道:
- *   - fault_raw_puts: 本文件提供的 USART2 寄存器直写(最鲁棒);
- *   - ITM/SWO:        while (*str) ITM_SendChar(*str++);
- *   - 其他 UART:      仿照 fault_raw_puts 修改寄存器基地址;
- *   - RAM 黑匣子:     拷入 .noinit 缓冲, 复位后回放。 */
+/**
+ * @brief 通过 USART2 的有界轮询输出一段故障报告。
+ * @param[in] str 有效且以 NUL 结束的诊断文本。
+ * @note 应用可用同名强符号覆盖。覆盖实现需要适用于异常上下文。
+ */
 __attribute__((weak)) void fault_output(const char *str)
 {
-    (void)printf("%s", str);
-    (void)fflush(stdout);
+    fault_raw_puts(str);
 }
 
 /* 内部统一出口(便于将来增加过滤/缓冲层) */
@@ -217,17 +216,19 @@ static void fault_putdec(uint32_t v)
     }
 }
 
-/* ---------- SP 合法性校验(防止二次异常进 LOCKUP) ----------
- * 读帧之前必须确认: SP 在 RAM 内、留得下 8 字帧、4 字节对齐。
- * 本工程 RAM: 0x20000000 ~ 0x2001FFFF(见 STM32F446RETX_FLASH.ld)。
- * 若压栈失败(MSTKERR/STKERR), SP 可能已指向非法地址。 */
-static uint8_t fault_sp_valid(uint32_t sp)
+/* F446 SRAM_BASE 由设备头文件提供，_estack 由本工程链接脚本设为 RAM 末尾。 */
+extern uint8_t _estack;
+
+static bool fault_ram_contains(uintptr_t address, size_t size)
 {
-    if ((sp < 0x20000000UL) ||
-        (sp > (0x20020000UL - sizeof(fault_frame_t)))) {
-        return 0U;
-    }
-    return ((sp & 0x3U) == 0U) ? 1U : 0U;
+    const uintptr_t ram_end = (uintptr_t)&_estack;
+    return (address >= SRAM_BASE) && (address < ram_end) && (size <= ram_end - address);
+}
+
+static bool fault_sp_is_readable(uintptr_t sp)
+{
+    return ((sp % _Alignof(fault_frame_t)) == 0U)
+           && fault_ram_contains(sp, sizeof(fault_frame_t));
 }
 
 /* ---------- CFSR/HFSR 位级解码(仅打印置位位, 每位一行术语+释义) ---------- */
@@ -283,8 +284,7 @@ static void fault_decode_hfsr(uint32_t hfsr)
  * 正常流程 fault_report 只会进入一次。若报告路径自身发生故障
  * (如 fault_output 覆盖实现内部出错), 异常会在故障 ACTIVE 期间再次
  * 进入 fault_report: 此时改用零依赖的 fault_raw_* 通道最小化报告并
- * 停机 —— 不覆盖 g_fault(保留首次现场), 后续代码零库依赖, 不会触发
- * 第三次故障, 系统不进 LOCKUP, 调试器保持连接。 */
+ * 停机并保留 g_fault。如果硬件直接进入 LOCKUP，软件没有执行机会。 */
 static volatile uint8_t g_fault_active = 0U;
 
 /* ---------- 报告分段(每段职责单一, 输出结构见各函数头) ---------- */
@@ -299,7 +299,7 @@ static void report_context(uint32_t exc_return, uint32_t sp, uint8_t frame_valid
     fault_puts("--- Exception context ---\r\n");
     fault_puts("EXC_RETURN = ");  fault_puthex32(exc_return);
     fault_puts("\r\nMode       : ");
-    fault_puts(from_thr ? "Thread (task code)\r\n" : "Handler (interrupt code)\r\n");
+    fault_puts(from_thr ? "Thread\r\n" : "Handler (interrupt code)\r\n");
     fault_puts("Stack frame: ");
     fault_puts(from_psp ? "PSP" : "MSP");
     fault_puts(ext_frame ? ", extended frame (26 words, FPU)\r\n"
@@ -314,6 +314,20 @@ static void report_context(uint32_t exc_return, uint32_t sp, uint8_t frame_valid
         fault_puts("Exception frame not reliable - register analysis skipped.\r\n");
     }
     fault_puts("\r\n");
+}
+
+/* 保留异常报告开始时的实际值，便于从串口与调试器核对。 */
+static void report_masks(void)
+{
+    fault_puts("FAULT|MASK|basepri=");
+    fault_puthex32(g_fault.basepri);
+    fault_puts("|primask=");
+    fault_puthex32(g_fault.primask);
+    fault_puts("|faultmask=");
+    fault_puthex32(g_fault.faultmask);
+    fault_puts("|crit_depth=");
+    fault_puthex32(g_fault.crit_depth);
+    fault_puts("\r\n\r\n");
 }
 
 /* 硬件保存的寄存器组(异常帧)。参数为 volatile: g_fault 整体 volatile。 */
@@ -357,42 +371,75 @@ static void report_frame(volatile const fault_frame_t *frame)
     fault_puts("\r\n");
 }
 
-/* RTOS 任务归因与任务栈边界判定(仅线程模式故障有效) */
-static void report_task(uint32_t sp)
+/* 使用硬件压栈后的 SP 计算用量，因此计入异常帧占用。 */
+static void report_task_stack(const rtos_tcb_t *tcb, uintptr_t sp)
 {
-    rtos_tcb_t *tcb = rtos_kernel.current_tcb;
-
-    if (tcb == NULL) {
+    const uintptr_t stack_base = (uintptr_t)tcb->stack_base;
+    const uint32_t stack_words = tcb->stack_size;
+    if ((stack_words == 0U) || (stack_words > UINT32_MAX / sizeof(rtos_stack_t))
+        || ((stack_base % _Alignof(rtos_stack_t)) != 0U)) {
+        fault_puts("Stack bounds unavailable: invalid task stack metadata.\r\n");
         return;
     }
+
+    const uint32_t stack_size = stack_words * (uint32_t)sizeof(rtos_stack_t);
+    if (!fault_ram_contains(stack_base, stack_size)) {
+        fault_puts("Stack bounds unavailable: task stack outside SRAM.\r\n");
+        return;
+    }
+
+    const uintptr_t stack_top = stack_base + stack_size;
+    fault_puts("Task stack : base ");
+    fault_puthex32((uint32_t)stack_base);
+    fault_puts(", size ");
+    fault_puthex32(stack_size);
+    fault_puts(" bytes\r\n");
+
+    if (sp < stack_base) {
+        fault_puts("OVERFLOW   : SP is ");
+        fault_puthex32((uint32_t)(stack_base - sp));
+        fault_puts(" bytes below stack base\r\n");
+        return;
+    }
+    if ((sp >= stack_top) || (sizeof(fault_frame_t) > stack_top - sp)) {
+        fault_puts("Stack bounds mismatch: core exception frame extends past task stack top.\r\n");
+        return;
+    }
+
+    fault_puts("Stack usage: ");
+    fault_puthex32((uint32_t)(stack_top - sp));
+    fault_puts(" bytes including exception frame\r\n");
+    fault_puts("Stack free : ");
+    fault_puthex32((uint32_t)(sp - stack_base));
+    fault_puts(" bytes below frame SP\r\n");
+}
+
+/* 只有 Thread/PSP 才用当前 TCB 解释故障现场。 */
+static void report_task(uintptr_t sp)
+{
+    const rtos_tcb_t *tcb = rtos_kernel.current_tcb;
+    const uintptr_t address = (uintptr_t)tcb;
+    if (((address % _Alignof(rtos_tcb_t)) != 0U)
+        || !fault_ram_contains(address, sizeof(rtos_tcb_t))) {
+        fault_puts("RTOS task unavailable: current TCB outside readable SRAM.\r\n\r\n");
+        return;
+    }
+
     fault_puts("--- RTOS task ---\r\n");
     fault_puts("Task       : \"");
-    fault_puts(tcb->name);
+    /* 栈故障可能破坏 TCB，限制名称读取在字段之内。 */
+    char character[2];
+    character[1] = '\0';
+    for (size_t i = 0U; (i < sizeof(tcb->name)) && (tcb->name[i] != '\0'); ++i) {
+        character[0] = tcb->name[i];
+        fault_puts(character);
+    }
     fault_puts("\" (priority ");
     fault_putdec(tcb->priority);
     fault_puts(", id ");
     fault_putdec(tcb->task_id);
     fault_puts(")\r\n");
-
-    /* 栈向下生长, 合法区间 [stack_base, stack_base + stack_size*4);
-     * stack_size 单位为字(×4 才是字节)。 */
-    fault_puts("Task stack : base ");
-    fault_puthex32((uint32_t)tcb->stack_base);
-    fault_puts(", size ");
-    fault_puthex32(tcb->stack_size * 4U);
-    fault_puts(" bytes\r\n");
-
-    if (sp < (uint32_t)tcb->stack_base) {
-        fault_puts("OVERFLOW   : SP is ");
-        fault_puthex32((uint32_t)tcb->stack_base - sp);
-        fault_puts(" bytes below stack base\r\n");
-    }
-    else
-    {
-        fault_puts("Stack usage: ");
-        fault_puthex32(sp - (uint32_t)tcb->stack_base);
-        fault_puts(" bytes in use at fault\r\n");
-    }
+    report_task_stack(tcb, sp);
 
 #if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW
     if (tcb->stack_magic != 0xDEADBEEFU) {
@@ -449,7 +496,7 @@ static void report_status(void)
     fault_puts("\r\n\r\n");
 }
 
-/* ---------- 主分析函数(运行于 Handler 模式/MSP, 全部中断已被冻结) ----------
+/* ---------- 主分析函数(运行于 Handler 模式/MSP) ----------
  * used 属性: 本函数仅被 naked Handler 内的汇编 "b fault_report" 引用,
  * GCC 不解析 basic asm 内容, 会误判"未使用"而不生成符号 → 必须强制保留。 */
 static __attribute__((used)) void fault_report(uint32_t sp, uint32_t exc_return)
@@ -468,6 +515,11 @@ static __attribute__((used)) void fault_report(uint32_t sp, uint32_t exc_return)
     }
     g_fault_active = 1U;
 
+    g_fault.basepri = __get_BASEPRI();
+    g_fault.primask = __get_PRIMASK();
+    g_fault.faultmask = __get_FAULTMASK();
+    g_fault.crit_depth = rtos_port_get_critical_nesting();
+
     /* 1. 立即快照故障寄存器(只读不清: 状态位写1才清除, 保留现场)。
      *    后续解析代码万一二次异常, 快照里证据仍在, 调试器可查 g_fault。 */
     g_fault.cfsr   = SCB->CFSR;    /* 0xE000ED28 */
@@ -478,25 +530,26 @@ static __attribute__((used)) void fault_report(uint32_t sp, uint32_t exc_return)
     g_fault.bfar   = (g_fault.cfsr & (1UL << 15)) ? SCB->BFAR : 0xFFFFFFFFU;
     g_fault.sp         = sp;
     g_fault.exc_return = exc_return;
-    g_fault.frame_valid = fault_sp_valid(sp);
+    g_fault.frame_valid = fault_sp_is_readable(sp) ? 1U : 0U;
+    if (g_fault.frame_valid != 0U) {
+        g_fault.frame = *(const fault_frame_t *)(uintptr_t)sp;
+    }
 
     /* 2. 报告主体 */
-    uint8_t from_thr = ((exc_return & (1UL << 3)) != 0U) ? 1U : 0U;
+    const bool is_thread = (exc_return & (1UL << 3)) != 0U;
+    const bool uses_psp = (exc_return & (1UL << 2)) != 0U;
 
     fault_puts("\r\n\r\n==================== FAULT REPORT ====================\r\n\r\n");
 
     report_context(exc_return, sp, g_fault.frame_valid);
+    report_masks();
 
     if (g_fault.frame_valid != 0U) {
-        g_fault.frame = *(const fault_frame_t *)sp;
         report_frame(&g_fault.frame);
 
-        /* 仅线程模式(bit3=1)时 current_tcb 才是肇事任务 */
-        if (from_thr != 0U) {
+        if (is_thread && uses_psp) {
             report_task(sp);
-        }
-        else
-        {
+        } else if (!is_thread) {
             report_isr_context();
         }
     }
@@ -641,7 +694,7 @@ void UsageFault_Handler(void)
 void SVC_Handler(void)
 {
   /* USER CODE BEGIN SVCall_IRQn 0 */
-  __asm volatile("b rtos_port_svc_handler");
+  __asm__ __volatile__("b rtos_port_svc_handler"); /* Preserve LR for exception return. */
 
   /* USER CODE END SVCall_IRQn 0 */
   /* USER CODE BEGIN SVCall_IRQn 1 */
@@ -668,7 +721,7 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-  __asm volatile("b rtos_port_pend_sv_handler");
+  __asm__ __volatile__("b rtos_port_pend_sv_handler"); /* Save task registers in the port. */
 
   /* USER CODE END PendSV_IRQn 0 */
   /* USER CODE BEGIN PendSV_IRQn 1 */
@@ -705,7 +758,11 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 0 */
 
   /* USER CODE END USART2_IRQn 0 */
+#if defined(FIRMWARE_UART_PIPELINE)
+  uart_pipeline_receive_irq();
+#else
   HAL_UART_IRQHandler(&huart2);
+#endif
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */

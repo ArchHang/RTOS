@@ -26,17 +26,26 @@
 
 /* ============================== 调度器配置 ============================== */
 
-/** @brief 内核 Tick 频率(Hz)。1kHz 对应 1ms 调度粒度。 */
+/** @brief 内核 Tick 频率(Hz)。可通过构建参数覆盖，所有编译单元须一致。 */
+#ifndef RTOS_CONFIG_TICK_RATE_HZ
 #define RTOS_CONFIG_TICK_RATE_HZ (1000U)
+#endif
+#if (RTOS_CONFIG_TICK_RATE_HZ < 1) || (RTOS_CONFIG_TICK_RATE_HZ > UINT32_MAX)
+#error "RTOS_CONFIG_TICK_RATE_HZ must be a positive uint32_t frequency"
+#endif
 
 /** @brief 支持的最大任务优先级数(0 ~ N-1)。数值越大 RAM 中就绪表越大。 */
 #define RTOS_CONFIG_MAX_PRIORITIES (32U)
 
-/** @brief 是否启用时间片轮转(同优先级任务轮流执行)。1=启用, 0=禁用。 */
+/** @brief 抢占模式下，是否在 Tick 中轮转同优先级任务。1=启用，0=禁用。 */
+#ifndef RTOS_CONFIG_USE_TIME_SLICING
 #define RTOS_CONFIG_USE_TIME_SLICING (1)
+#endif
 
-/** @brief 是否启用抢占式调度。1=启用(高优先级可立即抢占低优先级)。 */
+/** @brief 1 启用抢占，0 由应用任务主动让出或阻塞。空闲任务始终可被替换。 */
+#ifndef RTOS_CONFIG_USE_PREEMPTION
 #define RTOS_CONFIG_USE_PREEMPTION (1)
+#endif
 
 /* ============================== 任务配置 ============================== */
 
@@ -145,7 +154,9 @@
  *             cpu_usage/调度延迟、get_task 的 run_time_us 返回 0;
  *             uptime/任务数/内存/栈水位等非热路径统计不受影响。
  *         默认 0(性能优先)。 */
+#ifndef RTOS_CONFIG_PERF_HOTPATH_STATS
 #define RTOS_CONFIG_PERF_HOTPATH_STATS (0)
+#endif
 
 /** @brief [guard G-3] ISR-API 优先级违约断言。
  *         优先级数值 < MAX_SYSCALL(0x50, 即 NVIC 优先级 0-4)的中断调用

@@ -68,7 +68,8 @@ rtos_status_t rtos_init(void);
  * @brief 启动 RTOS 调度器。
  * @details 内部调用 rtos_sched_start(): 配置 SysTick/PendSV 后经 SVC 异常返回进入
  *          首个任务。成功后不再返回。
- * @return 正常情况不返回; 仅就绪集异常为空的加固路径返回 RTOS_ERR_SCHED。
+ * @return 启动失败时返回错误。ISR 中返回 RTOS_ERR_ISR，已启动返回 RTOS_ERR_ALREADY，
+ *         缺少首任务返回 RTOS_ERR_SCHED，时钟不能生成合法 Tick 返回 RTOS_ERR_PARAM。
  */
 rtos_status_t rtos_start(void);
 

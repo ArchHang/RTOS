@@ -20,10 +20,14 @@
  *          但会增加 CPU 开销。
  */
 #include "rtos_timer.h"
+
+#include <stdbool.h>
+#include <string.h>
+
+#include "rtos_internal.h"
+#include "rtos_queue.h"
 #include "rtos_sched.h"
 #include "rtos_task.h"
-#include "rtos_queue.h" /* rtos_queue_recv (命令队列) */
-#include <string.h>
 
 /* ============================== 内部数据 ============================== */
 
@@ -165,25 +169,6 @@ static void timer_reinsert_periodic(rtos_timer_t *t, rtos_tick_t previous_expire
         timer_active_insert(t);
     }
     t->deactivated = 0U;
-}
-
-/**
- * @brief 计算距下一到期的 Tick 数(临界区内调用)。
- * @return Tick 数, RTOS_WAIT_FOREVER 表示无活跃定时器。
- */
-static rtos_tick_t timer_get_next_remain(void)
-{
-    if (s_active_head == NULL) {
-        return RTOS_WAIT_FOREVER;
-    }
-    rtos_tick_t now = rtos_kernel.tick_count;
-    /* 带符号差值: 链首已"过期"(差 <= 0, 含回绕场景)时返回 1 立即到期处理,
-     * 避免无符号减法在回绕点附近算出巨大 remain 导致服务任务长眠。 */
-    int32_t remain = timer_tick_diff(s_active_head->expire_tick, now);
-    if (remain <= 0) {
-        return 1U;
-    }
-    return (rtos_tick_t)remain;
 }
 
 /* ============================== 服务任务 ============================== */
@@ -352,35 +337,34 @@ void rtos_timer_service_task(void *arg)
         /* 逐个取出和派发，避免回调 API 改写待执行链的 next 指针。 */
         RTOS_PORT_ENTER_CRITICAL();
         rtos_timer_t *expired = timer_take_expired();
-        rtos_tick_t previous_expire = (expired != NULL) ? expired->expire_tick : 0U;
-        s_callback_timer = expired;
-        RTOS_PORT_EXIT_CRITICAL();
-
-        /* 2. 临界区外: 执行回调(可安全调用阻塞 API) */
-        timer_run_callbacks(expired);
-
-        /* 回调可能改变链表或消耗多个 Tick；重插后重新检查到期节点。 */
-        RTOS_PORT_ENTER_CRITICAL();
         if (expired != NULL) {
+            const rtos_tick_t previous_expire = expired->expire_tick;
+            s_callback_timer = expired;
+            RTOS_PORT_EXIT_CRITICAL();
+
+            timer_run_callbacks(expired);
+
+            /* 回调可能改变链表或消耗多个 Tick；重插后重新检查到期节点。 */
+            RTOS_PORT_ENTER_CRITICAL();
             timer_reinsert_periodic(expired, previous_expire);
-        }
-        s_callback_timer = NULL;
-        /* 长回调或多个短周期定时器可令链首一直到期；每次回调后仍须
-         * 消费控制命令，保证外部 stop/delete 不会被到期派发饿死。 */
-        if (expired != NULL) {
+            s_callback_timer = NULL;
+            /* 每次回调后消费控制命令，防止 stop/delete 被到期派发饿死。 */
             while (rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_NO_WAIT) == RTOS_OK) {
                 timer_handle_cmd(&cmd);
             }
-        }
-        rtos_tick_t timeout = timer_get_next_remain();
-        RTOS_PORT_EXIT_CRITICAL();
-
-        if (expired != NULL) {
+            RTOS_PORT_EXIT_CRITICAL();
             continue;
         }
 
-        /* 4. 阻塞等待命令或超时(到期) */
-        rtos_status_t st = rtos_queue_recv(&s_cmd_queue, &cmd, timeout);
+        /* 服务任务独占活跃链的修改，可在本次检查内读取下一截止时刻。 */
+        const bool has_deadline = (s_active_head != NULL);
+        const rtos_tick_t deadline = has_deadline ? s_active_head->expire_tick : 0U;
+        RTOS_PORT_EXIT_CRITICAL();
+
+        /* 绝对到期时刻由接收路径在挂等待前换算，抢占不会重启超时预算。 */
+        rtos_status_t st = has_deadline
+            ? rtos_internal_queue_recv_until(&s_cmd_queue, &cmd, deadline)
+            : rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_WAIT_FOREVER);
 
         if (st == RTOS_OK) {
             /* 处理命令(可能多个，循环取空队列) */

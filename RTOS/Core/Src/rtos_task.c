@@ -9,7 +9,7 @@
  *            create -> READY -> RUNNING -> (delay/blocked) -> READY -> ...
  *                  -> delete -> TCB 回收(若动态分配)
  *
- *          栈溢出检测: 方法2 在栈底写入魔数 0xDEADBEEF，每次切换时校验。
+ *          栈溢出检测: 空闲巡检检查保存的栈指针，方法2还检查实际栈底。
  *          任务通知: 轻量级同步，无独立对象，直接写 TCB 字段。
  */
 #include "rtos_task.h"
@@ -37,14 +37,43 @@
 static rtos_tcb_t *s_pending_free_list = NULL;
 static rtos_tcb_t *s_all_tasks = NULL;
 
-/* Address reservation includes construction so a second static create cannot
- * reset the TCB while the first call initializes its stack outside critical. */
-static rtos_bool_t task_reserved(const rtos_tcb_t *tcb)
+static rtos_bool_t task_spans_overlap(uintptr_t first, size_t first_size,
+                                      uintptr_t second, size_t second_size)
 {
-    for (rtos_tcb_t *p = s_all_tasks; p != NULL; p = p->next_all) {
-        if (p == tcb) return RTOS_TRUE;
+    if (first <= second) {
+        return (second - first < first_size) ? RTOS_TRUE : RTOS_FALSE;
     }
-    return RTOS_FALSE;
+    return (first - second < second_size) ? RTOS_TRUE : RTOS_FALSE;
+}
+
+/* Static callers provide both spans. Reserve them together before writing
+ * either span, including when another task is still constructing its stack. */
+static rtos_status_t task_reserve_check(const rtos_tcb_t *tcb, const rtos_stack_t *stack_buf,
+                                         uint32_t stack_size, rtos_bool_t is_static)
+{
+    const uintptr_t tcb_start = (uintptr_t)tcb;
+    const uintptr_t stack_start = (uintptr_t)stack_buf;
+    const size_t stack_bytes = (size_t)stack_size * sizeof(*stack_buf);
+    rtos_bool_t has_overlap = RTOS_FALSE;
+
+    for (const rtos_tcb_t *task = s_all_tasks; task != NULL; task = task->next_all) {
+        if (task == tcb) {
+            return RTOS_ERR_ALREADY;
+        }
+        if (is_static != RTOS_FALSE) {
+            const uintptr_t other_tcb = (uintptr_t)task;
+            const uintptr_t other_stack = (uintptr_t)task->stack_base;
+            const size_t other_bytes = (size_t)task->stack_size * sizeof(*stack_buf);
+
+            if (task_spans_overlap(tcb_start, sizeof(*tcb), other_tcb, sizeof(*task)) ||
+                task_spans_overlap(tcb_start, sizeof(*tcb), other_stack, other_bytes) ||
+                task_spans_overlap(stack_start, stack_bytes, other_tcb, sizeof(*task)) ||
+                task_spans_overlap(stack_start, stack_bytes, other_stack, other_bytes)) {
+                has_overlap = RTOS_TRUE;
+            }
+        }
+    }
+    return (has_overlap != RTOS_FALSE) ? RTOS_ERR_PARAM : RTOS_OK;
 }
 
 /* Public mutations may only operate on fully constructed live tasks. Lookup
@@ -75,11 +104,6 @@ static void task_unregister(rtos_tcb_t *tcb)
         }
     }
 }
-
-/* [防御] TCB 与任务栈共用同一个堆: 若 TCB 本身大到吃掉整个堆, 动态任务将
- * 永远无法创建(校验式的除法也会失去意义)。此处编译期兜底。 */
-_Static_assert(sizeof(rtos_tcb_t) < RTOS_CONFIG_HEAP_SIZE,
-               "TCB must be smaller than the heap it shares with task stacks");
 
 /**
  * @brief 将动态分配的 TCB 加入待释放链表(供 idle 任务清理)。
@@ -144,9 +168,10 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
                                       const char *name, rtos_bool_t is_static, rtos_tcb_t **publish)
 {
     RTOS_PORT_ENTER_CRITICAL();
-    if (task_reserved(tcb)) {
+    rtos_status_t status = task_reserve_check(tcb, stack_buf, stack_size, is_static);
+    if (status != RTOS_OK) {
         RTOS_PORT_EXIT_CRITICAL();
-        return RTOS_ERR_ALREADY;
+        return status;
     }
     /* 初始化 TCB */
     memset(tcb, 0, sizeof(*tcb));
@@ -157,6 +182,8 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     tcb->task_id = rtos_internal_alloc_task_id();
     tcb->notify_state = NOTIFY_IDLE;
     tcb->notify_value = 0U;
+    tcb->stack_base = stack_buf;
+    tcb->stack_size = stack_size;
     tcb->next_all = s_all_tasks;
     s_all_tasks = tcb;
     RTOS_PORT_EXIT_CRITICAL();
@@ -173,19 +200,18 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     }
 
     /* 初始化栈: 调用移植层把伪现场压入栈 */
-    tcb->stack_base = stack_buf;
-    tcb->stack_size = stack_size;
     tcb->top_of_stack = rtos_port_init_stack(stack_buf + stack_size, stack_size, entry, arg);
 
 #if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW
     tcb->stack_magic = RTOS_STACK_MAGIC;
-    *(volatile uint32_t *)stack_buf = RTOS_STACK_MAGIC;
+#endif
+#if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW == 2
+    *stack_buf = RTOS_INTERNAL_STACK_FILL_WORD;
 #endif
 
     /* 性能监视器: 初始化任务性能字段, 填充栈水印, 加入注册表。
      * 必须在加入就绪表前调用(确保任务可运行前已被观测)。
-     * 栈水印填充会覆盖栈底魔数 *stack_buf(该值仅在 TCB.stack_magic 校验,
-     * 栈内副本从不读取, 覆盖无害)。 */
+     * 栈水印与方法2的栈底检查使用同一个模式。 */
     rtos_perf_on_task_created(tcb);
 
     /* 加入就绪表(临界区) */
@@ -225,6 +251,12 @@ rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     if ((stack_size < 96U) || (stack_size > (0x7FFFFFFFU / sizeof(rtos_stack_t)))) {
         return RTOS_ERR_PARAM;
     }
+    const size_t stack_bytes = (size_t)stack_size * sizeof(*stack_buf);
+    if (((uintptr_t)tcb > UINTPTR_MAX - sizeof(*tcb)) ||
+        ((uintptr_t)stack_buf > UINTPTR_MAX - stack_bytes) ||
+        task_spans_overlap((uintptr_t)tcb, sizeof(*tcb), (uintptr_t)stack_buf, stack_bytes)) {
+        return RTOS_ERR_PARAM;
+    }
 
     return task_create_core(tcb, stack_buf, stack_size, entry, arg, priority, name,
                             RTOS_TRUE /* is_static */, NULL);
@@ -240,23 +272,18 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
     if (priority >= RTOS_CONFIG_MAX_PRIORITIES) {
         return RTOS_ERR_PARAM;
     }
-    /* 与 rtos_task_create_static 相同的最小栈校验(FPU 扩展帧, 见上文注释)。
-     * 动态栈从堆分配, 其上界必须用**堆的真实可分配上界**表达, 而不是
-     * "堆字节数 / 栈单元字节数" —— 后者有两处高估:
-     *   1) TCB 自身在栈之前从同一个堆分配, 已占走 sizeof(rtos_tcb_t);
-     *   2) 每次分配还要额外吃掉一个块头, 且请求向上对齐到 8 字节。
-     * 高估的后果: API 声明可接受、实际必然返回 ERR_NO_MEM 的"假上界"。
-     *   修复前上界 = 32768/4 = 8192 字(= 整个堆) —— 必然失败;
-     *   仅扣 TCB 后 = 8157 字 —— 仍失败(未计块头/对齐);
-     *   用 rtos_heap_get_max_alloc() 表达后, 上界与分配器完全一致。
-     * [边界测试 BT|TASK|create_stack_upper_ok 实测该缺陷并修复] */
-    if (stack_size < 96U) {
+    /* Reject impossible byte counts before multiplication. The allocator
+     * accounts for block headers, alignment and current heap pressure. */
+    const size_t heap_capacity = RTOS_CONFIG_HEAP_SIZE;
+    if ((stack_size < 96U) || (heap_capacity <= sizeof(rtos_tcb_t))) {
         return RTOS_ERR_PARAM;
     }
-    if ((uint64_t)stack_size * (uint64_t)sizeof(rtos_stack_t) >
-        (uint64_t)rtos_heap_get_max_alloc()) {
+    const size_t maximum_stack_words =
+        (heap_capacity - sizeof(rtos_tcb_t)) / sizeof(rtos_stack_t);
+    if (stack_size > maximum_stack_words) {
         return RTOS_ERR_PARAM;
     }
+    const uint32_t stack_bytes = stack_size * (uint32_t)sizeof(rtos_stack_t);
 
     /* 从堆分配 TCB */
     rtos_tcb_t *tcb = (rtos_tcb_t *)rtos_heap_alloc(sizeof(rtos_tcb_t));
@@ -265,7 +292,7 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
     }
 
     /* 从堆分配栈(8 字节对齐由 rtos_heap_alloc 保证) */
-    rtos_stack_t *stack_buf = (rtos_stack_t *)rtos_heap_alloc(stack_size * sizeof(rtos_stack_t));
+    rtos_stack_t *stack_buf = (rtos_stack_t *)rtos_heap_alloc(stack_bytes);
     if (stack_buf == NULL) {
         rtos_heap_free(tcb);
         return RTOS_ERR_NO_MEM;
@@ -418,14 +445,7 @@ void rtos_task_yield(void)
      * 仍是 current —— rotate 别人的链并把 next_tcb 覆盖为次优选择。非 RUNNING
      * 态直接返回。 */
     if ((cur != NULL) && (cur->state == RTOS_TASK_RUNNING)) {
-        rtos_prio_t prio = cur->priority;
-        rtos_tcb_t *head = rtos_kernel.ready_heads[prio];
-        if ((head != NULL) && (head->next_ready != head)) {
-            rtos_kernel.ready_heads[prio] = head->next_ready;
-            rtos_kernel.next_tcb = rtos_kernel.ready_heads[prio];
-            rtos_kernel.switch_count++;
-            rtos_port_context_switch();
-        }
+        rtos_internal_sched_yield();
     }
     RTOS_PORT_EXIT_CRITICAL();
 }
@@ -773,6 +793,21 @@ rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value)
 
 /* ============================== 空闲任务 ============================== */
 
+#if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW
+static rtos_bool_t task_stack_is_corrupt(const rtos_tcb_t *task)
+{
+    if (task->stack_base == NULL || task->stack_magic != RTOS_STACK_MAGIC ||
+        (uintptr_t)task->top_of_stack < (uintptr_t)task->stack_base) {
+        return RTOS_TRUE;
+    }
+#if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW == 2
+    return (*task->stack_base != RTOS_INTERNAL_STACK_FILL_WORD) ? RTOS_TRUE : RTOS_FALSE;
+#else
+    return RTOS_FALSE;
+#endif
+}
+#endif
+
 void rtos_idle_task(void *arg)
 {
     (void)arg;
@@ -812,9 +847,7 @@ void rtos_idle_task(void *arg)
             /* perf 注册表: 覆盖全部存活任务(含 BLOCKED/SUSPENDED) */
             for (i = 0U; i < rtos_perf_task_registry_count(); i++) {
                 rtos_tcb_t *tcb = rtos_perf_task_at(i);
-                if ((tcb != NULL) &&
-                    ((tcb->stack_magic != RTOS_STACK_MAGIC) ||
-                     ((uint32_t)tcb->top_of_stack < (uint32_t)tcb->stack_base)) &&
+                if ((tcb != NULL) && (task_stack_is_corrupt(tcb) != RTOS_FALSE) &&
                     (n_overfl < RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE)) {
                     overflowed[n_overfl++] = tcb;
                 }
@@ -828,8 +861,7 @@ void rtos_idle_task(void *arg)
                 }
                 rtos_tcb_t *tcb = head;
                 do {
-                    if ((tcb->stack_magic != RTOS_STACK_MAGIC) ||
-                        ((uint32_t)tcb->top_of_stack < (uint32_t)tcb->stack_base)) {
+                    if (task_stack_is_corrupt(tcb) != RTOS_FALSE) {
                         if (n_overfl < RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE) {
                             overflowed[n_overfl++] = tcb;
                         }
@@ -838,8 +870,7 @@ void rtos_idle_task(void *arg)
                 } while (tcb != head);
             }
             for (rtos_tcb_t *tcb = rtos_kernel.delay_head; tcb != NULL; tcb = tcb->next_ready) {
-                if ((tcb->stack_magic != RTOS_STACK_MAGIC) ||
-                    ((uint32_t)tcb->top_of_stack < (uint32_t)tcb->stack_base)) {
+                if (task_stack_is_corrupt(tcb) != RTOS_FALSE) {
                     if (n_overfl < RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE) {
                         overflowed[n_overfl++] = tcb;
                     }

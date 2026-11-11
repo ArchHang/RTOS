@@ -25,6 +25,7 @@ extern "C" {
  */
 struct rtos_mutex {
     uint8_t is_initialized;
+    uint8_t is_handoff_pending; /**< 已授予等待任务，take 尚未确认。 */
     rtos_tcb_t *owner; /**< 当前持有者(NULL=未持有)。 */
     uint32_t recursion_count; /**< 递归获取计数。 */
     rtos_wait_node_t *wait_head; /**< 等待链表头(按优先级排序)。 */
@@ -41,8 +42,9 @@ rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex);
  * @brief 获取互斥锁(可递归)。
  * @param mutex    互斥锁。
  * @param timeout  超时。RTOS_WAIT_FOREVER 为永久等待。
- * @return RTOS_OK / RTOS_ERR_TIMEOUT；递归计数达到 UINT32_MAX 时返回
- *         RTOS_ERR_OVERFLOW 并保留原有所有权和计数。
+ * @return RTOS_OK 时当前任务持锁，等待超时返回 RTOS_ERR_TIMEOUT。
+ *         对象销毁中止等待或未确认的交接时返回 RTOS_ERR_DELETED。
+ *         递归计数达到 UINT32_MAX 时返回 RTOS_ERR_OVERFLOW，保留所有权和计数。
  * @note   不可在中断中调用。
  */
 rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout);

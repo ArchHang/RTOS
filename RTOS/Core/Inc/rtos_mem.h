@@ -33,11 +33,13 @@ typedef struct rtos_mempool {
 /**
  * @brief 初始化内存池。
  * @param pool        池对象。
- * @param base        存储区基址(用户分配，需 4 字节对齐)。
+ * @param base        用户提供的存储区基址，按指针类型自然对齐，F446 为 4 字节。
  * @param block_size  每块大小(字节)。
  * @param block_count 块数。
- * @note 存储区大小需 >= max(align4(block_size), sizeof(void *)) * block_count。
+ * @note 存储区至少包含 block_count 个实际块。每块先取 block_size 与指针大小的较大值，
+ *       再向上舍入到指针对齐边界。
  *       接口不接收存储区容量，调用方必须提供足够空间。
+ *       存储区不得和池对象重叠；重叠时返回 RTOS_ERR_PARAM，不改写两者。
  *       pool 和 base 在使用期间必须保持有效；池自动登记到性能统计表，
  *       因此 pool 需保持有效直到性能监视器重新初始化。
  */

@@ -17,12 +17,33 @@ EXAMPLE_FILES = {"handbook.c", "ipc.c", "memory.c", "observation.c", "task_notif
                  "timer.c", "usb.c"}
 CORE_HEADERS = ROOT / "RTOS/Core/Inc"
 SOURCE_DIRS = ("Core/Src", "IPC", "Memory", "Services", "USB", "Port/GCC/ARM_CM4F_CM7F")
-INCLUDES = ("RTOS/Core/Inc", "RTOS/Core/Private", "Core/Inc",
-            "Drivers/STM32F4xx_HAL_Driver/Inc", "Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
-            "Drivers/CMSIS/Device/ST/STM32F4xx/Include", "Drivers/CMSIS/Include",
+INCLUDES = ("RTOS/Core/Inc", "RTOS/Core/Private",
             "RTOS/lib/third/CherryUSB/core", "RTOS/lib/third/CherryUSB/common",
             "RTOS/lib/third/CherryUSB/class/cdc", "RTOS/lib/third/CherryUSB/class/hid",
             "RTOS/lib/third/CherryUSB/class/msc", "RTOS/lib/third/CherryUSB/port/dwc2")
+F446_INCLUDES = ("Core/Inc", "Drivers/STM32F4xx_HAL_Driver/Inc",
+                 "Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
+                 "Drivers/CMSIS/Device/ST/STM32F4xx/Include", "Drivers/CMSIS/Include")
+
+
+def target_config(h743_cmsis):
+    common = ["-mthumb", "-mfloat-abi=hard"]
+    if h743_cmsis is None:
+        return {"name": "STM32F446xx", "architecture": ["-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16",
+                                                      *common],
+                "defines": ["-DSTM32F446xx", "-DUSE_HAL_DRIVER"],
+                "includes": [ROOT / path for path in F446_INCLUDES], "external_headers": [],
+                "probe": '#include "stm32f446xx.h"\n'}
+    cmsis = h743_cmsis.resolve()
+    device = cmsis / "Device/ST/STM32H7xx/Include"
+    core = cmsis / "Include"
+    if not (device / "stm32h743xx.h").is_file() or not (core / "core_cm7.h").is_file():
+        raise ValueError("Expected STM32H743 device and Cortex-M7 headers in the CMSIS root")
+    return {"name": "STM32H743xx",
+            "architecture": ["-mcpu=cortex-m7", "-mfpu=fpv5-d16", "-mno-unaligned-access", *common],
+            "defines": ["-DSTM32H743xx"], "includes": [device, core],
+            "external_headers": sorted([*device.glob("*.h"), *core.glob("*.h")]),
+            "probe": '#include "stm32h743xx.h"\n'}
 
 
 def digest(path):
@@ -44,7 +65,7 @@ def parse_defines(text):
     return result
 
 
-def inputs():
+def inputs(target):
     paths = set()
     for name in ("RTOS", "Core", "Drivers", "AI"):
         paths.update(path for path in (ROOT / name).rglob("*")
@@ -53,12 +74,13 @@ def inputs():
     paths.update(ROOT.glob("*.ld"))
     paths.update((ROOT / name) for name in (".project", ".cproject"))
     paths.add(Path(__file__).resolve())
-    return {str(path.relative_to(ROOT)).replace("\\", "/"): digest(path)
-            for path in sorted(paths)}
+    identities = {path.relative_to(ROOT).as_posix(): digest(path) for path in sorted(paths)}
+    identities.update({path.as_posix(): digest(path) for path in target["external_headers"]})
+    return identities
 
 
-def identity(expected):
-    actual = inputs()
+def identity(expected, target):
+    actual = inputs(target)
     if actual != expected:
         raise ValueError("Compilation input identity changed during verification")
 
@@ -115,16 +137,17 @@ def run(command, directory, tag, expected_pattern=None):
     return stdout
 
 
-def flags(profile, overlay=None):
-    result = ["-mcpu=cortex-m4", "-mthumb", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard",
-              "-std=gnu11", "-Wall", "-Wextra", "-Werror", "-fno-common", "-fno-lto",
+def flags(profile, target, overlay=None):
+    result = [*target["architecture"], "-std=gnu11", "-Wall", "-Wextra", "-Werror",
+              "-fno-common", "-fno-lto",
               "-ffunction-sections", "-fdata-sections", "-" + profile["optimization"],
-              "-DSTM32F446xx", "-DUSE_HAL_DRIVER",
+              *target["defines"],
               "-DRTOS_CONFIG_USE_BASEPRI=" + str(profile["mask"]),
               "-DRTOS_CONFIG_ASSERT_ENABLED=" + str(profile["assertions"])]
     if overlay:
         result += ["-I" + str(overlay)]
     result += ["-I" + str(ROOT / path) for path in INCLUDES]
+    result += ["-I" + str(path) for path in target["includes"]]
     result += ["-I" + str(EXAMPLES)]
     return result
 
@@ -145,7 +168,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compiler", type=Path, required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--h743-cmsis", type=Path,
+                        help="optional STM32H743 CMSIS directory (default: F446 BSP)")
     args = parser.parse_args()
+    try:
+        target = target_config(args.h743_cmsis)
+    except ValueError as error:
+        parser.error(str(error))
     compiler = args.compiler.resolve()
     if not compiler.is_file():
         raise SystemExit("Compiler does not exist: " + str(compiler))
@@ -161,13 +190,14 @@ def main():
     output.mkdir(parents=True)
     work = output / ".objects"
     work.mkdir()
-    expected = inputs()
+    expected = inputs(target)
     save(output / "inputs.json", expected)
     examples = sorted(EXAMPLES.glob("*.c"))
     kernel = sorted(path for directory in SOURCE_DIRS for path in (ROOT / "RTOS" / directory).glob("*.c"))
     result = {"status": "RUNNING", "started_utc": datetime.now(timezone.utc).isoformat(),
               "baseline": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=str(ROOT)).decode().strip(),
-              "compiler": str(compiler), "profiles": [], "example_objects": 0,
+              "compiler": str(compiler), "target": target["name"],
+              "target_flags": target["architecture"], "profiles": [], "example_objects": 0,
               "kernel_support_objects": 0, "header_probes": 0, "expected_rejections": 0,
               "partial_links": 0, "production_inputs_stable": False, "error": None,
               "limits": ["Compile and relocatable-link checks only; no executable firmware, no execution or hardware.",
@@ -190,9 +220,12 @@ def main():
             if profile["overrides"]:
                 overlay = objects / "headers"
                 profile["overlay_headers_sha256"] = make_overlay(overlay, profile["overrides"])
-            common = flags(profile, overlay)
+            common = flags(profile, target, overlay)
             probe = objects / "effective_config.c"
-            probe.write_text('#include "rtos.h"\n', encoding="utf-8")
+            probe.write_text(target["probe"] + '#include "rtos.h"\n'
+                             '#if __NVIC_PRIO_BITS != 4\n'
+                             '#error unexpected NVIC priority encoding for this target\n'
+                             '#endif\n', encoding="utf-8")
             defines = run([compiler, *common, "-dM", "-E", probe], directory, "effective_config")
             macros = parse_defines(defines)
             selected = dict(profile["overrides"])
@@ -210,13 +243,13 @@ def main():
             for category, paths in (("example", examples), ("kernel", kernel)):
                 for index, source in enumerate(paths):
                     name = category + "_%02d_" % index + source.stem
-                    target = objects / (name + ".o")
+                    object_path = objects / (name + ".o")
                     extra = ["-Wconversion", "-Wshadow", "-Wmissing-prototypes"] if category == "example" else []
-                    run([compiler, *common, *extra, "-c", source, "-o", target], directory, name)
-                    built.append(target)
+                    run([compiler, *common, *extra, "-c", source, "-o", object_path], directory, name)
+                    built.append(object_path)
                     result["example_objects" if category == "example" else "kernel_support_objects"] += 1
             partial = objects / "examples_with_kernel.o"
-            run([compiler, "-mcpu=cortex-m4", "-mthumb", "-mfpu=fpv4-sp-d16", "-mfloat-abi=hard",
+            run([compiler, *target["architecture"],
                  "-nostdlib", "-r", *built, "-o", partial], directory, "partial_link")
             undefined_text = run([nm, "-u", partial], directory, "undefined_symbols")
             undefined = [line.split()[-1] for line in undefined_text.splitlines() if line.split()]
@@ -254,7 +287,7 @@ def main():
                 run([compiler, *common, "-c", positive, "-o", positive.with_suffix(".o")],
                     directory, "usb_off_with_required_types")
                 result["header_probes"] += 1
-            identity(expected)
+            identity(expected, target)
             print("COMPILE PASS " + tag, flush=True)
         result["production_inputs_stable"] = True
         result["status"] = "PASS"

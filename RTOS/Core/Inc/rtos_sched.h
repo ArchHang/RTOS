@@ -104,10 +104,10 @@ rtos_status_t rtos_sched_init(void);
 
 /**
  * @brief 启动调度器。
- * @details 创建空闲任务 -> 配置 SysTick/PendSV -> 启动首个任务。
- *          成功后不再返回(首任务经 SVC 异常返回进入)。
- * @note  未使用 noreturn 属性: 就绪集为空时返回 RTOS_ERR_SCHED(加固路径)。
- * @return 正常情况不返回; 仅加固路径返回 RTOS_ERR_SCHED。
+ * @details 在启动 Thread 中选择首任务、校验并配置 SysTick，再经 SVC 启动。
+ *          成功后不再返回。启动失败时保留原调度状态和中断屏蔽。
+ * @return RTOS_ERR_ISR、RTOS_ERR_ALREADY、RTOS_ERR_SCHED（缺少首任务）或
+ *         RTOS_ERR_PARAM（时钟无法生成合法 Tick）。
  */
 rtos_status_t rtos_sched_start(void);
 

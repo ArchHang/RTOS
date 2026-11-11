@@ -334,7 +334,11 @@ static rtos_bool_t capture_irq_entry(uint32_t index, rtos_bool_t *should_force)
     *should_force = RTOS_FALSE;
     RTOS_PORT_ENTER_CRITICAL();
     natural = ((timer->SR & TIM_SR_UIF) != 0U) ? 1U : 0U;
-    timer->SR = ~(uint32_t)TIM_SR_UIF;
+    if (natural != 0U) {
+        timer->SR = ~(uint32_t)TIM_SR_UIF;
+        (void)timer->SR;
+        __DSB();
+    }
     if (index == 1U) {
         forced = forced_pending;
         forced_pending = 0U;

@@ -108,6 +108,7 @@ static uint8_t s_large_heap[USB_LARGE_BLOCK_SIZE * USB_LARGE_BLOCK_COUNT]
 
 static rtos_mempool_t s_small_pool;
 static rtos_mempool_t s_large_pool;
+static bool s_is_usb_initialized;
 
 /* ============================== 内部辅助: 池分配/归还 ============================== */
 
@@ -198,6 +199,16 @@ static rtos_usb_timer_t *alloc_timer_slot(uint32_t start_index)
 
 rtos_status_t rtos_usb_init(void)
 {
+    if (RTOS_PORT_IN_ISR()) {
+        return RTOS_ERR_ISR;
+    }
+
+    RTOS_PORT_ENTER_CRITICAL();
+    if (s_is_usb_initialized) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_ALREADY;
+    }
+
     memset(s_sem_pool, 0, sizeof(s_sem_pool));
     memset(s_mutex_pool, 0, sizeof(s_mutex_pool));
     memset(s_mq_pool, 0, sizeof(s_mq_pool));
@@ -207,11 +218,12 @@ rtos_status_t rtos_usb_init(void)
 
     rtos_status_t st =
         rtos_mempool_init(&s_small_pool, s_small_heap, USB_SMALL_BLOCK_SIZE, USB_SMALL_BLOCK_COUNT);
-    if (st != RTOS_OK) {
-        return st;
+    if (st == RTOS_OK) {
+        st = rtos_mempool_init(&s_large_pool, s_large_heap, USB_LARGE_BLOCK_SIZE,
+                               USB_LARGE_BLOCK_COUNT);
+        s_is_usb_initialized = (st == RTOS_OK);
     }
-    st =
-        rtos_mempool_init(&s_large_pool, s_large_heap, USB_LARGE_BLOCK_SIZE, USB_LARGE_BLOCK_COUNT);
+    RTOS_PORT_EXIT_CRITICAL();
     return st;
 }
 
@@ -250,11 +262,25 @@ rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handle
 void rtos_usb_irq_dispatch(uint32_t irqn)
 {
     RTOS_ASSERT_ISR_OK();
+    rtos_usb_isr_handler_t handler = NULL;
+    void *arg = NULL;
+    RTOS_PORT_ENTER_CRITICAL();
     for (uint32_t i = 0U; i < RTOS_CONFIG_USB_ISR_TABLE_SIZE; i++) {
-        if ((s_isr_table[i].used != 0U) && (s_isr_table[i].irqn == irqn)) {
-            s_isr_table[i].handler(s_isr_table[i].arg);
-            return;
+        const rtos_usb_isr_entry_t *entry = &s_isr_table[i];
+        if ((entry->used != 0U) && (entry->irqn == irqn)) {
+            handler = entry->handler;
+#if defined(RTOS_HIL_AUDIT_PENDSV)
+            extern void audit_usb_irq_pair_inject(uint32_t key);
+            audit_usb_irq_pair_inject(irqn);
+#endif
+            arg = entry->arg;
+            break;
         }
+    }
+    /* The callback may call RTOS APIs and owns its own interrupt latency budget. */
+    RTOS_PORT_EXIT_CRITICAL();
+    if (handler != NULL) {
+        handler(arg);
     }
 }
 

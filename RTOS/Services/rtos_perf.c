@@ -42,6 +42,7 @@
 
 #if RTOS_CONFIG_USE_PERF_MONITOR
 
+#include "rtos_internal.h"
 #include "rtos_port.h"
 #include "rtos_sched.h"
 #include "rtos_task.h"
@@ -81,9 +82,6 @@ static rtos_mempool_t *s_pool_registry[RTOS_CONFIG_PERF_POOL_REGISTRY_SIZE];
 
 /** @brief 内存池注册表当前条目数。 */
 static volatile uint32_t s_pool_count = 0U;
-
-/** @brief 栈水印填充模式。 */
-#define RTOS_PERF_STACK_FILL_PATTERN (0xA5A5A5A5UL)
 
 /* ============================== 周期计数器 ============================== */
 
@@ -228,7 +226,7 @@ void rtos_perf_on_task_created(rtos_tcb_t *tcb)
         rtos_stack_t *p = tcb->stack_base;
         rtos_stack_t *end = tcb->top_of_stack; /* 不含, top_of_stack 以上是已用帧 */
         while (p < end) {
-            *p = (rtos_stack_t)RTOS_PERF_STACK_FILL_PATTERN;
+            *p = RTOS_INTERNAL_STACK_FILL_WORD;
             p++;
         }
     }
@@ -323,25 +321,47 @@ rtos_status_t rtos_perf_init(void)
     return RTOS_OK;
 }
 
+/* Read the running slice without changing the switch hook's cumulative state.
+ * The caller holds the critical section and samples one common time for all baselines. */
+static uint32_t perf_get_running_slice(const rtos_tcb_t *tcb, uint32_t now)
+{
+#if RTOS_CONFIG_PERF_HOTPATH_STATS
+    if ((tcb != NULL) && (tcb == rtos_kernel.current_tcb)) {
+        return now - rtos_kernel.perf_last_switch_cycle;
+    }
+#else
+    (void)tcb;
+    (void)now;
+#endif
+    return 0U;
+}
+
+static void perf_set_window_base(uint32_t now, uint32_t idle_cycles)
+{
+    rtos_kernel.perf_window_switch_base = rtos_kernel.perf_switch_total;
+    rtos_kernel.perf_window_cycle_base = now;
+    rtos_kernel.perf_window_idle_base = idle_cycles;
+    rtos_kernel.perf_window_tick_base = rtos_kernel.tick_count;
+    rtos_kernel.perf_window_latency_sum = rtos_kernel.perf_latency_sum;
+    rtos_kernel.perf_window_latency_cnt = rtos_kernel.perf_latency_count;
+
+    /* Include the unfinished slice so its pre-window cycles cannot be counted later. */
+    for (uint32_t i = 0U; i < s_task_count; i++) {
+        rtos_tcb_t *tcb = s_task_registry[i];
+        if (tcb != NULL) {
+            tcb->perf_window_run_base = tcb->perf_run_cycles + perf_get_running_slice(tcb, now);
+        }
+    }
+}
+
 void rtos_perf_reset(void)
 {
     RTOS_ASSERT_ISR_OK();
     RTOS_PORT_ENTER_CRITICAL();
     uint32_t now = rtos_perf_get_cycles();
-    rtos_kernel.perf_window_switch_base = rtos_kernel.perf_switch_total;
-    rtos_kernel.perf_window_cycle_base = now;
-    rtos_kernel.perf_window_idle_base = rtos_kernel.perf_idle_cycles;
-    rtos_kernel.perf_window_tick_base = rtos_kernel.tick_count;
-    rtos_kernel.perf_window_latency_sum = rtos_kernel.perf_latency_sum;
-    rtos_kernel.perf_window_latency_cnt = rtos_kernel.perf_latency_count;
-
-    /* 重置各任务窗口基准 */
-    for (uint32_t i = 0U; i < s_task_count; i++) {
-        rtos_tcb_t *tcb = s_task_registry[i];
-        if (tcb != NULL) {
-            tcb->perf_window_run_base = tcb->perf_run_cycles;
-        }
-    }
+    uint32_t idle_cycles = rtos_kernel.perf_idle_cycles
+                           + perf_get_running_slice(rtos_kernel.idle_tcb, now);
+    perf_set_window_base(now, idle_cycles);
     RTOS_PORT_EXIT_CRITICAL();
 }
 
@@ -358,7 +378,9 @@ rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats)
 
     uint32_t now_cycle = rtos_perf_get_cycles();
     uint32_t total_cycles_window = now_cycle - rtos_kernel.perf_window_cycle_base;
-    uint32_t idle_cycles_window = rtos_kernel.perf_idle_cycles - rtos_kernel.perf_window_idle_base;
+    uint32_t idle_cycles = rtos_kernel.perf_idle_cycles
+                           + perf_get_running_slice(rtos_kernel.idle_tcb, now_cycle);
+    uint32_t idle_cycles_window = idle_cycles - rtos_kernel.perf_window_idle_base;
     uint32_t switches_window = rtos_kernel.perf_switch_total - rtos_kernel.perf_window_switch_base;
     uint32_t ticks_window = rtos_kernel.tick_count - rtos_kernel.perf_window_tick_base;
     uint32_t lat_sum_window = rtos_kernel.perf_latency_sum - rtos_kernel.perf_window_latency_sum;
@@ -419,23 +441,7 @@ rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats)
     rtos_kernel.perf_latency_avg_us = lat_avg_us;
     rtos_kernel.perf_latency_max_us = lat_max_us;
 
-    /* 推进窗口基准 */
-    rtos_kernel.perf_window_switch_base = rtos_kernel.perf_switch_total;
-    rtos_kernel.perf_window_cycle_base = now_cycle;
-    rtos_kernel.perf_window_idle_base = rtos_kernel.perf_idle_cycles;
-    rtos_kernel.perf_window_tick_base = rtos_kernel.tick_count;
-    rtos_kernel.perf_window_latency_sum = rtos_kernel.perf_latency_sum;
-    rtos_kernel.perf_window_latency_cnt = rtos_kernel.perf_latency_count;
-
-    /* 同步推进各任务窗口基准: 保证 rtos_perf_get_task 的分子(任务运行周期窗口)
-     * 与分母(墙上周期窗口)起算点一致, 否则 task_cpu% 会因窗口不匹配而 >100%。
-     * O(n) 遍历, n 为任务数(通常 <20), 查询路径可接受。 */
-    for (uint32_t i = 0U; i < s_task_count; i++) {
-        rtos_tcb_t *tcb = s_task_registry[i];
-        if (tcb != NULL) {
-            tcb->perf_window_run_base = tcb->perf_run_cycles;
-        }
-    }
+    perf_set_window_base(now_cycle, idle_cycles);
 
     RTOS_PORT_EXIT_CRITICAL();
     return RTOS_OK;
@@ -501,7 +507,7 @@ static uint32_t perf_measure_stack_used(const rtos_tcb_t *tcb)
     rtos_stack_t *p = tcb->stack_base;
     rtos_stack_t *end = tcb->top_of_stack; /* 上界(不含) */
     while (p < end) {
-        if (*p != (rtos_stack_t)RTOS_PERF_STACK_FILL_PATTERN) {
+        if (*p != RTOS_INTERNAL_STACK_FILL_WORD) {
             break; /* 找到高水位 */
         }
         p++;
@@ -531,6 +537,47 @@ static uint32_t perf_measure_stack_used(const rtos_tcb_t *tcb)
 #endif
 }
 
+/* The caller holds the kernel critical section until the TCB and stack
+ * snapshot is complete. Each row retains its own time sample. */
+static void perf_fill_task_locked(const rtos_tcb_t *tcb, rtos_perf_task_t *stats)
+{
+    /* 任务级 CPU 占用: 窗口内该任务运行周期 / 窗口内墙上周期 * 10000。
+     * 用墙上周期(total_wall)作分母, 保证各任务 CPU% 之和约等于系统 CPU%。
+     * task_run_window = perf_run_cycles(累计) - perf_window_run_base(窗口基准)。 */
+    uint32_t now_cycle = rtos_perf_get_cycles();
+    uint32_t run_cycles = tcb->perf_run_cycles + perf_get_running_slice(tcb, now_cycle);
+    uint32_t task_run_window = run_cycles - tcb->perf_window_run_base;
+    uint32_t total_wall_window = now_cycle - rtos_kernel.perf_window_cycle_base;
+
+    uint32_t task_cpu_x100 = 0U;
+    if ((total_wall_window != 0U) && (task_run_window != 0U)) {
+        if (task_run_window > total_wall_window) {
+            task_run_window = total_wall_window; /* 防御性截断(窗口边界) */
+        }
+        uint64_t task64 = (uint64_t)task_run_window * 10000U;
+        task_cpu_x100 = (uint32_t)(task64 / (uint64_t)total_wall_window);
+    }
+
+    /* 填充输出 */
+    stats->task_id = tcb->task_id;
+    memcpy(stats->name, tcb->name, RTOS_CONFIG_MAX_TASK_NAME_LEN);
+    stats->priority = tcb->priority;
+    stats->state = tcb->state;
+    stats->cpu_usage_x100 = task_cpu_x100;
+    stats->run_cycles = run_cycles;
+    stats->run_time_us = rtos_perf_cycles_to_us(run_cycles);
+    stats->switch_count = tcb->switch_count;
+
+    /* 栈统计 */
+    uint32_t used_words = perf_measure_stack_used(tcb);
+    stats->stack_total_bytes = tcb->stack_size * (uint32_t)sizeof(rtos_stack_t);
+    stats->stack_used_bytes = used_words * (uint32_t)sizeof(rtos_stack_t);
+    stats->stack_free_bytes =
+        (tcb->stack_size > used_words)
+            ? ((tcb->stack_size - used_words) * (uint32_t)sizeof(rtos_stack_t))
+            : 0U;
+}
+
 rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats)
 {
     if (stats == NULL) {
@@ -546,42 +593,7 @@ rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats)
     }
 
     RTOS_PORT_ENTER_CRITICAL();
-
-    /* 任务级 CPU 占用: 窗口内该任务运行周期 / 窗口内墙上周期 * 10000。
-     * 用墙上周期(total_wall)作分母, 保证各任务 CPU% 之和约等于系统 CPU%。
-     * task_run_window = perf_run_cycles(累计) - perf_window_run_base(窗口基准)。 */
-    uint32_t task_run_window = tcb->perf_run_cycles - tcb->perf_window_run_base;
-    uint32_t now_cycle = rtos_perf_get_cycles();
-    uint32_t total_wall_window = now_cycle - rtos_kernel.perf_window_cycle_base;
-
-    uint32_t task_cpu_x100 = 0U;
-    if (total_wall_window > 0U) {
-        if (task_run_window > total_wall_window) {
-            task_run_window = total_wall_window; /* 防御性截断(窗口边界) */
-        }
-        uint64_t task64 = (uint64_t)task_run_window * 10000U;
-        task_cpu_x100 = (uint32_t)(task64 / (uint64_t)total_wall_window);
-    }
-
-    /* 填充输出 */
-    stats->task_id = tcb->task_id;
-    memcpy(stats->name, tcb->name, RTOS_CONFIG_MAX_TASK_NAME_LEN);
-    stats->priority = tcb->priority;
-    stats->state = tcb->state;
-    stats->cpu_usage_x100 = task_cpu_x100;
-    stats->run_cycles = tcb->perf_run_cycles;
-    stats->run_time_us = rtos_perf_cycles_to_us(tcb->perf_run_cycles);
-    stats->switch_count = tcb->switch_count;
-
-    /* 栈统计 */
-    uint32_t used_words = perf_measure_stack_used(tcb);
-    stats->stack_total_bytes = tcb->stack_size * (uint32_t)sizeof(rtos_stack_t);
-    stats->stack_used_bytes = used_words * (uint32_t)sizeof(rtos_stack_t);
-    stats->stack_free_bytes =
-        (tcb->stack_size > used_words)
-            ? ((tcb->stack_size - used_words) * (uint32_t)sizeof(rtos_stack_t))
-            : 0U;
-
+    perf_fill_task_locked(tcb, stats);
     RTOS_PORT_EXIT_CRITICAL();
     return RTOS_OK;
 }
@@ -613,9 +625,8 @@ rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t ma
     /* 整个遍历持临界区: 注册表写入方(on_task_created/deleted 的
      * swap-with-last 重排)与任务删除(随后的 rtos_heap_free)均在任务
      * 上下文临界区内进行; 若遍历期间让出 CPU, 快照的 TCB 指针可能在
-     * get_task 解引用前已被释放(use-after-free 读)。
-     * rtos_perf_get_task 内部的 ENTER/EXIT 为嵌套安全(BASEPRI 计数),
-     * 栈水印扫描在屏蔽下执行, 典型配置(16 任务 × 512 字栈)约几十 µs。 */
+     * 快照读取前已被释放。单条和批量共用已加锁的填充函数，
+     * 整个批次无需逐条重复进入临界区。 */
     RTOS_PORT_ENTER_CRITICAL();
     uint32_t count = s_task_count;
     if (count > max_count) {
@@ -625,11 +636,7 @@ rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t ma
     for (uint32_t i = 0U; i < count; i++) {
         rtos_tcb_t *tcb = s_task_registry[i];
         if (tcb != NULL) {
-            rtos_status_t st = rtos_perf_get_task(tcb, &stats_array[i]);
-            if (st != RTOS_OK) {
-                /* 单个任务查询失败, 填零继续(不中断整体) */
-                memset(&stats_array[i], 0, sizeof(stats_array[i]));
-            }
+            perf_fill_task_locked(tcb, &stats_array[i]);
         } else {
             memset(&stats_array[i], 0, sizeof(stats_array[i]));
         }

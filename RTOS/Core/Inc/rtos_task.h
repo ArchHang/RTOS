@@ -86,7 +86,7 @@ struct rtos_tcb {
  *          分配的内存:
  *            - TCB: sizeof(rtos_tcb_t) 字节
  *            - 栈:  stack_size * sizeof(rtos_stack_t) 字节
- *          失败时返回 RTOS_ERR_NO_MEM, 不分配任何内存。
+ *          堆空间不足时返回 RTOS_ERR_NO_MEM，回收本次已分配内存且不修改 tcb_out。
  *
  * @param tcb_out    输出参数, 接收新建 TCB 指针(不可为 NULL)。
  * @param stack_size 栈大小(字数, 4 字节/字)。建议 >= RTOS_CONFIG_MINIMAL_STACK_SIZE。
@@ -103,6 +103,7 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
  * @brief 创建任务(静态分配栈与 TCB)。
  * @details 用户提供 TCB 与栈存储, 内核不分配堆内存。删除任务时不回收 TCB/栈
  *          (由用户管理其生命周期)。适用于确定性内存布局、无堆场景。
+ *          TCB 与栈须互不重叠，且不得覆盖其他存活或构造中的任务存储。
  *
  * @param tcb        静态 TCB 存储指针(不可为 NULL, 需 4 字节对齐)。
  * @param stack_buf  静态栈存储(不可为 NULL, 需 8 字节对齐)。
@@ -111,7 +112,7 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
  * @param arg        传递给入口函数的参数。
  * @param priority   任务优先级(0=最高)。
  * @param name       任务名(可空)。
- * @return RTOS_OK 或错误码。
+ * @return RTOS_OK；存储范围重叠或越界为 RTOS_ERR_PARAM；TCB 已登记为 RTOS_ERR_ALREADY。
  */
 rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, uint32_t stack_size,
                                       rtos_task_func_t entry, void *arg, rtos_prio_t priority,
@@ -128,7 +129,8 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb);
 
 /**
  * @brief 主动让出 CPU(触发一次调度)。
- * @note  可在中断中调用(仅标记待切换，PendSV 在中断退出后执行)。
+ * @details 当前任务移至同优先级队尾，调度器选择最高优先级就绪任务。
+ * @note  中断或非运行状态下调用无操作。
  */
 void rtos_task_yield(void);
 

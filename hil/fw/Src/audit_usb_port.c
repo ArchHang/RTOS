@@ -28,8 +28,26 @@ static volatile uint32_t s_release_delay;
 static volatile uint32_t s_usb_thread_exits;
 
 #if defined(RTOS_HIL_AUDIT_PENDSV)
+#define AUDIT_CDC_MPS (64U)
+
+static volatile bool s_cdc_zlp_is_armed;
+static volatile bool s_cdc_zlp_is_rejected;
+static volatile uint32_t s_cdc_data_submits;
+static volatile uint32_t s_cdc_zlp_submits;
+
+#define AUDIT_USB_IRQ_PAIR_KEY ((uint32_t)EXTI1_IRQn)
+static uint8_t s_irq_pair_initial_arg;
+static uint8_t s_irq_pair_replacement_arg;
+static volatile bool s_irq_pair_is_armed;
+static volatile bool s_irq_pair_initial_matches;
+static volatile bool s_irq_pair_replacement_matches;
+static volatile uint32_t s_irq_pair_initial_calls;
+static volatile uint32_t s_irq_pair_replacement_calls;
+static volatile rtos_status_t s_irq_pair_registration;
+
 extern int rtos_usb_audit_begin(void);
 extern void rtos_usb_audit_event(uint8_t event);
+extern void rtos_usb_audit_cdc_in(uint32_t nbytes, uint16_t mps);
 extern void rtos_usb_audit_hid_rx(const uint8_t *data, uint32_t length);
 extern void rtos_usb_audit_end(void);
 extern bool usbd_msc_audit_decode(uint8_t lun, uint8_t command, uint32_t sector,
@@ -47,7 +65,13 @@ int __wrap_usbd_ep_start_write(uint8_t busid, uint8_t ep, const uint8_t *data,
     (void)busid;
     (void)ep;
     (void)data;
-    (void)length;
+    if (s_cdc_zlp_is_armed) {
+        if (length == 0U) {
+            s_cdc_zlp_submits++;
+            return s_cdc_zlp_is_rejected ? -2 : 0;
+        }
+        s_cdc_data_submits++;
+    }
     if (s_transport_reset != 0U) {
         s_transport_reset = 0U;
         rtos_usb_audit_event(USBD_EVENT_RESET);
@@ -311,6 +335,141 @@ static void simulated_usb_checks(void)
 }
 
 #if defined(RTOS_HIL_AUDIT_PENDSV)
+static void irq_pair_initial_handler(void *arg)
+{
+    s_irq_pair_initial_matches = (arg == &s_irq_pair_initial_arg) && (__get_BASEPRI() == 0U)
+                                 && (__get_PRIMASK() == 0U);
+    s_irq_pair_initial_calls++;
+}
+
+static void irq_pair_replacement_handler(void *arg)
+{
+    s_irq_pair_replacement_matches = (arg == &s_irq_pair_replacement_arg);
+    s_irq_pair_replacement_calls++;
+}
+
+/** @brief Replace the registration at the higher-priority audit IRQ. */
+void EXTI0_IRQHandler(void)
+{
+    s_irq_pair_registration = rtos_usb_register_isr(AUDIT_USB_IRQ_PAIR_KEY,
+                                                     irq_pair_replacement_handler,
+                                                     &s_irq_pair_replacement_arg);
+}
+
+/** @brief Dispatch the current registration from the lower-priority audit IRQ. */
+void EXTI1_IRQHandler(void)
+{
+    rtos_usb_irq_dispatch(AUDIT_USB_IRQ_PAIR_KEY);
+}
+
+/** @brief Request the higher-priority IRQ between handler and argument loads. */
+void audit_usb_irq_pair_inject(uint32_t key)
+{
+    if (s_irq_pair_is_armed && (key == AUDIT_USB_IRQ_PAIR_KEY)) {
+        s_irq_pair_is_armed = false;
+        NVIC_SetPendingIRQ(EXTI0_IRQn);
+        __DSB();
+        __ISB();
+    }
+}
+
+static void usb_irq_pair_checks(void)
+{
+    bool is_irq_pair_available = (NVIC_GetEnableIRQ(EXTI0_IRQn) == 0U)
+                                 && (NVIC_GetEnableIRQ(EXTI1_IRQn) == 0U)
+                                 && (NVIC_GetPendingIRQ(EXTI0_IRQn) == 0U)
+                                 && (NVIC_GetPendingIRQ(EXTI1_IRQn) == 0U);
+    rtos_status_t status = rtos_usb_register_isr(AUDIT_USB_IRQ_PAIR_KEY, irq_pair_initial_handler,
+                                                 &s_irq_pair_initial_arg);
+    report("usb_irq_pair_fixture_setup", is_irq_pair_available && (status == RTOS_OK), 1U);
+    if (!is_irq_pair_available || (status != RTOS_OK)) {
+        return;
+    }
+
+    uint32_t high_priority = NVIC_GetPriority(EXTI0_IRQn);
+    uint32_t low_priority = NVIC_GetPriority(EXTI1_IRQn);
+    NVIC_SetPriority(EXTI0_IRQn, 5U);
+    NVIC_SetPriority(EXTI1_IRQn, 6U);
+    NVIC_EnableIRQ(EXTI0_IRQn);
+    NVIC_EnableIRQ(EXTI1_IRQn);
+
+    s_irq_pair_initial_calls = 0U;
+    s_irq_pair_replacement_calls = 0U;
+    s_irq_pair_registration = RTOS_ERR_PARAM;
+    s_irq_pair_is_armed = true;
+    NVIC_SetPendingIRQ(EXTI1_IRQn);
+    (void)rtos_task_delay(1U); /* Return after the nested pair has executed. */
+    report("usb_irq_pair_nested_replace_runs", s_irq_pair_registration == RTOS_OK, 1U);
+    report("usb_irq_pair_preserves_selected_argument",
+           (s_irq_pair_initial_calls == 1U) && s_irq_pair_initial_matches, 1U);
+
+    NVIC_SetPendingIRQ(EXTI1_IRQn);
+    (void)rtos_task_delay(1U);
+    report("usb_irq_pair_later_dispatch_uses_replacement",
+           (s_irq_pair_replacement_calls == 1U) && s_irq_pair_replacement_matches, 1U);
+
+    NVIC_DisableIRQ(EXTI1_IRQn);
+    NVIC_DisableIRQ(EXTI0_IRQn);
+    NVIC_ClearPendingIRQ(EXTI1_IRQn);
+    NVIC_ClearPendingIRQ(EXTI0_IRQn);
+    NVIC_SetPriority(EXTI1_IRQn, low_priority);
+    NVIC_SetPriority(EXTI0_IRQn, high_priority);
+    s_irq_pair_is_armed = false;
+}
+
+static void cdc_zlp_completion_isr(void)
+{
+    if (s_cdc_data_submits == 0U) {
+        return;
+    }
+
+    kern_timer_isr_stop();
+    rtos_usb_audit_cdc_in(AUDIT_CDC_MPS, AUDIT_CDC_MPS);
+    if (!s_cdc_zlp_is_rejected && (s_cdc_zlp_submits != 0U)) {
+        rtos_usb_audit_cdc_in(0U, AUDIT_CDC_MPS);
+    }
+}
+
+static void cdc_zlp_recovery_checks(void)
+{
+    const uint32_t timeout_ms = 40U;
+    uint8_t payload[AUDIT_CDC_MPS] = { 0xA7U };
+    int setup = rtos_usb_audit_begin();
+    report("cdc_zlp_fixture_setup", setup == 0, 1U);
+    if (setup != 0) {
+        rtos_usb_audit_end();
+        return;
+    }
+
+    kern_isr_set_handler(cdc_zlp_completion_isr);
+    s_cdc_zlp_is_armed = true;
+    s_cdc_zlp_is_rejected = true;
+    s_cdc_data_submits = 0U;
+    s_cdc_zlp_submits = 0U;
+    (void)kern_timer_isr_start(500U, 6U);
+    rtos_tick_t start = rtos_sched_get_tick_count();
+    int first = rtos_usb_cdc_write(0U, payload, sizeof(payload), timeout_ms);
+    rtos_tick_t elapsed = rtos_sched_get_tick_count() - start;
+    kern_timer_isr_stop();
+    report("cdc_zlp_failure_injected", s_cdc_data_submits == 1U && s_cdc_zlp_submits == 1U, 1U);
+    report("cdc_zlp_failure_returns_before_timeout",
+           first == 0 && elapsed < rtos_usb_timeout_ticks(timeout_ms), 1U);
+
+    s_cdc_zlp_is_rejected = false;
+    s_cdc_data_submits = 0U;
+    s_cdc_zlp_submits = 0U;
+    (void)kern_timer_isr_start(500U, 6U);
+    int next = rtos_usb_cdc_write(0U, payload, sizeof(payload), timeout_ms);
+    kern_timer_isr_stop();
+    report("cdc_zlp_failure_next_write_completes",
+           next == (int)sizeof(payload) && s_cdc_data_submits == 1U && s_cdc_zlp_submits == 1U,
+           1U);
+
+    s_cdc_zlp_is_armed = false;
+    kern_isr_set_handler(NULL);
+    rtos_usb_audit_end();
+}
+
 static void blocking_writer(void *arg)
 {
     (void)arg;
@@ -567,6 +726,10 @@ void audit_usb_port_run(void)
     osal_checks();
     pendsv_irq_checks();
     simulated_usb_checks();
+#if defined(RTOS_HIL_AUDIT_PENDSV)
+    usb_irq_pair_checks();
+    cdc_zlp_recovery_checks();
+#endif
     usb_budget_checks();
     usb_thread_lifecycle_checks();
     usb_failed_delete_checks();

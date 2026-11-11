@@ -14,6 +14,7 @@
  */
 #include "production_stress.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -1044,6 +1045,13 @@ static void stress_verify_messages(const production_irq_snapshot_t *irq)
 
 static void stress_verify_highirq(const production_highirq_snapshot_t *irq)
 {
+    const uint32_t overlap = irq->coincident_entries;
+    const uint32_t spurious = irq->spurious_entries;
+    const uint64_t classified = (uint64_t)irq->natural_updates + irq->forced_observed + spurious;
+    const bool is_accounted = (overlap <= irq->natural_updates)
+        && (overlap <= irq->forced_observed) && (spurious <= irq->entries)
+        && ((uint64_t)irq->entries + overlap == classified);
+
     stress_log("STRESS|HIGHIRQ|entries=%lu natural=%lu nested=%lu triple=%lu "
         "forced_requests=%lu forced_observed=%lu nonzero_samples=%lu errors=%lu "
         "running=%lu restored=%lu mismatch=0x%lX stop_pending=%lu/%lu "
@@ -1058,11 +1066,14 @@ static void stress_verify_highirq(const production_highirq_snapshot_t *irq)
         (unsigned long)irq->restore_pending_after, (unsigned long)irq->restore_sr_actual,
         (unsigned long)irq->configure_reload_polls, (unsigned long)irq->restore_reload_polls,
         (unsigned long)irq->reload_timeouts);
+    stress_log("STRESS|HIGHIRQ_ACCOUNT|coincident=%lu spurious=%lu\r\n",
+        (unsigned long)overlap, (unsigned long)spurious);
     stress_check((irq->entries != 0U) && (irq->natural_updates != 0U),
         "priority_zero_hardware_load");
     stress_check((irq->triple_nested_entries != 0U) && (irq->forced_requests != 0U)
         && (irq->forced_requests == irq->forced_observed), "three_active_irq_levels");
-    stress_check((irq->errors == 0U) && (irq->is_running == 0U) && (irq->restored == 1U),
+    stress_check(is_accounted && (irq->errors == 0U) && (irq->is_running == 0U)
+        && (irq->restored == 1U),
         "highirq_context_and_restoration");
     stress_log("STRESS|MASK|safe_checks=%lu leaks=%lu\r\n",
         (unsigned long)shared_state.mask_safe_checks, (unsigned long)shared_state.mask_leaks);

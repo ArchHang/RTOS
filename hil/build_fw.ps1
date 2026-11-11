@@ -18,6 +18,12 @@ param(
     [switch] $StressInjectCorruption,
     [ValidateSet('basepri','primask')][string] $CriticalMask = 'basepri',
     [switch] $DisableAssertions,
+    [switch] $UseVectorWrappers,
+    [switch] $Cooperative,
+    [switch] $PerfHotpath,
+    [ValidateSet(115200,460800,921600)][uint32] $UartBaud = 115200,
+    [ValidateSet('O2','O3')][string] $UartModelOptimization = 'O2',
+    [ValidateSet('task','fpu','isr')][string] $FaultContext = 'task',
     [ValidateSet('O0','O2','O3')][string] $Optimization = 'O2',
     [ValidateRange(1,16)][int] $CriticalGuardCase = 1,
     [ValidateRange(0,15)][int] $CriticalGuardPriority = 0
@@ -38,6 +44,111 @@ $env:PATH = "$TOOLS;$env:PATH"
 # exclude : Core/Src translation units dropped from this variant
 # extra   : source basenames copied hil\fw\Src -> hil\fwsrc and compiled
 $VARIANTS = @{
+    sem_wake_bench = @{
+        desc = 'DWT timing of signal delivery with multiple real waiters'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('sem_wake_bench')
+    }
+    timer_dispatch_bench = @{
+        desc = 'DWT timing of timer service returning to its command wait'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('timer_dispatch_bench')
+    }
+    perf_snapshot_bench = @{
+        desc = 'DWT timing of single and batched task performance snapshots'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('perf_snapshot_bench')
+    }
+    mutex_release_bench = @{
+        desc = 'DWT timing of final mutex release with an empty wait list'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('mutex_release_bench')
+    }
+    tick_timeout_bench = @{
+        desc = 'DWT timing of simultaneous task timeouts in the tick path'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('tick_timeout_bench')
+    }
+    pool_free_bench = @{
+        desc = 'DWT timing of fixed pool block validation and release'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('pool_free_bench')
+    }
+    adc_capture = @{
+        desc = 'TIM2 paced ADC and DMA pipeline with fixed block ownership'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('project_adc_capture')
+    }
+    bus_recovery = @{
+        desc = 'shared bus handoff during device shutdown and reinitialization'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('project_bus_recovery')
+    }
+    timer_supervisor = @{
+        desc = 'software lease expiry while the timer daemon is preempted'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('project_timer_supervisor')
+    }
+    uart_pipeline = @{
+        desc = 'USART2 framed telemetry and on-device CNN application'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_UART_PIPELINE=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0',"UART_PIPELINE_BAUD=${UartBaud}U")
+        exclude = @('benchmark')
+        extra = @('uart_pipeline')
+    }
+    queue_copy = @{
+        desc = 'byte and unaligned queue copies across wrap and real waiters'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('queue_copy_probe')
+    }
+    fault_diagnostics = @{
+        desc = 'hardware UsageFault and stack/mask report'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0',
+            'FIRMWARE_APP_TASKS=0',"FAULT_DIAG_$($FaultContext.ToUpperInvariant())=1")
+        exclude = @('benchmark')
+        extra = @('fault_report_probe')
+    }
+    startup_clock = @{
+        desc = 'SysTick clock rejection before scheduling state is published'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('startup_clock_regression')
+    }
+    robustness = @{
+        desc = 'task storage, interrupt masks, scheduling, allocator and service regressions'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_ROBUSTNESS=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('robustness_runner','robustness_core','robustness_memory','robustness_services')
+    }
+    robustness_msp = @{
+        desc = 'SVC boot alignment and PendSV MSP balance through real vector entries'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('robustness_msp')
+    }
     adversarial_registry = @{
         desc = 'maximum mutex owner graph and deletion with multiple owned locks'
         flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
@@ -122,6 +233,12 @@ $VARIANTS = @{
         flags   = @('FIRMWARE_BENCH=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
         exclude = @(); extra = @()
     }
+    wake_bench = @{
+        desc = 'DWT matrix for task, queue and ISR wake paths plus isolated semaphore give'
+        flags = @('FIRMWARE_BENCH=1','FIRMWARE_WAKE_BENCH=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @(); extra = @()
+    }
     perf = @{
         desc    = 'controlled performance comparison plus mutex robustness probes'
         flags   = @('FIRMWARE_BENCH=1','FIRMWARE_PERF=1','FIRMWARE_USB_APP=0','FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
@@ -185,13 +302,37 @@ $cfg = $VARIANTS[$Variant]
 if ($Variant -eq 'basepri_guard' -and $DisableAssertions) {
     throw 'basepri_guard requires assertions; use basepri for assertion-disabled mask tests'
 }
+if ($UseVectorWrappers -and $Variant -ne 'robustness_msp') {
+    throw 'UseVectorWrappers is specific to the robustness_msp variant'
+}
+if ($Cooperative -and $Variant -ne 'robustness') {
+    throw 'Cooperative is specific to the robustness variant'
+}
+if ($PerfHotpath -and $Variant -notin @('robustness','perf_snapshot_bench')) {
+    throw 'PerfHotpath requires robustness or perf_snapshot_bench'
+}
 
 # Recreate every generated directory from committed templates when Debug is absent.
 Initialize-HilBuildTree -ProjectRoot $ROOT -DebugRoot $DBG
+$startupTemplate = Join-Path $HIL 'templates/Core_Startup.mk'
+$startupRule = [IO.File]::ReadAllText($startupTemplate)
+if ($UseVectorWrappers) {
+    $startupRule = $startupRule.Replace('-DDEBUG', '-DDEBUG -Wa,--defsym,RTOS_HIL_VECTOR_WRAPPERS=1')
+}
+Set-HilBuildRule -ProjectRoot $ROOT -DebugRoot $DBG -Relative 'Core/Startup' -Content $startupRule
+$modelRule = [IO.File]::ReadAllText((Join-Path $HIL 'templates/AI_output_int8.mk'))
+if ($Variant -eq 'uart_pipeline') {
+    # Keep model arithmetic comparable to the independently compiled host model.
+    $modelRule = $modelRule.Replace('-O2', "-$UartModelOptimization -ffp-contract=off")
+}
+Set-HilBuildRule -ProjectRoot $ROOT -DebugRoot $DBG -Relative 'AI/output/int8' -Content $modelRule
 
 # These overrides are opt-in and are propagated to all kernel translation units.
 $configFlags = @()
 if ($CriticalMask -eq 'primask') { $configFlags += '-DRTOS_CONFIG_USE_BASEPRI=0' }
+if ($Cooperative) { $configFlags += '-DRTOS_CONFIG_USE_PREEMPTION=0' }
+if ($PerfHotpath) { $configFlags += '-DRTOS_CONFIG_PERF_HOTPATH_STATS=1' }
+if ($Variant -eq 'startup_clock') { $configFlags += '-DRTOS_CONFIG_TICK_RATE_HZ=100U' }
 if ($DisableAssertions -or $Variant -eq 'basepri_nesting') {
     $configFlags += '-DRTOS_CONFIG_ASSERT_ENABLED=0'
 }
@@ -219,6 +360,13 @@ if ($Variant -eq 'audit') {
 }
 if ($Variant -eq 'basepri_guard') {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_assert_fail')
+}
+if ($Variant -in @('timer_supervisor','timer_dispatch_bench')) {
+    $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections',
+        '-Wl,--gc-sections -Wl,--wrap=rtos_queue_recv -Wl,--wrap=rtos_internal_queue_recv_until')
+}
+if ($Variant -eq 'tick_timeout_bench') {
+    $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_sched_tick')
 }
 [System.IO.File]::WriteAllText($auditLinkMk, $auditLinkRaw)
 
@@ -250,6 +398,9 @@ foreach ($e in $cfg.exclude) {
 }
 
 $flagArgs = ($cfg.flags | ForEach-Object { "-D$_" }) -join ' '
+if ($cfg.flags -contains 'FIRMWARE_BENCH=1') {
+    $flagArgs += " -DRTOS_HIL_BENCH_OPT=$($Optimization.Substring(1))"
+}
 if ($configArgs -ne '') { $flagArgs += " $configArgs" }
 $incExtra = '-I"../hil/fwsrc" -I"../hil/fw/Inc"'
 
@@ -277,7 +428,12 @@ foreach ($l in $lines) {
 
 if ($cfg.extra.Count -gt 0) {
     $rule = ($out | Where-Object { $_ -match '^\s*arm-none-eabi-gcc' } | Select-Object -First 1)
-    if ($Variant -in @('lowlevel','flash_diag','production_stress','basepri','basepri_guard','basepri_blocking','basepri_nesting','adversarial_mutex','adversarial_wait','adversarial_lifetime','adversarial_mutex_boundary','adversarial_registry')) {
+    if ($Variant -in @('sem_wake_bench','timer_dispatch_bench','perf_snapshot_bench',
+        'mutex_release_bench','tick_timeout_bench','pool_free_bench','adc_capture',
+        'bus_recovery','timer_supervisor','uart_pipeline','queue_copy','fault_diagnostics','startup_clock',
+        'robustness','robustness_msp','lowlevel','flash_diag','production_stress','basepri','basepri_guard',
+        'basepri_blocking','basepri_nesting','adversarial_mutex','adversarial_wait','adversarial_lifetime',
+        'adversarial_mutex_boundary','adversarial_registry')) {
         # Enforce the requested warning policy for the new low-level fixtures.
         $rule = $rule.Replace('-Wall', '-Wall -Wextra -Werror')
     }
@@ -293,7 +449,8 @@ if ($cfg.extra.Count -gt 0) {
     $out.Add("`t$rule")
     $out.Add('')
 }
-[System.IO.File]::WriteAllLines((Join-Path $DBG 'Core\Src\subdir.mk'), $out)
+$appRule = ($out -join [Environment]::NewLine) + [Environment]::NewLine
+Set-HilBuildRule -ProjectRoot $ROOT -DebugRoot $DBG -Relative 'Core/Src' -Content $appRule
 
 # objects.list is regenerated from the complete canonical template:
 # an incremental filter loses entries permanently the first time a variant
@@ -316,7 +473,7 @@ Set-Content (Join-Path $DBG 'objects.list') -Value $ol
 # the last build and force-recompile the affected translation units when it
 # changes (a stale main.o silently runs the previous scenario).
 $stampFile = Join-Path $DBG '.hil_build_stamp'
-$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$CriticalMask|$DisableAssertions|$Optimization"
+$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$configArgs|$Optimization|$UseVectorWrappers"
 $prev = if (Test-Path $stampFile) { (Get-Content $stampFile -Raw).Trim() } else { '' }
 if ($prev -ne $stamp) {
     foreach ($f in @('Core\Src\main.o','Core\Src\main.d')) {

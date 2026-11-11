@@ -16,6 +16,9 @@
  *              即可在零内存污染下触发 rtos_stack_overflow_hook。
  */
 #include "selftest.h"
+#if defined(FIRMWARE_ROBUSTNESS) && FIRMWARE_ROBUSTNESS
+#include "robustness_core.h"
+#endif
 /* 内核内部接口: 互斥锁注册表占用查询(用于槽位泄漏守卫) */
 extern uint32_t rtos_internal_mutex_registry_count(void);
 #include "rtos.h"
@@ -70,6 +73,9 @@ static volatile uint8_t     st_ovf_flag;
 static volatile rtos_tcb_t *st_ovf_tcb;
 void rtos_stack_overflow_hook(rtos_tcb_t *tcb)
 {
+#if defined(FIRMWARE_ROBUSTNESS) && FIRMWARE_ROBUSTNESS
+    robustness_core_record_stack_overflow(tcb);
+#endif
     st_ovf_flag = 1;
     st_ovf_tcb  = tcb;
 }

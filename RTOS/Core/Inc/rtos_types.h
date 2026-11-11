@@ -144,12 +144,8 @@ typedef struct rtos_wait_node {
     uint8_t to_front; /**< [queue] 阻塞发送的插队意图(代办入队时按此选写入位置)。 */
     struct rtos_wait_node **list_head; /**< 所在等待链表头地址(超时清理用; NULL=不在链表)。 */
     /** @brief 位图索引等待链的优先级位图地址(NULL = 该对象用按优先级有序链)。
-     *  @details 非 NULL 时, 本节点所在链表采用"尾插 O(1) + 优先级位图"维护唤醒顺序
-     *           (见 rtos_internal_wake_highest_bm)。这样入链成本与等待者数解耦,
-     *           消除原有序插入的 O(n) 退化 —— 实测 8 个等待者时 give 慢 18.4%,
-     *           折合约 25 周期/等待者, 且随等待者数线性增长。
-     *           优先级变化时由 rtos_internal_requeue_wait_lists 同步位图而非重排链表
-     *           (重排会破坏"同优先级 FIFO")。 */
+     *  @details 非 NULL 表示 FIFO 等待链；尾插要找链尾，唤醒按位图和 FIFO 次序选择。
+     *           有效优先级变化时同步旧位与新位，并把变更节点追加到链尾。 */
     volatile uint32_t *queue_bitmap;
     /** @brief 入链时的优先级(用于优先级变化后同步位图)。 */
     rtos_prio_t queued_priority;

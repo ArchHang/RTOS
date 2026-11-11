@@ -5,8 +5,8 @@
  * @details 信号量用于任务间同步与资源计数。本实现支持:
  *            - 计数信号量: 用于管理多个同类资源(如 DMA 通道)。
  *            - 二值信号量: 计数上限为 1，用于简单同步。
- *          阻塞等待链为"尾插 + 优先级位图"结构: 入链 O(1), 唤醒时由位图
- *          (__builtin_ctz)选出最高优先级等待者, 不依赖链内顺序。
+ *          阻塞等待链采用 FIFO 尾插与优先级位图。尾插要找链尾，最坏 O(n)；
+ *          唤醒按位图选优先级，再沿链定位该级最早等待者。
  *          信号量内部不维护拥有者，因此不解决优先级反转(用互斥锁)。
  */
 #ifndef RTOS_SEM_H_
@@ -29,8 +29,7 @@ struct rtos_sem {
     uint32_t max_count; /**< 最大计数上限。 */
     rtos_wait_node_t *wait_head; /**< 等待链头(仅维护同优先级先后, 唤醒序由位图决定)。 */
     /** @brief 等待链中"存在等待者"的优先级位图(bit p = 优先级 p 有人等)。
-     *  @details 与 wait_head 配合把"入链"从 O(n) 有序插入降为 O(1) 尾插:
-     *           优先级顺序由位图 + 唤醒时 __builtin_ctz 取最高位来保证。
+     *  @details wait_head 保留到达次序，唤醒时用 __builtin_ctz 查找最低置位位。
      *           与 rtos_kernel.ready_bitmap 同一套"数值小=优先级高"约定。 */
     volatile uint32_t wait_bitmap;
 };

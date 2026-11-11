@@ -124,6 +124,7 @@ rtos_status_t rtos_perf_init(void);
  * @brief 重置所有性能计数器(开始新的测量窗口)。
  * @details 不清除累计值(run_cycles/switch_count), 只重置窗口基准。
  *          累计值在任务创建时从 0 开始, 贯穿任务生命周期。
+ *          启用热路径统计时，在当前采样时刻分割尚未结束的运行片段。
  * @note  可在任务上下文调用。
  */
 void rtos_perf_reset(void);
@@ -150,6 +151,7 @@ rtos_status_t rtos_perf_get_memory(rtos_perf_memory_t *stats);
  * @param stats 输出统计结构(不可为 NULL)。
  * @return RTOS_OK / RTOS_ERR_NULL / RTOS_ERR_PARAM。
  * @note  内部临界区读取, 保证多字段一致。
+ *        启用热路径统计时，统计包含当前任务截至查询时刻的运行片段。
  */
 rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats);
 

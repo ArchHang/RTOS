@@ -4,8 +4,8 @@
  *
  * @details 固定块内存池提供 O(1) 分配，无碎片。
  *          原理:
- *            - 池内所有块大小相同(向上对齐到 4 字节)。
- *            - 空闲块用单向链表串联，每个空闲块的起始 4 字节存下一个空闲块指针。
+ *            - 池内块大小相同，向上对齐到空闲节点类型所需的边界。
+ *            - 空闲块用单向链表串联，每个空闲块起始处存下一个空闲块指针。
  *            - 分配: 取链表头，head = head->next。
  *            - 释放: 块->next = head; head = 块。
  *          释放前检查空闲链以拒绝双重释放，最坏 O(block_count)。
@@ -17,7 +17,6 @@
 #include "rtos_port.h"
 #include "rtos_perf.h"
 #include "rtos_task.h" /* rtos_assert_fail declaration for ISR API guards */
-#include <string.h>
 
 /** @brief 空闲链表节点(复用空闲块空间)。 */
 typedef struct free_node {
@@ -31,18 +30,28 @@ rtos_status_t rtos_mempool_init(rtos_mempool_t *pool, void *base, uint32_t block
         return RTOS_ERR_PARAM;
     }
 
-    if ((block_size > UINT32_MAX - 3U) ||
-        (((uintptr_t)base % _Alignof(free_node_t)) != 0U)) {
+    const uint32_t block_align = (uint32_t)_Alignof(free_node_t);
+    const uint32_t align_mask = block_align - 1U;
+    uint32_t minimum_size = (block_size < sizeof(free_node_t))
+        ? (uint32_t)sizeof(free_node_t) : block_size;
+    if ((minimum_size > UINT32_MAX - align_mask) ||
+        (((uintptr_t)base & align_mask) != 0U)) {
         return RTOS_ERR_PARAM;
     }
 
-    /* 块大小向上对齐到 4 字节(保证指针存储对齐) */
-    uint32_t aligned_size = (block_size + 3U) & ~3U;
-    if (aligned_size < sizeof(free_node_t)) {
-        aligned_size = sizeof(free_node_t);
+    const uint32_t aligned_size = (minimum_size + align_mask) & ~align_mask;
+    if (block_count > UINT32_MAX / aligned_size) {
+        return RTOS_ERR_PARAM;
     }
-    if ((block_count > UINT32_MAX / aligned_size) ||
-        ((uintptr_t)base > UINTPTR_MAX - (uintptr_t)(aligned_size * block_count))) {
+
+    const uintptr_t storage = (uintptr_t)base;
+    const uintptr_t control = (uintptr_t)pool;
+    const uintptr_t span = (uintptr_t)(aligned_size * block_count);
+    /* The free list writes into the supplied storage. Reject any overlap with
+     * its control block before either region is touched; adjacency is valid. */
+    if ((storage > UINTPTR_MAX - span) ||
+        ((storage <= control) ? ((control - storage) < span) :
+                                ((storage - control) < sizeof(*pool)))) {
         return RTOS_ERR_PARAM;
     }
 

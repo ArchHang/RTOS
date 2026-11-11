@@ -8,11 +8,11 @@
  *          队列满时发送者阻塞(挂入 send_wait_head)；队列空时接收者阻塞
  *          (挂入 recv_wait_head)。
  *
- *          零拷贝直传优化(优于环形缓冲两次拷贝):
+ *          等待接收者直传，省去经过环形缓冲的第二次复制:
  *            - 接收者阻塞时，其接收缓冲指针存入 wait_node.transfer_buf。
- *            - 发送者到达发现接收等待者: 直接从发送缓冲 memcpy 到接收缓冲，
- *              唤醒接收者，消息不经过环形缓冲，仅 1 次拷贝(FreeRTOS 同款优化)。
- *            - 对称: 发送者阻塞时存发送缓冲指针，接收者到达直接拷贝并唤醒发送者。
+ *            - 发送者直接复制到接收缓冲，再唤醒接收者。
+ *            - 阻塞发送者保存源指针；接收者腾出槽位时代其入队并唤醒它。
+ *          单字节消息用字符读写，其他定长消息用 memcpy。
  *
  *          支持插队发送(to_front=TRUE)，用于紧急消息(写入 head 前一格)。
  *          接收者阻塞时队列必为空, to_front 对该条消息的顺序没有影响,
@@ -65,6 +65,19 @@ static inline uint32_t queue_prev_index(uint32_t head, uint32_t capacity)
     return (head == 0U) ? (capacity - 1U) : (head - 1U);
 }
 
+/* Byte streams need only one load and store, including in debug builds. */
+#if defined(__GNUC__)
+__attribute__((always_inline))
+#endif
+static inline void queue_copy_item(void *destination, const void *source, uint32_t item_size)
+{
+    if (item_size == 1U) {
+        *(unsigned char *)destination = *(const unsigned char *)source;
+    } else {
+        (void)memcpy(destination, source, item_size);
+    }
+}
+
 /**
  * @brief 把一条消息写入环形缓冲(队尾追加, 或按 to_front 插到队首)。
  * @param queue    队列(调用方需保证有空位)。
@@ -75,11 +88,11 @@ static inline uint32_t queue_prev_index(uint32_t head, uint32_t capacity)
 static void queue_storage_push(rtos_queue_t *queue, const void *item, uint8_t to_front)
 {
     if (to_front == 0U) {
-        memcpy(queue->storage + queue->tail * queue->item_size, item, queue->item_size);
+        queue_copy_item(queue->storage + queue->tail * queue->item_size, item, queue->item_size);
         queue->tail = queue_next_index(queue->tail, queue->capacity);
     } else {
         const uint32_t new_head = queue_prev_index(queue->head, queue->capacity);
-        memcpy(queue->storage + new_head * queue->item_size, item, queue->item_size);
+        queue_copy_item(queue->storage + new_head * queue->item_size, item, queue->item_size);
         queue->head = new_head;
     }
 }
@@ -92,7 +105,7 @@ static void queue_storage_push(rtos_queue_t *queue, const void *item, uint8_t to
  */
 static void queue_storage_pop(rtos_queue_t *queue, void *item)
 {
-    memcpy(item, queue->storage + queue->head * queue->item_size, queue->item_size);
+    queue_copy_item(item, queue->storage + queue->head * queue->item_size, queue->item_size);
     queue->head = queue_next_index(queue->head, queue->capacity);
 }
 
@@ -143,13 +156,15 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
     if ((queue == NULL) || (item == NULL)) {
         return RTOS_ERR_NULL;
     }
-    RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
+    const rtos_bool_t is_in_isr =
+        ((RTOS_CONFIG_ASSERT_ENABLED != 0) || (timeout != RTOS_NO_WAIT))
+        ? RTOS_PORT_IN_ISR() : RTOS_FALSE;
+    RTOS_ASSERT_ISR_STATE_OK(is_in_isr);
     if (queue->is_initialized == 0U) {
         return RTOS_ERR_PARAM;
     }
 
-    rtos_bool_t in_isr = RTOS_PORT_IN_ISR();
-    if (in_isr && (timeout != RTOS_NO_WAIT)) {
+    if ((is_in_isr != RTOS_FALSE) && (timeout != RTOS_NO_WAIT)) {
         return RTOS_ERR_ISR;
     }
 
@@ -162,7 +177,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         return RTOS_ERR_PARAM;
     }
 
-    /* 情况1: 队列有接收等待者 -> 零拷贝直传(跳过入队，仅 1 次拷贝)
+    /* 情况1: 队列有接收等待者 -> 直接交付(跳过入队，仅 1 次复制)
      * 接收者仅在队列空时阻塞，故 recv_wait_head!=NULL 必有 count==0，
      * to_front 在空队列无意义，统一走直传(修复 to_front+等待者死锁)。 */
     while (queue->recv_wait_head != NULL) {
@@ -176,7 +191,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         node->transfer_buf = NULL; /* 标记已被直传取走 */
         node->list_head = NULL;
         /* 先拷贝再唤醒: 保证接收者运行时数据已就绪(临界区保证接收者未运行) */
-        memcpy(recv_buf, item, queue->item_size);
+        queue_copy_item(recv_buf, item, queue->item_size);
         node->tcb->blocked_on = NULL;
         node->tcb->wait_result = RTOS_OK;
         rtos_sched_unblock(node->tcb);
@@ -204,7 +219,7 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
         return RTOS_ERR_SCHED;
     }
 
-    /* 情况4: 队列满 -> 阻塞发送者(记录发送缓冲以供零拷贝直传) */
+    /* 情况4: 队列满 -> 阻塞发送者(保留源缓冲以供代办入队) */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->wait_node.transfer_buf = (void *)item; /* 存发送缓冲指针 */
     cur->wait_node.transfer_size = queue->item_size;
@@ -264,18 +279,28 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
     }
 }
 
-rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout)
+static inline rtos_tick_t queue_remaining_until(rtos_tick_t deadline)
+{
+    /* Unsigned subtraction preserves deadlines that cross the tick rollover. */
+    const rtos_tick_t remaining = deadline - rtos_kernel.tick_count;
+    return (remaining <= (rtos_tick_t)INT32_MAX) ? remaining : RTOS_NO_WAIT;
+}
+
+static rtos_status_t queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout,
+                                const rtos_tick_t *deadline)
 {
     if ((queue == NULL) || (item == NULL)) {
         return RTOS_ERR_NULL;
     }
-    RTOS_ASSERT_ISR_OK(); /* [guard G-3] 违约优先级中断调用时立即捕获 */
+    const rtos_bool_t is_in_isr =
+        ((RTOS_CONFIG_ASSERT_ENABLED != 0) || (timeout != RTOS_NO_WAIT))
+        ? RTOS_PORT_IN_ISR() : RTOS_FALSE;
+    RTOS_ASSERT_ISR_STATE_OK(is_in_isr);
     if (queue->is_initialized == 0U) {
         return RTOS_ERR_PARAM;
     }
 
-    rtos_bool_t in_isr = RTOS_PORT_IN_ISR();
-    if (in_isr && (timeout != RTOS_NO_WAIT)) {
+    if ((is_in_isr != RTOS_FALSE) && (timeout != RTOS_NO_WAIT)) {
         return RTOS_ERR_ISR;
     }
 
@@ -300,6 +325,9 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
     }
 
     /* 情况2: 队列空且不等待 */
+    if (deadline != NULL) {
+        timeout = queue_remaining_until(*deadline);
+    }
     if (timeout == RTOS_NO_WAIT) {
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_TIMEOUT;
@@ -311,7 +339,7 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
         return RTOS_ERR_SCHED;
     }
 
-    /* 情况3: 队列空 -> 阻塞接收者(记录接收缓冲以供零拷贝直传) */
+    /* 情况3: 队列空 -> 阻塞接收者(保留接收缓冲以供直接交付) */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->wait_node.transfer_buf = item; /* 存接收缓冲指针 */
     cur->wait_node.transfer_size = queue->item_size;
@@ -349,6 +377,13 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
             RTOS_PORT_EXIT_CRITICAL();
             return RTOS_OK;
         }
+        if (deadline != NULL) {
+            timeout = queue_remaining_until(*deadline);
+            if (timeout == RTOS_NO_WAIT) {
+                RTOS_PORT_EXIT_CRITICAL();
+                return RTOS_ERR_TIMEOUT;
+            }
+        }
         cur = rtos_kernel.current_tcb;
         cur->wait_node.transfer_buf = item;
         cur->wait_node.transfer_size = queue->item_size;
@@ -367,6 +402,17 @@ rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
             return RTOS_OK; /* 消息已由发送者直传到 item */
         }
     }
+}
+
+rtos_status_t rtos_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout)
+{
+    return queue_recv(queue, item, timeout, NULL);
+}
+
+rtos_status_t rtos_internal_queue_recv_until(rtos_queue_t *queue, void *item,
+                                             rtos_tick_t deadline)
+{
+    return queue_recv(queue, item, RTOS_WAIT_FOREVER, &deadline);
 }
 
 uint32_t rtos_queue_get_count(const rtos_queue_t *queue)

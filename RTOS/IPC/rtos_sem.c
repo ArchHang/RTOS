@@ -11,7 +11,7 @@
  *          中断中调用 give 会唤醒等待任务，若该任务优先级更高则触发抢占。
  *          中断中调用 take 必须 timeout=RTOS_NO_WAIT(不阻塞)。
  *
- *          等待链表按优先级排序，保证高优先级任务先获得信号量。
+ *          等待链表按到达次序尾插，由位图选择最高优先级和同级最早节点。
  */
 #include "rtos_sem.h"
 #include "rtos_internal.h"
@@ -90,8 +90,7 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
 
     /* 中断中不应走到这里(已拦截) */
     /* 阻塞当前任务，挂入等待链表 */
-    /* 入链改为"尾插 O(1) + 优先级位图" —— 取代原按优先级有序插入的 O(n),
-     * 消除 give 成本随等待者数线性增长(实测 8 个等待者时 +18.4%)。 */
+    /* FIFO 尾插需寻找链尾；位图记录存在等待者的优先级。 */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->blocked_on = (void *)sem;
     cur->wait_node.tcb = cur;

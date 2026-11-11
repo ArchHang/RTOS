@@ -137,10 +137,18 @@ g_pfnVectors:
   .word  0
   .word  0
   .word  0
+  .ifdef RTOS_HIL_VECTOR_WRAPPERS
+  .word  SVC_Handler
+  .else
   .word  rtos_port_svc_handler
+  .endif
   .word  DebugMon_Handler
   .word  0
+  .ifdef RTOS_HIL_VECTOR_WRAPPERS
+  .word  PendSV_Handler
+  .else
   .word  rtos_port_pend_sv_handler
+  .endif
   .word  SysTick_Handler
   
   /* External Interrupts */

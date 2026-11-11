@@ -34,10 +34,11 @@ typedef struct production_highirq_snapshot {
     uint32_t natural_updates;
     uint32_t forced_requests;
     uint32_t forced_observed;
+    uint32_t coincident_entries; /**< Both UIF and a software request at entry. */
     uint32_t nonzero_basepri_samples;
     uint32_t nested_entries;
     uint32_t triple_nested_entries;
-    uint32_t spurious_entries;
+    uint32_t spurious_entries; /**< No UIF or software request at entry. */
     uint32_t last_basepri;
     uint32_t last_ipsr;
     uint32_t priority;

@@ -61,6 +61,22 @@ foreach ($case in $cases) {
     $capture | Out-File -LiteralPath (Join-Path $evidenceRoot "capture_$($case.tag).txt") -Encoding utf8
     if ($captureCode -ne 0) { throw "Hardware capture failed: $($case.tag) : $capture" }
     $content = [System.IO.File]::ReadAllText((Join-Path $evidenceRoot "log_$($case.tag).txt"))
+    if ($case.variant -eq 'production_stress') {
+        $high = [regex]::Matches($content, '(?m)^STRESS\|HIGHIRQ\|entries=(\d+) natural=(\d+) .*?forced_observed=(\d+) ')
+        $account = [regex]::Matches($content, '(?m)^STRESS\|HIGHIRQ_ACCOUNT\|coincident=(\d+) spurious=(\d+)\r?$')
+        if ($high.Count -ne 1 -or $account.Count -ne 1) {
+            throw "Missing or duplicate IRQ accounting: $($case.tag)"
+        }
+        $entries = [uint64]$high[0].Groups[1].Value
+        $natural = [uint64]$high[0].Groups[2].Value
+        $forced = [uint64]$high[0].Groups[3].Value
+        $overlap = [uint64]$account[0].Groups[1].Value
+        $spurious = [uint64]$account[0].Groups[2].Value
+        if ($overlap -gt $natural -or $overlap -gt $forced -or $spurious -gt $entries -or
+            ($entries + $overlap) -ne ($natural + $forced + $spurious)) {
+            throw "IRQ accounting mismatch: $($case.tag)"
+        }
+    }
     if ($case.negative) {
         if ($content -notmatch 'STRESS\|INJECT\|checksum_corruption' -or
             $content -notmatch 'STRESS\|FAIL\|packet_integrity checksum_errors=1' -or
@@ -92,7 +108,7 @@ foreach ($case in $cases) {
         foreach ($summary in @('SCHEDTASK\|SUMMARY\|pass=25 fail=0',
                                 'IPC\|SUMMARY\|pass=15 fail=0',
                                 'MEMTIMER\|SUMMARY\|pass=23\|fail=0',
-                                'USBPORT\|SUMMARY\|pass=54\|fail=0')) {
+                                'USBPORT\|SUMMARY\|pass=62\|fail=0')) {
             if ($content -notmatch "AT\|$summary") {
                 throw "Incomplete audit summary: $summary"
             }

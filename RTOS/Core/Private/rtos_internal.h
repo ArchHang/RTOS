@@ -16,6 +16,17 @@
 extern "C" {
 #endif
 
+/* Mode 2 and the optional watermark share the first stack word. */
+#define RTOS_INTERNAL_STACK_FILL_WORD ((rtos_stack_t)0xA5A5A5A5U)
+
+/**
+ * @brief 校验并配置启动所需的 FPU 与 SysTick。
+ * @return RTOS_OK 表示配置成功。RTOS_ERR_PARAM 表示时钟与 Tick 周期超出硬件范围，
+ *         端口寄存器与临界区状态保持原值。
+ * @note 仅在启动 Thread 上下文中、屏蔽 SysTick 和 PendSV 后调用。
+ */
+rtos_status_t rtos_internal_port_prepare_scheduler(void);
+
 /* ============================== 阻塞许可守卫 ============================== */
 
 /* Dedicated HIL builds may interrupt the pre-exclusion liveness window. */
@@ -26,6 +37,10 @@ void rtos_hil_object_access_hook(const void *object, uint32_t site);
 #else
 #define RTOS_INTERNAL_OBJECT_ACCESS_HOOK(object, site) ((void)0)
 #endif
+
+/** @brief Check whether leaving the API's critical section can dispatch PendSV.
+ *  @return RTOS_TRUE if the API owns the outermost section and the caller had no IRQ mask. */
+rtos_bool_t rtos_internal_port_can_block(void);
 
 /**
  * @brief 判断当前是否允许把任务置入阻塞态。
@@ -45,12 +60,13 @@ void rtos_hil_object_access_hook(const void *object, uint32_t site);
  *          `RTOS_ERR_SCHED`, 不做任何阻塞**。非阻塞路径(如 `RTOS_NO_WAIT`、
  *          计数充足时的 `sem_take`)不受影响, 仍照常工作。
  *
- * @note  任意上下文可调用(只读 `sched_state`, 不进出临界区)。
+ * @note  仅供持有本 API 临界区的线程在确实需要阻塞时使用。
  */
 static inline rtos_status_t rtos_internal_block_permitted(void)
 {
     return ((rtos_kernel.sched_state == RTOS_SCHED_RUNNING) &&
-            (rtos_kernel.current_tcb != NULL)) ? RTOS_OK : RTOS_ERR_SCHED;
+            (rtos_kernel.current_tcb != NULL) &&
+            (rtos_internal_port_can_block() != RTOS_FALSE)) ? RTOS_OK : RTOS_ERR_SCHED;
 }
 
 /**
@@ -58,6 +74,10 @@ static inline rtos_status_t rtos_internal_block_permitted(void)
  * @note  任务构造路径在临界区内调用，调度器初始化保留既有重置语义。
  */
 uint32_t rtos_internal_alloc_task_id(void);
+
+/** @brief Put the running task behind its peers and choose the highest ready task.
+ *  @note Caller holds the critical section and has verified a running Thread task. */
+void rtos_internal_sched_yield(void);
 
 /* Caller holds the critical section. Does not inspect uninitialized objects. */
 rtos_bool_t rtos_internal_object_has_waiters(const void *obj);
@@ -98,6 +118,18 @@ rtos_tcb_t *rtos_sched_commit_context_switch(void);
  */
 rtos_status_t rtos_internal_block_current_on(void *obj, rtos_wait_node_t **head,
                                              rtos_tick_t timeout);
+
+/**
+ * @brief Receive a message with an absolute deadline in the kernel tick domain.
+ * @param[in] queue Initialized queue, used from Thread context.
+ * @param[out] item Destination for one queue element.
+ * @param[in] deadline Absolute tick within the signed half-range of the current tick.
+ * @return RTOS_OK on delivery, RTOS_ERR_TIMEOUT if the deadline passed with no item,
+ *         or the same context and object errors as rtos_queue_recv().
+ * @note The remaining time is computed under the same lock as wait registration.
+ */
+rtos_status_t rtos_internal_queue_recv_until(rtos_queue_t *queue, void *item,
+                                             rtos_tick_t deadline);
 
 /**
  * @brief 唤醒等待链表中最高优先级的任务。
@@ -172,7 +204,7 @@ void rtos_internal_mutex_waiter_requeued(rtos_tcb_t *waiter);
  * @brief 互斥锁等待者离开等待链表后, 重新评估持有者的继承优先级。
  * @details 等待者因超时/删除/挂起离开时调用, 撤销不再有依据的优先级提升。
  *          非互斥锁对象(信号量/队列/事件等)自动忽略。
- * @note  由 rtos_mutex.c 实现; 调用前需已完成等待链表移除。
+ * @note  调用方须持有内核临界区，并已将等待者摘出等待链表。
  */
 void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter);
 

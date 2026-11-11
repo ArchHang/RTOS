@@ -50,6 +50,7 @@
  * @note    本移植面向 GCC(arm-none-eabi-)工具链。Keil/IAR 需调整汇编语法。
  */
 #include "rtos_port.h"
+#include "rtos_internal.h"
 #include "rtos_sched.h"
 #include "rtos_task.h"
 #include "rtos_perf.h"
@@ -127,6 +128,7 @@ typedef struct {
 #define SysTick_CTRL_ENABLE_Msk (1UL << 0)
 #define SysTick_CTRL_TICKINT_Msk (1UL << 1)
 #define SysTick_CTRL_CLKSOURCE_Msk (1UL << 2)
+#define SYSTICK_RELOAD_MAX UINT32_C(0x00FFFFFF)
 
 /* AIRCR: 优先级分组(STM32 系列用 4 位优先级，无分组)。 */
 #define SCB_AIRCR_VECTKEY_Pos (16U)
@@ -201,6 +203,25 @@ void rtos_port_set_interrupt_mask(uint32_t mask)
 uint32_t rtos_port_get_critical_nesting(void)
 {
     return rtos_port_crit_nest;
+}
+
+rtos_bool_t rtos_internal_port_can_block(void)
+{
+    if ((rtos_port_crit_nest != 1U) || (rtos_port_saved_mask != 0U)) {
+        return RTOS_FALSE;
+    }
+
+    /* The saved slot covers the mask this port changed. The remaining mask
+     * registers can independently keep PendSV pending after the API exits. */
+    uint32_t other_mask;
+    uint32_t fault_mask;
+#if RTOS_CONFIG_USE_BASEPRI
+    __asm volatile("mrs %[mask], primask" : [mask] "=r"(other_mask) :: "memory");
+#else
+    __asm volatile("mrs %[mask], basepri" : [mask] "=r"(other_mask) :: "memory");
+#endif
+    __asm volatile("mrs %[mask], faultmask" : [mask] "=r"(fault_mask) :: "memory");
+    return ((other_mask | fault_mask) == 0U) ? RTOS_TRUE : RTOS_FALSE;
 }
 
 uint32_t rtos_port_isr_priority(void)
@@ -495,7 +516,7 @@ void rtos_port_start_first_task(void)
 
 /* ============================== 启动调度器(FPU/SysTick) ============================== */
 
-void rtos_port_start_scheduler(void)
+rtos_status_t rtos_internal_port_prepare_scheduler(void)
 {
     /* 【移植要求 — 用户必须自行配置中断优先级】
      *
@@ -527,22 +548,32 @@ void rtos_port_start_scheduler(void)
      *   HAL_NVIC_SetPriority( SysTick_IRQn, 15, 0 );
      * 详见移植文档 design_and_analysis.md 第五部分。 */
 
-    /* 1. 启用 FPU 惰性堆栈(Cortex-M4F/M7F) */
+    /* LOAD=0 无法周期性地从 1 计到 0。先校验周期，再修改端口状态。 */
+    const uint32_t cycles_per_tick = SystemCoreClock / RTOS_CONFIG_TICK_RATE_HZ;
+    if ((cycles_per_tick < 2U) || (cycles_per_tick > SYSTICK_RELOAD_MAX + 1U)) {
+        return RTOS_ERR_PARAM;
+    }
+
+    /* 启用 FPU 惰性堆栈(Cortex-M4F/M7F) */
     FPU->FPCCR |= FPU_FPCCR_ASPEN_Msk | FPU_FPCCR_LSPEN_Msk;
 
-    /* 2. 初始化临界区嵌套计数(启动后第一次进临界区会自增) */
+    /* 初始化临界区嵌套计数(启动后第一次进临界区会自增) */
     rtos_port_crit_nest = 0U;
     rtos_port_saved_mask = 0U;
 
-    /* 3. 配置 SysTick 产生 RTOS_CONFIG_TICK_RATE_HZ 的周期中断。
-     *    SystemCoreClock 由用户工程提供(必须 > 0)，移植层据此计算重载值。
-     *    若用户未设置(== 0)，断言失败提醒用户先完成时钟配置。 */
-    RTOS_ASSERT(SystemCoreClock > 0U);
-    SysTick->LOAD = (SystemCoreClock / RTOS_CONFIG_TICK_RATE_HZ) - 1U;
+    SysTick->LOAD = cycles_per_tick - 1U;
     SysTick->VAL = 0UL; /* 清当前值 */
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | /* 选内核时钟(AHB/HCLK) */
                     SysTick_CTRL_TICKINT_Msk | /* 使能中断 */
                     SysTick_CTRL_ENABLE_Msk; /* 使能 SysTick */
+    return RTOS_OK;
+}
+
+void rtos_port_start_scheduler(void)
+{
+    const rtos_status_t status = rtos_internal_port_prepare_scheduler();
+    RTOS_ASSERT(status == RTOS_OK);
+    (void)status;
 }
 
 /* ============================== SysTick 中断处理 ============================== */

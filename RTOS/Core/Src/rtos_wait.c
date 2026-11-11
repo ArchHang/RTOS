@@ -223,8 +223,8 @@ rtos_tcb_t *rtos_internal_wake_highest(rtos_wait_node_t **head)
  *          `__builtin_ctz`(编译为 RBIT+CLZ 两条指令):
  *            - **单节点快路径**: 链上只有 1 个节点时零遍历、零位图运算 ——
  *              这是"每对象 1~2 个等待者"的典型嵌入式负载下最常见的情形;
- *            - 多节点时按位图取最高优先级, 再在该优先级分组内取链首,
- *              分组内扫描长度 = 同优先级等待者数, 与总等待者数无关。
+ *            - 多节点时按位图取最高优先级，再在 FIFO 链上定位第一个匹配节点。
+ *              清位时从该节点的后继开始查找同优先级等待者。
  *
  * @note  位图与链表理论上不会不一致(两者由同一临界区维护); 但为防止
  *        位图位残留导致"取不到牺牲者", 找不到时退化为**全链扫描取最高优先级**
@@ -259,28 +259,25 @@ rtos_tcb_t *rtos_internal_wake_highest_bm(rtos_wait_node_t **head, volatile uint
         }
     }
 
+    /* Both selection paths keep the first node at the chosen priority.
+     * Earlier nodes cannot share its bit, even after the fallback search. */
+    rtos_tcb_t *const task = victim->tcb;
+    const rtos_prio_t priority = task->priority;
+    rtos_wait_node_t *remaining = victim->next;
     rtos_internal_wait_remove(head, victim);
-
-    /* 该优先级若已无其它等待者则清位, 避免位图残留导致后续空扫描 */
-    {
-        rtos_bool_t still_waiting = RTOS_FALSE;
-        for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
-            if (p->tcb->priority == victim->tcb->priority) {
-                still_waiting = RTOS_TRUE;
-                break;
-            }
-        }
-        if (still_waiting == RTOS_FALSE) {
-            *bitmap &= ~(1UL << victim->tcb->priority);
-        }
+    while ((remaining != NULL) && (remaining->tcb->priority != priority)) {
+        remaining = remaining->next;
+    }
+    if (remaining == NULL) {
+        *bitmap &= ~(1UL << priority);
     }
 
-    victim->tcb->blocked_on = NULL;
-    victim->tcb->wait_result = RTOS_OK;
+    task->blocked_on = NULL;
+    task->wait_result = RTOS_OK;
     victim->list_head = NULL;
 
-    rtos_sched_unblock(victim->tcb);
-    return victim->tcb;
+    rtos_sched_unblock(task);
+    return task;
 }
 
 /**

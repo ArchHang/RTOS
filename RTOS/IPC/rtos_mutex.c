@@ -172,6 +172,16 @@ static void mutex_restore_priority(rtos_tcb_t *owner)
     mutex_refresh_priority_graph(owner);
 }
 
+/* 调用方持有临界区，唤醒的任务只能在交接状态发布后运行。 */
+static void mutex_handoff(rtos_mutex_t *mutex)
+{
+    mutex->owner = NULL;
+    rtos_tcb_t *owner = rtos_internal_wake_highest(&mutex->wait_head);
+    mutex->owner = owner;
+    mutex->recursion_count = (owner != NULL) ? 1U : 0U;
+    mutex->is_handoff_pending = (owner != NULL) ? 1U : 0U;
+}
+
 rtos_status_t rtos_mutex_init(rtos_mutex_t *mutex)
 {
     if (mutex == NULL) {
@@ -275,11 +285,15 @@ rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout)
     mutex_refresh_priority_graph(NULL);
     RTOS_PORT_EXIT_CRITICAL();
 
-    /* 被唤醒: 由 give 在唤醒前已完成所有权移交(owner = 本任务, recursion=1),
-     *         无需在此设置, 避免与 give 之间产生竞争窗口。
-     *         仅需检查唤醒结果: OK=获得锁, TIMEOUT/DELETED=未获得。 */
-    cur = rtos_kernel.current_tcb;
-    return cur->wait_result;
+    /* deinit 与交接确认使用同一临界区。失败路径只访问当前任务，
+     * 因为旧 mutex 可能已经销毁或在同址重建。 */
+    RTOS_PORT_ENTER_CRITICAL();
+    rtos_status_t result = cur->wait_result;
+    if (result == RTOS_OK) {
+        mutex->is_handoff_pending = 0U;
+    }
+    RTOS_PORT_EXIT_CRITICAL();
+    return result;
 }
 
 rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex)
@@ -317,18 +331,20 @@ rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex)
         return RTOS_OK;
     }
 
+    if (mutex->wait_head == NULL) {
+        /* This lock contributes no donation edges. Any priority inherited
+         * through other locks remains valid. */
+        mutex->owner = NULL;
+        mutex->is_handoff_pending = 0U;
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_OK;
+    }
+
     /* 在同一临界区内完成移交，再求解包含新所有者与旧所有者的捐赠图。
      * wake 只挂起 PendSV，任务不能在所有权和有效优先级更新前运行。
      * 全图刷新会重新选择 next，避免使用 wake 时的临时调度结果。 */
-    rtos_tcb_t *old_owner = cur;
-    mutex->owner = NULL;
-    rtos_tcb_t *woken = rtos_internal_wake_highest(&mutex->wait_head);
-    if (woken != NULL) {
-        /* 移交所有权: 被唤醒任务运行时即已是 owner, 无需在其 take 中再设置 */
-        mutex->owner = woken;
-        mutex->recursion_count = 1U;
-    }
-    mutex_restore_priority(old_owner);
+    mutex_handoff(mutex);
+    mutex_restore_priority(cur);
 
     RTOS_PORT_EXIT_CRITICAL();
     return RTOS_OK;
@@ -343,6 +359,10 @@ rtos_status_t rtos_mutex_deinit(rtos_mutex_t *mutex)
     RTOS_PORT_ENTER_CRITICAL();
     /* 先摘所有权再恢复(compute_effective 不计入本锁等待者, 见 restore 注释) */
     rtos_tcb_t *deinit_owner = mutex->owner;
+    if ((deinit_owner != NULL) && (mutex->is_handoff_pending != 0U)) {
+        deinit_owner->wait_result = RTOS_ERR_DELETED;
+    }
+    mutex->is_handoff_pending = 0U;
     mutex->owner = NULL;
     rtos_internal_wake_all(&mutex->wait_head, RTOS_ERR_DELETED);
     mutex->is_initialized = 0U;
@@ -384,7 +404,8 @@ void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter)
         return;
     }
 
-    RTOS_PORT_ENTER_CRITICAL();
+    /* Tick, task delete and task suspend still hold the lock used to unlink
+     * the waiter. Keep the registry lookup and donation update in that section. */
     void *obj = waiter->wait_node.wait_obj;
     for (uint32_t i = 0U; i < s_mutex_count; i++) {
         if (s_mutex_registry[i] == (rtos_mutex_t *)obj) {
@@ -394,7 +415,6 @@ void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter)
             break;
         }
     }
-    RTOS_PORT_EXIT_CRITICAL();
 }
 
 void rtos_internal_mutex_release_all(rtos_tcb_t *owner)
@@ -410,16 +430,9 @@ void rtos_internal_mutex_release_all(rtos_tcb_t *owner)
             /* 先摘所有权再恢复(compute_effective 不计入本锁等待者, 见 restore 注释)。
              * 任务状态已置 DELETED, mutex_set_owner_priority 不会触碰就绪表
              * (was_ready 为 false), 等待链重挂因 blocked_on 已清空而空操作。 */
-            mutex->owner = NULL;
             /* 移交所有权给最高优先级等待者，或释放锁；随后刷新捐赠图。
              * 外层临界区保证全部锁清理完成前任务不会运行。 */
-            rtos_tcb_t *woken = rtos_internal_wake_highest(&mutex->wait_head);
-            if (woken != NULL) {
-                mutex->owner = woken;
-                mutex->recursion_count = 1U;
-            } else {
-                mutex->recursion_count = 0U;
-            }
+            mutex_handoff(mutex);
             mutex_restore_priority(owner);
         }
     }
