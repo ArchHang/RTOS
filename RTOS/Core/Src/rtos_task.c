@@ -17,6 +17,7 @@
 #include "rtos_internal.h"
 #include "rtos_perf.h"
 #include "rtos_heap.h"
+#include <stdbool.h>
 #include <string.h>
 
 /** @brief 通知状态枚举(内部)。 */
@@ -29,12 +30,13 @@
 
 /* ============================== 延迟释放(自删除场景) ============================== */
 /* 当任务自删除且为动态分配时, TCB 与栈不可立即释放: PendSV 切换上下文时仍需
- * 写入 current_tcb->top_of_stack。故将待释放 TCB 链入此链表, 由 idle 任务
- * 在后续调度中清理(此时 PendSV 早已完成, TCB 不再被引用)。
+ * 写入 current_tcb->top_of_stack。先把 TCB 链入此表，待 PendSV 切出后，
+ * 由 Idle 或创建动态任务的线程回收。
  *
  * 链表使用 TCB 的 next_ready 字段复用为链表指针(任务已删除, 不在就绪表)。
  * 操作均在临界区内, 无需额外同步。 */
 static rtos_tcb_t *s_pending_free_list = NULL;
+static uint32_t s_pending_free_count;
 
 enum {
     TASK_REGISTRY_BUCKET_COUNT = 16U
@@ -135,34 +137,52 @@ static void task_unregister(rtos_tcb_t *tcb)
 }
 
 /**
- * @brief 将动态分配的 TCB 加入待释放链表(供 idle 任务清理)。
- * @note  调用前必须已移出所有调度链表, 且不在当前运行位置。
+ * @brief 将已移出调度链表的动态自删任务加入待释放链表。
  */
 static void defer_free_tcb(rtos_tcb_t *tcb)
 {
     tcb->next_ready = s_pending_free_list;
     s_pending_free_list = tcb;
+    ++s_pending_free_count;
 }
 
 /**
- * @brief 清理待释放链表(在 idle 任务中调用)。
- * @details 释放每个待释放 TCB 的栈与 TCB 本身。此时 PendSV 早已完成切换,
- *          TCB 不再被任何上下文引用, 可安全释放。
+ * @brief 在任务上下文中回收已切出的一批动态自删任务。
+ * @return 是否回收了待释放任务。
  */
-static void process_pending_free(void)
+static bool process_pending_free(void)
 {
     RTOS_PORT_ENTER_CRITICAL();
-    rtos_tcb_t *list = s_pending_free_list;
-    s_pending_free_list = NULL;
+    const uint32_t budget = s_pending_free_count;
     RTOS_PORT_EXIT_CRITICAL();
 
-    while (list != NULL) {
-        rtos_tcb_t *tcb = list;
-        list = tcb->next_ready;
-        /* 释放栈与 TCB(顺序无关, 二者独立分配) */
+    bool is_reclaimed = false;
+    for (uint32_t index = 0U; index < budget; ++index) {
+        RTOS_PORT_ENTER_CRITICAL();
+        rtos_tcb_t *const tcb = s_pending_free_list;
+        /* 尚未切出的任务只能在链首，仍需要其栈和 TCB。 */
+        if (tcb == NULL || tcb == rtos_kernel.current_tcb) {
+            RTOS_PORT_EXIT_CRITICAL();
+            break;
+        }
+        s_pending_free_list = tcb->next_ready;
+        --s_pending_free_count;
+        /* 每次只摘除一个任务，并在恢复调度前归还它的两块存储。 */
         rtos_heap_free(tcb->stack_base);
         rtos_heap_free(tcb);
+        RTOS_PORT_EXIT_CRITICAL();
+        is_reclaimed = true;
     }
+    return is_reclaimed;
+}
+
+static void *task_allocate_storage(uint32_t size)
+{
+    void *storage = rtos_heap_alloc(size);
+    if (storage == NULL && process_pending_free()) {
+        storage = rtos_heap_alloc(size);
+    }
+    return storage;
 }
 
 /* ============================== 内部函数 ============================== */
@@ -249,9 +269,10 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     rtos_sched_add_ready(tcb);
     tcb->state = RTOS_TASK_READY;
     if (publish != NULL) *publish = tcb;
-    /* 若调度器已运行且新任务优先级更高，立即切换 */
+    /* Idle 运行时，同为最低优先级的应用任务也应获得 CPU。 */
     if ((rtos_kernel.sched_state == RTOS_SCHED_RUNNING) &&
-        (priority < rtos_kernel.current_tcb->priority)) {
+        ((priority < rtos_kernel.current_tcb->priority) ||
+         (rtos_kernel.current_tcb == rtos_kernel.idle_tcb))) {
         rtos_sched_schedule();
     }
     RTOS_PORT_EXIT_CRITICAL();
@@ -316,13 +337,13 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out, uint32_t stack_size, rtos_t
     const uint32_t stack_bytes = stack_size * (uint32_t)sizeof(rtos_stack_t);
 
     /* 从堆分配 TCB */
-    rtos_tcb_t *tcb = (rtos_tcb_t *)rtos_heap_alloc(sizeof(rtos_tcb_t));
+    rtos_tcb_t *tcb = task_allocate_storage(sizeof(rtos_tcb_t));
     if (tcb == NULL) {
         return RTOS_ERR_NO_MEM;
     }
 
     /* 从堆分配栈(8 字节对齐由 rtos_heap_alloc 保证) */
-    rtos_stack_t *stack_buf = (rtos_stack_t *)rtos_heap_alloc(stack_bytes);
+    rtos_stack_t *stack_buf = task_allocate_storage(stack_bytes);
     if (stack_buf == NULL) {
         rtos_heap_free(tcb);
         return RTOS_ERR_NO_MEM;
@@ -576,23 +597,24 @@ rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio)
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_PARAM;
     }
-    rtos_bool_t was_ready = (tcb->state == RTOS_TASK_READY) || (tcb->state == RTOS_TASK_RUNNING);
-
-    if (was_ready) {
-        rtos_sched_remove_ready(tcb);
+    if (tcb->base_priority == prio) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_OK;
     }
     tcb->base_priority = prio;
-    /* 重新计算有效优先级: 若持有互斥锁且有等待者优先级更高, 需维持继承的提升。
-     * 直接设 priority=prio 会丢弃优先级继承, 导致等待者无法抢占持锁者。 */
-    tcb->priority = rtos_internal_mutex_compute_effective_priority(tcb);
-    if (was_ready) {
-        rtos_sched_add_ready(tcb);
+    const rtos_prio_t effective_priority = rtos_internal_mutex_compute_effective_priority(tcb);
+    if (effective_priority != tcb->priority) {
+        const bool is_ready = tcb->state == RTOS_TASK_READY || tcb->state == RTOS_TASK_RUNNING;
+        if (is_ready) {
+            rtos_sched_remove_ready(tcb);
+        }
+        tcb->priority = effective_priority;
+        if (is_ready) {
+            rtos_sched_add_ready(tcb);
+        }
+        /* 只在有效优先级改变时重新排队，保留同级 FIFO。 */
+        rtos_internal_requeue_wait_lists(tcb);
     }
-    /* [bug fix PI-2] 优先级变化后重挂对象等待链: 等待链按优先级排序插入,
-     * 若该任务正阻塞在某对象上(sem/mutex/queue/event)且优先级被修改,
-     * 不重排则对象释放时 wake_highest 仍按旧优先级取链首 → 唤醒顺序倒置
-     * (低优先级先得资源)。 */
-    rtos_internal_requeue_wait_lists(tcb);
 
     /* [缺陷修复 BM-3] 若该任务正阻塞在某把互斥锁上, 持有者的继承提升值必须
      * 跟着新优先级走 —— 否则持有者仍以旧优先级运行, 中优先级任务继续插队。 */
@@ -700,13 +722,8 @@ rtos_status_t rtos_task_resume(rtos_tcb_t *tcb)
         return RTOS_ERR_PARAM;
     }
     if (tcb->state == RTOS_TASK_SUSPENDED) {
-        tcb->state = RTOS_TASK_READY;
-        rtos_sched_add_ready(tcb);
-        if ((rtos_kernel.sched_state == RTOS_SCHED_RUNNING) &&
-            (rtos_kernel.current_tcb != NULL) &&
-            (tcb->priority < rtos_kernel.current_tcb->priority)) {
-            rtos_sched_schedule();
-        }
+        /* PendSV 提交前，current 可能已阻塞。用就绪队头重新选择。 */
+        rtos_sched_unblock(tcb);
     }
     RTOS_PORT_EXIT_CRITICAL();
     return RTOS_OK;
@@ -840,6 +857,23 @@ static rtos_bool_t task_stack_is_corrupt(const rtos_tcb_t *task)
     return RTOS_FALSE;
 #endif
 }
+
+static void report_stack_corruption(rtos_tcb_t *task)
+{
+    RTOS_PORT_ENTER_CRITICAL();
+    const bool is_corrupt = task_registered(task) != RTOS_FALSE &&
+                            task_stack_is_corrupt(task) != RTOS_FALSE;
+    if (is_corrupt) {
+        /* 保持借用 TCB 有效，同时允许诊断需要的硬件中断。 */
+        rtos_sched_suspend();
+    }
+    RTOS_PORT_EXIT_CRITICAL();
+
+    if (is_corrupt) {
+        rtos_stack_overflow_hook(task);
+        rtos_sched_resume();
+    }
+}
 #endif
 
 void rtos_idle_task(void *arg)
@@ -848,10 +882,9 @@ void rtos_idle_task(void *arg)
     uint32_t idle_count = 0U;
 
     for (;;) {
-        /* 清理自删除任务的 TCB 与栈(必须在 idle 任务中, 因为此时 PendSV
-         * 早已完成切换, 待释放 TCB 不再被任何上下文引用)。 */
+        /* 回收已切出的动态自删任务。 */
         if (s_pending_free_list != NULL) {
-            process_pending_free();
+            (void)process_pending_free();
         }
 
 #if RTOS_CONFIG_GENERATE_RUN_TIME_STATS
@@ -865,11 +898,7 @@ void rtos_idle_task(void *arg)
         __asm volatile("wfi");
 #endif
 
-        /* 栈溢出检测: 在空闲任务中周期检查所有任务栈
-         * [fix G-5] 巡检覆盖全部任务(含 BLOCKED/SUSPENDED 态), 且钩子在临界区
-         * 外执行 —— 原实现在临界区内调用 rtos_stack_overflow_hook, 用户钩子里
-         * 的任何 RTOS API/中断式 printf 都会在 PendSV 被屏蔽的状态下请求调度,
-         * 语义破坏。 */
+        /* 周期巡检并在交给诊断钩子前逐一复核仍存活的异常任务。 */
 #if RTOS_CONFIG_CHECK_FOR_STACK_OVERFLOW
         if ((idle_count & 0xFFU) == 0U) {
             rtos_tcb_t *overflowed[RTOS_CONFIG_PERF_TASK_REGISTRY_SIZE];
@@ -914,7 +943,7 @@ void rtos_idle_task(void *arg)
             RTOS_PORT_EXIT_CRITICAL();
 
             for (i = 0U; i < n_overfl; i++) {
-                rtos_stack_overflow_hook(overflowed[i]); /* 临界区外执行 */
+                report_stack_corruption(overflowed[i]);
             }
         }
 #endif

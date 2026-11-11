@@ -50,6 +50,9 @@ void BusFault_Handler(void);
 void UsageFault_Handler(void);
 int _write(int file, char *data, int size);
 void H743_TEST_ENTRY(void *argument);
+#if defined(H743_TEST_BEFORE_START)
+void H743_TEST_BEFORE_START(void);
+#endif
 extern const uint32_t g_pfnVectors[];
 
 static rtos_tcb_t entry_tcb;
@@ -294,6 +297,9 @@ int main(void)
     if (rtos_init() != RTOS_OK) {
         Error_Handler();
     }
+#if defined(H743_TEST_BEFORE_START)
+    H743_TEST_BEFORE_START();
+#endif
     if (rtos_task_create_static(&entry_tcb, entry_stack, H743_ENTRY_STACK_WORDS, run_entry,
                                 NULL, H743_TEST_ENTRY_PRIORITY, "h743-hil") != RTOS_OK) {
         Error_Handler();

@@ -204,7 +204,12 @@ uint32_t rtos_perf_get_cycles(void);
 /** @brief 初始化周期计数器(使能 DWT_CYCCNT)。在 rtos_perf_init 中调用。 */
 void rtos_perf_init_cycles(void);
 
-/** @brief 将周期数转换为微秒(基于 SystemCoreClock)。 */
+/**
+ * @brief 将 DWT 周期数或回退时基的 Tick 数转换为微秒。
+ * @param cycles 32 位计数差值，单位由 RTOS_CONFIG_PERF_USE_DWT 决定。
+ * @return 以配置时基向下取整的微秒数，超出返回类型范围时按 32 位回绕。
+ *         DWT 模式下 SystemCoreClock 为 0 时返回 0。
+ */
 uint32_t rtos_perf_cycles_to_us(uint32_t cycles);
 
 /** @brief 上下文切换钩子(在 rtos_sched_context_switch 中调用, 临界区内)。

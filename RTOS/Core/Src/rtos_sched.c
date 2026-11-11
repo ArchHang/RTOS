@@ -19,6 +19,7 @@
  */
 #include "rtos_sched.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -48,6 +49,12 @@ static rtos_stack_t s_idle_stack[RTOS_CONFIG_IDLE_TASK_STACK_SIZE];
 
 /** @brief 任务 ID 分配计数器。 */
 static uint32_t s_next_task_id = 1U;
+
+#if !RTOS_CONFIG_USE_PREEMPTION
+/* A cooperative yield grants one dispatch at PendSV, even if an IRQ changes
+ * the candidate after the request. The permission is separate from next_tcb. */
+static bool s_cooperative_yield_pending;
+#endif
 
 /* ============================== 内部函数 ============================== */
 
@@ -96,6 +103,10 @@ static void ready_list_push_tail(rtos_tcb_t *tcb)
         tcb->prev_ready = tail;
         tail->next_ready = tcb;
         head->prev_ready = tcb;
+        /* Idle 只在同级环中没有应用任务时才可成为队头。 */
+        if (head == &s_idle_tcb) {
+            rtos_kernel.ready_heads[prio] = tcb;
+        }
     }
 }
 
@@ -120,7 +131,11 @@ static void ready_list_remove(rtos_tcb_t *tcb)
         tcb->prev_ready->next_ready = tcb->next_ready;
         tcb->next_ready->prev_ready = tcb->prev_ready;
         if (head == tcb) {
-            rtos_kernel.ready_heads[prio] = tcb->next_ready;
+            rtos_tcb_t *next = tcb->next_ready;
+            if (next == &s_idle_tcb) {
+                next = next->next_ready;
+            }
+            rtos_kernel.ready_heads[prio] = next;
         }
     }
     tcb->next_ready = NULL;
@@ -130,13 +145,18 @@ static void ready_list_remove(rtos_tcb_t *tcb)
 /**
  * @brief 同优先级时间片用尽: 把当前任务移到链尾。
  */
-static void ready_list_rotate(rtos_prio_t prio)
+static bool ready_list_rotate(rtos_prio_t prio)
 {
     rtos_tcb_t *head = rtos_kernel.ready_heads[prio];
-    if ((head != NULL) && (head->next_ready != head)) {
-        /* 把 head 移到尾部: head = head->next */
-        rtos_kernel.ready_heads[prio] = head->next_ready;
+    rtos_tcb_t *next = head->next_ready;
+    if (next == &s_idle_tcb) {
+        next = next->next_ready;
     }
+    if (next == head) {
+        return false;
+    }
+    rtos_kernel.ready_heads[prio] = next;
+    return true;
 }
 
 /* ============================== Tick 回绕安全比较 ============================== */
@@ -444,6 +464,9 @@ static inline void schedule_ready_priority(rtos_prio_t top, rtos_bool_t is_expli
             (current->state == RTOS_TASK_RUNNING)) {
             return;
         }
+        if (is_explicit_yield != RTOS_FALSE) {
+            s_cooperative_yield_pending = true;
+        }
 #else
         (void)is_explicit_yield;
 #endif
@@ -473,7 +496,7 @@ void rtos_internal_sched_yield(void)
     rtos_tcb_t *head = rtos_kernel.ready_heads[priority];
 
     if (head == current) {
-        ready_list_rotate(priority);
+        (void)ready_list_rotate(priority);
     } else if (current->next_ready != head) {
         /* A cooperative task can change priority without losing the CPU. */
         ready_list_remove(current);
@@ -600,15 +623,10 @@ void rtos_sched_tick(void)
         cur->state = RTOS_TASK_RUNNING;
     }
 #if RTOS_CONFIG_USE_PREEMPTION && RTOS_CONFIG_USE_TIME_SLICING
-    else if ((cur != NULL) && (cur->state == RTOS_TASK_RUNNING)) {
-        /* 同优先级时间片轮转: 当前链表多于一个任务时把 head 移到链尾 */
-        rtos_tcb_t *head = rtos_kernel.ready_heads[top];
-        if ((head != NULL) && (head->next_ready != head)) {
-            ready_list_rotate(top);
-            rtos_kernel.next_tcb = rtos_kernel.ready_heads[top];
-            rtos_kernel.switch_count++;
-            rtos_port_context_switch();
-        }
+    else if ((cur != NULL) && (cur->state == RTOS_TASK_RUNNING) && ready_list_rotate(top)) {
+        rtos_kernel.next_tcb = rtos_kernel.ready_heads[top];
+        rtos_kernel.switch_count++;
+        rtos_port_context_switch();
     }
 #endif
 }
@@ -621,6 +639,9 @@ void rtos_sched_suspend(void)
         rtos_kernel.suspend_depth = 1U;
         rtos_kernel.sched_state = RTOS_SCHED_SUSPENDED;
         rtos_kernel.next_tcb = NULL;
+#if !RTOS_CONFIG_USE_PREEMPTION
+        s_cooperative_yield_pending = false;
+#endif
     } else if (rtos_kernel.sched_state == RTOS_SCHED_SUSPENDED) {
         RTOS_ASSERT(rtos_kernel.suspend_depth != UINT32_MAX);
         if (rtos_kernel.suspend_depth != UINT32_MAX) ++rtos_kernel.suspend_depth;
@@ -660,8 +681,19 @@ rtos_tcb_t *rtos_sched_commit_context_switch(void)
 
     if (rtos_kernel.sched_state != RTOS_SCHED_RUNNING) {
         rtos_kernel.next_tcb = NULL;
+#if !RTOS_CONFIG_USE_PREEMPTION
+        s_cooperative_yield_pending = false;
+#endif
         return current_task;
     }
+#if !RTOS_CONFIG_USE_PREEMPTION
+    if (s_cooperative_yield_pending) {
+        s_cooperative_yield_pending = false;
+        const rtos_prio_t top = find_highest_priority(rtos_kernel.ready_bitmap);
+        rtos_tcb_t *next = (top < RTOS_CONFIG_MAX_PRIORITIES) ? rtos_kernel.ready_heads[top] : NULL;
+        rtos_kernel.next_tcb = (next != current_task) ? next : NULL;
+    }
+#endif
     /* 由 PendSV 汇编代码调用本函数前已保存上下文，这里只更新 current */
     if (rtos_kernel.next_tcb != NULL) {
         rtos_tcb_t *prev = current_task;

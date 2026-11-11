@@ -114,9 +114,11 @@ def arguments():
     parser.add_argument("--entry-name", type=identifier, default="h743_bench_run")
     parser.add_argument("--entry-priority", type=priority, default=9)
     parser.add_argument("--extra-source", type=Path, action="append", default=[])
+    parser.add_argument("--usb-osal", action="store_true", help="link the USB RTOS adapter without a USB controller")
     parser.add_argument("--define", type=definition, action="append", default=[])
     parser.add_argument("--wrap", type=identifier, action="append", default=[])
     parser.add_argument("--opt", choices=("O0", "O2", "O3"), default="O2")
+    parser.add_argument("--lto", action="store_true", help="enable LTO outside the assembly port")
     parser.add_argument("--critical-mask", choices=("basepri", "primask"), default="basepri")
     parser.add_argument("--disable-assertions", action="store_true")
     parser.add_argument("--data-memory", choices=("axi", "dtcm"), default="axi")
@@ -179,6 +181,8 @@ def build(args):
         if not members:
             raise ValueError(f"No RTOS source files found in {rtos / directory}")
         core_sources.extend(members)
+    if args.usb_osal:
+        core_sources.append(rtos / "USB/rtos_usb_osal.c")
     test_sources = [HIL / "h743_main.c", args.entry_source.resolve(strict=True),
                     *(source.resolve(strict=True) for source in args.extra_source)]
     if args.vector == "wrapper":
@@ -191,10 +195,13 @@ def build(args):
 
     includes = [HIL, ROOT / "hil/fw/Inc", rtos / "Core/Inc", rtos / "Core/Private",
                 *board_includes]
+    if args.usb_osal:
+        includes.append(rtos / "lib/third/CherryUSB/common")
     cpu = ["-mcpu=cortex-m7", "-mthumb", "-mfpu=fpv5-d16", "-mfloat-abi=hard",
            "-mno-unaligned-access"]
+    lto_flags = ["-flto"] if args.lto else []
     compile_flags = [*cpu, f"-{args.opt}", "-g3", "-ffunction-sections", "-fdata-sections",
-                     "-fno-lto", "-ffp-contract=off", "-DUSE_HAL_DRIVER", "-DSTM32H743xx",
+                     *(lto_flags or ["-fno-lto"]), "-ffp-contract=off", "-DUSE_HAL_DRIVER", "-DSTM32H743xx",
                      f"-DH743_TEST_ENTRY={args.entry_name}",
                      f"-DH743_TEST_ENTRY_PRIORITY={args.entry_priority}U",
                      f"-DH743_TEST_ICACHE={int(args.icache == 'on')}",
@@ -219,10 +226,13 @@ def build(args):
             if source.suffix == ".c" and (source in test_sources or source in core_sources
                                           or source.parent == HIL / "cubeh7"):
                 flags += ["-Wextra", "-Werror"]
+            if args.lto and source == rtos / "Port/GCC/ARM_CM4F_CM7F/port.c":
+                # Keep external references hidden in the naked assembly visible at link time.
+                flags.append("-fno-lto")
             run([compiler, *compile_flags, *flags, "-c", source, "-o", destination], log)
             objects.append(destination)
 
-        run([compiler, *cpu, *objects, "-T", linker, "--specs=nano.specs", "--specs=nosys.specs",
+        run([compiler, *cpu, *lto_flags, *objects, "-T", linker, "--specs=nano.specs", "--specs=nosys.specs",
              "-Wl,--gc-sections", f"-Wl,-Map={output / 'firmware.map'}",
              *(f"-Wl,--wrap={name}" for name in args.wrap), "-o", elf], log)
         run([tool("objcopy"), "-O", "binary", elf, image], log)

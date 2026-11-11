@@ -23,7 +23,7 @@
  */
 #include "boundary_test.h"
 #include "rtos.h"
-#include "main.h"
+#include "hil_target.h"
 #include <stdio.h>
 
 /* ============================== 测试计数与报告 ============================== */

@@ -1,7 +1,8 @@
-"""Host-only tests for H743 target identity checks before a flash write."""
+"""Host-only tests for H743 flash preflight and UART verdicts."""
 
 import json
 from pathlib import Path
+import re
 import struct
 import tempfile
 from types import SimpleNamespace
@@ -26,7 +27,7 @@ class FlashPreflight(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-        self.args = SimpleNamespace(batch=Path(self.directory.name), probe="probe")
+        self.args = SimpleNamespace(batch=Path(self.directory.name), probe="probe", entry=None)
 
     def test_cubeprogrammer_log_shape(self):
         response = "Reading 32-bit memory content\n" + response_a
@@ -100,6 +101,27 @@ class FlashPreflight(unittest.TestCase):
                     module.capture(self.args)
                 serial.Serial.assert_not_called()
                 self.assertEqual([call.args[1][0] for call in cli.call_args_list], ["-r32"])
+
+
+class UartVerdicts(unittest.TestCase):
+    ready_line = b"H743|READY|entry=current_case|priority=9\n"
+    ready = re.compile(rb"^H743\|READY\|entry=current_case\|[^\n]*\n", re.MULTILINE)
+
+    def test_old_firmware_output_cannot_complete_new_capture(self):
+        old = b"H743|READY|entry=previous_case|priority=9\nCASE|DONE|status=0\nCASE|FAIL|old\n"
+        self.assertEqual(module.uart_window(old, self.ready), (b"", 0))
+        current = self.ready_line + b"CASE|DONE|status=0\n"
+        self.assertEqual(module.uart_window(old + current, self.ready), (current, 1))
+        self.assertEqual(module.uart_failures(current.decode()), [])
+
+    def test_repeated_startup_is_counted(self):
+        current = self.ready_line * 2
+        self.assertEqual(module.uart_window(current, self.ready), (current, 2))
+
+    def test_nonzero_terminal_status_is_a_failure(self):
+        for line in ("CASE|DONE|status=1|checks=32", "CASE|DONE|pass=2|fail=10", "CASE|DONE|status=-1",
+                     "CASE|DONE|seed=1 status=1", "CASE|CHECK|FAIL", "H743|FAULT|x"):
+            self.assertEqual(module.uart_failures(line), [line])
 
 
 if __name__ == "__main__":

@@ -62,6 +62,8 @@ rtos_status_t real_queue_recv_until(rtos_queue_t *queue, void *item, rtos_tick_t
     __asm__("__real_rtos_internal_queue_recv_until");
 rtos_status_t wrap_queue_recv_until(rtos_queue_t *queue, void *item, rtos_tick_t deadline)
     __asm__("__wrap_rtos_internal_queue_recv_until");
+uint32_t real_queue_count(const rtos_queue_t *queue) __asm__("__real_rtos_queue_get_count");
+uint32_t wrap_queue_count(const rtos_queue_t *queue) __asm__("__wrap_rtos_queue_get_count");
 
 static void discover_timer_queue(rtos_queue_t *queue)
 {
@@ -110,6 +112,15 @@ static void finish_measurement(timer_dispatch_mode_t observed_mode, rtos_tick_t 
     RTOS_PORT_EXIT_CRITICAL();
 }
 
+static inline void mark_empty_drain(void)
+{
+    if (measurement_mode != TIMER_DISPATCH_INACTIVE) {
+        start_tick = rtos_sched_get_tick_count();
+        is_measurement_pending = true;
+        start_cycle = DWT->CYCCNT;
+    }
+}
+
 rtos_status_t wrap_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeout)
 {
     const uint32_t end_cycle = DWT->CYCCNT;
@@ -119,14 +130,20 @@ rtos_status_t wrap_queue_recv(rtos_queue_t *queue, void *item, rtos_tick_t timeo
     }
 
     const rtos_status_t status = real_queue_recv(queue, item, timeout);
-    /* The TIMER command drain holds its outer critical section at this point. */
-    if ((queue == timer_queue) && (timeout == RTOS_NO_WAIT)
-        && (status == RTOS_ERR_TIMEOUT) && (measurement_mode != TIMER_DISPATCH_INACTIVE)) {
-        start_tick = rtos_sched_get_tick_count();
-        is_measurement_pending = true;
-        start_cycle = DWT->CYCCNT;
+    /* Frozen implementations used an empty receive instead of a count snapshot. */
+    if (queue == timer_queue && timeout == RTOS_NO_WAIT && status == RTOS_ERR_TIMEOUT) {
+        mark_empty_drain();
     }
     return status;
+}
+
+uint32_t wrap_queue_count(const rtos_queue_t *queue)
+{
+    const uint32_t count = real_queue_count(queue);
+    if (queue == timer_queue && count == 0U) {
+        mark_empty_drain();
+    }
+    return count;
 }
 
 rtos_status_t wrap_queue_recv_until(rtos_queue_t *queue, void *item, rtos_tick_t deadline)

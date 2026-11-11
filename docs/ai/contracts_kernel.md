@@ -86,10 +86,10 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out,
 
 - 参数：tcb_out：非NULL可写指针输出；stack_size：32位栈字数，至少96；entry：非NULL入口；arg：可NULL借用参数；priority：0..MAX_PRIORITIES-1；name：可NULL，否则调用期间稳定的NUL结尾字符串。
 - 上下文：Thread，启动前或运行中；ISR明确拒绝。
-- 行为/阻塞：heap分配TCB和栈，构造并登记为READY。更高优先级任务可能在API返回前运行。无任务等待。
+- 行为/阻塞：从堆分别分配 TCB 和栈，构造并登记为 READY。每次分配失败时，尝试回收已切出的动态自删任务；有回收才重试该次分配一次。回收以进入时的待回收数量为本轮上限，每次只摘一个任务，并在同一临界区释放其栈和 TCB；项间不额外持有保护，无外层屏蔽且调度运行时可被抢占。抢占配置下，更高优先级任务可能在 API 返回前运行。该调用不登记等待。
 - 返回/失败：ISR、NULL、PARAM（优先级非法、栈少于96字或超过配置堆扣除TCB裸大小后的上界）、NO_MEM（实际堆分配失败）、ALREADY（地址已保留）、OK。分配失败时回收本次已分配空间，保留原tcb_out。
 - 寿命/所有权：成功后TCB/栈归任务生命周期；arg内容不复制，name截断复制；删除后不得使用句柄。
-- 边界：USE_STATIC_ALLOCATION=1不把此路径改成静态任务池；MAX_TASKS不是创建硬上限。预检最大块不是并发下分配成功承诺。
+- 边界：分配失败后的回收耗时随待回收批次增长；预检最大块只反映查询时刻。`USE_STATIC_ALLOCATION=1` 时仍从堆创建，`MAX_TASKS` 不限制可创建任务数。
 
 <a id="api-rtos_task_create_static"></a>
 ### `rtos_task_create_static`
@@ -126,7 +126,7 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb);
 - 上下文：仅Thread；ISR始终ISR。自删除还要求当前允许切出。
 - 行为/阻塞：摘调度/等待链，撤销继承，移交所持mutex，失效next并注销登记；可调度，无等待完成协议。
 - 返回/失败：ISR、NULL(无当前)、PARAM(未登记/已删/idle)、SCHED(自删不能切出)、OK。自删正常切走，不能依赖之后继续业务。
-- 寿命/所有权：其他动态任务立即释放TCB/栈；动态自删延至idle在切换后回收；静态不释放，但自删静态存储也要等CPU真正切出才可重用。
+- 寿命/所有权：其他动态任务立即释放 TCB 和栈；动态自删在切出后由 Idle 或低内存下的动态任务创建回收。延期回收的摘链与该项两块存储释放在同一临界区完成，链首仍为 current 时不回收；不会把整批存储藏到已脱链的私有列表。静态任务存储由调用方持有，静态自删后须等待实际切出才可重用。
 - 边界：不自动释放普通heap块、外设和业务缓冲。地址句柄无跨同址重建的通用代次保护。
 
 <a id="api-rtos_task_yield"></a>
@@ -140,10 +140,10 @@ void rtos_task_yield(void);
 
 - 参数：无参数。
 - 上下文：Thread；ISR实际直接return。
-- 行为/阻塞：运行且current=RUNNING时把当前任务放到同级队尾，再选择最高优先级就绪任务；有不同候选时挂起PendSV。
+- 行为/阻塞：运行且current=RUNNING时把当前任务放到同级队尾，再选择最高优先级就绪任务；有不同候选时挂起PendSV。合作模式仅在实际请求该切换后记录一次主动让出许可，PendSV 提交时据最新就绪位图和队头重选，再消耗许可；期间 IRQ 唤醒更高任务或挂起旧候选都不会固定旧选择。
 - 返回/失败：void，无等待/错误码。
 - 寿命/所有权：不转移资源。
-- 边界：合作模式下可主动把CPU交给已就绪的高优先级任务。调度暂停时无操作，且不会为更低优先级任务让路。
+- 边界：合作模式下可主动把 CPU 交给已就绪的高优先级任务；无不同候选时不保留未来让出许可，调度暂停会清除待提交许可。普通 IRQ/Tick 不因此获得抢占运行中应用任务的权限。最低优先级的应用任务只在同级应用任务间轮转，所有应用均阻塞时才运行 Idle。调度暂停时 yield 无操作。
 
 <a id="api-rtos_task_delay"></a>
 ### `rtos_task_delay`
@@ -221,7 +221,7 @@ rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio);
 
 - 参数：tcb：存活任务，NULL=current；prio：0..MAX_PRIORITIES-1。
 - 上下文：Thread或合法syscall ISR；默认F446逻辑优先级5..15。RTOS_ASSERT_ISR_OK仅在断言开启时检查优先级，关闭断言不放宽契约。
-- 行为/阻塞：更新base_priority并重算继承、重挂ready/等待链及持有者依赖，可能请求切换；不阻塞。
+- 行为/阻塞：基础优先级不变时直接成功。基础优先级改变后重算继承，有效优先级改变时才重挂就绪环或等待链。若目标等待互斥锁，更新相关继承关系。可能请求切换，无等待登记。
 - 返回/失败：PARAM：无目标/非法prio/未登记/idle改非最低优先级；成功OK。
 - 寿命/所有权：不转移TCB或栈所有权；地址复用不撤销旧裸句柄。
 - 边界：有效priority可能因mutex继承保持高于所设基础prio。
@@ -253,7 +253,7 @@ rtos_status_t rtos_task_resume(rtos_tcb_t *tcb);
 
 - 参数：tcb：非NULL存活任务。
 - 上下文：Thread或合法syscall ISR；默认F446逻辑优先级5..15。RTOS_ASSERT_ISR_OK仅在断言开启时检查优先级，关闭断言不放宽契约。
-- 行为/阻塞：只有SUSPENDED转READY；高优先级目标可引发抢占，不阻塞。
+- 行为/阻塞：只有 SUSPENDED 转为 READY，追加到同级应用队尾。若目标处于最高就绪优先级，则用就绪队头重选；即使 `current_tcb` 仍指向刚阻塞、尚未切出的任务，也会更新候选。合作配置继续遵守当前运行应用主动让出的规则。该调用不登记等待。
 - 返回/失败：NULL、PARAM(未登记)、OK；已非SUSPENDED也OK且不重复入链。
 - 寿命/所有权：不分配/释放，不重建已取消的IPC或通知等待。
 - 边界：恢复后原等待可返回DELETED；resume成功不是原资源等待成功。
@@ -317,7 +317,7 @@ void rtos_idle_task(void *arg);
 
 - 参数：arg：忽略，内核传NULL。
 - 上下文：只供内核静态idle入口，应用禁止直接调用/创建副本。
-- 行为/阻塞：循环处理自删延期回收、idle计数、WFI/idle_hook和每256轮栈巡检。
+- 行为/阻塞：循环处理自删延期回收、idle计数、WFI/idle_hook和每256轮栈巡检。回收逐项在同一临界区摘链并归还两块存储，项间退出该保护；栈巡检先收集候选，再逐项复核并按下述栈钩子契约回调。
 - 返回/失败：正常不返回，栈钩子默认停机。
 - 寿命/所有权：idleTCB/栈归内核静态存储。
 - 边界：巡检不是每次切换；PERF关闭时只扫ready/delay，不能完整覆盖永久BLOCKED/SUSPENDED。
@@ -331,12 +331,12 @@ void rtos_idle_task(void *arg);
 void rtos_stack_overflow_hook(rtos_tcb_t *tcb);
 ```
 
-- 参数：tcb：idle巡检判定异常的借用TCB指针。
-- 上下文：当前实现由idle在临界区外调用，不是保证在故障任务/异常上下文。
-- 行为/阻塞：默认弱定义无限循环，可覆盖受控诊断/复位。
-- 返回/失败：void，默认不返回。
-- 寿命/所有权：不可释放或长期保留tcb；现场可能已损坏，不能依赖完整正常业务。
-- 边界：方法1检查TCB.stack_magic和保存SP是否低于栈底，方法2还检查实际栈首字。保存SP对运行任务并非实时PSP，巡检不提供全面越界隔离。
+- 参数：tcb：本次回调前复核仍登记且栈仍异常的借用 TCB 指针。
+- 上下文：Idle/Thread，在临界区外且调度暂停时调用；不是故障任务或异常上下文。硬件 IRQ 保持开放，RTOS tick 与到期处理暂停且不补偿墙钟时间。
+- 行为/阻塞：先在同一临界区复核任务登记与当前栈状态，再暂停调度，随后退出临界区调用钩子。默认弱定义无限循环；覆盖仅做短小非阻塞记录或受控复位，不得等待其他任务、RTOS tick 或依赖任务消费的日志。
+- 返回/失败：void，默认不返回；覆盖返回后由内核恢复调度，可能立即运行已被 IRQ 唤醒的任务。
+- 寿命/所有权：借用仅限本次调用，不能删除/释放传入 TCB 及其栈或长期保留指针。不得自行调用调度启动、暂停或恢复接口。合法 ISR 仍可改变任务字段，因此借用不等于一致快照；现场也可能已损坏。
+- 边界：每个候选均重新验证，已删除、构造中或同址重建且健康的任务会被跳过。方法1检查TCB.stack_magic和保存SP是否低于栈底，方法2还检查实际栈首字；保存SP并非实时PSP。此机制要求 TCB 和栈地址仍可读，不提供任意损坏地址探测或全面越界隔离。IRQ 开放不放宽各 API 的非阻塞与上下文限制。
 
 <a id="api-rtos_task_delete_hook"></a>
 ### `rtos_task_delete_hook`
@@ -529,7 +529,7 @@ void rtos_sched_suspend(void);
 
 - 参数：无参数。
 - 上下文：Thread，ISR空操作。
-- 行为/阻塞：RUNNING转SUSPENDED/depth1并清next；已挂起则加深。IRQ继续，RTOS tick及到期处理停止。
+- 行为/阻塞：RUNNING转SUSPENDED/depth1并清next及合作模式待提交的主动让出许可；已挂起则加深。IRQ继续，RTOS tick及到期处理停止。
 - 返回/失败：void；深度UINT32_MAX断言，关断言后不再增加；其他状态无操作。
 - 寿命/所有权：每次合法挂起匹配resume；仅用于非阻塞工作，不保护ISR共享数据。
 - 边界：不是所有带timeout调用必失败：已有资源的立即完成路径仍可成功；无暂停tick补偿。
@@ -593,7 +593,7 @@ void rtos_sched_context_switch(void);
 
 - 参数：无参数；已经保存旧上下文且屏蔽内核IRQ。
 - 上下文：仅内核协议/合法异常路径，调用者已持有内核临界区；应用不可直接调用。无公共存活/上下文保护。
-- 行为/阻塞：调用内部commit更新current/next与task.state，清候选，可按配置记perf。
+- 行为/阻塞：调用内部commit更新current/next与task.state，清候选，可按配置记perf。合作模式若有已实际请求的主动让出许可，则提交前按最新就绪集合重选并消耗许可；非RUNNING会清候选与许可，保持当前现场。
 - 返回/失败：void；不是完整CPU现场切换，不等于yield。
 - 寿命/所有权：应用直接调用会使软件current与CPU真实栈不一致。
 - 边界：移植层使用返回TCB的内部commit入口；本void兼容入口不得作为业务API。

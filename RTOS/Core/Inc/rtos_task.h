@@ -86,6 +86,8 @@ struct rtos_tcb {
  *          分配的内存:
  *            - TCB: sizeof(rtos_tcb_t) 字节
  *            - 栈:  stack_size * sizeof(rtos_stack_t) 字节
+ *          任一次分配失败时，先尝试回收已切出的动态自删任务；有回收才重试一次。
+ *          回收按进入时记录的数量设限，每项在同一临界区内摘链并释放 TCB 与栈。
  *          堆空间不足时返回 RTOS_ERR_NO_MEM，回收本次已分配内存且不修改 tcb_out。
  *
  * @param tcb_out    输出参数, 接收新建 TCB 指针(不可为 NULL)。
@@ -120,8 +122,11 @@ rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
 
 /**
  * @brief 删除任务。若删除自身，调度器立即切换。
- * @details 对于动态创建的任务(rtos_task_create), 删除时自动
- *          回收 TCB 与栈的堆内存。静态任务不回收(由用户管理)。
+ * @details 其他动态任务的 TCB 与栈在删除过程中释放；动态自删则先挂延期回收链，
+ *          实际切出后由 Idle 或堆分配失败的动态任务创建路径逐项摘链并释放。
+ *          每项摘链和两块存储释放受同一临界区保护；项间不额外维持该保护。
+ *          无外层屏蔽且调度运行时，项与项之间允许 IRQ 与任务抢占。
+ *          静态任务不回收(由用户管理)，静态自删也须等实际切出才能重用存储。
  *          删除任务后, tcb 指针变为悬空, 不可再用。
  * @param tcb 任务 TCB。NULL 表示删除当前任务。
  */
@@ -130,6 +135,9 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb);
 /**
  * @brief 主动让出 CPU(触发一次调度)。
  * @details 当前任务移至同优先级队尾，调度器选择最高优先级就绪任务。
+ *          合作模式下，只有为不同候选实际请求 PendSV 后，才保留本次让出许可；
+ *          PendSV 提交时按最新就绪集合重选，覆盖期间 IRQ 唤醒或挂起候选的情况。
+ *          调度暂停会取消该许可；普通 IRQ/Tick 仍不抢占运行中的合作式应用任务。
  * @note  中断或非运行状态下调用无操作。
  */
 void rtos_task_yield(void);
@@ -142,8 +150,9 @@ void rtos_task_yield(void);
 void rtos_task_delay(rtos_tick_t ticks);
 
 /**
- * @brief 阻塞到指定绝对时刻。
- * @param tick_to_wake 唤醒时刻的 Tick 计数。
+ * @brief 按周期推进唤醒时刻；落后时跳过错失周期并等待下个时刻。
+ * @param last_wake_tick 上次唤醒时刻，非 NULL；允许阻塞时更新周期基准。
+ * @param period 非零周期，单位 Tick；须遵守有限等待范围约束。
  * @note  不可在中断中调用(ISR 中调用为空操作)。
  */
 void rtos_task_delay_until(rtos_tick_t *last_wake_tick, rtos_tick_t period);
@@ -159,7 +168,7 @@ rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio);
 
 /**
  * @brief 挂起任务(不参与调度)。
- * @note  可在中断中调用(挂起其他任务)。挂起自身时中断退出后切换。
+ * @note  合法系统调用中断可挂起其他任务；ISR 挂起当前任务返回 RTOS_ERR_ISR。
  */
 rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb);
 
@@ -189,7 +198,16 @@ void rtos_idle_hook(void);
 /** @brief 空闲任务主体(内部使用)。 */
 void rtos_idle_task(void *arg);
 
-/** @brief 栈溢出检测钩子(用户可重定义 rtos_stack_overflow_hook)。 */
+/**
+ * @brief 栈溢出检测钩子(用户可重定义，默认无限循环)。
+ * @details Idle 周期巡检后，逐项在临界区复核任务仍登记且栈仍异常，再暂停调度。
+ *          钩子在该临界区外的 Idle/Thread 上下文执行，硬件 IRQ 保持开放，
+ *          RTOS Tick 与到期处理暂停且不补偿；钩子返回后由内核恢复调度。
+ * @param tcb 仍存活且栈异常的借用 TCB，仅本次回调期间有效，不是字段一致快照。
+ * @note  仅做短小非阻塞诊断或复位；不得等待其他任务、RTOS Tick 或阻塞式日志。
+ *        不得自行控制调度、删除/释放传入 TCB 及其栈、长期保存指针。
+ *        IRQ 开放不代表任意 RTOS API 都可安全调用；异常现场仍可能已损坏。
+ */
 void rtos_stack_overflow_hook(rtos_tcb_t *tcb);
 
 /** @brief 任务删除钩子(仅在 RTOS_CONFIG_USE_DELETE_HOOK=1 时调用, 用户可重定义)。 */

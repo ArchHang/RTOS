@@ -43,7 +43,10 @@ rtos_status_t rtos_sem_init(rtos_sem_t *sem, uint32_t init_cnt, uint32_t max_cnt
     return RTOS_OK;
 }
 
-rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
+/* Specialize the regular path without generation checks. */
+static inline __attribute__((always_inline)) rtos_status_t sem_take(
+    rtos_sem_t *sem, rtos_tick_t timeout, const volatile uint32_t *generation,
+    uint32_t expected_generation)
 {
     if (sem == NULL) {
         return RTOS_ERR_NULL;
@@ -65,6 +68,10 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
     if (sem->is_initialized == 0U) {
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_PARAM;
+    }
+    if (generation != NULL && *generation != expected_generation) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_DELETED;
     }
 
     /* 有可用资源: 计数减一，直接返回 */
@@ -120,7 +127,24 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
     return cur->wait_result; /* RTOS_OK=被 give 唤醒, RTOS_ERR_TIMEOUT=超时 */
 }
 
+rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
+{
+    return sem_take(sem, timeout, NULL, 0U);
+}
 
+rtos_status_t rtos_internal_sem_take_guarded(rtos_sem_t *sem, rtos_tick_t timeout,
+                                            const volatile uint32_t *generation,
+                                            uint32_t expected_generation)
+{
+    return sem_take(sem, timeout, generation, expected_generation);
+}
+
+void rtos_internal_sem_cancel_waiters(rtos_sem_t *sem)
+{
+    rtos_internal_wake_all(&sem->wait_head, RTOS_ERR_DELETED);
+    sem->wait_bitmap = 0U;
+    sem->count = 0U;
+}
 
 rtos_status_t rtos_sem_give(rtos_sem_t *sem)
 {

@@ -16,6 +16,14 @@
 static uint32_t pass_count;
 static uint32_t fail_count;
 
+#if defined(STM32H743xx)
+void rtos_stack_overflow_hook(rtos_tcb_t *task)
+{
+    /* F446 already forwards its application hook to this fixture. */
+    robustness_core_record_stack_overflow(task);
+}
+#endif
+
 void robustness_check(const char *name, bool is_ok)
 {
     if (is_ok) {

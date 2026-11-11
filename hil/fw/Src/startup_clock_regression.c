@@ -1,14 +1,15 @@
 /**
  * @file startup_clock_regression.c
- * @brief Verify clock rejection, unchanged startup state and retry on STM32F446.
+ * @brief Verify clock rejection, unchanged startup state and retry on Cortex-M.
  */
 #include "audit_regressions.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "main.h"
+#include "hil_target.h"
 #include "rtos.h"
 
 #define STARTUP_PROBE_PRIORITY 8U
@@ -155,6 +156,9 @@ void audit_regressions_task(void *arg)
     record_result("valid_start", (rtos_sched_get_state() == RTOS_SCHED_RUNNING) &&
                                  (rtos_task_get_current() != NULL) &&
                                  (SysTick->LOAD == (saved_clock / RTOS_CONFIG_TICK_RATE_HZ) - 1U));
+    record_result("init_repeated", rtos_init() == RTOS_ERR_ALREADY);
+    record_result("start_repeated", rtos_start() == RTOS_ERR_ALREADY);
+    record_result("version", strcmp(rtos_get_version(), RTOS_VERSION_STRING) == 0);
     const uint32_t initial_tick = rtos_sched_get_tick_count();
     rtos_task_delay(2U);
     record_result("valid_tick_progress", (rtos_sched_get_tick_count() - initial_tick) >= 2U);

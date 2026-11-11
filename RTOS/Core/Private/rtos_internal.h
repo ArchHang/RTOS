@@ -82,6 +82,15 @@ void rtos_internal_sched_yield(void);
 /* Caller holds the critical section. Does not inspect uninitialized objects. */
 rtos_bool_t rtos_internal_object_has_waiters(const void *obj);
 
+/** @brief Take a semaphore only while the protected generation equals the supplied value. */
+rtos_status_t rtos_internal_sem_take_guarded(rtos_sem_t *sem, rtos_tick_t timeout,
+                                            const volatile uint32_t *generation,
+                                            uint32_t expected_generation);
+
+/** @brief Clear tokens and cancel all waiters on a live semaphore, keeping it initialized.
+ *  @note Caller holds the critical section protecting both the semaphore and its condition. */
+void rtos_internal_sem_cancel_waiters(rtos_sem_t *sem);
+
 /**
  * @brief 提交候选上下文切换，并返回实际运行任务。
  *

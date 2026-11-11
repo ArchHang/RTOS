@@ -27,7 +27,13 @@ param(
     [ValidateSet('task','fpu','isr')][string] $FaultContext = 'task',
     [ValidateSet('O0','O2','O3')][string] $Optimization = 'O2',
     [ValidateRange(1,16)][int] $CriticalGuardCase = 1,
-    [ValidateRange(0,15)][int] $CriticalGuardPriority = 0
+    [ValidateRange(0,15)][int] $CriticalGuardPriority = 0,
+    [string] $FixtureSource,
+    [ValidatePattern('^[A-Za-z_][A-Za-z0-9_]*$')][string] $FixtureEntry,
+    [ValidateRange(0,31)][int] $FixturePriority = 9,
+    [string] $FixtureDefines = '',
+    [ValidatePattern('^[A-Za-z_][A-Za-z0-9_]*(,[A-Za-z_][A-Za-z0-9_]*)*$')][string] $FixtureWrap,
+    [switch] $LinkTimeOptimization
 )
 $ErrorActionPreference = 'Stop'
 
@@ -45,6 +51,13 @@ $env:PATH = "$TOOLS;$env:PATH"
 # exclude : Core/Src translation units dropped from this variant
 # extra   : source basenames copied hil\fw\Src -> hil\fwsrc and compiled
 $VARIANTS = @{
+    portable_fixture = @{
+        desc = 'Run one shared Cortex-M boundary fixture through the F446 audit entry'
+        flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
+            'FIRMWARE_FAULT_TASKS=0','FIRMWARE_APP_TASKS=0')
+        exclude = @('benchmark')
+        extra = @('portable_fixture','portable_payload')
+    }
     systick_empty_bench = @{
         desc = 'Measure real SysTick with empty and future-only delay queues'
         flags = @('FIRMWARE_AUDIT=1','FIRMWARE_USB_APP=0',
@@ -335,11 +348,22 @@ if (-not $VARIANTS.ContainsKey($Variant)) {
     throw "unknown variant '$Variant'; known: $($VARIANTS.Keys -join ', ')"
 }
 $cfg = $VARIANTS[$Variant]
+if ($Variant -eq 'portable_fixture') {
+    if (-not $FixtureEntry -or -not $FixtureSource -or
+        [IO.Path]::GetExtension($FixtureSource) -ne '.c' -or
+        -not (Test-Path -LiteralPath $FixtureSource -PathType Leaf)) {
+        throw 'portable_fixture requires a C source file and its entry symbol'
+    }
+    $FixtureSource = (Resolve-Path -LiteralPath $FixtureSource).Path
+} elseif ($FixtureSource -or $FixtureEntry -or $FixtureDefines -or $FixtureWrap -or
+          $LinkTimeOptimization -or $PSBoundParameters.ContainsKey('FixturePriority')) {
+    throw 'Fixture and LTO options require the portable_fixture variant'
+}
 if ($Variant -eq 'basepri_guard' -and $DisableAssertions) {
     throw 'basepri_guard requires assertions; use basepri for assertion-disabled mask tests'
 }
-if ($UseVectorWrappers -and $Variant -ne 'robustness_msp') {
-    throw 'UseVectorWrappers is specific to the robustness_msp variant'
+if ($UseVectorWrappers -and $Variant -notin @('robustness_msp','portable_fixture')) {
+    throw 'UseVectorWrappers requires robustness_msp or portable_fixture'
 }
 if ($Cooperative -and $Variant -ne 'robustness') {
     throw 'Cooperative is specific to the robustness variant'
@@ -365,6 +389,17 @@ Set-HilBuildRule -ProjectRoot $ROOT -DebugRoot $DBG -Relative 'AI/output/int8' -
 
 # These overrides are opt-in and are propagated to all kernel translation units.
 $configFlags = @()
+if ($Variant -eq 'portable_fixture') {
+    $configFlags += @("-DHIL_PORTABLE_ENTRY=$FixtureEntry", "-DHIL_PORTABLE_PRIORITY=$($FixturePriority)U")
+    if ($FixtureDefines) {
+        foreach ($definition in ($FixtureDefines -split ',')) {
+            if ($definition -notmatch '^[A-Za-z_][A-Za-z0-9_]*(=[A-Za-z0-9_]+)?$') {
+                throw "Invalid fixture preprocessor definition: $definition"
+            }
+            $configFlags += "-D$definition"
+        }
+    }
+}
 if ($CriticalMask -eq 'primask') { $configFlags += '-DRTOS_CONFIG_USE_BASEPRI=0' }
 if ($Cooperative) { $configFlags += '-DRTOS_CONFIG_USE_PREEMPTION=0' }
 if ($PerfHotpath) { $configFlags += '-DRTOS_CONFIG_PERF_HOTPATH_STATS=1' }
@@ -389,11 +424,21 @@ foreach ($rule in @(Get-HilBuildRules | Where-Object { $_.Relative.StartsWith('R
     }
     if ($configArgs -ne '') { $kernelRaw = $kernelRaw.Replace('-DDEBUG', "-DDEBUG $configArgs") }
     $kernelRaw = $kernelRaw -replace '-O[0-3sg]\b', "-$Optimization"
+    if ($LinkTimeOptimization -and -not $rule.Relative.StartsWith('RTOS/Port/')) {
+        $kernelRaw = $kernelRaw.Replace("-$Optimization", "-$Optimization -flto")
+    }
     Set-HilBuildRule -ProjectRoot $ROOT -DebugRoot $DBG -Relative $rule.Relative -Content $kernelRaw
 }
 $auditLinkMk = Join-Path $DBG 'makefile'
 $auditLinkTpl = Join-Path $HIL 'templates/makefile.template'
 $auditLinkRaw = [System.IO.File]::ReadAllText($auditLinkTpl)
+if ($LinkTimeOptimization) {
+    $auditLinkRaw = $auditLinkRaw.Replace('arm-none-eabi-gcc -o', "arm-none-eabi-gcc -flto -$Optimization -o")
+}
+if ($FixtureWrap) {
+    $wrapFlags = (($FixtureWrap -split ',') | ForEach-Object { "-Wl,--wrap=$_" }) -join ' '
+    $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', "-Wl,--gc-sections $wrapFlags")
+}
 if ($Variant -eq 'audit') {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=usbd_ep_start_write -Wl,--wrap=usbd_ep_start_read')
 }
@@ -408,6 +453,9 @@ if ($Variant -in @('timer_supervisor','timer_dispatch_bench')) {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections',
         '-Wl,--gc-sections -Wl,--wrap=rtos_queue_recv -Wl,--wrap=rtos_internal_queue_recv_until')
 }
+if ($Variant -eq 'timer_dispatch_bench') {
+    $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_queue_get_count')
+}
 if ($Variant -in @('tick_timeout_bench','wrap_ipc_regression','systick_empty_bench')) {
     $auditLinkRaw = $auditLinkRaw.Replace('-Wl,--gc-sections', '-Wl,--gc-sections -Wl,--wrap=rtos_sched_tick')
 }
@@ -419,6 +467,9 @@ $objDir = Join-Path $DBG 'hil\fwsrc'
 if (-not (Test-Path $objDir)) { New-Item -ItemType Directory -Path $objDir | Out-Null }
 foreach ($b in $cfg.extra) {
     $sourcePath = Join-Path $HIL "fw\Src\$b.c"
+    if ($Variant -eq 'portable_fixture' -and $b -eq 'portable_payload') {
+        $sourcePath = $FixtureSource
+    }
     if (-not (Test-Path -LiteralPath $sourcePath)) {
         $sourcePath = Join-Path $HIL "fw\Port\ARM\$b.c"
     }
@@ -478,9 +529,12 @@ if ($cfg.extra.Count -gt 0) {
         'bus_recovery','timer_supervisor','uart_pipeline','queue_copy','fault_diagnostics','startup_clock',
         'robustness','robustness_msp','lowlevel','flash_diag','production_stress','basepri','basepri_guard',
         'basepri_blocking','basepri_nesting','adversarial_mutex','adversarial_wait','adversarial_lifetime',
-        'adversarial_mutex_boundary','adversarial_registry')) {
+        'adversarial_mutex_boundary','adversarial_registry','portable_fixture')) {
         # Enforce the requested warning policy for the new low-level fixtures.
         $rule = $rule.Replace('-Wall', '-Wall -Wextra -Werror')
+    }
+    if ($LinkTimeOptimization) {
+        $rule = $rule.Replace("-$Optimization", "-$Optimization -flto")
     }
     $out.Add('')
     $out.Add('# HIL_VARIANT: variant-specific sources compiled from hil\fwsrc')
@@ -518,7 +572,7 @@ Set-Content (Join-Path $DBG 'objects.list') -Value $ol
 # the last build and force-recompile the affected translation units when it
 # changes (a stale main.o silently runs the previous scenario).
 $stampFile = Join-Path $DBG '.hil_build_stamp'
-$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$configArgs|$Optimization|$UseVectorWrappers"
+$stamp = "$Variant|$Scenario|$($cfg.flags -join ',')|$configArgs|$Optimization|$UseVectorWrappers|$LinkTimeOptimization|$FixtureSource|$FixtureWrap"
 $prev = if (Test-Path $stampFile) { (Get-Content $stampFile -Raw).Trim() } else { '' }
 if ($prev -ne $stamp) {
     foreach ($f in @('Core\Src\main.o','Core\Src\main.d')) {

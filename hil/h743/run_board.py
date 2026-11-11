@@ -144,10 +144,28 @@ def restore(args):
     print(f"RESTORED {len(readback)} bytes by readback", flush=True)
 
 
+def uart_window(snapshot, ready):
+    if ready is None:
+        return snapshot, None
+    startups = list(ready.finditer(snapshot))
+    return (snapshot[startups[0].start():] if startups else b""), len(startups)
+
+
+def uart_failures(verdict):
+    return [line for line in verdict.splitlines()
+            if line.startswith(("FAULT|", "H743|FAULT|"))
+            or re.search(r"\|FAIL(?:\||$)", line)
+            or re.search(r"\|DONE\|.*\b(?:status|fail)=-?[1-9][0-9]*(?:[ |]|$)", line)]
+
+
 def capture(args):
     _, identity = verified_backup(args)
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.tag):
         raise ValueError("Use an alphanumeric capture tag with optional underscores or dashes")
+    if args.entry is not None and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", args.entry):
+        raise ValueError("The expected H743 entry must be a C identifier")
+    ready = None if args.entry is None else re.compile(
+        rb"^H743\|READY\|entry=" + args.entry.encode("ascii") + rb"\|[^\n]*\n", re.MULTILINE)
     image = args.image.resolve()
     contents = image.read_bytes()
     if image.suffix.lower() != ".bin" or not 16 < len(contents) <= SECTOR_SIZE:
@@ -187,25 +205,31 @@ def capture(args):
             while time.monotonic() < deadline and not capture_errors:
                 # A stable snapshot lets the capture thread continue servicing the UART.
                 snapshot = bytes(observed).replace(b"\r\n", b"\n")
-                if end.search(snapshot):
+                verdict, _ = uart_window(snapshot, ready)
+                if end.search(verdict):
                     terminated = True
                     break
-                if re.search(rb"^H743\|(?:FAULT|FAIL)\|[^\n]+\n", snapshot, re.MULTILINE):
+                if re.search(rb"^H743\|(?:FAULT|FAIL)\|[^\n]+\n", verdict, re.MULTILINE):
                     break
                 time.sleep(0.05)
             time.sleep(0.15)
         finally:
             stop.set()
             reader.join(timeout=1.0)
-            text = bytes(observed).decode("utf-8", errors="replace").replace("\r\n", "\n")
-            (folder / "uart.txt").write_bytes(text.encode("utf-8"))
-            failures = [line for line in text.splitlines()
-                        if line.startswith(("FAULT|", "H743|FAULT|"))
-                        or re.search(r"\|FAIL(?:\||$)", line)]
+            snapshot = bytes(observed).replace(b"\r\n", b"\n")
+            (folder / "uart.txt").write_bytes(snapshot.decode("utf-8", errors="replace").encode("utf-8"))
+            verdict, startups = uart_window(snapshot, ready)
+            verdict_text = verdict.decode("utf-8", errors="replace")
+            if ready is not None:
+                (folder / "current_uart.txt").write_bytes(verdict_text.encode("utf-8"))
+            failures = uart_failures(verdict_text)
+            if ready is not None and startups != 1:
+                failures.append(f"Expected one READY line for {args.entry}; observed {startups}")
             result = {"tag": args.tag, "started": started,
                       "finished": datetime.now(timezone.utc).isoformat(), "image": str(image),
                       "sha256": digest(contents), "bytes": len(contents), "port": args.port,
                       "baud": args.baud, "terminator": args.terminator,
+                      "expected_entry": args.entry, "matching_ready_lines": startups,
                       "terminated": terminated, "capture_errors": capture_errors,
                       "failures": failures}
             (folder / "run.json").write_text(json.dumps(result, indent=2) + "\n")
@@ -223,6 +247,7 @@ def main():
     sub.add_parser("backup")
     run = sub.add_parser("capture")
     run.add_argument("--image", type=Path, required=True)
+    run.add_argument("--entry", help="Scope the verdict to the READY line of this H743 fixture")
     run.add_argument("--tag", required=True)
     run.add_argument("--port", default="COM4")
     run.add_argument("--baud", type=int, default=921600)

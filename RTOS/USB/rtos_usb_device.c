@@ -22,6 +22,7 @@
 #endif
 #include "usb_dwc2_param.h"
 
+#include "rtos_internal.h"
 #include "rtos_sched.h"
 
 /* ============================== DWC2 FIFO 自定义划分 ============================== */
@@ -289,6 +290,42 @@ static rtos_usb_cdc_dev_t s_cdc_dev[CONFIG_USBDEV_MAX_BUS];
 
 /* ---- 事件处理器 ---- */
 
+static void usb_change_session(rtos_usb_cdc_dev_t *dev, uint8_t event)
+{
+    const bool is_configured = event == USBD_EVENT_CONFIGURED;
+
+    /* Invalidate the old session and detach its readers in one critical section. */
+    RTOS_PORT_ENTER_CRITICAL();
+    ++dev->session_seq;
+    dev->connected = is_configured;
+    dev->tx_busy = false;
+    if (event != USBD_EVENT_DISCONNECTED) {
+        dev->rx_head = 0U;
+        dev->rx_tail = 0U;
+    }
+    if (is_configured) {
+        dev->rx_dropped = 0U;
+    }
+    if (dev->rx_sem != NULL) {
+        rtos_internal_sem_cancel_waiters(&dev->rx_sem->sem);
+    }
+    if (dev->tx_sem != NULL) {
+        /* A pending token already wakes the serialized writer. */
+        (void)rtos_usb_sem_give(dev->tx_sem);
+    }
+#if RTOS_CONFIG_USB_USE_HID
+    dev->hid_tx_busy = false;
+    dev->hid_rx_len = 0U;
+    if (dev->hid_rx_sem != NULL) {
+        rtos_internal_sem_cancel_waiters(&dev->hid_rx_sem->sem);
+    }
+    if (dev->hid_tx_sem != NULL) {
+        (void)rtos_usb_sem_give(dev->hid_tx_sem);
+    }
+#endif
+    RTOS_PORT_EXIT_CRITICAL();
+}
+
 static void rtos_usb_cdc_event_handler(uint8_t busid, uint8_t event)
 {
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
@@ -299,76 +336,19 @@ static void rtos_usb_cdc_event_handler(uint8_t busid, uint8_t event)
 
     switch (event) {
         case USBD_EVENT_CONFIGURED:
-            dev->session_seq++;
-            dev->connected = true;
-            dev->tx_busy = false;
-            /* 清空 RX 缓冲 + 重置丢弃计数 */
-            dev->rx_head = 0U;
-            dev->rx_tail = 0U;
-            dev->rx_dropped = 0U;
-            /* 唤醒可能在 RESET 后仍阻塞的写线程(让其检查 connected 后重试) */
-            if (dev->tx_sem != NULL) {
-                rtos_usb_sem_give(dev->tx_sem);
-            }
+            usb_change_session(dev, event);
             /* 启动首次 OUT 读取(异步, 收到数据后回调中继续读) */
             usbd_ep_start_read(busid, CDC_OUT_EP, dev->ep_out_buf,
                                RTOS_CONFIG_USB_CDC_EP_OUT_BUF_SIZE);
 #if RTOS_CONFIG_USB_USE_HID
-            dev->hid_tx_busy = false;
-            dev->hid_rx_len = 0U;
             /* 启动首次 HID OUT 读取 */
             usbd_ep_start_read(busid, HID_OUT_EP, dev->hid_ep_out_buf, HID_MPS);
 #endif
             break;
 
         case USBD_EVENT_DISCONNECTED:
-            dev->session_seq++;
-            dev->connected = false;
-            dev->tx_busy = false;
-            /* 唤醒可能阻塞的读/写线程 */
-            if (dev->rx_sem != NULL) {
-                rtos_usb_sem_give(dev->rx_sem);
-            }
-            if (dev->tx_sem != NULL) {
-                rtos_usb_sem_give(dev->tx_sem);
-            }
-#if RTOS_CONFIG_USB_USE_HID
-            dev->hid_tx_busy = false;
-            dev->hid_rx_len = 0U;
-            if (dev->hid_rx_sem != NULL) {
-                rtos_usb_sem_give(dev->hid_rx_sem);
-            }
-            if (dev->hid_tx_sem != NULL) {
-                rtos_usb_sem_give(dev->hid_tx_sem);
-            }
-#endif
-            break;
-
         case USBD_EVENT_RESET:
-            dev->session_seq++;
-            dev->connected = false;
-            dev->tx_busy = false;
-            /* 清空 RX 缓冲(避免 RESET 后读者读到陈旧数据) */
-            dev->rx_head = 0U;
-            dev->rx_tail = 0U;
-            /* 唤醒可能阻塞的读/写线程(主机重新枚举时只有 RESET, 无 DISCONNECTED)。
-             * 否则用 RTOS_WAIT_FOREVER 的线程会永久阻塞。 */
-            if (dev->rx_sem != NULL) {
-                rtos_usb_sem_give(dev->rx_sem);
-            }
-            if (dev->tx_sem != NULL) {
-                rtos_usb_sem_give(dev->tx_sem);
-            }
-#if RTOS_CONFIG_USB_USE_HID
-            dev->hid_tx_busy = false;
-            dev->hid_rx_len = 0U;
-            if (dev->hid_rx_sem != NULL) {
-                rtos_usb_sem_give(dev->hid_rx_sem);
-            }
-            if (dev->hid_tx_sem != NULL) {
-                rtos_usb_sem_give(dev->hid_tx_sem);
-            }
-#endif
+            usb_change_session(dev, event);
             break;
 
         default:
@@ -517,6 +497,24 @@ static void rtos_usb_hid_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 
 /* ---- CDC ACM 公共 API ---- */
 
+static void release_device_ipc(rtos_usb_cdc_dev_t *dev)
+{
+    rtos_usb_sem_delete(dev->rx_sem);
+    rtos_usb_sem_delete(dev->tx_sem);
+    rtos_usb_mutex_delete(dev->tx_mutex);
+    dev->rx_sem = NULL;
+    dev->tx_sem = NULL;
+    dev->tx_mutex = NULL;
+#if RTOS_CONFIG_USB_USE_HID
+    rtos_usb_sem_delete(dev->hid_tx_sem);
+    rtos_usb_sem_delete(dev->hid_rx_sem);
+    rtos_usb_mutex_delete(dev->hid_tx_mutex);
+    dev->hid_tx_sem = NULL;
+    dev->hid_rx_sem = NULL;
+    dev->hid_tx_mutex = NULL;
+#endif
+}
+
 rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base)
 {
     if (busid >= CONFIG_USBDEV_MAX_BUS) {
@@ -608,8 +606,13 @@ rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base)
     usbd_add_endpoint(busid, &dev->cdc_out_ep);
     usbd_add_endpoint(busid, &dev->cdc_in_ep);
 #if RTOS_CONFIG_USB_USE_MSC
-    /* MSC 接口(批量 IN/OUT 端点由 usbd_msc 类内部注册与管理) */
-    usbd_add_interface(busid, usbd_msc_init_intf(busid, &dev->msc_intf, MSC_OUT_EP, MSC_IN_EP));
+    struct usbd_interface *msc_interface =
+        usbd_msc_init_intf(busid, &dev->msc_intf, MSC_OUT_EP, MSC_IN_EP);
+    if (msc_interface == NULL) {
+        release_device_ipc(dev);
+        return RTOS_ERR_NO_MEM;
+    }
+    usbd_add_interface(busid, msc_interface);
     usbd_msc_set_readonly(busid, RTOS_CONFIG_USB_MSC_READONLY ? true : false);
 #endif
 #if RTOS_CONFIG_USB_USE_HID
@@ -622,26 +625,9 @@ rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base)
 
     int ret = usbd_initialize(busid, reg_base, rtos_usb_cdc_event_handler);
     if (ret != 0) {
-        /* 反初始化: usbd_initialize 内部在 usb_dc_init 之前已触发
-         * USBD_EVENT_INIT(usbd_msc 会创建 MSC 线程+消息队列)。不调
-         * usbd_deinitialize 会导致这些对象泄漏(池槽位累积耗尽,
-         * 重试若干次后线程池耗尽)。 */
-        usbd_deinitialize(busid);
-        rtos_usb_sem_delete(dev->rx_sem);
-        rtos_usb_sem_delete(dev->tx_sem);
-        rtos_usb_mutex_delete(dev->tx_mutex);
-#if RTOS_CONFIG_USB_USE_HID
-        rtos_usb_sem_delete(dev->hid_tx_sem);
-        rtos_usb_sem_delete(dev->hid_rx_sem);
-        rtos_usb_mutex_delete(dev->hid_tx_mutex);
-        dev->hid_tx_sem = NULL;
-        dev->hid_rx_sem = NULL;
-        dev->hid_tx_mutex = NULL;
-#endif
-        /* 清除悬空指针, 保证下次调用 init 时状态干净 */
-        dev->rx_sem = NULL;
-        dev->tx_sem = NULL;
-        dev->tx_mutex = NULL;
+        /* Stop the controller and class worker before releasing device IPC. */
+        (void)usbd_deinitialize(busid);
+        release_device_ipc(dev);
         return RTOS_ERR_PARAM;
     }
 
@@ -684,6 +670,7 @@ int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
         return 0;
     }
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
+    const uint32_t session = dev->session_seq;
 
     if (!dev->connected) {
         return 0;
@@ -695,7 +682,6 @@ int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
     if (rtos_mutex_take(&dev->tx_mutex->mutex, usb_timeout_remaining(started, budget)) != RTOS_OK) {
         return 0;
     }
-    uint32_t session = dev->session_seq;
     while ((total_sent < len) && dev->connected && (session == dev->session_seq)) {
         while (dev->tx_busy) {
             if (rtos_usb_sem_take(dev->tx_sem, usb_timeout_remaining(started, budget)) != RTOS_OK) {
@@ -755,12 +741,18 @@ int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     }
     RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
+    const uint32_t session = dev->session_seq;
+    rtos_usb_sem_t *const signal = dev->rx_sem;
     rtos_tick_t timeout = rtos_usb_timeout_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();
 
     for (;;) {
         /* 块拷贝读取: 用 memcpy 两段拷贝替代逐字节循环 */
         RTOS_PORT_ENTER_CRITICAL();
+        if (session != dev->session_seq) {
+            RTOS_PORT_EXIT_CRITICAL();
+            return 0;
+        }
         const uint32_t head = dev->rx_head;
         const uint32_t tail = dev->rx_tail;
         const uint32_t avail = cdc_rx_count(head, tail);
@@ -779,23 +771,19 @@ int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
             }
             dev->rx_tail = cdc_rx_advance(tail, to_read);
         }
+        const bool is_connected = dev->connected;
         RTOS_PORT_EXIT_CRITICAL();
 
         if (to_read > 0U) {
             return (int)to_read;
         }
 
-        /* 缓冲为空: 若未连接则返回 0 */
-        if (!dev->connected) {
+        /* Keep the session check and wait registration atomic inside the semaphore. */
+        if (!is_connected || signal == NULL ||
+            rtos_internal_sem_take_guarded(&signal->sem, usb_timeout_remaining(started, timeout),
+                                           &dev->session_seq, session) != RTOS_OK) {
             return 0;
         }
-
-        /* 等待数据到达(OUT 回调 give 信号量) */
-        rtos_status_t st = rtos_usb_sem_take(dev->rx_sem, usb_timeout_remaining(started, timeout));
-        if (st != RTOS_OK) {
-            return 0; /* 超时 */
-        }
-        /* 收到信号, 循环回去读取数据 */
     }
 }
 
@@ -841,6 +829,7 @@ int rtos_usb_hid_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
         return 0;
     }
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
+    const uint32_t session = dev->session_seq;
 
     if (!dev->connected) {
         return 0;
@@ -855,12 +844,9 @@ int rtos_usb_hid_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
                         usb_timeout_remaining(started, timeout)) != RTOS_OK) {
         return 0;
     }
-    uint32_t session = dev->session_seq;
     while (dev->hid_tx_busy) {
-        if (rtos_usb_sem_take(dev->hid_tx_sem, usb_timeout_remaining(started, timeout)) != RTOS_OK) {
-            goto done;
-        }
-        if (!dev->connected || (session != dev->session_seq)) {
+        if (!dev->connected || (session != dev->session_seq) ||
+            (rtos_usb_sem_take(dev->hid_tx_sem, usb_timeout_remaining(started, timeout)) != RTOS_OK)) {
             goto done;
         }
     }
@@ -902,12 +888,18 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     }
     RTOS_ASSERT_ISR_OK();
     rtos_usb_cdc_dev_t *dev = &s_cdc_dev[busid];
+    const uint32_t session = dev->session_seq;
+    rtos_usb_sem_t *const signal = dev->hid_rx_sem;
     rtos_tick_t timeout = rtos_usb_timeout_ticks(timeout_ms);
     rtos_tick_t started = rtos_sched_get_tick_count();
 
     for (;;) {
         /* 单槽缓冲: 有待读报告则拷贝返回 */
         RTOS_PORT_ENTER_CRITICAL();
+        if (session != dev->session_seq) {
+            RTOS_PORT_EXIT_CRITICAL();
+            return 0;
+        }
         uint32_t n = dev->hid_rx_len;
         if (n > 0U) {
             if (n > len) {
@@ -916,19 +908,17 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
             memcpy(buf, dev->hid_rx_buf, n);
             dev->hid_rx_len = 0U;
         }
+        const bool is_connected = dev->connected;
         RTOS_PORT_EXIT_CRITICAL();
 
         if (n > 0U) {
             return (int)n;
         }
 
-        if (!dev->connected) {
+        if (!is_connected || signal == NULL ||
+            rtos_internal_sem_take_guarded(&signal->sem, usb_timeout_remaining(started, timeout),
+                                           &dev->session_seq, session) != RTOS_OK) {
             return 0;
-        }
-
-        rtos_status_t st = rtos_usb_sem_take(dev->hid_rx_sem, usb_timeout_remaining(started, timeout));
-        if (st != RTOS_OK) {
-            return 0; /* 超时 */
         }
     }
 }

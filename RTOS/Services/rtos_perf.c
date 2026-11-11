@@ -109,17 +109,18 @@ void rtos_perf_init_cycles(void)
 
 uint32_t rtos_perf_cycles_to_us(uint32_t cycles)
 {
-    /* DWT 模式: us = cycles / (cpu_freq / 1e6) = cycles / cpu_mhz
-     * 当 cpu_freq = 168MHz: cycles / 168 ≈ cycles * 5.95ns。
-     *
-     * 回退模式(Tick 计数): cycles 实际是 tick 数,
-     * us = ticks * 1e6 / TICK_RATE_HZ, 需 64 位避免溢出。 */
 #if RTOS_CONFIG_PERF_USE_DWT
-    uint32_t cpu_mhz = SystemCoreClock / 1000000U;
-    if (cpu_mhz == 0U) {
+    const uint32_t cpu_hz = SystemCoreClock;
+    if (cpu_hz == 0U) {
         return 0U;
     }
-    return cycles / cpu_mhz;
+
+    /* 整 MHz 主频可约去比例因子，保留常见配置的 32 位除法。 */
+    const uint32_t cpu_mhz = cpu_hz / 1000000U;
+    if (cpu_mhz * 1000000U == cpu_hz) {
+        return cycles / cpu_mhz;
+    }
+    return (uint32_t)(((uint64_t)cycles * 1000000U) / cpu_hz);
 #else
     if (RTOS_CONFIG_TICK_RATE_HZ == 0U) {
         return 0U;

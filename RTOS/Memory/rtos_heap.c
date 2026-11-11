@@ -31,6 +31,9 @@
  *          BASEPRI 屏蔽 syscall 级中断, 保证链表操作原子性。
  */
 #include "rtos_heap.h"
+
+#include <stdatomic.h>
+
 #include "rtos_port.h"
 #include "rtos_config.h"
 #include "rtos_task.h" /* rtos_assert_fail declaration for ISR API guards */
@@ -75,13 +78,13 @@ static rtos_bool_t s_inited = RTOS_FALSE;
 static const size_t s_heap_total = sizeof(s_heap_buf) & ~((size_t)RTOS_HEAP_ALIGN - 1U);
 
 /** @brief 堆空闲字节数(粗略, 不含 header 开销)。 */
-static uint32_t s_heap_free = 0U;
+static _Atomic uint32_t s_heap_free;
 
 /** @brief 累计分配次数(统计用)。 */
-static uint32_t s_alloc_count = 0U;
+static _Atomic uint32_t s_alloc_count;
 
 /** @brief 累计释放次数(统计用)。 */
-static uint32_t s_free_count = 0U;
+static _Atomic uint32_t s_free_count;
 
 /* ============================== 内部函数 ============================== */
 
@@ -96,13 +99,13 @@ static inline heap_block_header_t *block_at(uint32_t offset)
     return (heap_block_header_t *)(s_heap_buf + offset);
 }
 
-/* The caller supplies an aligned offset no greater than s_heap_total. */
+/* The caller supplies an aligned offset. Reject short tails before forming a pointer. */
 static inline uint32_t block_checked_size(uint32_t offset)
 {
-    uint32_t remaining = (uint32_t)s_heap_total - offset;
-    if (remaining < RTOS_HEAP_MIN_BLOCK) {
+    if ((s_heap_total < RTOS_HEAP_MIN_BLOCK) || (offset > s_heap_total - RTOS_HEAP_MIN_BLOCK)) {
         return 0U;
     }
+    const uint32_t remaining = (uint32_t)s_heap_total - offset;
 
     const heap_block_header_t *header = block_at(offset);
     uint32_t size = header->size & RTOS_HEAP_SIZE_MASK;
@@ -118,29 +121,39 @@ static inline rtos_bool_t block_is_free(const heap_block_header_t *header)
     return (header->size & RTOS_HEAP_FREE_BIT) != 0U;
 }
 
-/* Split only when the tail is large enough; return the actual allocated size. */
-static uint32_t block_split(uint32_t offset, uint32_t size, uint32_t need)
+/* Writers already serialize in the port critical section. Relaxed access
+ * keeps the independent statistics observable without an atomic RMW. */
+static inline void increment_counter(_Atomic uint32_t *counter)
 {
-    uint32_t remaining = size - need;
-    if (remaining < RTOS_HEAP_MIN_BLOCK + RTOS_HEAP_HEADER_SIZE) {
+    const uint32_t count = atomic_load_explicit(counter, memory_order_relaxed);
+    atomic_store_explicit(counter, count + 1U, memory_order_relaxed);
+}
+
+/* Split only when the tail is large enough; return the actual allocated size. */
+static uint32_t block_split(uint32_t offset, uint32_t size, uint32_t need, uint32_t *free_bytes)
+{
+    const uint32_t min_tail = RTOS_HEAP_MIN_BLOCK + RTOS_HEAP_HEADER_SIZE;
+    const uint32_t remaining = size - need;
+    if ((s_heap_total < RTOS_HEAP_MIN_BLOCK + min_tail) || (remaining < min_tail)) {
         return size;
     }
 
     heap_block_header_t *tail = block_at(offset + need);
     tail->magic = RTOS_HEAP_MAGIC;
     tail->size = remaining | RTOS_HEAP_FREE_BIT;
-    s_heap_free -= RTOS_HEAP_HEADER_SIZE;
+    *free_bytes -= RTOS_HEAP_HEADER_SIZE;
     return need;
 }
 
 /* Commit a run already validated under the same lock, reclaiming each absorbed header. */
-static void block_join_run(uint32_t offset, uint32_t first_size, uint32_t run_size)
+static void block_join_run(uint32_t offset, uint32_t first_size, uint32_t run_size,
+                           uint32_t *free_bytes)
 {
     for (uint32_t size = first_size; size < run_size;) {
         heap_block_header_t *next = block_at(offset + size);
         size += next->size & RTOS_HEAP_SIZE_MASK;
         next->magic = 0U;
-        s_heap_free += RTOS_HEAP_HEADER_SIZE;
+        *free_bytes += RTOS_HEAP_HEADER_SIZE;
     }
     block_at(offset)->size = run_size | RTOS_HEAP_FREE_BIT;
 }
@@ -163,9 +176,9 @@ rtos_status_t rtos_heap_init(void)
     first->magic = RTOS_HEAP_MAGIC;
     first->size = usable | RTOS_HEAP_FREE_BIT;
 
-    s_heap_free = usable - RTOS_HEAP_HEADER_SIZE;
-    s_alloc_count = 0U;
-    s_free_count = 0U;
+    atomic_store_explicit(&s_heap_free, usable - RTOS_HEAP_HEADER_SIZE, memory_order_relaxed);
+    atomic_store_explicit(&s_alloc_count, 0U, memory_order_relaxed);
+    atomic_store_explicit(&s_free_count, 0U, memory_order_relaxed);
     s_inited = RTOS_TRUE;
     return RTOS_OK;
 }
@@ -204,13 +217,15 @@ void *rtos_heap_alloc(uint32_t size)
         }
 
         if (run_size >= need) {
+            uint32_t free_bytes = atomic_load_explicit(&s_heap_free, memory_order_relaxed);
             if (run_size != block_size) {
-                block_join_run(offset, block_size, run_size);
+                block_join_run(offset, block_size, run_size, &free_bytes);
             }
-            uint32_t used = block_split(offset, run_size, need);
+            uint32_t used = block_split(offset, run_size, need, &free_bytes);
             header->size = used;
-            s_heap_free -= used - RTOS_HEAP_HEADER_SIZE;
-            s_alloc_count++;
+            free_bytes -= used - RTOS_HEAP_HEADER_SIZE;
+            atomic_store_explicit(&s_heap_free, free_bytes, memory_order_relaxed);
+            increment_counter(&s_alloc_count);
             user = s_heap_buf + offset + RTOS_HEAP_HEADER_SIZE;
             break;
         }
@@ -253,21 +268,23 @@ void rtos_heap_free(void *ptr)
     }
 
     header->size = size | RTOS_HEAP_FREE_BIT;
-    s_heap_free += size - RTOS_HEAP_HEADER_SIZE;
-    s_free_count++;
+    uint32_t free_bytes = atomic_load_explicit(&s_heap_free, memory_order_relaxed);
+    free_bytes += size - RTOS_HEAP_HEADER_SIZE;
 
     uint32_t next_offset = offset + size;
     uint32_t next_size = block_checked_size(next_offset);
     if ((next_size != 0U) && block_is_free(block_at(next_offset))) {
-        block_join_run(offset, size, size + next_size);
+        block_join_run(offset, size, size + next_size, &free_bytes);
     }
+    atomic_store_explicit(&s_heap_free, free_bytes, memory_order_relaxed);
+    increment_counter(&s_free_count);
 
     RTOS_PORT_EXIT_CRITICAL();
 }
 
 uint32_t rtos_heap_get_free(void)
 {
-    return s_heap_free;
+    return atomic_load_explicit(&s_heap_free, memory_order_relaxed);
 }
 
 uint32_t rtos_heap_get_max_alloc(void)
@@ -305,10 +322,10 @@ uint32_t rtos_heap_get_max_alloc(void)
 
 uint32_t rtos_heap_get_alloc_count(void)
 {
-    return s_alloc_count;
+    return atomic_load_explicit(&s_alloc_count, memory_order_relaxed);
 }
 
 uint32_t rtos_heap_get_free_count(void)
 {
-    return s_free_count;
+    return atomic_load_explicit(&s_free_count, memory_order_relaxed);
 }

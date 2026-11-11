@@ -1,12 +1,12 @@
 /** @file h743_compat.c
- *  @brief Exercise the Cortex-M7 exception, mask, and FPU contracts on the target.
+ *  @brief Exercise the Cortex-M exception, mask, and FPU contracts on the target.
  */
 #include <stdbool.h>
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include "stm32h743xx.h"
+#include "hil_target.h"
 
 #include "rtos.h"
 
@@ -187,18 +187,21 @@ static void check_irq_mask(void)
 
 /* Keep S16-S31 live across a real blocking dispatch. C cannot bind all sixteen
  * registers at the dispatch boundary. The helper preserves the caller's AAPCS
- * callee-saved registers and maintains 8-byte stack alignment before BL. */
-__attribute__((naked)) static void switch_fp_context(
-    const uint32_t *expected __attribute__((unused)), uint32_t *observed __attribute__((unused)))
+ * callee-saved registers and maintains 8-byte stack alignment. Pass the delay
+ * entry in R2 so its reference remains visible to the C compiler under LTO. */
+__attribute__((naked, noipa)) static void switch_fp_context(
+    const uint32_t *expected __attribute__((unused)), uint32_t *observed __attribute__((unused)),
+    void (*delay)(rtos_tick_t) __attribute__((unused)))
 {
     __asm__ __volatile__(
         "push {r4, r5, r6, lr}    \n" /* Preserve registers and return address. */
         "vpush {s16-s31}          \n" /* Preserve the caller's FP context. */
         "mov r4, r0               \n" /* Keep input array across the C call. */
         "mov r5, r1               \n" /* Keep output array across the C call. */
+        "mov r6, r2               \n" /* R2 is the compiler-visible delay entry. */
         "vldmia r4, {s16-s31}     \n" /* Install this task's high FP patterns. */
         "movs r0, #1              \n" /* Block for one Tick in Thread mode. */
-        "bl rtos_task_delay       \n"
+        "blx r6                   \n"
         "vstmia r5, {s16-s31}     \n" /* Capture the restored register bits. */
         "vpop {s16-s31}           \n" /* Restore the original AAPCS state. */
         "pop {r4, r5, r6, pc}     \n");
@@ -214,7 +217,7 @@ static void run_fp_probe(void *argument)
         for (uint32_t index = 0U; index < COMPAT_FP_WORDS; ++index) {
             expected[index] = probe->seed + (round << 16U) + (index << 3U);
         }
-        switch_fp_context(expected, observed);
+        switch_fp_context(expected, observed, rtos_task_delay);
         for (uint32_t index = 0U; index < COMPAT_FP_WORDS; ++index) {
             errors += expected[index] != observed[index] ? 1U : 0U;
         }

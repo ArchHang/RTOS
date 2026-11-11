@@ -15,6 +15,7 @@ param(
     [string] $Reply = 'X',
     [string] $Port = 'COM3',
     [int]    $Baud = 115200,
+    [ValidatePattern('^[A-Fa-f0-9]{24}$')][string] $Probe,
     [string] $OutDir = '',
     [switch] $NoFlash,
     [switch] $AllowFailures,
@@ -39,7 +40,9 @@ $sp.Open()
 $sp.DiscardInBuffer()
 try {
 if (-not $NoFlash) {
-    $flash = & $CLI -c port=SWD mode=UR -w $Elf -v -rst 2>&1
+    $connection = @('port=SWD', 'mode=UR')
+    if ($Probe) { $connection += "sn=$Probe" }
+    $flash = & $CLI -c @connection -w $elfPath -v -rst 2>&1
     $flash | Out-File -LiteralPath (Join-Path $OutDir ("flash_" + $Tag + '.txt')) -Encoding utf8
     if ($LASTEXITCODE -ne 0) {
         $sp.Close()

@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
+#include "hil_target.h"
 
 #include "rtos.h"
 #include "rtos_internal.h"

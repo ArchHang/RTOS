@@ -100,26 +100,19 @@ void msc_storage_notify_handler(uint8_t busid, uint8_t event, void *arg)
 
     switch (event) {
         case USBD_EVENT_INIT:
-#if defined(CONFIG_USBDEV_MSC_THREAD)
-            g_usbd_msc[busid].usbd_msc_mq = usb_osal_mq_create(1);
-            if (g_usbd_msc[busid].usbd_msc_mq == NULL) {
-                USB_LOG_ERR("No memory to alloc for g_usbd_msc[busid].usbd_msc_mq\r\n");
-            }
-            g_usbd_msc[busid].usbd_msc_thread = usb_osal_thread_create("usbd_msc", CONFIG_USBDEV_MSC_STACKSIZE, CONFIG_USBDEV_MSC_PRIO, usbdev_msc_thread, (void *)(uint32_t)busid);
-            if (g_usbd_msc[busid].usbd_msc_thread == NULL) {
-                USB_LOG_ERR("No memory to alloc for g_usbd_msc[busid].usbd_msc_thread\r\n");
-            }
-#elif defined(CONFIG_USBDEV_MSC_POLLING)
+#if defined(CONFIG_USBDEV_MSC_POLLING)
             g_usbd_msc[busid].event = 0;
 #endif
             break;
         case USBD_EVENT_DEINIT:
 #if defined(CONFIG_USBDEV_MSC_THREAD)
-            if (g_usbd_msc[busid].usbd_msc_mq) {
-                usb_osal_mq_delete(g_usbd_msc[busid].usbd_msc_mq);
-            }
             if (g_usbd_msc[busid].usbd_msc_thread) {
                 usb_osal_thread_delete(g_usbd_msc[busid].usbd_msc_thread);
+                g_usbd_msc[busid].usbd_msc_thread = NULL;
+            }
+            if (g_usbd_msc[busid].usbd_msc_mq) {
+                usb_osal_mq_delete(g_usbd_msc[busid].usbd_msc_mq);
+                g_usbd_msc[busid].usbd_msc_mq = NULL;
             }
 #endif
             break;
@@ -899,6 +892,35 @@ void usbd_msc_polling(uint8_t busid)
 
 struct usbd_interface *usbd_msc_init_intf(uint8_t busid, struct usbd_interface *intf, const uint8_t out_ep, const uint8_t in_ep)
 {
+    struct usbd_msc_priv *msc = &g_usbd_msc[busid];
+    memset(msc, 0, sizeof(*msc));
+    usdb_msc_set_max_lun(busid);
+    for (uint8_t lun = 0U; lun <= msc->max_lun; ++lun) {
+        usbd_msc_get_cap(busid, lun, &msc->scsi_blk_nbr[lun], &msc->scsi_blk_size[lun]);
+
+        if (CONFIG_USBDEV_MSC_MAX_BUFSIZE % msc->scsi_blk_size[lun]) {
+            USB_LOG_ERR("CONFIG_USBDEV_MSC_MAX_BUFSIZE must be a multiple of block size\r\n");
+            while (1) {
+            }
+        }
+    }
+
+#if defined(CONFIG_USBDEV_MSC_THREAD)
+    /* Allocate before publishing the interface or starting the controller. */
+    msc->usbd_msc_mq = usb_osal_mq_create(1U);
+    if (msc->usbd_msc_mq == NULL) {
+        return NULL;
+    }
+    msc->usbd_msc_thread = usb_osal_thread_create("usbd_msc", CONFIG_USBDEV_MSC_STACKSIZE,
+                                                 CONFIG_USBDEV_MSC_PRIO, usbdev_msc_thread,
+                                                 (void *)(uintptr_t)busid);
+    if (msc->usbd_msc_thread == NULL) {
+        usb_osal_mq_delete(msc->usbd_msc_mq);
+        msc->usbd_msc_mq = NULL;
+        return NULL;
+    }
+#endif
+
     intf->class_interface_handler = msc_storage_class_interface_request_handler;
     intf->class_endpoint_handler = NULL;
     intf->vendor_handler = NULL;
@@ -911,19 +933,6 @@ struct usbd_interface *usbd_msc_init_intf(uint8_t busid, struct usbd_interface *
 
     usbd_add_endpoint(busid, &mass_ep_data[busid][MSD_OUT_EP_IDX]);
     usbd_add_endpoint(busid, &mass_ep_data[busid][MSD_IN_EP_IDX]);
-
-    memset((uint8_t *)&g_usbd_msc[busid], 0, sizeof(struct usbd_msc_priv));
-
-    usdb_msc_set_max_lun(busid);
-    for (uint8_t i = 0u; i <= g_usbd_msc[busid].max_lun; i++) {
-        usbd_msc_get_cap(busid, i, &g_usbd_msc[busid].scsi_blk_nbr[i], &g_usbd_msc[busid].scsi_blk_size[i]);
-
-        if (CONFIG_USBDEV_MSC_MAX_BUFSIZE % g_usbd_msc[busid].scsi_blk_size[i]) {
-            USB_LOG_ERR("CONFIG_USBDEV_MSC_MAX_BUFSIZE must be a multiple of block size\r\n");
-            while (1) {
-            }
-        }
-    }
 
     return intf;
 }

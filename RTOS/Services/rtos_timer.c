@@ -141,7 +141,8 @@ static rtos_timer_t *timer_take_expired(void)
 /**
  * @brief 执行到期定时器回调(临界区外调用)。
  * @details 在临界区外执行用户回调, 回调可安全调用阻塞 API。
- *          回调中 timer API 就地执行；此时仅持有当前节点，不依赖它的链指针。
+ *          回调中控制 API 先消费已接纳 FIFO 前缀，再同步执行自身命令；
+ *          此时仅持有当前节点，不依赖它的链指针。
  */
 static void timer_run_callbacks(rtos_timer_t *t)
 {
@@ -173,7 +174,36 @@ static void timer_reinsert_periodic(rtos_timer_t *t, rtos_tick_t previous_expire
 
 /* ============================== 服务任务 ============================== */
 
-static void timer_handle_cmd(timer_cmd_t *cmd); /* 前向声明(timer_send_cmd 就地执行用) */
+static rtos_status_t timer_handle_cmd(const timer_cmd_t *cmd);
+
+static rtos_status_t timer_apply_cmd(const timer_cmd_t *cmd)
+{
+    RTOS_PORT_ENTER_CRITICAL();
+    const rtos_status_t status = timer_handle_cmd(cmd);
+    RTOS_PORT_EXIT_CRITICAL();
+    return status;
+}
+
+static void timer_drain_prefix(uint32_t pending)
+{
+    /* Only the service consumes the queue. IRQs and senders can append, but
+     * these first pending commands cannot be displaced when we unmask IRQs. */
+    for (uint32_t index = 0U; index < pending; ++index) {
+        timer_cmd_t queued;
+        if (rtos_queue_recv(&s_cmd_queue, &queued, RTOS_NO_WAIT) != RTOS_OK) {
+            break;
+        }
+        (void)timer_apply_cmd(&queued);
+    }
+}
+
+static void timer_drain_accepted(void)
+{
+    RTOS_PORT_ENTER_CRITICAL();
+    const uint32_t pending = rtos_queue_get_count(&s_cmd_queue);
+    RTOS_PORT_EXIT_CRITICAL();
+    timer_drain_prefix(pending);
+}
 
 /**
  * @brief 发送命令到服务任务队列。
@@ -182,27 +212,31 @@ static rtos_status_t timer_send_cmd(timer_cmd_type_t type, rtos_timer_t *timer,
                                     rtos_tick_t new_period)
 {
     RTOS_ASSERT_ISR_OK();
+    const bool in_isr = RTOS_PORT_IN_ISR() != RTOS_FALSE;
+    const bool execute_here = !in_isr && rtos_kernel.current_tcb == &s_timer_tcb;
     timer_cmd_t cmd;
     cmd.type = type;
     cmd.timer = timer;
     cmd.new_period = new_period;
     RTOS_PORT_ENTER_CRITICAL();
+    if (timer->is_initialized == 0U) {
+        RTOS_PORT_EXIT_CRITICAL();
+        return RTOS_ERR_PARAM;
+    }
     cmd.generation = timer->generation;
+    const uint32_t pending = execute_here ? rtos_queue_get_count(&s_cmd_queue) : 0U;
     RTOS_PORT_EXIT_CRITICAL();
 
-    /* [bug fix G-6] 服务任务在自己的回调里调用 timer API 时(文档允许), 不能经
-     * 命令队列阻塞等待——唯一能腾出队列的 drain 循环正是它自己, 会自死锁 100ms
-     * 且命令静默丢失。检测到调用方就是服务任务时, 直接在临界区内就地执行命令
-     * (服务任务本身就是链表的唯一操作者, 就地执行与 drain 处理完全等价)。 */
-    if (!RTOS_PORT_IN_ISR() && (rtos_kernel.current_tcb == &s_timer_tcb)) {
-        RTOS_PORT_ENTER_CRITICAL();
-        timer_handle_cmd(&cmd);
-        RTOS_PORT_EXIT_CRITICAL();
-        return RTOS_OK;
+    if (execute_here) {
+        /* A callback cannot wait on its own queue. Apply the already accepted
+         * prefix first so an earlier IRQ command cannot undo this operation.
+         * Recheck the target after that prefix, which may have deleted it. */
+        timer_drain_prefix(pending);
+        return timer_apply_cmd(&cmd);
     }
 
     /* 中断中不阻塞 */
-    rtos_tick_t timeout = RTOS_PORT_IN_ISR() ? RTOS_NO_WAIT : 100U;
+    const rtos_tick_t timeout = in_isr ? RTOS_NO_WAIT : 100U;
     return rtos_queue_send(&s_cmd_queue, &cmd, timeout, RTOS_FALSE);
 }
 
@@ -348,11 +382,9 @@ void rtos_timer_service_task(void *arg)
             RTOS_PORT_ENTER_CRITICAL();
             timer_reinsert_periodic(expired, previous_expire);
             s_callback_timer = NULL;
-            /* 每次回调后消费控制命令，防止 stop/delete 被到期派发饿死。 */
-            while (rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_NO_WAIT) == RTOS_OK) {
-                timer_handle_cmd(&cmd);
-            }
             RTOS_PORT_EXIT_CRITICAL();
+            /* 处理当前已接纳的命令，再检查到期，避免两侧相互饿死。 */
+            timer_drain_accepted();
             continue;
         }
 
@@ -367,14 +399,8 @@ void rtos_timer_service_task(void *arg)
             : rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_WAIT_FOREVER);
 
         if (st == RTOS_OK) {
-            /* 处理命令(可能多个，循环取空队列) */
-            RTOS_PORT_ENTER_CRITICAL();
-            timer_handle_cmd(&cmd);
-            /* 继续非阻塞取剩余命令 */
-            while (rtos_queue_recv(&s_cmd_queue, &cmd, RTOS_NO_WAIT) == RTOS_OK) {
-                timer_handle_cmd(&cmd);
-            }
-            RTOS_PORT_EXIT_CRITICAL();
+            (void)timer_apply_cmd(&cmd);
+            timer_drain_accepted();
         }
         /* 超时(st == RTOS_ERR_TIMEOUT): 下一轮循环处理到期定时器 */
     }
@@ -383,11 +409,11 @@ void rtos_timer_service_task(void *arg)
 /**
  * @brief 处理一条命令(临界区内执行)。
  */
-static void timer_handle_cmd(timer_cmd_t *cmd)
+static rtos_status_t timer_handle_cmd(const timer_cmd_t *cmd)
 {
     rtos_timer_t *t = cmd->timer;
     if ((t == NULL) || (t->is_initialized == 0U) || (t->generation != cmd->generation)) {
-        return;
+        return RTOS_ERR_PARAM;
     }
 
     switch (cmd->type) {
@@ -435,6 +461,7 @@ static void timer_handle_cmd(timer_cmd_t *cmd)
             break;
 
         default:
-            break;
+            return RTOS_ERR_PARAM;
     }
+    return RTOS_OK;
 }
