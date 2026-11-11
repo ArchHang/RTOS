@@ -2,7 +2,7 @@
 
 一个从零设计、配有[设计文档](docs/rtos_design.md)的可移植抢占式 RTOS：`RTOS/Core/` 提供内核机制，`RTOS/IPC/`、`Memory/`、`Services/` 和 `USB/` 按职责组织功能，`RTOS/Port/` 提供处理器移植层；应用侧附带 USB 设备栈（CDC 虚拟串口 + MSC U 盘 + HID 三合一复合设备）、端侧 AI 推理（int8 量化 CNN 说话人识别）与 HardFault 诊断示例，并配有 FreeRTOS V10.4.6 的[对照分析](docs/freertos_design.md)。
 
-**实板验证平台**为 NUCLEO-F446RE，搭载 STM32F446RET6（Cortex-M4F，168 MHz）。仓库提供 GCC 的 Cortex-M4F/M7F 移植层，并用实际 STM32H743 CMSIS 头完成过交叉编译和部分链接。其他目标需要按芯片核对端口、启动配置和外设集成。见[移植指南](#移植到其他芯片)。
+**实板验证平台**包括 NUCLEO-F446RE（Cortex-M4F，168 MHz）和 STM32H743 Rev V（Cortex-M7，480 MHz）。H743 验证了上下文切换、IPC、AXI/DTCM 布局和 DMA2 缓存一致性。其他目标需按芯片核对端口、启动和外设集成。[实测结果与复跑入口](hil/evidence/2026-11-11/README.md)
 
 现行实现、调用约束与测试方法分别见[设计手册](docs/rtos_design.md)、[公共 API 契约](docs/ai/README.md)和[HIL 入口](hil/README.md)。
 更新、回归结果和归档范围按日期记录，见[文档导航](docs/README.md)。
@@ -46,7 +46,7 @@ flowchart TB
 | 事件组 | `rtos_event.c` | ANY/ALL 等待 + CLEAR_ON_EXIT + 满足位回传（信箱模式） |
 | 任务通知 | `rtos_task.c` | 通知值内嵌 TCB，无需独立 IPC 对象或对象等待链；有限超时仍使用内核延时链 |
 
-信号量使用等待者优先级位图，队列、互斥锁及事件组使用有序等待链。位图定位优先级不代表整条等待链操作为 O(1)：信号量尾插、寻找候选和清理共享优先级位仍可能扫描链表。
+信号量、队列、互斥锁和事件组使用按有效优先级排序的等待链，同级保持 FIFO。信号量给出直接取链首，只检查相邻等待者以维护观测位图。登记等待仍可能扫描链表。
 
 ### 内存
 
@@ -100,8 +100,8 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 
 内核与硬件的全部耦合收敛在两处：
 
-1. **`RTOS/Port/` 移植层**（当前提供 GCC/ARM_CM4F_CM7F，已在 F446 Cortex-M4F 上验证）：负责 PendSV/SVC 上下文切换、BASEPRI 或 PRIMASK 临界区和 tick。预定义宏用于选择部分处理器特性，不替代新目标的完整适配和验证；M0/M0+ 需要对应端口，不能仅修改屏蔽宏就视为移植完成；
-2. **`rtos_config.h`**：配置 tick 频率、性能注册表容量、BASEPRI 阈值及功能裁剪。目标 MCU 的中断优先级位数、FPU 和缓存契约仍需结合 SDK 核对；本轮实板验证平台为 F446RE。
+1. **`RTOS/Port/` 移植层**提供 GCC/ARM_CM4F_CM7F，已在 F446 和 H743 上验证 PendSV/SVC、BASEPRI/PRIMASK 和 tick。预定义宏用于选择部分处理器特性。M0/M0+ 需要独立移植层。
+2. **`rtos_config.h`** 配置 tick 频率、性能注册表容量、BASEPRI 阈值及功能裁剪。集成时结合 SDK 核对中断优先级位数、FPU、缓存与 DMA 约束。[H743 夹具](hil/h743/README.md)
 
 内核不提供启动文件/链接脚本/时钟配置——这些属于目标 SDK（如 CubeMX 工程）的职责，集成时需加入 `RTOS/Core/Src/`、所用功能目录与对应 `Port/` 源码，并配置公共和私有头文件搜索路径；手工源码清单的迁移要求见[源码导览](RTOS/README.md#工程迁移与兼容)。USB 子系统换其他 USB IP（fsdev/chipidea 等）的完整移植步骤见 [rtos_design.md 第十三章](docs/rtos_design.md)。
 

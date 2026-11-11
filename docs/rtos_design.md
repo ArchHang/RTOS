@@ -1,8 +1,9 @@
 # 自研 RTOS 架构与实现设计手册
 
-> 更新于 2026-11-11，按当前工程源码核对。F446 实板采用单核 Cortex-M4F、
-> GNU Arm hard-float、168 MHz 主频和 1 kHz Tick。H743 结果限于交叉编译和部分链接。
-> [交付报告](logs/2026-11-11.md#delivery-report) · [性能实测](rtos_performance_report.md) · [测试覆盖](rtos_testing_report.md)
+> 更新于 2026-11-11，按当前工程源码核对。已完成 STM32F446RE Cortex-M4F 168 MHz
+> 和 STM32H743 Rev V Cortex-M7 480 MHz 实板验证。两板均使用 GNU Arm hard-float
+> 和 1 kHz Tick。H743 使用独立 HIL 固件验证内核及端口。
+> [两板测试范围](rtos_testing_report.md#release-validation) · [性能实测](rtos_performance_report.md) · [可复核证据](../hil/evidence/2026-11-11/README.md)
 
 ## 阅读方法与实现边界
 
@@ -91,6 +92,7 @@ PNG图保留对应Mermaid源码；另有原生Mermaid直接展示，箭头含义
 - [4.4 首任务启动: SVC 的必要性](#44-首任务启动-svc-的必要性)
 - [4.5 临界区: 进出与屏障](#45-临界区-进出与屏障)
 - [4.6 ISR 保护域与从中断到任务的完整路径](#46-isr-保护域与从中断到任务的完整路径)
+- [4.7 Cortex-M7 上的链接布局与缓存边界](#47-cortex-m7-上的链接布局与缓存边界)
 - [5.0 应用API速查与调用顺序](#50-应用api速查与调用顺序)
 - [5.1 rtos_task_create() (动态)的完整流程](#51-rtos_task_create-动态的完整流程)
 - [5.2 rtos_task_delete(): 两条路径, 一个陷阱](#52-rtos_task_delete-两条路径-一个陷阱)
@@ -300,10 +302,9 @@ stateDiagram-v2
 
 1. **运行资格与现场交接分离**。稳定态RUNNING位于就绪环；轮转可先移动head，阻塞可先改state，PendSV前current仍指旧任务。不能把短暂head/current不等直接当损坏。
 2. **调度链互斥、对象链独立**。TCB至多属于一条ready环或delay链，同时可通过wait_node属于一条对象链。有限对象等待两侧都登记，完成一侧必须撤销另一侧资格。
-3. **等待链纪律不可混用**。sem是FIFO加位图；queue/mutex/event为有序链。单资源授予遵循最高优先级、同级FIFO；event仍要逐个判位条件。
+3. **对象等待链统一按有效优先级排序**。单资源授予遵循最高优先级、同级 FIFO；event 按链序逐个判断位条件。
 
-sem 的位图保存当前有等待者的优先级集合。选出优先级后沿 FIFO 链找首个匹配节点，
-再从它原来的后继查找是否仍有同级等待者。定位和清位的总工作量最坏仍为 O(W)。
+sem 位图用于观察各优先级是否还有等待者。信号量授予直接取链首，摘链时只检查相邻节点即可维护位图。
 
 ---
 
@@ -326,6 +327,10 @@ sem 的位图保存当前有等待者的优先级集合。选出优先级后沿 
 | critical_nesting | 历史保留成员；实际深度在独立rtos_port_crit_nest |
 | perf字段 | 条件编译的窗口及采样状态，部分查询会推进窗口 |
 
+32 位 Cortex-M 构建中，`rtos_kernel` 单例按 32 字节对齐，状态、节拍、就绪位图、延时链首、
+当前与候选任务及切换相关字段集中在前 32 字节，后面才是就绪链首数组。PendSV 仍从 C
+类型导出的 `offsetof` 取得当前 TCB 偏移。结构字段偏移发生变化，移植层、内核与应用对象文件须一起重编。
+
 向空环插第一个节点才置位，最后节点离开才清位；中间节点变化不能清共享位。同级轮转只改head。单字位图最多表达32个优先级，不能只放大MAX_PRIORITIES就当成多级位图实现。
 
 volatile不提供跨字段快照。在运行中依次读取bitmap、head、state可能拼接不同瞬间；判断不变式是否被破坏前，先确认采样上下文、保护域及指针寿命。详见[调试指南](ai/debugging.md)。
@@ -341,7 +346,7 @@ volatile不提供跨字段快照。在运行中依次读取bitmap、head、state
 | priority/base_priority | 有效值/用户基础值 | mutex可临时提高有效优先级 |
 | state/is_static | 生命周期与存储回收责任 | static不是“不可删除”，而是内核不free调用方存储 |
 | next_ready/prev_ready | 就绪环或有限延时链 | 两种用途互斥，切换归属前先清旧链接 |
-| next_all | 独立存活地址登记 | 不依赖perf观察表容量，含构造保留态 |
+| next_all | 所属存活地址哈希桶的链指针 | 不依赖 perf 观察表容量，含构造保留态 |
 | wait_node/blocked_on/wait_result | 一次等待的归属与结果 | 资源先完成、结果先写，再发布READY |
 | wake_tick | 调度绝对到期点 | 不单看值0/FFFFFFFF来判断是否永久 |
 | notify_value/notify_state | 内嵌32位通知邮箱 | 无消息历史队列，不替业务缓冲管理所有权 |
@@ -358,7 +363,10 @@ volatile不提供跨字段快照。在运行中依次读取bitmap、head、state
 
 ### 2.2.1 裸地址句柄与同址重建
 
-部分修改API先在独立登记链中匹配地址，再检查已知TCB，拒绝未登记/INITIALIZING地址；getter未必有该校验。登记不增加引用计数，也不防止旧任务A的指针命中新任务B复用的同址存储。删除时应停止ISR/其他使用方、撤回外部句柄，不能拿get_priority探测悬空地址。
+通知和部分任务管理 API 折叠 TCB 地址位得到 16 个桶之一，先在桶内比较完整地址，再检查
+匹配节点状态。未登记和 `INITIALIZING` 的地址被拒绝；静态构造仍查全部桶以检查 TCB 和栈范围，
+对象重初始化仍检查所有存活任务的等待归属。碰撞时沿桶内链比较完整地址，最坏仍可遍历所有任务。
+登记不增加引用计数，旧指针仍可能命中新任务复用的同址存储。删除时应停止 ISR 和其他使用方并撤回外部句柄。
 
 任务参数arg只借用，不复制；名字name在create期间复制。静态TCB/栈与参数必须覆盖任务可运行及全部内核引用期间。把局部数组交给create_static后从初始化函数返回，即使create成功，存储仍已失效。
 
@@ -370,8 +378,9 @@ volatile不提供跨字段快照。在运行中依次读取bitmap、head、state
 |---|---|---|---|
 | tcb、wait_obj | 等待者及对象，供授予/继承识别 | 等待者及queue | event对象；notify用TCB自指 |
 | next/prev、list_head | 对象节点与链首地址 | send/recv两条链之一 | event有链；notify的list_head=NULL |
-| queue_bitmap | sem指向位图；mutex为NULL | NULL，实际为有序链 | NULL |
+| queue_bitmap | sem 指向观测位图；mutex 为 NULL | NULL | NULL |
 | queued_priority | 重挂时知道旧有效优先级 | 同左 | 同左 |
+| is_mutex_wait | 互斥锁已登记等待标记；离链时清除 | 0 | 0 |
 | transfer_buf | 不作载荷传递 | 借用发送源/接收目标 | event结果位编码，notify另用TCB值 |
 | transfer_size | 不使用 | item_size字节 | event等待位掩码 |
 | 节点wake_tick | 不作有限到期键 | 不作有限到期键 | event存等待模式，与TCB.wake_tick不同 |
@@ -382,13 +391,10 @@ list_head是“链首指针的地址”，不是当时head的值：等待期间�
 
 queue先写transfer参数再调用共用helper；helper不能为“清零所有字段”无条件memset节点，否则会丢掉待传数据。下一次换一种对象等待时，又必须重新初始化对该协议有意义的字段，不能遗留旧bitmap、list_head或自指blocked_on。
 
-queue_bitmap成员名字不代表对象类别：当前只有sem设置非NULL。位图链重挂要同步旧/新共享位并尾插，有序链要按新优先级重排；有效值不变则不重挂，保留同级FIFO。
+所有对象按 `queued_priority` 组织等待链。有效优先级变化时按新值重挂到同级组尾，未变化时保留原位。
+信号量同时更新旧位和新位，检查旧位置的邻居即可判断是否清位。
 
 ## 2.4 状态归属、登记结构与评审不变式
-
-![TCB 与内核索引的归属关系](images/rtos_design_kernel_objects.png)
-
-<details><summary>图形源码（mermaid）</summary>
 
 ```mermaid
 flowchart TB
@@ -398,12 +404,10 @@ flowchart TB
     D -->|复用同一对链接，归属互斥| T
     O["sem / mutex / queue / event<br/>资源状态与等待链首"] --> W["内嵌 wait_node<br/>next / prev / list_head"]
     T --- W
-    A["独立存活地址登记链<br/>初始化、修改与销毁校验"] -->|next_all| T
+    A["16 个存活地址桶<br/>初始化、修改与销毁校验"] -->|桶内 next_all| T
     P["有限容量 perf 指针表<br/>统计与部分巡检"] -. "可只观察部分任务" .-> T
     W -. "有限对象等待同时登记" .-> D
 ```
-
-</details>
 
 TCB是多种索引的交汇点。存活地址登记不参与选择最高优先级；perf有限数组仅用于观察。观察表满了不表示新任务不能创建，关闭perf也不应影响地址登记。
 
@@ -610,54 +614,15 @@ wake_tick=0可以是跨回绕的正常到期点，0xFFFFFFFF也可能是有效�
 
 关键不是“两条路都会设READY”，而是同一个等待只完成一次，完成一侧后另一侧不再有继续完成资格。
 
-![两条唤醒路径: 对象侧与时间侧](images/rtos_design_07.png)
-
-<details><summary>图形源码（mermaid）</summary>
-
 ```mermaid
 flowchart TB
-    subgraph OBJ["对象侧唤醒 (sem_give / mutex give / queue send)"]
-        direction TB
-        A1["(A) 位图链: rtos_internal_wake_highest_bm<br/>&obj->wait_head, &obj->wait_bitmap"]
-        AQ{"等待链只有一个节点？"}
-        A2["直接选中唯一等待者，无需位图选优先级<br/>摘链并清位 O(1)"]
-        A3["多节点: ctz(bitmap) 取最高优先级<br/>从整条FIFO链寻找第一个匹配者，最坏O(n)"]
-        A4["摘链O(1)，从原后继检查同级节点<br/>最坏O(n)"]
-        A5["blocked_on = NULL; wait_result = OK"]
-        A1 --> AQ
-        AQ -->|是| A2 --> A5
-        AQ -->|否| A3 --> A4 --> A5
-    end
-
-    subgraph OBJ2["对象侧 (B) 有序链: rtos_internal_wake_highest"]
-        direction TB
-        B1["取链首(= 最高优先级等待者), 摘链 O(1)"]
-        B2["blocked_on = NULL; wait_result = OK"]
-        B1 --> B2
-    end
-
-    subgraph TIM["时间侧唤醒 (SysTick)"]
-        direction TB
-        T1["process_delayed_tasks()<br/>从延时链头逐个摘到期节点"]
-        T2{"blocked_on != NULL ?"}
-        T3["捕获超时结果，摘对象链并同步位图<br/>重算继承，清 blocked_on<br/>wait_result = TIMEOUT"]
-        T4["否: 纯 delay, 直接就绪"]
-        T5["state = READY; ready_list_push_tail"]
-        T1 --> T2
-        T2 -->|是| T3 --> T5
-        T2 -->|否| T4 --> T5
-        T5 --> T6["本 tick 末尾统一选择就绪任务并请求切换"]
-    end
-
-    A5 --> U
-    B2 --> U
-    U["对象侧汇合: rtos_sched_unblock(tcb)"]
-    U --> U1["state == DELAYED → delay_list_remove<br/>O(1) (双向 + 表尾缓存, 见 3.4)"]
-    U1 --> U2["state = READY; ready_list_push_tail"]
-    U2 --> U3["sched_state == RUNNING 且<br/>唤醒者处于最高就绪优先级 → 复用该级选择候选"]
+    G["对象侧完成"] --> A["授予资源、摘对象链、写入结果"]
+    A --> B["sched_unblock 摘除有限超时"]
+    K["时间侧到期"] --> D["摘延时链、捕获结果、写入 TIMEOUT"]
+    D --> E["摘对象链；仅互斥锁等待者撤销捐赠"]
+    B --> R["任务进入就绪环"]
+    E --> R
 ```
-
-</details>
 
 | 完成方 | 发布READY前先做什么 | 另一侧清理 |
 |---|---|---|
@@ -674,10 +639,6 @@ unblock只处理时间/就绪侧，不猜资源结果；waker必须先完成数�
 加载和 `RBIT/CLZ`，不改变同级 FIFO、超时链或屏蔽窗口的进入／退出协议。
 [F446 周期对照](rtos_performance_report.md#7-2026-11-11-唤醒路径实测)。
 
-![双链登记不变式：give 与 tick 的竞争裁定](images/rtos_design_08.png)
-
-<details><summary>图形源码（mermaid）</summary>
-
 ```mermaid
 sequenceDiagram
     autonumber
@@ -687,13 +648,13 @@ sequenceDiagram
     participant G as give 方<br/>(任务或 ISR)
     participant K as SysTick
 
-    W->>O: 入链 (尾插 O(n)) + 置位 wait_bitmap
+    W->>O: 按优先级入链，同级尾插，置观测位
     W->>D: 入链 (O(1) 快路径) wake_tick = 1100
     Note over W: state = DELAYED<br/>★同时挂在两条链上
 
     alt 情形一: 对象侧先到 (give)
-        G->>O: wake_highest_bm(): ctz 选最高优先级
-        O->>O: 摘链 + 清位
+        G->>O: 取有序链首
+        O->>O: 摘链，必要时清位
         G->>D: sched_unblock → delay_list_remove (O(1))
         Note over D: 剩余守夜义务注销
         G->>W: wait_result = RTOS_OK
@@ -701,14 +662,12 @@ sequenceDiagram
     else 情形二: 时间侧先到 (tick 到期)
         K->>D: process_delayed_tasks(): 摘到期节点
         K->>O: 经 wait_node.list_head 摘对象链
-        Note over O: 清 wait_bitmap 对应位
+        Note over O: 根据相邻同级节点判断是否清位
         K->>W: wait_result = RTOS_ERR_TIMEOUT
         G-->>O: 之后 give 时链上已无 T → 自然扑空
     end
     Note over W: 两条链都被摘干净,<br/>判定唯一, 不会既成功又超时
 ```
-
-</details>
 
 合法完成方在同一保护域竞争，先完成者全摘、后到者找不到有效旧节点。READY不表示立即获得CPU；超时承诺的是tick到期资格，实际返回可更晚。临界区共同出口ISB还保证PendSV识别先于阻塞调用后续读取初始结果，不能因“这里恰有几条其他指令”就删掉。
 
@@ -717,7 +676,8 @@ sequenceDiagram
 1. SysTick硬件到期，依据异常优先级及mask决定何时激活。
 2. BSP[SysTick_Handler](../Core/Src/stm32f4xx_it.c)先调用RTOS端口，随后HAL_IncTick；HAL和RTOS是两份时间计数。本工程共用硬件节拍，改RTOS频率时须重新核对HAL毫秒时基。
 3. 端口检查RUNNING，进入内核临界区，再调用sched_tick；非RUNNING不处理RTOS tick。
-4. tick_count加1，连续处理延时head到期，包括对象解绑及继承撤销。
+4. 递增 tick_count，以此次 tick 检查延时链首。为空或尚未到期时跳过独立到期处理；
+   有到期节点时，逐个摘除并重新读取真实链首，包括对象解绑及继承撤销。
 5. 从最终就绪集合选择最高head；若不同current则pend，否则按时间片判断同级轮转。
 6. 退出保护与SysTick，其余较高Handler完成后才轮到最低优先级PendSV。
 7. PendSV搬现场、提交身份、装PSP、异常返回，目标从原暂停点继续。
@@ -730,7 +690,7 @@ sequenceDiagram
 
 ### 阶段一: 入睡 (tick=1000, 任务上下文, 临界区内)
 
-sem先检查确实需要等待、阻塞许可成立；设置wait_node对象、链首地址、sem位图、有效优先级，清timeout标志，再尾插FIFO链并置共享位。sched_block把A摘就绪环，置wake=1100和DELAYED，插入时间链。schedule选别人并pend。
+sem先检查确实需要等待、阻塞许可成立；设置wait_node对象、链首地址、sem位图、有效优先级，清timeout标志，再按优先级入链，同级尾插，并置观测位。sched_block把A摘就绪环，置wake=1100和DELAYED，插入时间链。schedule选别人并pend。
 
 ```text
 sem.wait_head ... → A.wait_node
@@ -1047,6 +1007,30 @@ rtos_status_t ai_example_notify_from_irq(uint32_t value)
 }
 ```
 
+## 4.7 Cortex-M7 上的链接布局与缓存边界
+
+内核与移植层保持同一套 Cortex-M4F/M7F 现场协议。板级启动需要使能对应 FPU、建立
+向量表和时钟，并提供与硬件一致的 `SystemCoreClock`。H743 的验证镜像使用 FPv5-D16
+硬浮点和实际 Cortex-M7 向量，覆盖直接入口和裸跳转包装。板级夹具根据 `SCB->CCR`
+的实际状态决定是否执行关闭缓存的维护操作，再建立 MPU 区域并启用所选缓存。
+
+| H743 链接布局 | 实板验证配置 | 需要检查的集成条件 |
+|---|---|---|
+| 内核常驻数据与任务栈在 AXI SRAM | MPU Normal、WBWA、非共享。代码在 Flash，MSP 在 DTCM | 从 map 核对 `rtos_kernel` 的地址和对齐，从实板核对 MPU 与 I/D Cache 状态 |
+| 内核常驻数据与任务栈在 DTCM | CPU 直接经 TCM 接口访问。代码仍在 Flash，MSP 也在 DTCM | 链接时给 MSP 留出独立预算，按具体 DMA 控制器和总线路径核查缓冲可达性 |
+
+`rtos_kernel_t` 的字段偏移已变化，应用、内核和端口须使用同一配置全量重编译。H743
+实测中 AXI 的调度器常用字段由跨 3 个缓存行收敛为一个对齐的 32 B 缓存行。缓存开关、
+定向失效与 DTCM 对照用于解释周期差异。实际命中率和分支误预测率需要独立证据。
+[H743 周期与缓存对照](rtos_performance_report.md#h743-cache-performance)
+
+在 H743 的 DMA2 夹具中，CPU 先清理源缓存行。目标缓存行由缓冲独占且将被完整覆盖，
+因此启动 DMA 前使目标行失效，完成 IRQ 解除信号量等待后再次失效，再读取结果。预处理
+和读取前均执行数据同步屏障。夹具在 D Cache 开关两组核对负载和相邻缓存行。生产驱动
+须按自己的控制器和缓冲所有权设计维护顺序。RTOS 的同步原语负责等待与交付资格，DMA
+可达性、缓存维护和硬件停机由 BSP 和驱动负责。
+[H743 板测和配置](../hil/h743/README.md) · [ST AN4839](https://www.st.com/resource/en/application_note/dm00272913-level-1-cache-on-stm32f7-series-and-stm32h7-series-stmicroelectronics.pdf)
+
 ---
 # 第五章 任务管理: 每个 API 的逐步执行流程
 
@@ -1117,7 +1101,7 @@ flowchart TD
 1. 静态入口先检查 TCB 与栈区间是否溢出或相互重叠。进入共用构造后，在临界区
    核对登记。TCB 地址已保留时返回 `RTOS_ERR_ALREADY`。静态请求若与其他已登记
    任务的 TCB 或栈重叠，则返回 `RTOS_ERR_PARAM`。
-2. 初始化TCB基本字段和栈范围，赋task_id，置INITIALIZING并加入next_all登记链；此时未进入就绪集合。另一任务并发创建时仍能看见已保留的范围。
+2. 初始化 TCB 字段与栈范围，赋 `task_id`，置 `INITIALIZING` 并插入地址对应的桶内链。此时尚未就绪，并发创建仍能看到已保留的范围。
 3. 退出临界区，复制/截断name，调用port构造初始帧，建立magic和perf登记/水印。较大的栈填充在临界区外完成。
 4. 再进临界区，将任务入就绪环并置READY；动态入口在此发布`*tcb_out`。
 5. 若系统已运行且新任务优先级更高，请求调度，退出后新任务可能在create返回前运行。
@@ -1315,7 +1299,7 @@ set_priority的输入是用户基础优先级，不直接覆盖继承后的最�
 |---|---|
 | READY/RUNNING | 从旧优先级环摘，重算有效值，再加入新环 |
 | 有限时间等待 | wake_tick和时间次序不变；不要因调优先级重算超时 |
-| sem位图链等待 | 用queued_priority处理旧共享位，置新位并尾插，保留同级FIFO纪律 |
+| sem 有序等待 | 用 `queued_priority` 和旧相邻节点维护共享位，按新优先级插入同级组尾 |
 | queue/mutex/event有序等待 | 有效值确实变化才按新优先级重挂；未变化不扰乱FIFO |
 | 正在等mutex的持锁者 | 捐赠沿锁依赖传播，不能只更新一个节点 |
 
@@ -1358,45 +1342,27 @@ idle每256次自身循环安排栈巡检，间隔取决于idle运行机会。per
 | `is_initialized` | init/deinit 及入口检查使用 | 仅表示对象逻辑状态，不证明地址有效 |
 | `count` | take/give 修改的可领取计数 | 合法操作下 `0 <= count <= max_count` |
 | `max_count` | init 设置的计数上限 | 必须大于零；设为 1 得到二值信号量 |
-| `wait_head` | 任务等待节点构成的 FIFO 物理链 | 链首不一定是最高优先级任务 |
-| `wait_bitmap` | 存在等待者的优先级集合 | bit p 为 1 表示仍有有效优先级 p 的等待者 |
+| `wait_head` | 有效优先级升序的侵入式双向链 | 链首是最高优先级、同级最早登记的任务 |
+| `wait_bitmap` | 供观察的等待优先级集合 | bit p 为 1 表示仍有有效优先级 p 的等待者 |
 
 通用信号量没有 `owner` 或对象池 `in_use` 字段。USB 等适配层可以另有槽位封装，但封装的分配状态不属于通用信号量布局。`MAX_SEMAPHORES` 也不是本 init 路径的全局对象数量限制。
 
 **计数与等待链的核心不变量**：有等待者时 count 为零。反过来不成立：count 为零也可以无人等待。有 give 到达时，资源要么授予一个等待者，要么进入 count，不会同时做两次记账。
 
-**位图选择不是整体常数时间**：`ctz(wait_bitmap)` 可以 O(1) 选择最高等待优先级，但节点仍要从 FIFO 链中寻找。唤醒选中该级最早的节点，因此它之前不可能有同优先级等待者，摘链后只从原后继检查共享位。当前尾插没有独立尾指针，入链也要遍历。W 个等待者时，入链和唤醒仍可能为 O(W)；单等待者等路径为 O(1)。
-
-![位图索引等待链的入链与唤醒](images/rtos_design_11.png)
-
-<details><summary>图形源码（mermaid）</summary>
+等待节点直接携带入链时的优先级。空链直接登记首节点；非空链沿 next 寻找插入位置，
+每一步只读取当前节点中的优先级。W 个等待者时，登记最坏仍为 O(W)；较高优先级
+可以在靠前的位置停止，末尾登记仍要走完整条链。
 
 ```mermaid
-flowchart TB
-    subgraph BEFORE["有序链：队列 / 互斥锁的单资源候选"]
-        direction LR
-        B1["阻塞: 找插入点 O(n)<br/>循环体含优先级比较"] --> B2["链: 按优先级升序<br/>[P2-高][P5-中][P9-低]"]
-        B2 --> B3["give: 取链首 O(1)<br/>但依赖'链已排好序'"]
-    end
-
-    subgraph AFTER["信号量：FIFO 链 + 优先级位图"]
-        direction TB
-        A1["阻塞: 尾插 O(n)<br/>循环体只跟 next 指针<br/>(无优先级比较)"] --> A2["wait_bitmap |= (1 << prio)"]
-        A2 --> A3["链: 入链序 FIFO<br/>[P5][P2][P9] — 不反映优先级"]
-        A3 --> A4["多等待者 give: ctz(wait_bitmap) 选 P2<br/>整链定位与摘除后清位，最坏 O(W)"]
-    end
-    A5["单等待者 give 快路径<br/>直接摘唯一节点，O(1)"]
-    AFTER -. "退化到一个等待者时" .-> A5
+flowchart LR
+    A["优先级 2，先到"] --> B["优先级 2，后到"] --> C["优先级 6"]
+    G["give 直接取链首"] --> A
+    B --> D["同级仍存在，保留位 2"]
 ```
 
-</details>
-
-| 等待结构 | 入链 | 选择一个可授予候选 |
-|---|---|---|
-| 当前信号量 FIFO 位图链 | 寻找链尾后追加，O(W) | 位图选优先级，再整链定位同级最早节点，必要时扫描清位 |
-| 队列、互斥锁有序链 | 依有效优先级寻找插入点，O(W) | 单资源候选通常取链首；完整 API 还含复制或继承成本 |
-
-动态改变等待者有效优先级时，`queued_priority` 保存旧登记优先级。重挂逻辑先摘原节点，确认旧优先级是否还有同级等待者，再清旧位、置新位并尾插。优先级没有实际变化时不重挂，避免改变同级先后关系。
+选择、摘除链首和维护观测位图都是 O(1)。任意节点超时或被取消时，同级节点如果仍
+存在，至少一个会与旧位置相邻；因此最多读前驱和后继。重挂使用节点的旧
+`queued_priority`判断清位，再插入新优先级组尾并置新位。有效优先级未变时保持原位。
 
 ## 6.2 rtos_sem_take(sem, timeout) 逐步流程
 
@@ -1411,7 +1377,7 @@ timeout 单位为 tick。`RTOS_NO_WAIT` 表示只尝试一次；支持的有限�
 6. 确实需要等待：检查调度器运行且有当前任务，否则 RTOS_ERR_SCHED。
 7. 当前 TCB 登记 blocked_on=sem，初始化 wait_node：
    wait_obj、list_head、queue_bitmap、queued_priority、on_timeout=NULL、wait_result。
-8. FIFO 尾插等待节点，置 wait_bitmap 对应位。
+8. 按有效优先级插入等待链，同级尾插，置 wait_bitmap 对应位。
 9. sched_block：退出就绪链；有限等待另入延时链，永久等待不入延时链。
 10. 请求调度并退出最外层临界区，PendSV 在允许时切出。
 11. 将来恢复：读取自己的 TCB.wait_result 并返回，不重新减少 count。
@@ -1430,8 +1396,8 @@ give 不要求调用者此前 take，也不记录资源拥有者。合法系统�
 ```text
 1. 检查 NULL、初始化和 ISR 优先级；进入临界区并复查 initialized。
 2. 等待链非空：
-   a. 单节点直接选中；多节点用位图选最高优先级并定位该级最早节点。
-   b. 双向摘除节点，从原后继检查是否仍有同级等待者；若无，同步清位。
+   a. 取有序链首，直接得到最高优先级中最早登记的节点。
+   b. 双向摘除节点，仅检查紧邻的原后继；若它不同级或不存在，同步清位。
    c. 清 blocked_on/list_head，写 wait_result=RTOS_OK。
    d. sched_unblock 撤销有限超时、加入就绪表，必要时重算候选。
    e. count 不增加，本次 give 已授予这个等待者，返回 RTOS_OK。
@@ -1440,7 +1406,7 @@ give 不要求调用者此前 take，也不记录资源拥有者。合法系统�
    否则 count++，返回 RTOS_OK。
 ```
 
-位图没有匹配节点时，共用 helper 会退回整链扫描，选真正最高优先级，而不是直接选 FIFO 链首。这是防御路径，不能代替位图和链表一致性的验证，也不是支持应用自行改等待节点的理由。
+链首是授予的唯一依据，位图只记录派生状态。调试代码应使用一致性检查发现位图错误，应用不得改动内核等待节点或位图。
 
 **give 与超时的互斥裁定**：give 先完成授予时，节点已经离开对象链和延时链，后续 tick 不再使该等待超时；超时先到时，tick 先摘两条链并记录 `RTOS_ERR_TIMEOUT`，随后 give 在对象链中找不到它，改授予别人或增加 count。两条修改路径在内核临界区内串行，成功和超时不会重复授予同一次资源。
 
@@ -1635,6 +1601,9 @@ V 是图中的不同拥有者数，不是系统全部任务数。计算时不能
 若确认先完成，旧 owner 可能已在访问设备。内核无法撤销外设操作或回滚已修改的数据。业务要先停止使用方并确认退出，再销毁互斥对象。挂起已获授予的任务也不会撤销交接，仍可能让锁长期被占用。
 
 对象地址匹配和初始化复查只保护合法存储上的状态操作，不提供通用旧句柄代次。若 control block 已释放、被别的类型覆盖，不能依赖 init/deinit 自动识别原身份。注册表里的对象在注销前必须持续有效。
+
+互斥锁成功登记等待时给节点置类型标记，交接、对象销毁或等待取消时清除。超时、挂起和删除在同一临界区
+先摘节点，再通过标记和已登记的对象指针更新捐赠。其他 IPC 等待只做自身清理，省去扫描无关互斥锁的成本。
 
 ## 7.6 rtos_task_set_priority 与继承的交互
 
@@ -2624,8 +2593,9 @@ get_system输出CPU=0、idle=10000是关闭记账的占位值，不是板卡100%
 
 ## 12.2 时基、单位与回绕约束
 
-DWT初始化置DEMCR.TRCENA、清CYCCNT并置CYCCNTENA；目标仍须有相应硬件及可用的启动
-环境，不能仅凭地址宏存在就认为计数正确。当前验证目标是F446 Cortex-M4F，其他目标另行适配。
+DWT 初始化置 `DEMCR.TRCENA`、清 `CYCCNT` 并置 `CYCCNTENA`。目标还需具备可用的
+DWT 和相应的板级启动配置。F446 和 H743 均有周期实测。H743 夹具检测 DWT 软件锁是否
+实现且处于锁定，再按需解锁，并用实际 SysTick 对照计数器。
 
 ```text
 DWT模式：get_cycles → 32位CPU周期数
@@ -2634,12 +2604,14 @@ Tick回退：get_cycles → 内核tick_count，函数名不变但单位改变
 前提：真实间隔短于该32位时基完整周期，测量期间频率口径明确
 ```
 
-168MHz下DWT约25.565秒一圈。跨零但不到一圈可用无符号减法处理，跨一圈或多圈则无法
-只凭两个读数恢复圈数。每tick中断不等于每tick有真实上下文切换；持续运行任务可能违反
+168 MHz 下 DWT 约 25.565 秒一圈，480 MHz 下约 8.948 秒一圈。跨零但不到一圈可用
+无符号减法处理，跨一圈或多圈则无法只凭两个读数恢复圈数。每 Tick 中断不等于每 Tick
+有真实上下文切换，持续运行任务可能违反
 这一采样间隔，旧注释“系统不可能25秒无切换”不能作为可靠性前提。
 
-DWT cycles_to_us先取`SystemCoreClock/1000000`整数MHz再除法；固定168MHz符合本工程
-口径，非整数MHz、变频及跨频区间须另分析。tick回退用64位中间乘法换算，但精度仍为tick。
+`rtos_perf_cycles_to_us` 在 DWT 模式先取 `SystemCoreClock/1000000` 的整数 MHz 再除法。
+168 MHz 与 480 MHz 均符合该频率口径。非整数 MHz、变频及跨频区间须另分析。Tick
+回退用 64 位中间乘法换算，精度仍为 Tick。
 
 uptime_ticks为32位内核tick，uptime_ms用64位中间值换算后仍存uint32；默认1kHz约
 49.710天回绕，调度器挂起也冻结普通tick处理。它们不是长期64位RTC。run_cycles和
@@ -2793,7 +2765,7 @@ ISR与任务共享的是缓冲和同步状态，IRQ中的复制、协议及控�
 
 | 路径 | 当前策略 | 应用后果 |
 |---|---|---|
-| CDC RX | 默认512字节环，保留1空位，head/tail为uint32原始计数，访问默认用掩码 | 实际最多511字节。非二次幂容量改用取模，32位计数回绕可能导致物理索引跳变 |
+| CDC RX | 默认512字节环，保留1空位。二次幂容量以 `uint32_t` 累计计数和位掩码定位，其他容量直接保存物理位置 | 默认实际最多511字节。两种表示均支持跨环末尾连续收发 |
 | CDC TX | 默认512字节内部区，mutex串行，多块发送 | 用户数据先复制，不是零拷贝 |
 | HID RX | 64字节单报告槽 | 旧报告未读时保留旧槽、丢弃新报告；小目标buffer读取前缀后清槽、丢弃旧报告剩余部分 |
 | HID TX | 每次最多64字节，独立缓冲/锁/信号 | len>64截断，不像CDC自动分块 |
@@ -2802,6 +2774,12 @@ ISR与任务共享的是缓冲和同步状态，IRQ中的复制、协议及控�
 CDC软件环满时只复制可容纳部分、累计私有rx_dropped并继续挂OUT读取，不是无损背压。
 不能因为USB底层具备NAK就断言应用环不会丢字节。产品要用序号/确认/节流和容量预算，
 信号量次数不能替代接纳字节账本。
+
+二次幂容量能整除 `2^32`，计数自然回绕后的无符号差仍是占用字节数，掩码仍能
+得到连续的物理位置。其他容量的读写位置始终在 `0..capacity-1`，通过环形距离计算占用，
+推进跨末尾时只折返一次。每次最多处理 `capacity-1` 字节，所以读写均至多分两段复制，
+最后在同一个临界区提交新位置。以 768 字节为例，累计计数跨过 `2^32` 后再取模会使
+物理位置跳变，直接保存环内位置可消除该问题。
 
 ### 13.1.3 完成确认、超时及会话变化
 
@@ -2947,7 +2925,7 @@ word栈、tick超时与状态枚举。池化使上界易预算，代价是容量
 
 | 组/数量 | 完整入口，共同前缀usb_osal_ | 关键语义 |
 |---|---|---|
-| thread/3 | thread_create/delete/schedule_other | 字节转word、优先级越界钳最低；schedule_other会改基础优先级，不能视为透明让出 |
+| thread/3 | thread_create/delete/schedule_other | 字节转word、优先级越界钳最低；schedule_other临时降低基础优先级，再恢复调用前的基础值 |
 | sem/6 | sem_create/create_counting/delete/take/give/reset | timeout毫秒；reset只清计数，不取消或唤醒等待者 |
 | mutex/4 | mutex_create/delete/take/give | take无timeout参数，永久等待；take/give拒绝ISR，create/delete并非相同拒绝逻辑 |
 | mq/4 | mq_create/delete/send/recv | 复制uintptr_t；任务send永久等，ISRsend不等；recv毫秒 |
@@ -2959,10 +2937,11 @@ word栈、tick超时与状态枚举。池化使上界易预算，代价是容量
 sem_create(initial)调用底层(initial,1)，但底层会把max至少抬到initial，所以initial>1
 不能仍称严格二值；counting(0)也会被提高为max1。业务显式传合法范围，不依赖隐式纠正。
 
-schedule_other读取的是当前有效priority，再用set_priority请求最低基础优先级、yield，
-最后以保存的有效值设置基础优先级。持锁PI可能使请求“降低”后有效值仍不降低，最后也不
-保证恢复进入前的base_priority。它是兼容既有OSAL的实现，不能作为保留基础优先级不变、
-保证低优先级任务得到CPU的通用调度工具；当前保留设备栈也没有使用该入口。
+`schedule_other` 保存当前任务的 `base_priority`，用 `rtos_task_set_priority` 暂时将基础
+优先级降至最低，调用 `rtos_task_yield` 后恢复所保存的值。任务持锁期间，有效优先级仍由
+继承关系决定。例如基础为 9 的任务继承等待者的 4，执行让步时仍可保持有效优先级 4，
+释放最后一个提供继承的锁后回到 9。因此该调用只提供调度机会，低优先级任务能否运行取决于
+就绪集合和当前继承关系。当前保留的设备栈未使用此入口。
 
 OSAL timer外壳来自USB小块pool，内部timer槽常驻；checked-delete投递失败不释放外壳
 或槽，投递成功也非回调结束屏障。重建遇仍活跃/回调槽会继续找别槽，generation拒旧命令，
@@ -3147,9 +3126,10 @@ CDC line-coding/DTR、HID报告钩子当前可能沿EP0 ISR执行，长操作应
 | M7搬运错 | 属性默认空、DMA地址、cache维护 | F446验证不等M7一致性验证 |
 | MSC断电丢数据 | RAM盘或真实介质 | RAM盘不持久，介质恢复另设计 |
 
-控制请求/异常长度/会话逻辑夹具仍保留，但旧批次原始结果按用户要求清理。逻辑注入、
-寄存器观察或ST-LINK UART不能代替真实枚举、CDC/HID往返、MSC校验和反复拔插；
-当前复测方法见[HIL入口](../hil/README.md)，产品集成须另行完成物理链路验证。
+本次 F446 专项分别验证了 CDC 512/768 字节环的接收顺序和 OSAL 让步期间的优先级继承。
+CDC 专项通过真实软件 OUT 回调注入，端点提交由夹具替代。真实主机枚举、CDC/HID 往返、
+MSC 校验和反复拔插属于物理链路验收。H743 DMA2 专项验证了独立的 AXI SRAM 内存搬运路径。
+[USB 专项判据与复测](rtos_testing_report.md#release-usb)
 
 ---
 
@@ -3158,7 +3138,9 @@ CDC line-coding/DTR、HID报告钩子当前可能沿EP0 ISR执行，长操作应
 公共API的一次调用不等于某个内部helper的一步。位图选优先级是常数时间，但完整路径还可能验证任务登记、
 复制消息、扫描等待者、插入延时链、求解继承和请求调度。以下复杂度是源码结构分析，不是CPU周期或WCET。
 
-本表按实际数据结构分析：N 为存活/构造中任务登记数，W 为相关对象等待者数，D 为延时任务数，M 为注册互斥锁数，K 为堆的全部物理块数，T 为活跃定时器数，B 为消息字节数。“屏蔽区”在 BASEPRI 模式下只屏蔽 syscall 域中断，高优先级非 RTOS 中断仍可运行；不能把所有临界区称为全关中断。
+N 为存活或构造中的任务登记数，L 为目标哈希桶链长，W 为相关对象等待者数，D 为延时任务数，
+M 为注册互斥锁数，K 为堆的全部物理块数，T 为活跃定时器数，B 为消息字节数。表中的屏蔽区
+在 BASEPRI 模式下只屏蔽 syscall 域中断，高优先级非 RTOS 中断仍可运行。
 
 | 操作 | 复杂度 | syscall 域屏蔽区 | 主要触发条件 |
 |------|--------|-----------|------|
@@ -3169,26 +3151,26 @@ CDC line-coding/DTR、HID报告钩子当前可能沿EP0 ISR执行，长操作应
 | **延时链插入** | **O(1) 快路径**(表尾缓存) / O(D) 慢路径(乱序) | 含插入搜索 | delay 与有限对象超时 |
 | **延时链摘除** | **O(1)**(双向 + 表尾缓存交接) | 含于调用者 | 提前唤醒/到期/中止 |
 | sem take 快路径 | O(1) | 低 | 最高频 IPC |
-| sem take 阻塞入链 | O(W) 尾插；另含延时链插入 | 含入链搜索 | 无可用计数且允许阻塞 |
-| sem give 唤醒路径 | 单等待者 O(1)。多等待者按优先级定位，再查选中节点的后继，最坏 O(W) | 含扫描、摘链和调度决策 | 有等待者的释放 |
+| sem take 阻塞入链 | 空链直接登记，非空有序插入最坏 O(W)；另含延时链插入 | 含入链搜索 | 无可用计数且允许阻塞 |
+| sem give 唤醒路径 | O(1) 取链首，最多检查一个相邻节点维护观测位图 | 含摘链、时间侧清理及调度决策 | 有等待者的释放 |
 | mutex 无竞争/正常递归 take | O(1)；递归上界拒绝也为 O(1) | 含 owner/计数读改 | 空闲锁或同一任务重入 |
 | mutex 递归或空等待 give | O(1)，不遍历互斥注册表 | 含计数读改；最后一次释放清 owner 与交接标记 | 递归未归零，或归零且无等待者 |
 | mutex 阻塞登记 | 有序插入 O(W)及延时链插入，再执行全图继承求解 | 含入链、图求解与优先级重挂 | 锁被其他任务持有 |
 | mutex 全图继承重算 | 最多 V 轮，数组查找 O(V)，求解保守 O(V²(M+ΣW))；另含变化节点对象重挂，V≤M+1、ΣW为注册锁等待者总数 | 含全图计算、发布与调度刷新；历史GCC11.3/O2曾观测128B局部帧，不是本轮重测或完整栈上界 | 阻塞 take、竞争交接、deinit、等待者离开/调优先级 |
-| mutex waiter_left | 对象地址匹配 O(M)，命中后执行全图重算 | 复用超时/中止的临界区 | 等待者因超时、挂起、删除离链 |
+| mutex waiter_left | O(1) 按已标记等待节点定位锁，锁仍有拥有者时执行全图重算 | 复用超时/中止的临界区 | 互斥锁等待者因超时、挂起或删除离链 |
 | mutex release_all | 注册表扫描及各命中锁的唤醒/移交；每次移交后重算全图 | 同左 | 删除持锁任务 |
 | queue 空队直传 | O(B)，正常等待者链首选择 O(1) | 含复制和唤醒 | 已有接收等待者 |
 | queue 阻塞入链 | O(W)，按有效优先级有序插入；另含延时链插入 | 含入链搜索 | 满队发送/空队接收 |
 | event set | O(W)，逐个判条件、即时清位及唤醒 | 含全部等待者遍历 | 更新条件状态 |
-| tick 处理 | O(到期数)+各节点对象清理成本；信号量清位可能 O(W) | 同左，互斥锁还需重算继承 | 每 tick |
+| tick 处理 | 无到期时 O(1)；批量到期为 O(到期数) 加各节点回调及继承成本 | 只有实际互斥等待才更新捐赠 | 每 tick |
 | 堆 alloc / max_alloc / free | O(K) 扫描 / O(K) 扫描 / O(1) 标记及一次前向合并 | 与实际扫描物理块数相关 | 分配、预算查询、释放 |
 | mempool alloc/free | alloc O(1)；free 最坏 O(块数)，拒绝重复释放 | free 含有界扫描 | 高(USB) |
 | 定时器检查与派发 | 链首检查 O(1)，周期重插 O(T)，回调及命令批次成本另计 | 未到期时在一次临界区内检查并读截止 tick。回调在临界区外 | 到期和控制命令 |
 | perf 任务快照 | 单条含栈水印扫描，批量为各条成本之和 | 批量只进入一次，保护 TCB、注册表和栈存储 | 单条任务观察与批量诊断 |
-| task_registered / 对象 init 存活等待检查 | O(N)，独立任务登记链扫描 | 含身份查找 | 任务修改、sem/queue/event 重初始化 |
-| **rtos_task_set_priority** | 登记O(N)、直接有效值查询O(M)、对象重挂O(W)；总会进行注册锁/等待链反查，命中mutex等待者后再全图重算 | 含登记、继承及相关等待链扫描，即使非mutex等待者也不能省略反查成本 | 业务改基础优先级 |
+| task_registered / 对象 init 存活等待检查 | 前者 O(L)，最坏 O(N)；后者扫描全部登记桶 | 先比较完整地址，再读取匹配的 TCB | 通知、任务修改、对象重初始化 |
+| **rtos_task_set_priority** | 登记 O(L)、直接有效值查询 O(M)、对象重挂 O(W)；互斥锁等待者按类型标记进入全图重算 | 含登记、已持锁检查和必要的等待链重挂 | 业务改基础优先级 |
 
-> **复杂度与测量要分别解读**：位图选择、就绪表、单等待者唤醒等有 O(1) 快路径，但多等待者信号量、有序入链/重挂、对象重新初始化守卫、任务登记、堆扫描、内存池重复释放检查和定时器重插仍有线性成本。23 周期临界区、16 条 PendSV 等历史数据不描述当前加固后的完整路径；早期对照见 [底层优化报告](logs/2026-10-12.md#lowlevel)，此次临界区加固的实测见 [BASEPRI 修复报告](logs/2026-10-25.md#basepri)。关键中断/任务的最坏响应时间必须结合配置、消息大小、等待者数和外部 ISR 负载重新评估。
+> **复杂度与测量要分别解读**：位图选择、就绪表、单等待者唤醒等有 O(1) 快路径，但有序入链/重挂、对象重新初始化守卫、任务登记、堆扫描、内存池重复释放检查和定时器重插仍有线性成本。23 周期临界区、16 条 PendSV 等历史数据不描述当前加固后的完整路径；早期对照见 [底层优化报告](logs/2026-10-12.md#lowlevel)，此次临界区加固的实测见 [BASEPRI 修复报告](logs/2026-10-25.md#basepri)。关键中断/任务的最坏响应时间必须结合配置、消息大小、等待者数和外部 ISR 负载重新评估。
 
 **容量与复杂度不能互相替代**：当前MAX_MUTEXES真正限制注册表容量；MAX_TASKS参与perf的task_pool_capacity兼容字段和观察容量计算，不限制任务create；MAX_SEMAPHORES/MAX_QUEUES/MAX_EVENT_GROUPS未在对应内核路径形成数量限制。规模有上界也不等于所有路径恒定时延，预算见第十六章。
 
@@ -3210,7 +3192,7 @@ CDC line-coding/DTR、HID报告钩子当前可能沿EP0 ISR执行，长操作应
 做周期对照时，固定编译器、优化级、时钟、屏蔽方式及负载规模，并标出计时起止点。
 本工程分别测量 PendSV 前的信号量 give、真实 SysTick 内的批量到期、定时器回到等待入口
 和任务快照。这些区间用于定位开销。应用的响应时间预算还需加上外部 ISR、调度等待及业务执行。
-[隔离测量与完整口径](rtos_performance_report.md#11-就绪位图信号量定时器与性能快照)
+[F446 结构优化 A/B](rtos_performance_report.md#architecture-hotpaths) · [H743 同板 A/B](rtos_performance_report.md#h743-cache-performance)
 
 # 第十五章 已知限制与设计债务
 
@@ -3589,7 +3571,8 @@ RTOS 只管理块和队列，触发、DMA 配置及停止顺序由应用负责�
 | 功能/边界 | 参数、超时、销毁、等待链重挂是否符合契约 | [selftest.c](../Core/Src/selftest.c)、[boundary_test.c](../hil/fw/Src/boundary_test.c) | 构造 tick 验证不是连续运行几十天 |
 | 竞态与上下文 | 启动窗口、候选失效、寄存器/FPU 和屏蔽值是否保持 | [audit_regressions.c](../hil/fw/Src/audit_regressions.c)、[lowlevel_checks.c](../hil/fw/Src/lowlevel_checks.c)、[lowlevel_fpu_probe.c](../hil/fw/Port/ARM/lowlevel_fpu_probe.c)、[basepri_regressions.c](../hil/fw/Src/basepri_regressions.c) | 只证明所执行的上下文与交错，仍需对新改动补触发条件 |
 | 启动与故障诊断 | 无效 SysTick 配置能否重试，SVC/PendSV 的 MSP 是否平衡，基本或扩展故障帧能否正确识别 | [启动与故障 HIL](../hil/README.md#4-夹具与固件变体)、[故障解析器](../hil/check_fault_probe.py) | 按实际向量、优化级、屏蔽模式与异常现场解释 |
-| 热路径周期 | 等待链定位、批量超时、定时器及任务快照的局部开销 | [HIL 变体](../hil/README.md#4-夹具与固件变体)、[F446 周期对照](rtos_performance_report.md) | 同配置比较明确计时区间，端到端响应另测 |
+| 热路径周期 | 等待链定位、批量超时、定时器及任务快照的局部开销 | [F446 周期对照](rtos_performance_report.md#architecture-hotpaths)、[H743 周期与缓存对照](rtos_performance_report.md#h743-cache-performance) | 同配置比较明确计时区间，端到端响应另测 |
+| Cortex-M7 实板 | 向量、FPU、AXI/DTCM 布局、D Cache 开关及 DMA IRQ | [H743 夹具与运行方式](../hil/h743/README.md) | 缓存周期和真实 DMA2 内存搬运，不外推产品外设或 WCET |
 | 综合压力 | 混合 IPC、IRQ 嵌套、背压、数据守恒与关停 | [production_stress.c](../hil/fw/Src/production_stress.c)、[当前回归入口](../hil/refactor_20261027/run_regressions.ps1) | 合成业务不等于真实设备端到端链路；历史结果按日期区分 |
 | 测试器对照 | 输入损坏是否被真实检测，结束判据是否可信 | 故意损坏单条消息的负向批次 | 预期失败单独分类，不计入正常 PASS |
 | 优先级契约 | 高优先级 ISR 是否在共享状态访问前被预期断言捕获 | [basepri_guard.c](../hil/fw/Src/basepri_guard.c) | 每镜像一个终止用例；测试专用断言包装不返回被断言 API；不能当作断言关闭时的拒绝保证 |
@@ -3599,10 +3582,10 @@ RTOS 只管理块和队列，触发、DMA 配置及停止顺序由应用负责�
 TIM2 入口根据自然更新和软件挂起两种来源计数，同次可命中双来源，也可能无标志。
 因此检查 `entries + coincident == natural + forced_observed + spurious`，
 再核对软件请求是否全部观察到。单凭空入口数量无法判断自然更新是否丢失。
-[当前实板验收](logs/2026-11-11.md#hil-full-validation)
+[两板交付验收](rtos_testing_report.md#release-validation)
 
 新采样应记录构建输入、下载结果、串口输出和结束判据。历史资料的可复验范围取决于
-该批次实际保留的固件、原始输出和清单。[交付及归档记录](logs/2026-11-11.md#delivery-report)
+该批次实际保留的固件、原始输出和清单。[本次交付证据索引](../hil/evidence/2026-11-11/README.md)
 
 排障时先记录实际状态，再追踪负责改变它的路径：
 
@@ -3610,7 +3593,7 @@ TIM2 入口根据自然更新和软件挂起两种来源计数，同次可命中
 |---|---|
 | 任务一直没有运行 | 有效 priority、state、所在就绪链、是否有持续就绪的更高优先级任务 |
 | 阻塞任务提前或重复唤醒 | `blocked_on`、`list_head`、延时链接、结果写入方及清理是否完成 |
-| sem give 变慢或位图异常 | FIFO 链实际节点、共享优先级位、动态改优先级与超时清位 |
+| sem give 变慢或位图异常 | 按有效优先级排序的链首、同级 FIFO、动态重挂及超时清位 |
 | 取锁后优先级恢复不正确 | 注册锁的 owner、各有序等待链首、base/effective priority 与重挂 |
 | queue 数据错误 | item_size、源/目标缓冲寿命、消息序号、`to_front`、满队策略 |
 | timer 停止后仍有访问 | 命令是否只是入队、回调是否在途、generation、周期重插和存储寿命 |
@@ -3654,7 +3637,7 @@ USB 的 OSAL、设备会话和 MSC 存储后端按各自职责分开。
 | 源码清单 | 加入 Core、IPC、Memory、Services、USB 和所选 Port 的当前单元，每个只链接一次 | 仍只收集 `Core/Src/`；同时链接旧 USB 文件和新模块 |
 | 端口选择 | 当前源位于 `Port/GCC/ARM_CM4F_CM7F/port.c` | 目录名被误当作所有 M7 芯片、FPU 和缓存配置都已完成实板验证 |
 | 对象等待 | 调用方持有内核临界区；helper 先登记阻塞并请求调度，解除保护后才切出 | helper 一返回就读取等待结果，跳过正确的临界区退出与切换时机 |
-| 复杂度 | 仍按完整 API 路径核算；信号量 FIFO 位图链的定位/清位最坏 O(W) | 根据文件拆分或旧“分组扫描”注释误认为整个唤醒路径已变为 O(1) |
+| 复杂度 | 按完整 API 路径核算；信号量给出和清位是常数路径，有序登记最坏 O(W) | 根据链首授予的成本推断阻塞登记也是 O(1) |
 
 本手册7份C示例不加入日常57个单元。BSP还必须核查时钟、向量、FPU ABI、MSP预算和中断分组；
 检查 SVC/PendSV 的实际向量条目。若采用包装，确认 `-O0` 和发布优化的入口都只执行
