@@ -151,20 +151,13 @@ void rtos_internal_wake_all(rtos_wait_node_t **head, rtos_status_t reason);
 void rtos_internal_wait_insert_by_prio(rtos_wait_node_t **head, rtos_wait_node_t *node);
 
 /**
- * @brief 将等待节点尾插到等待链表(O(n)，不定序，配合优先级位图使用)。
- * @param head 等待链表头指针的地址。
- * @param node 待入链节点。
- * @note  与 rtos_internal_wait_insert_by_prio 不可在同一对象上混用。
+ * @brief 唤醒有序等待链的首节点并维护优先级观测位图。
+ * @param head 等待链头指针的地址。
+ * @param node 调用方在临界区中取得的非空首节点。
+ * @param bitmap 存在等待者的优先级位图。
  */
-void rtos_internal_wait_append(rtos_wait_node_t **head, rtos_wait_node_t *node);
-
-/**
- * @brief 唤醒"位图索引等待链"中最高优先级的任务。
- * @param head   等待链表头指针的地址(同优先级内 FIFO)。
- * @param bitmap 存在等待者的优先级位图(调用方维护, 本函数负责清位)。
- * @return 被唤醒的 TCB, NULL 表示无等待者。
- */
-rtos_tcb_t *rtos_internal_wake_highest_bm(rtos_wait_node_t **head, volatile uint32_t *bitmap);
+void rtos_internal_wake_head_with_bitmap(rtos_wait_node_t **head, rtos_wait_node_t *node,
+                                         volatile uint32_t *bitmap);
 
 /**
  * @brief 从等待链表移除节点。
@@ -172,11 +165,10 @@ rtos_tcb_t *rtos_internal_wake_highest_bm(rtos_wait_node_t **head, volatile uint
 void rtos_internal_wait_remove(rtos_wait_node_t **head, rtos_wait_node_t *node);
 
 /**
- * @brief 从等待链表移除节点, 并同步维护位图索引链的优先级位图。
+ * @brief 从有序等待链表移除节点并同步维护可选的优先级位图。
  *
- * @details 用于超时/删除等**非唤醒**路径的摘链: 位图位可能与同优先级的其它
- *          等待者共享, 故摘链后需扫描剩余链, 确认该优先级已无人等待才清位。
- *          节点 queue_bitmap == NULL(有序链: 事件组/互斥锁)时为纯摘链。
+ * @details 同优先级的等待者在链上连续排列，只需检查摘除位置两侧。
+ *          节点 queue_bitmap == NULL 时为纯摘链。
  *
  * @param head [in,out] 等待链表头指针的地址。
  * @param node [in]     待移除节点。
@@ -196,15 +188,14 @@ void rtos_internal_mutex_release_all(rtos_tcb_t *owner);
  * @brief 等待者优先级变化后, 重新评估其所在互斥锁持有者的继承优先级。
  * @details 见 rtos_mutex.c 的实现说明: 阻塞期间被改优先级的等待者, 必须让
  *          持有者的提升值同步更新, 否则优先级继承失效。
- * @note  由 rtos_task_set_priority 调用; 调用方需在临界区内。
+ * @note 调用方须持有内核临界区，且节点仍登记在互斥锁等待链。
  */
 void rtos_internal_mutex_waiter_requeued(rtos_tcb_t *waiter);
 
 /**
  * @brief 互斥锁等待者离开等待链表后, 重新评估持有者的继承优先级。
  * @details 等待者因超时/删除/挂起离开时调用, 撤销不再有依据的优先级提升。
- *          非互斥锁对象(信号量/队列/事件等)自动忽略。
- * @note  调用方须持有内核临界区，并已将等待者摘出等待链表。
+ * @note 调用方须持有内核临界区，并已将标记为互斥锁等待的节点摘出等待链表。
  */
 void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter);
 

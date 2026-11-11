@@ -11,7 +11,7 @@
  *          中断中调用 give 会唤醒等待任务，若该任务优先级更高则触发抢占。
  *          中断中调用 take 必须 timeout=RTOS_NO_WAIT(不阻塞)。
  *
- *          等待链表按到达次序尾插，由位图选择最高优先级和同级最早节点。
+ *          等待链按有效优先级排序，同优先级按到达顺序排列。
  */
 #include "rtos_sem.h"
 #include "rtos_internal.h"
@@ -90,7 +90,7 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
 
     /* 中断中不应走到这里(已拦截) */
     /* 阻塞当前任务，挂入等待链表 */
-    /* FIFO 尾插需寻找链尾；位图记录存在等待者的优先级。 */
+    /* 有序插入保证链首可直接交付；位图记录存在等待者的优先级。 */
     rtos_tcb_t *cur = rtos_kernel.current_tcb;
     cur->blocked_on = (void *)sem;
     cur->wait_node.tcb = cur;
@@ -104,7 +104,11 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
     cur->wait_node.on_timeout = NULL;
     cur->wait_result = RTOS_OK;
 
-    rtos_internal_wait_append(&sem->wait_head, &cur->wait_node);
+    if (sem->wait_head == NULL) {
+        sem->wait_head = &cur->wait_node;
+    } else {
+        rtos_internal_wait_insert_by_prio(&sem->wait_head, &cur->wait_node);
+    }
     sem->wait_bitmap |= (1UL << cur->priority);
 
     rtos_sched_block(cur, timeout);
@@ -120,9 +124,6 @@ rtos_status_t rtos_sem_take(rtos_sem_t *sem, rtos_tick_t timeout)
 
 rtos_status_t rtos_sem_give(rtos_sem_t *sem)
 {
-    rtos_tcb_t *woken;
-
-
     if (sem == NULL) {
         return RTOS_ERR_NULL;
     }
@@ -141,8 +142,9 @@ rtos_status_t rtos_sem_give(rtos_sem_t *sem)
     }
 
     /* 优先唤醒等待者(若有) */
-    woken = rtos_internal_wake_highest_bm(&sem->wait_head, &sem->wait_bitmap);
-    if (woken != NULL) {
+    rtos_wait_node_t *const waiter = sem->wait_head;
+    if (waiter != NULL) {
+        rtos_internal_wake_head_with_bitmap(&sem->wait_head, waiter, &sem->wait_bitmap);
         /* 被唤醒任务消耗这次 give，计数不变 */
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_OK;

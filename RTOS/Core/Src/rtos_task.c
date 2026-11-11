@@ -35,7 +35,21 @@
  * 链表使用 TCB 的 next_ready 字段复用为链表指针(任务已删除, 不在就绪表)。
  * 操作均在临界区内, 无需额外同步。 */
 static rtos_tcb_t *s_pending_free_list = NULL;
-static rtos_tcb_t *s_all_tasks = NULL;
+
+enum {
+    TASK_REGISTRY_BUCKET_COUNT = 16U
+};
+
+static rtos_tcb_t *s_task_registry[TASK_REGISTRY_BUCKET_COUNT];
+
+static inline uint32_t task_registry_bucket(const rtos_tcb_t *tcb)
+{
+    const uintptr_t address = (uintptr_t)tcb;
+    /* Fold address bits above the mandatory alignment so regular TCB strides
+     * do not all select the same bucket. The pointer itself is never read. */
+    const uintptr_t hash = (address >> 2U) ^ (address >> 6U) ^ (address >> 10U);
+    return (uint32_t)(hash & (TASK_REGISTRY_BUCKET_COUNT - 1U));
+}
 
 static rtos_bool_t task_spans_overlap(uintptr_t first, size_t first_size,
                                       uintptr_t second, size_t second_size)
@@ -54,22 +68,28 @@ static rtos_status_t task_reserve_check(const rtos_tcb_t *tcb, const rtos_stack_
     const uintptr_t tcb_start = (uintptr_t)tcb;
     const uintptr_t stack_start = (uintptr_t)stack_buf;
     const size_t stack_bytes = (size_t)stack_size * sizeof(*stack_buf);
+    const uint32_t bucket = task_registry_bucket(tcb);
+    const uint32_t first = (is_static != RTOS_FALSE) ? 0U : bucket;
+    const uint32_t end = (is_static != RTOS_FALSE) ? TASK_REGISTRY_BUCKET_COUNT : bucket + 1U;
     rtos_bool_t has_overlap = RTOS_FALSE;
 
-    for (const rtos_tcb_t *task = s_all_tasks; task != NULL; task = task->next_all) {
-        if (task == tcb) {
-            return RTOS_ERR_ALREADY;
-        }
-        if (is_static != RTOS_FALSE) {
-            const uintptr_t other_tcb = (uintptr_t)task;
-            const uintptr_t other_stack = (uintptr_t)task->stack_base;
-            const size_t other_bytes = (size_t)task->stack_size * sizeof(*stack_buf);
+    for (uint32_t index = first; index < end; ++index) {
+        for (const rtos_tcb_t *task = s_task_registry[index]; task != NULL;
+             task = task->next_all) {
+            if (task == tcb) {
+                return RTOS_ERR_ALREADY;
+            }
+            if (is_static != RTOS_FALSE) {
+                const uintptr_t other_tcb = (uintptr_t)task;
+                const uintptr_t other_stack = (uintptr_t)task->stack_base;
+                const size_t other_bytes = (size_t)task->stack_size * sizeof(*stack_buf);
 
-            if (task_spans_overlap(tcb_start, sizeof(*tcb), other_tcb, sizeof(*task)) ||
-                task_spans_overlap(tcb_start, sizeof(*tcb), other_stack, other_bytes) ||
-                task_spans_overlap(stack_start, stack_bytes, other_tcb, sizeof(*task)) ||
-                task_spans_overlap(stack_start, stack_bytes, other_stack, other_bytes)) {
-                has_overlap = RTOS_TRUE;
+                if (task_spans_overlap(tcb_start, sizeof(*tcb), other_tcb, sizeof(*task)) ||
+                    task_spans_overlap(tcb_start, sizeof(*tcb), other_stack, other_bytes) ||
+                    task_spans_overlap(stack_start, stack_bytes, other_tcb, sizeof(*task)) ||
+                    task_spans_overlap(stack_start, stack_bytes, other_stack, other_bytes)) {
+                    has_overlap = RTOS_TRUE;
+                }
             }
         }
     }
@@ -80,25 +100,34 @@ static rtos_status_t task_reserve_check(const rtos_tcb_t *tcb, const rtos_stack_
  * first, then inspect the known registry node rather than an arbitrary handle. */
 static rtos_bool_t task_registered(const rtos_tcb_t *tcb)
 {
-    for (rtos_tcb_t *p = s_all_tasks; p != NULL; p = p->next_all) {
-        if (p == tcb) return p->state != RTOS_TASK_INITIALIZING;
+    for (const rtos_tcb_t *task = s_task_registry[task_registry_bucket(tcb)]; task != NULL;
+         task = task->next_all) {
+        if (task == tcb) {
+            return (task->state != RTOS_TASK_INITIALIZING) ? RTOS_TRUE : RTOS_FALSE;
+        }
     }
     return RTOS_FALSE;
 }
 
 rtos_bool_t rtos_internal_object_has_waiters(const void *obj)
 {
-    for (rtos_tcb_t *p = s_all_tasks; p != NULL; p = p->next_all) {
-        if (p->blocked_on == obj && p->wait_node.list_head != NULL) return RTOS_TRUE;
+    for (uint32_t index = 0U; index < TASK_REGISTRY_BUCKET_COUNT; ++index) {
+        for (const rtos_tcb_t *task = s_task_registry[index]; task != NULL;
+             task = task->next_all) {
+            if ((task->blocked_on == obj) && (task->wait_node.list_head != NULL)) {
+                return RTOS_TRUE;
+            }
+        }
     }
     return RTOS_FALSE;
 }
 
 static void task_unregister(rtos_tcb_t *tcb)
 {
-    for (rtos_tcb_t **p = &s_all_tasks; *p != NULL; p = &(*p)->next_all) {
-        if (*p == tcb) {
-            *p = tcb->next_all;
+    for (rtos_tcb_t **link = &s_task_registry[task_registry_bucket(tcb)]; *link != NULL;
+         link = &(*link)->next_all) {
+        if (*link == tcb) {
+            *link = tcb->next_all;
             tcb->next_all = NULL;
             return;
         }
@@ -184,8 +213,9 @@ static rtos_status_t task_create_core(rtos_tcb_t *tcb, rtos_stack_t *stack_buf, 
     tcb->notify_value = 0U;
     tcb->stack_base = stack_buf;
     tcb->stack_size = stack_size;
-    tcb->next_all = s_all_tasks;
-    s_all_tasks = tcb;
+    const uint32_t bucket = task_registry_bucket(tcb);
+    tcb->next_all = s_task_registry[bucket];
+    s_task_registry[bucket] = tcb;
     RTOS_PORT_EXIT_CRITICAL();
 #if defined(RTOS_HIL_AUDIT_PENDSV)
     extern void audit_task_constructing_hook(rtos_tcb_t *tcb);
@@ -379,8 +409,9 @@ rtos_status_t rtos_task_delete(rtos_tcb_t *tcb)
             rtos_internal_wait_remove_sync_bitmap(tcb->wait_node.list_head, &tcb->wait_node);
             tcb->wait_node.list_head = NULL;
         }
-        /* 若该任务正阻塞在互斥锁上, 等待者减少后重新评估持有者的继承优先级 */
-        rtos_internal_mutex_waiter_left(tcb);
+        if (tcb->wait_node.is_mutex_wait != RTOS_FALSE) {
+            rtos_internal_mutex_waiter_left(tcb);
+        }
         tcb->blocked_on = NULL;
     }
 
@@ -565,7 +596,9 @@ rtos_status_t rtos_task_set_priority(rtos_tcb_t *tcb, rtos_prio_t prio)
 
     /* [缺陷修复 BM-3] 若该任务正阻塞在某把互斥锁上, 持有者的继承提升值必须
      * 跟着新优先级走 —— 否则持有者仍以旧优先级运行, 中优先级任务继续插队。 */
-    rtos_internal_mutex_waiter_requeued(tcb);
+    if (tcb->wait_node.is_mutex_wait != RTOS_FALSE) {
+        rtos_internal_mutex_waiter_requeued(tcb);
+    }
 
     /* 若提升的优先级高于当前，或当前被降低，触发切换 */
     if (rtos_kernel.sched_state == RTOS_SCHED_RUNNING) {
@@ -627,8 +660,9 @@ rtos_status_t rtos_task_suspend(rtos_tcb_t *tcb)
             rtos_internal_wait_remove_sync_bitmap(tcb->wait_node.list_head, &tcb->wait_node);
             tcb->wait_node.list_head = NULL;
         }
-        /* 若该任务正阻塞在互斥锁上, 等待者减少后重新评估持有者的继承优先级 */
-        rtos_internal_mutex_waiter_left(tcb);
+        if (tcb->wait_node.is_mutex_wait != RTOS_FALSE) {
+            rtos_internal_mutex_waiter_left(tcb);
+        }
         tcb->wait_result = RTOS_ERR_DELETED; /* 等待被挂起中止, 恢复后返回失败 */
         tcb->blocked_on = NULL;
     }

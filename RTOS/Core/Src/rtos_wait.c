@@ -16,8 +16,9 @@ void rtos_internal_wait_insert_by_prio(rtos_wait_node_t **head, rtos_wait_node_t
 {
     rtos_wait_node_t *cur = *head;
     rtos_wait_node_t *prev = NULL;
+    const rtos_prio_t priority = node->queued_priority;
 
-    while ((cur != NULL) && (cur->tcb->priority <= node->tcb->priority)) {
+    while ((cur != NULL) && (cur->queued_priority <= priority)) {
         prev = cur;
         cur = cur->next;
     }
@@ -32,39 +33,6 @@ void rtos_internal_wait_insert_by_prio(rtos_wait_node_t **head, rtos_wait_node_t
     if (cur != NULL) {
         cur->prev = node;
     }
-}
-
-/**
- * @brief 将等待节点尾插到等待链表(O(n))。
- *
- * @param head 等待链表头指针的地址。
- * @param node 待入链节点。
- *
- * @details 与 rtos_internal_wait_insert_by_prio 的区别: 本函数不做优先级定序,
- *          只做尾插。调用方必须同时维护配套的优先级位图, 并在唤醒时改用
- *          rtos_internal_wake_highest_bm —— 两者组合后语义与原有序链等价
- *          (最高优先级、同优先级 FIFO)。
- *
- * @note  同一对象内不可与 insert_by_prio 混用, 否则唤醒顺序失真。
- *        由于未维护独立尾指针，尾插需要遍历到链尾，复杂度为 O(n)。
- *        位图用于唤醒时定位最高优先级，不改变本函数的遍历成本。
- */
-void rtos_internal_wait_append(rtos_wait_node_t **head, rtos_wait_node_t *node)
-{
-    node->next = NULL;
-
-    if (*head == NULL) {
-        node->prev = NULL;
-        *head = node;
-        return;
-    }
-
-    rtos_wait_node_t *tail = *head;
-    while (tail->next != NULL) {
-        tail = tail->next;
-    }
-    tail->next = node;
-    node->prev = tail;
 }
 
 /**
@@ -88,46 +56,23 @@ void rtos_internal_wait_remove(rtos_wait_node_t **head, rtos_wait_node_t *node)
     node->prev = NULL;
 }
 
-/**
- * @brief 从等待链表移除节点, 并同步维护位图索引链的优先级位图。
- *
- * @param head [in,out] 等待链表头指针的地址。
- * @param node [in]     待移除节点。
- *
- * @details 适用对象: 采用"尾插链表 + 优先级位图"的等待链(信号量/队列)。
- *          位图位在该节点的优先级上可能被**同优先级的其它等待者**共享, 因此
- *          不能无条件清位 —— 先摘链, 再扫描剩余链判断该优先级是否仍有人等待,
- *          无人时才清位。
- *
- *          为什么需要它: `process_delayed_tasks` 的超时清理原先只调
- *          `rtos_internal_wait_remove`, 位图位被留在原处, 使"位图 ⇔ 链"这一
- *          不变式在每次超时后失效(真机实测残留 bit13 = 8192)。
- *
- * @note 调用方需在临界区内。节点不在链上时按 `rtos_internal_wait_remove`
- *       的防御语义处理(空操作)。
- */
+/** @brief 摘除有序等待链上的节点并维护可选的优先级位图。 */
 void rtos_internal_wait_remove_sync_bitmap(rtos_wait_node_t **head, rtos_wait_node_t *node)
 {
-    volatile uint32_t *bitmap = node->queue_bitmap;
-    const rtos_prio_t   prio   = node->tcb != NULL ? node->tcb->priority : node->queued_priority;
-
-    rtos_internal_wait_remove(head, node);
-
-    /* 非位图链(有序链: 事件组/互斥锁)无需维护位图 */
-    if (bitmap == NULL) {
-        return;
-    }
-
-    rtos_bool_t still_waiting = RTOS_FALSE;
-    for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
-        if (p->tcb != NULL && p->tcb->priority == prio) {
-            still_waiting = RTOS_TRUE;
-            break;
+    volatile uint32_t *const bitmap = node->queue_bitmap;
+    if (bitmap != NULL) {
+        const rtos_wait_node_t *const previous = node->prev;
+        const rtos_wait_node_t *const next = node->next;
+        const rtos_prio_t priority = node->queued_priority;
+        /* Equal-priority nodes are contiguous. During a requeue, priority
+         * still describes the old position even after the task value changes. */
+        if (((previous == NULL) || (previous->queued_priority != priority)) &&
+            ((next == NULL) || (next->queued_priority != priority))) {
+            *bitmap &= ~(1UL << priority);
         }
     }
-    if (still_waiting == RTOS_FALSE) {
-        *bitmap &= ~(1UL << prio);
-    }
+
+    rtos_internal_wait_remove(head, node);
 }
 
 /**
@@ -167,7 +112,7 @@ rtos_status_t rtos_internal_block_current_on(void *obj, rtos_wait_node_t **head,
     cur->wait_node.prev = NULL;
     /* 注意: transfer_buf 不在此清除 —— 队列零拷贝需在调用本函数前设置并保留。 */
     cur->wait_node.list_head = head; /* 记录所在链表，供超时清理 */
-    cur->wait_node.queue_bitmap = NULL; /* 默认有序链; 位图链由调用方覆盖 */
+    cur->wait_node.queue_bitmap = NULL; /* 通用阻塞入口不维护观测位图。 */
     cur->wait_node.queued_priority = cur->priority;
     cur->wait_result = RTOS_OK;
 
@@ -211,73 +156,27 @@ rtos_tcb_t *rtos_internal_wake_highest(rtos_wait_node_t **head)
     return best->tcb;
 }
 
-/**
- * @brief 唤醒"位图索引等待链"中最高优先级的任务。
- *
- * @param head   等待链表头指针的地址(同优先级内 FIFO)。
- * @param bitmap 存在等待者的优先级位图(调用方维护, 本函数负责清位)。
- * @return 被唤醒的 TCB, NULL 表示无等待者。
- *
- * @details 语义与 rtos_internal_wake_highest 完全等价(取最高优先级等待者,
- *          同优先级取最早入链者), 但"找最高优先级"从遍历链表改为
- *          `__builtin_ctz`(编译为 RBIT+CLZ 两条指令):
- *            - **单节点快路径**: 链上只有 1 个节点时零遍历、零位图运算 ——
- *              这是"每对象 1~2 个等待者"的典型嵌入式负载下最常见的情形;
- *            - 多节点时按位图取最高优先级，再在 FIFO 链上定位第一个匹配节点。
- *              清位时从该节点的后继开始查找同优先级等待者。
- *
- * @note  位图与链表理论上不会不一致(两者由同一临界区维护); 但为防止
- *        位图位残留导致"取不到牺牲者", 找不到时退化为**全链扫描取最高优先级**
- *        —— 绝不退化为"取链首", 那会唤醒错误的任务并破坏唤醒序语义。
- */
-rtos_tcb_t *rtos_internal_wake_highest_bm(rtos_wait_node_t **head, volatile uint32_t *bitmap)
+/** @brief 唤醒有序等待链的首节点并同步更新信号量的观测位图。 */
+void rtos_internal_wake_head_with_bitmap(rtos_wait_node_t **head, rtos_wait_node_t *node,
+                                         volatile uint32_t *bitmap)
 {
-    rtos_wait_node_t *victim = *head;
-
-    if (victim == NULL) {
-        return NULL;
-    }
-
-    if (victim->next != NULL) {
-        const rtos_prio_t top = (*bitmap != 0U) ?
-            (rtos_prio_t)__builtin_ctz(*bitmap) : RTOS_CONFIG_MAX_PRIORITIES;
-        rtos_wait_node_t *cur = *head;
-
-        while ((cur != NULL) && (cur->tcb->priority != top)) {
-            cur = cur->next;
-        }
-        if (cur != NULL) {
-            victim = cur;
-        } else {
-            rtos_prio_t best = victim->tcb->priority;
-            for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
-                if (p->tcb->priority < best) {
-                    best = p->tcb->priority;
-                    victim = p;
-                }
-            }
-        }
-    }
-
-    /* Both selection paths keep the first node at the chosen priority.
-     * Earlier nodes cannot share its bit, even after the fallback search. */
-    rtos_tcb_t *const task = victim->tcb;
-    const rtos_prio_t priority = task->priority;
-    rtos_wait_node_t *remaining = victim->next;
-    rtos_internal_wait_remove(head, victim);
-    while ((remaining != NULL) && (remaining->tcb->priority != priority)) {
-        remaining = remaining->next;
-    }
-    if (remaining == NULL) {
+    rtos_wait_node_t *const next = node->next;
+    const rtos_prio_t priority = node->queued_priority;
+    if ((next == NULL) || (next->queued_priority != priority)) {
         *bitmap &= ~(1UL << priority);
     }
+    *head = next;
+    if (next != NULL) {
+        next->prev = NULL;
+    }
+    node->next = NULL;
 
+    rtos_tcb_t *const task = node->tcb;
     task->blocked_on = NULL;
     task->wait_result = RTOS_OK;
-    victim->list_head = NULL;
+    node->list_head = NULL;
 
     rtos_sched_unblock(task);
-    return task;
 }
 
 /**
@@ -291,6 +190,7 @@ void rtos_internal_wake_all(rtos_wait_node_t **head, rtos_status_t reason)
         node->tcb->blocked_on = NULL;
         node->tcb->wait_result = reason;
         node->list_head = NULL;
+        node->is_mutex_wait = RTOS_FALSE;
         rtos_sched_unblock(node->tcb);
     }
 }
@@ -299,49 +199,22 @@ void rtos_internal_wake_all(rtos_wait_node_t **head, rtos_status_t reason)
 
 void rtos_internal_requeue_wait_lists(rtos_tcb_t *tcb)
 {
-    /* [bug fix PI-2] 优先级变化(用户 set_priority 或内核继承提升/恢复)后,
-     * 该任务若正阻塞在某对象等待链上, 必须让唤醒选择看到新优先级。
-     *
-     * 两套等待链约定并存, 必须分别处理:
-     *   1. 位图索引链(信号量/队列): 顺序由位图决定。重排链表会破坏"同优先级
-     *      FIFO"；优先级未变时保留原位，变化时同步位图并尾插至新优先级组。
-     *   2. 有序链(事件组/互斥锁): 摘出后按新优先级重插。
-     * 不可对位图链调用 insert_by_prio, 否则会把它的 FIFO 语义破坏掉。 */
     if ((tcb->blocked_on == NULL) || (tcb->wait_node.list_head == NULL)) {
         return;
     }
 
-    rtos_wait_node_t **head = tcb->wait_node.list_head;
+    rtos_wait_node_t *const node = &tcb->wait_node;
+    rtos_wait_node_t **const head = node->list_head;
     const rtos_prio_t new_prio = tcb->priority;
-    const rtos_prio_t old_prio = tcb->wait_node.queued_priority;
-    if (new_prio == old_prio) return; /* Effective no-op must preserve FIFO. */
-
-    rtos_internal_wait_remove(head, &tcb->wait_node);
-
-    if (tcb->wait_node.queue_bitmap != NULL) {
-        /* [缺陷修复 BM-2] 旧位不能无条件清除。
-         * 原注释称"若链上仍有同优先级等待者, 它自己的位早已置位, 不受影响",
-         * 该论断是错的: 同优先级等待者共享**同一个位**, 清位会把它的位一并
-         * 抹掉。反例: A(prio10)、B(prio10) 同链 → bitmap={10}; 把 A 改为 3,
-         * 原逻辑清掉 bit10, 于是 B 仍在链上但 bitmap 中已无它的位。
-         * 正确做法与超时/删除路径一致: 摘链后扫描剩余链, 确认该优先级确实
-         * 无人等待才清位。 */
-        rtos_bool_t still_waiting = RTOS_FALSE;
-        for (rtos_wait_node_t *p = *head; p != NULL; p = p->next) {
-            if ((p->tcb != NULL) && (p->tcb->priority == old_prio)) {
-                still_waiting = RTOS_TRUE;
-                break;
-            }
-        }
-        if ((still_waiting == RTOS_FALSE) && (old_prio < RTOS_CONFIG_MAX_PRIORITIES)) {
-            *tcb->wait_node.queue_bitmap &= ~(1UL << old_prio);
-        }
-        *tcb->wait_node.queue_bitmap |= (1UL << new_prio);
-        tcb->wait_node.queued_priority = new_prio;
-        rtos_internal_wait_append(head, &tcb->wait_node);
+    if (new_prio == node->queued_priority) {
+        /* Effective no-op must preserve FIFO. */
         return;
     }
 
-    rtos_internal_wait_insert_by_prio(head, &tcb->wait_node);
-    tcb->wait_node.queued_priority = new_prio;
+    rtos_internal_wait_remove_sync_bitmap(head, node);
+    node->queued_priority = new_prio;
+    rtos_internal_wait_insert_by_prio(head, node);
+    if (node->queue_bitmap != NULL) {
+        *node->queue_bitmap |= (1UL << new_prio);
+    }
 }

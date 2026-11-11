@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "stm32f4xx.h"
+#include "hil_target.h"
 
 #include "rtos.h"
 
@@ -123,25 +123,27 @@ static bool give_one(uint32_t index, uint32_t expected_bitmap, uint32_t *elapsed
     return is_valid && worker_returned(index, RTOS_OK);
 }
 
-static bool run_sample(uint32_t count, bool is_head, uint32_t *elapsed)
+static bool run_sample(uint32_t count, bool is_high_first, uint32_t *elapsed)
 {
     if (rtos_sem_init(&semaphore, 0U, 1U) != RTOS_OK) {
         return false;
     }
 
-    bool is_valid = !is_head || enroll_worker(0U, RTOS_WAIT_FOREVER);
+    bool is_valid = !is_high_first || enroll_worker(0U, RTOS_WAIT_FOREVER);
     for (uint32_t index = 1U; is_valid && (index < count); ++index) {
         is_valid = enroll_worker(index, RTOS_WAIT_FOREVER);
     }
-    is_valid = is_valid && (is_head || enroll_worker(0U, RTOS_WAIT_FOREVER));
+    is_valid = is_valid && (is_high_first || enroll_worker(0U, RTOS_WAIT_FOREVER));
 
     const uint32_t low_bit = (count > 1U) ? priority_bit(SEM_WAKE_LOW_PRIORITY) : 0U;
     RTOS_PORT_ENTER_CRITICAL();
-    is_valid = is_valid
-        && (semaphore.wait_bitmap == (low_bit | priority_bit(SEM_WAKE_HIGH_PRIORITY)))
-        && (semaphore.wait_head == &workers[is_head ? 0U : 1U].task.wait_node)
-        && (workers[0].task.wait_node.next
-            == ((is_head && (count > 1U)) ? &workers[1].task.wait_node : NULL));
+    uint32_t waiting_count = 0U;
+    for (const rtos_wait_node_t *node = semaphore.wait_head;
+         (node != NULL) && (waiting_count <= count); node = node->next) {
+        ++waiting_count;
+    }
+    is_valid = is_valid && (waiting_count == count)
+        && (semaphore.wait_bitmap == (low_bit | priority_bit(SEM_WAKE_HIGH_PRIORITY)));
     RTOS_PORT_EXIT_CRITICAL();
     is_valid = is_valid && give_one(0U, low_bit, elapsed);
 
@@ -159,7 +161,7 @@ static void record_check(bool is_valid)
     }
 }
 
-static void measure_give(uint32_t count, bool is_head)
+static void measure_give(uint32_t count, bool is_high_first)
 {
     rtos_prio_t priorities[SEM_WAKE_MAX_WORKERS];
     priorities[0] = SEM_WAKE_HIGH_PRIORITY;
@@ -174,7 +176,7 @@ static void measure_give(uint32_t count, bool is_head)
     uint64_t total = 0U;
     while ((created == count) && (samples < SEM_WAKE_SAMPLES)) {
         uint32_t elapsed = 0U;
-        if (!run_sample(count, is_head, &elapsed)) {
+        if (!run_sample(count, is_high_first, &elapsed)) {
             break;
         }
         if (elapsed < minimum) {
@@ -188,8 +190,8 @@ static void measure_give(uint32_t count, bool is_head)
     }
     const bool is_valid = delete_workers(created) && (samples == SEM_WAKE_SAMPLES);
     record_check(is_valid);
-    (void)printf("SWB|GIVE|waiters=%lu|layout=%s|n=%lu|avg=%lu|min=%lu|max=%lu|%s\r\n",
-                 (unsigned long)count, is_head ? "head" : "tail", (unsigned long)samples,
+    (void)printf("SWB|GIVE|waiters=%lu|high_enrolled=%s|n=%lu|avg=%lu|min=%lu|max=%lu|%s\r\n",
+                 (unsigned long)count, is_high_first ? "first" : "last", (unsigned long)samples,
                  (unsigned long)((samples != 0U) ? (total / samples) : 0U),
                  (unsigned long)((samples != 0U) ? minimum : 0U), (unsigned long)maximum,
                  is_valid ? "PASS" : "FAIL");
@@ -295,9 +297,9 @@ void audit_regressions_task(void *argument)
         }
     }
     report_check("PRIORITY_FIFO", test_fifo(valid_bitmap));
-    report_check("STALE_BITMAP_FALLBACK",
+    report_check("STALE_BITMAP_PRIORITY_FIFO",
                  test_fifo(valid_bitmap | priority_bit(SEM_WAKE_STALE_PRIORITY)));
-    report_check("EMPTY_BITMAP_FALLBACK", test_fifo(0U));
+    report_check("EMPTY_BITMAP_PRIORITY_FIFO", test_fifo(0U));
     report_check("TIMEOUT_BITMAP", test_timeout_bitmap());
 
     (void)printf("SWB|DONE|pass=%lu|fail=%lu\r\n", (unsigned long)passed_checks,

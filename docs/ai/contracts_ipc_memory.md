@@ -18,7 +18,7 @@
 
 ## 数据结构及事件模式
 
-`rtos_sem_t`保存令牌计数、上限及等待位图；`rtos_mutex_t`保存owner、递归计数和等待链；
+`rtos_sem_t` 保存令牌计数、上限、有序等待链及观测位图；`rtos_mutex_t` 保存 owner、递归计数和等待链；
 `rtos_queue_t`保存用户缓存、固定item_size、capacity、环形索引及两条等待链；
 `rtos_event_t`保存事件位和等待链；`rtos_mempool_t`保存块范围、块长、空闲链及计数。
 这些字段可供受控调试解释，不是应用可自由写入的扩展协议。

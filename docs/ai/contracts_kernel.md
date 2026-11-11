@@ -1087,14 +1087,14 @@ extern rtos_kernel_t rtos_kernel;
 |---|---|
 | top_of_stack / stack_base / stack_size | 内核保存的sp、最低地址、栈字数；top_of_stack必须偏移0。运行中保存sp可能落后实时PSP |
 | priority / base_priority / state / is_static | 有效/基础优先级、状态、内核是否回收TCB/栈；应用通过API修改 |
-| next_ready / prev_ready / next_all | 前两字段被ready环、delay链或延期释放链复用；next_all为独立构造/存活地址登记链 |
+| next_ready / prev_ready / next_all | 前两字段被 ready 环、delay 链或延期释放链复用；next_all 属于构造与存活地址登记桶 |
 | wait_node / wake_tick / blocked_on / wait_result | 内部等待协议；通知用blocked_on==(void*)tcb哨兵。唤醒/切换存在中间窗口，不能仅凭单字段判错 |
 | notify_value / notify_state | 值与内部IDLE/PENDING/RECEIVED状态；通过notify/wait消费，应用不直接改写 |
 | name / task_id / switch_count | 名称截断到MAX_TASK_NAME_LEN-1字节；ID是uint32计数，当前无耗尽拒绝，极限会回绕；切换计数也会回绕 |
 | run_time_counter / stack_magic / perf_* | 条件编译字段；热路径统计未启用时相关0值不能解释为任务从未运行 |
 
 `rtos_wait_node_t`是TCB内嵌侵入式协议节点，包括on_timeout、tcb、wake_tick、timed_out、
-wait_obj、next/prev、transfer_buf、transfer_size、to_front、list_head、queue_bitmap、
+wait_obj、next/prev、transfer_buf、transfer_size、to_front、list_head、queue_bitmap、is_mutex_wait、
 queued_priority。内核负责登记/清理，应用不应自行构造或改写。on_timeout在仍持有对象等待
 关系的临界区中捕获结果。transfer_buf所称“零拷贝”只指跳过中间环形缓存，队列直传仍执行memcpy。
 

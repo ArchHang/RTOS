@@ -177,6 +177,9 @@ static void mutex_handoff(rtos_mutex_t *mutex)
 {
     mutex->owner = NULL;
     rtos_tcb_t *owner = rtos_internal_wake_highest(&mutex->wait_head);
+    if (owner != NULL) {
+        owner->wait_node.is_mutex_wait = RTOS_FALSE;
+    }
     mutex->owner = owner;
     mutex->recursion_count = (owner != NULL) ? 1U : 0U;
     mutex->is_handoff_pending = (owner != NULL) ? 1U : 0U;
@@ -282,6 +285,7 @@ rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout)
         RTOS_PORT_EXIT_CRITICAL();
         return RTOS_ERR_SCHED;
     }
+    cur->wait_node.is_mutex_wait = RTOS_TRUE;
     mutex_refresh_priority_graph(NULL);
     RTOS_PORT_EXIT_CRITICAL();
 
@@ -400,21 +404,15 @@ static void mutex_recompute_inheritance(rtos_mutex_t *mutex)
 
 void rtos_internal_mutex_waiter_left(rtos_tcb_t *waiter)
 {
-    if ((waiter == NULL) || (waiter->wait_node.wait_obj == NULL)) {
-        return;
-    }
+    rtos_wait_node_t *const node = &waiter->wait_node;
+    rtos_mutex_t *const mutex = (rtos_mutex_t *)node->wait_obj;
+    RTOS_ASSERT((node->is_mutex_wait != RTOS_FALSE) && (node->list_head == NULL) &&
+                (mutex != NULL) && (waiter->blocked_on == (void *)mutex) &&
+                (mutex->is_initialized != 0U));
 
-    /* Tick, task delete and task suspend still hold the lock used to unlink
-     * the waiter. Keep the registry lookup and donation update in that section. */
-    void *obj = waiter->wait_node.wait_obj;
-    for (uint32_t i = 0U; i < s_mutex_count; i++) {
-        if (s_mutex_registry[i] == (rtos_mutex_t *)obj) {
-            /* 该对象确为互斥锁: 等待者减少, 重新评估持有者继承优先级。
-             * 非互斥锁对象(信号量/队列/事件等)不会被匹配, 自动忽略。 */
-            mutex_recompute_inheritance((rtos_mutex_t *)obj);
-            break;
-        }
-    }
+    /* Unlink, consume the tag and recompute under the same critical section. */
+    node->is_mutex_wait = RTOS_FALSE;
+    mutex_recompute_inheritance(mutex);
 }
 
 void rtos_internal_mutex_release_all(rtos_tcb_t *owner)
@@ -478,39 +476,19 @@ rtos_prio_t rtos_internal_mutex_compute_effective_priority(rtos_tcb_t *owner)
  *             中优先级任务 M(5) 依旧能抢占 L → H(有效优先级 2) 仍被无限期饥饿,
  *             即优先级继承要消除的那个反转又回来了。
  *
- *          本函数按"等待者 → 它阻塞在哪把锁"反查注册表(不需要在 TCB 里保存
- *          互斥锁类型信息), 重算该锁持有者的有效优先级。
+ *          等待节点的类型标志只在互斥锁等待期间有效，允许直接定位其锁。
  *
  * @note 调用方需在临界区内。
  */
 void rtos_internal_mutex_waiter_requeued(rtos_tcb_t *waiter)
 {
-    if (waiter == NULL) {
-        return;
-    }
-    for (uint32_t i = 0U; i < s_mutex_count; i++) {
-        rtos_mutex_t *mutex = s_mutex_registry[i];
-        if ((mutex == NULL) || (mutex->owner == NULL) || (mutex->owner == waiter)) {
-            continue;
-        }
-        /* 遍历本锁等待链时校验节点的归属: wait_obj 必须回指本锁, 且节点自报的
-         * list_head 必须就是本锁的链头地址。等待链的 prev/next 由多个模块共享
-         * 同一个侵入式节点结构, 节点可能属于别的对象(或已被复用), 无校验的
-         * 正向遍历一旦遇到陈旧指针就会解引用野地址(实测: 曾在此处触发
-         * BusFault PRECISERR, BFAR = 0x056884B5)。校验失败即视为不在本链。 */
-        for (rtos_wait_node_t *node = mutex->wait_head; node != NULL; node = node->next) {
-            if (node->wait_obj != (void *)mutex) {
-                break;
-            }
-            if (node->list_head != &mutex->wait_head) {
-                break;
-            }
-            if (node->tcb == waiter) {
-                mutex_restore_priority(mutex->owner);
-                return;
-            }
-        }
-    }
+    const rtos_wait_node_t *const node = &waiter->wait_node;
+    rtos_mutex_t *const mutex = (rtos_mutex_t *)node->wait_obj;
+    RTOS_ASSERT((node->is_mutex_wait != RTOS_FALSE) && (mutex != NULL) &&
+                (waiter->blocked_on == (void *)mutex) && (node->list_head == &mutex->wait_head) &&
+                (mutex->is_initialized != 0U) && (mutex->owner != waiter));
+
+    mutex_recompute_inheritance(mutex);
 }
 
 /**

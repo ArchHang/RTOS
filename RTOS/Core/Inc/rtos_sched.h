@@ -39,28 +39,22 @@ typedef enum {
  * @brief  内核全局状态。整个内核只有一份实例(rtos_kernel)。
  */
 typedef struct rtos_kernel {
+    /* Frequently used together by SysTick, ready selection, and PendSV. */
     volatile rtos_sched_state_t sched_state; /**< 调度器状态。 */
     volatile rtos_tick_t tick_count; /**< 全局 Tick 计数。 */
-
-    /* 就绪表: 位图 + 每优先级链表头 */
     volatile uint32_t ready_bitmap; /**< 就绪位图(32 位)。 */
-    rtos_tcb_t *ready_heads[RTOS_CONFIG_MAX_PRIORITIES]; /**< 各优先级就绪链表头。 */
-
-    /* 延时/超时链表(按 wake_tick 升序) */
     rtos_tcb_t *delay_head; /**< 延时链表头。 */
-
-    /* 当前与下一个任务 */
     rtos_tcb_t *current_tcb; /**< 正在运行的任务。 */
     rtos_tcb_t *next_tcb; /**< 调度选出的下一任务。 */
-
-    /* 空闲任务 TCB 指针 */
+    volatile uint32_t switch_count; /**< 上下文切换请求计数。 */
     rtos_tcb_t *idle_tcb; /**< 空闲任务(优先级最低)。 */
+
+    rtos_tcb_t *ready_heads[RTOS_CONFIG_MAX_PRIORITIES]; /**< 各优先级就绪链表头。 */
 
     /* 统计 */
 #if RTOS_CONFIG_GENERATE_RUN_TIME_STATS
     volatile uint32_t idle_run_count; /**< 空闲累计运行计数。 */
 #endif
-    volatile uint32_t switch_count; /**< 上下文切换计数。 */
 
     /* 临界区嵌套计数 */
     volatile uint32_t critical_nesting;

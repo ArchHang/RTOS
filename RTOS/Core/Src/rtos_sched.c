@@ -18,15 +18,25 @@
  *          保证调度器数据结构操作原子性, 同时不阻断硬实时中断。
  */
 #include "rtos_sched.h"
-#include "rtos_task.h"
+
+#include <stddef.h>
+#include <string.h>
+
 #include "rtos_internal.h"
 #include "rtos_perf.h"
-#include <string.h>
+#include "rtos_task.h"
 
 /* ============================== 内核全局实例 ============================== */
 
-/** @brief 唯一的内核状态实例。 */
-rtos_kernel_t rtos_kernel;
+enum { SCHED_STATE_ALIGNMENT = 32U };
+
+#if UINTPTR_MAX == UINT32_MAX
+_Static_assert(offsetof(rtos_kernel_t, ready_heads) == SCHED_STATE_ALIGNMENT,
+               "Scheduler state must fit before the ready queues in one 32-byte line");
+#endif
+
+/** @brief Align the singleton so its common scheduler fields share one cache line. */
+_Alignas(SCHED_STATE_ALIGNMENT) rtos_kernel_t rtos_kernel;
 
 /* ============================== 内部静态数据 ============================== */
 
@@ -294,16 +304,9 @@ static void delay_list_remove(rtos_tcb_t *tcb)
  *          被后续 wake_highest/零拷贝直传误用(防止 use-after-free 与重复唤醒)。
  *          notify_wait 不挂入对象链表(list_head=NULL)，跳过移除。
  */
-static void process_delayed_tasks(void)
+static __attribute__((noinline)) void process_delayed_tasks(rtos_tcb_t *tcb, rtos_tick_t now)
 {
-    rtos_tick_t now = rtos_kernel.tick_count;
-
-    while (rtos_kernel.delay_head != NULL) {
-        rtos_tcb_t *tcb = rtos_kernel.delay_head;
-        if (sched_tick_after(tcb->wake_tick, now) > 0) {
-            break; /* 链首未到期，后续更晚(带符号差值, 回绕安全) */
-        }
-
+    do {
         /* 从延时表摘除链首。
          * 注意: 这里**不能**简单地把新链首的 prev_ready 清为 NULL ——
          * 旧链首的 prev_ready 字段承载的是"表尾缓存"(见 delay_list_insert
@@ -345,8 +348,9 @@ static void process_delayed_tasks(void)
                 rtos_internal_wait_remove_sync_bitmap(tcb->wait_node.list_head, &tcb->wait_node);
                 tcb->wait_node.list_head = NULL;
             }
-            /* 若超时任务曾阻塞在互斥锁上, 等待者减少后需重新评估持有者的继承优先级 */
-            rtos_internal_mutex_waiter_left(tcb);
+            if (tcb->wait_node.is_mutex_wait != RTOS_FALSE) {
+                rtos_internal_mutex_waiter_left(tcb);
+            }
 
             /* [缺陷修复 BI-1] 清除 blocked_on。
              * 原实现只在唤醒路径清 blocked_on, 超时路径留着不管 —— 于是任务
@@ -364,7 +368,8 @@ static void process_delayed_tasks(void)
         /* 进入就绪态 */
         tcb->state = RTOS_TASK_READY;
         ready_list_push_tail(tcb);
-    }
+        tcb = rtos_kernel.delay_head;
+    } while ((tcb != NULL) && (sched_tick_after(tcb->wake_tick, now) <= 0));
 }
 
 /* ============================== 公共 API 实现 ============================== */
@@ -555,10 +560,14 @@ void rtos_sched_tick(void)
         return;
     }
 
-    rtos_kernel.tick_count++;
+    const rtos_tick_t now = rtos_kernel.tick_count + 1U;
+    rtos_kernel.tick_count = now;
 
-    /* 唤醒到期任务(可能将更高优先级任务放入就绪表) */
-    process_delayed_tasks();
+    /* The no-expiration path does not enter the due handler's stack frame. */
+    rtos_tcb_t *const first = rtos_kernel.delay_head;
+    if ((first != NULL) && (sched_tick_after(first->wake_tick, now) <= 0)) {
+        process_delayed_tasks(first, now);
+    }
 
 #if !RTOS_CONFIG_USE_PREEMPTION
     /* Also preserves an explicit yield already queued before this tick. */

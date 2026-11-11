@@ -136,6 +136,7 @@ typedef struct rtos_wait_node {
     rtos_tcb_t *tcb; /**< 等待的任务。 */
     rtos_tick_t wake_tick; /**< 超时唤醒时刻(0=永不超时)。 */
     rtos_bool_t timed_out; /**< 唤醒原因: 是否因超时唤醒。 */
+    rtos_bool_t is_mutex_wait; /**< Set only while enrolled as a mutex waiter. */
     void *wait_obj; /**< 所等待的对象指针(用于校验)。 */
     struct rtos_wait_node *next; /**< 链表后继。 */
     struct rtos_wait_node *prev; /**< 链表前驱。 */
@@ -143,11 +144,9 @@ typedef struct rtos_wait_node {
     uint32_t transfer_size; /**< 零拷贝字节数(队列场景= item_size)。 */
     uint8_t to_front; /**< [queue] 阻塞发送的插队意图(代办入队时按此选写入位置)。 */
     struct rtos_wait_node **list_head; /**< 所在等待链表头地址(超时清理用; NULL=不在链表)。 */
-    /** @brief 位图索引等待链的优先级位图地址(NULL = 该对象用按优先级有序链)。
-     *  @details 非 NULL 表示 FIFO 等待链；尾插要找链尾，唤醒按位图和 FIFO 次序选择。
-     *           有效优先级变化时同步旧位与新位，并把变更节点追加到链尾。 */
+    /** @brief 可选的等待优先级观测位图地址，NULL 表示无需维护。 */
     volatile uint32_t *queue_bitmap;
-    /** @brief 入链时的优先级(用于优先级变化后同步位图)。 */
+    /** @brief 节点当前所在位置对应的优先级。 */
     rtos_prio_t queued_priority;
 } rtos_wait_node_t;
 
