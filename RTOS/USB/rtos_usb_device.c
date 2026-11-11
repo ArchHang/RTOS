@@ -105,24 +105,39 @@ void dwc2_get_user_fifo_config(uint32_t reg_base, struct usb_dwc2_user_fifo_conf
 #define HID_CUSTOM_INOUT_DESCRIPTOR_LEN 0U
 #endif
 
-/* ---- 环形缓冲优化(Linux/FreeRTOS StreamBuffer/Zephyr ring_buf 通用模式) ---- */
-/* 采用"原始计数器"模式: head/tail 始终递增(uint32_t 自然回绕), 仅在数组访问时
- * 用掩码(2 的幂)或取模(非 2 的幂)转换为索引。
- *   优点: count/space 计算用简单减法, 无取模; 2 的幂时数组访问用位与(快 3~5 倍)。
- *   COUNT(h,t) = h - t         (uint32_t 自然回绕, 永远正确)
- *   SPACE(h,t) = SIZE - 1 - COUNT(h,t)  (保留 1 字节区分满/空) */
+/* A power-of-two capacity divides 2^32, so masking wrapping byte counters
+ * preserves the physical cursor. Other capacities use positions modulo the
+ * capacity directly. Both representations reserve one byte for full/empty. */
 #define RTOS_USB_IS_POW2(x) (((x) != 0U) && (((x) & ((x) - 1U)) == 0U))
 
+static inline uint32_t cdc_rx_position(uint32_t cursor)
+{
 #if RTOS_USB_IS_POW2(RTOS_CONFIG_USB_CDC_RX_BUF_SIZE)
-/* 2 的幂: 用位掩码替代取模 */
-#define RX_BUF_POS(i) ((i) & (RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - 1U))
+    return cursor & (RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - 1U);
 #else
-/* 非 2 的幂: 用取模 */
-#define RX_BUF_POS(i) ((i) % RTOS_CONFIG_USB_CDC_RX_BUF_SIZE)
+    return cursor;
 #endif
-/* COUNT/SPACE 对 2 的幂和非 2 的幂都适用(依赖 uint32_t 自然回绕) */
-#define RX_BUF_SPACE(h, t) (RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - 1U - ((h) - (t)))
-#define RX_BUF_COUNT(h, t) ((h) - (t))
+}
+
+static inline uint32_t cdc_rx_count(uint32_t head, uint32_t tail)
+{
+#if RTOS_USB_IS_POW2(RTOS_CONFIG_USB_CDC_RX_BUF_SIZE)
+    return head - tail;
+#else
+    return (head >= tail) ? (head - tail) : (RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - (tail - head));
+#endif
+}
+
+static inline uint32_t cdc_rx_advance(uint32_t cursor, uint32_t count)
+{
+#if RTOS_USB_IS_POW2(RTOS_CONFIG_USB_CDC_RX_BUF_SIZE)
+    return cursor + count;
+#else
+    /* count is at most the ring's usable capacity, so one wrap suffices. */
+    const uint32_t until_end = RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - cursor;
+    return (count < until_end) ? (cursor + count) : (count - until_end);
+#endif
+}
 
 #ifndef RTOS_USB_MIN
 #define RTOS_USB_MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -378,29 +393,25 @@ static void rtos_usb_cdc_bulk_out(uint8_t busid, uint8_t ep, uint32_t nbytes)
 
     if (nbytes > 0U) {
         RTOS_PORT_ENTER_CRITICAL();
-        uint32_t head = dev->rx_head;
-        uint32_t tail = dev->rx_tail;
-        uint32_t space = RX_BUF_SPACE(head, tail);
+        const uint32_t head = dev->rx_head;
+        const uint32_t tail = dev->rx_tail;
+        const uint32_t space = RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - 1U - cdc_rx_count(head, tail);
         /* 防御: nbytes 不应超过 ep_out_buf 大小(硬件契约), 但防御性截断 */
         uint32_t bounded_nbytes = RTOS_USB_MIN(nbytes, RTOS_CONFIG_USB_CDC_EP_OUT_BUF_SIZE);
         uint32_t to_copy = RTOS_USB_MIN(bounded_nbytes, space);
 
         if (to_copy > 0U) {
-            /* 第一段: 从 head 到缓冲末尾。
-             * 注意: head/tail 是"原始计数器"(始终递增, uint32_t 自然回绕),
-             *       仅在数组索引时用 RX_BUF_POS() 转换, 切勿回写掩码后的值。 */
-            uint32_t first_chunk =
-                RTOS_USB_MIN(to_copy, RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - RX_BUF_POS(head));
-            memcpy(&dev->rx_buf[RX_BUF_POS(head)], &dev->ep_out_buf[0], first_chunk);
-            head += first_chunk;
+            const uint32_t offset = cdc_rx_position(head);
+            const uint32_t first_chunk =
+                RTOS_USB_MIN(to_copy, RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - offset);
+            memcpy(&dev->rx_buf[offset], &dev->ep_out_buf[0], first_chunk);
 
             /* 第二段: 缓冲起始到剩余 */
             uint32_t second_chunk = to_copy - first_chunk;
             if (second_chunk > 0U) {
                 memcpy(&dev->rx_buf[0], &dev->ep_out_buf[first_chunk], second_chunk);
-                head += second_chunk;
             }
-            dev->rx_head = head;
+            dev->rx_head = cdc_rx_advance(head, to_copy);
         }
         /* 统计丢弃字节(调试观测, 不影响功能) */
         if (nbytes > to_copy) {
@@ -750,27 +761,23 @@ int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
     for (;;) {
         /* 块拷贝读取: 用 memcpy 两段拷贝替代逐字节循环 */
         RTOS_PORT_ENTER_CRITICAL();
-        uint32_t head = dev->rx_head;
-        uint32_t tail = dev->rx_tail;
-        uint32_t avail = RX_BUF_COUNT(head, tail);
+        const uint32_t head = dev->rx_head;
+        const uint32_t tail = dev->rx_tail;
+        const uint32_t avail = cdc_rx_count(head, tail);
         uint32_t to_read = RTOS_USB_MIN(len, avail);
 
         if (to_read > 0U) {
-            /* 第一段: 从 tail 到缓冲末尾。
-             * 注意: head/tail 是"原始计数器"(始终递增, uint32_t 自然回绕),
-             *       仅在数组索引时用 RX_BUF_POS() 转换, 切勿回写掩码后的值。 */
-            uint32_t first_chunk =
-                RTOS_USB_MIN(to_read, RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - RX_BUF_POS(tail));
-            memcpy(&buf[0], &dev->rx_buf[RX_BUF_POS(tail)], first_chunk);
-            tail += first_chunk;
+            const uint32_t offset = cdc_rx_position(tail);
+            const uint32_t first_chunk =
+                RTOS_USB_MIN(to_read, RTOS_CONFIG_USB_CDC_RX_BUF_SIZE - offset);
+            memcpy(&buf[0], &dev->rx_buf[offset], first_chunk);
 
             /* 第二段: 缓冲起始到剩余 */
             uint32_t second_chunk = to_read - first_chunk;
             if (second_chunk > 0U) {
                 memcpy(&buf[first_chunk], &dev->rx_buf[0], second_chunk);
-                tail += second_chunk;
             }
-            dev->rx_tail = tail;
+            dev->rx_tail = cdc_rx_advance(tail, to_read);
         }
         RTOS_PORT_EXIT_CRITICAL();
 
@@ -805,7 +812,7 @@ uint32_t rtos_usb_cdc_available(uint8_t busid)
     uint32_t tail = dev->rx_tail;
     RTOS_PORT_EXIT_CRITICAL();
 
-    return RX_BUF_COUNT(head, tail);
+    return cdc_rx_count(head, tail);
 }
 
 void rtos_usb_cdc_flush_rx(uint8_t busid)
@@ -1006,6 +1013,30 @@ void rtos_usb_audit_end(void)
     rtos_usb_mutex_delete(dev->hid_tx_mutex);
 #endif
     memset(dev, 0, sizeof(*dev));
+}
+#endif
+
+#if defined(RTOS_HIL_USB_CDC_CURSOR_TEST)
+/* Seed an empty test ring and inject bytes through the real receive callback. */
+void rtos_usb_cdc_cursor_test_seed(uint32_t total)
+{
+    rtos_usb_cdc_dev_t *dev = &s_cdc_dev[0];
+    memset(dev->rx_buf, 0, sizeof(dev->rx_buf));
+#if !RTOS_USB_IS_POW2(RTOS_CONFIG_USB_CDC_RX_BUF_SIZE)
+    total %= RTOS_CONFIG_USB_CDC_RX_BUF_SIZE;
+#endif
+    dev->rx_head = total;
+    dev->rx_tail = total;
+}
+
+bool rtos_usb_cdc_cursor_test_push(const uint8_t *data, uint32_t count)
+{
+    if ((data == NULL) || (count > RTOS_CONFIG_USB_CDC_EP_OUT_BUF_SIZE)) {
+        return false;
+    }
+    memcpy(s_cdc_dev[0].ep_out_buf, data, count);
+    rtos_usb_cdc_bulk_out(0U, CDC_OUT_EP, count);
+    return true;
 }
 #endif
 

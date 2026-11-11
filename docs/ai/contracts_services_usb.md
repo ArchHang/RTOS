@@ -779,8 +779,8 @@ void rtos_usb_thread_schedule_other(void);
 - 参数：无参数。
 - 上下文：运行中的Thread；依赖当前有效任务、task_set_priority/yield；不用于ISR。
 - 阻塞：会主动让出CPU，其他任务可运行。
-- 返回/副作用：无当前任务时无操作；否则保存当前有效优先级，改成最低，yield，再用保存值调用set_priority，忽略各返回状态。
-- 生命周期/边界：这是调度让步操作，会改变基础优先级设置；不提供互斥所有权或优先级继承不变的承诺。
+- 返回/副作用：无当前任务时无操作；否则保存当前基础优先级，将基础值设到最低，yield 后再恢复保存值，忽略各返回状态。
+- 生命周期/边界：互斥锁继承仍决定让步期间的有效优先级，低优先级任务能否运行取决于当前继承与就绪状态。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_osal.c)。
 
 <a id="api-rtos_usb_timer_create"></a>
@@ -1129,7 +1129,7 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
 |---|---|
 | USB_OSAL_WAITING_FOREVER | 0xffffffff，CherryUSB等待参数的永久值，单位体系为毫秒 |
 | RTOS_CONFIG_USB_VID / RTOS_CONFIG_USB_PID | 0x0483 / 0x5740，设备描述符标识，不保证主机驱动安装 |
-| RTOS_CONFIG_USB_CDC_RX_BUF_SIZE | 默认512字节，至少为EP_OUT缓冲大小。非二次幂分支用取模索引，32位计数回绕时索引可能跳变 |
+| RTOS_CONFIG_USB_CDC_RX_BUF_SIZE | 默认512字节，至少为EP_OUT缓冲大小。保留一个空位。二次幂使用计数和掩码，其他容量使用环内位置和环形距离 |
 | RTOS_CONFIG_USB_CDC_EP_OUT_BUF_SIZE | 64字节端点OUT缓存，调用者移植须与控制器/MPS匹配 |
 | RTOS_CONFIG_USB_CDC_TX_BUF_SIZE | 512字节内部TX分块缓存；目标需正值且适配端点，头部仅对RX/OUT大小关系执行#error |
 | CONFIG_USB_DBG_LEVEL | USB_DBG_INFO，CherryUSB日志级别，由其日志头解释 |
@@ -1226,7 +1226,7 @@ void usb_osal_thread_schedule_other(void);
 ```
 
 - 参数：无参数。
-- 上下文、阻塞、结果与寿命：运行中的Thread让步，保存有效优先级、临时降到最低后恢复；可能让其他任务运行，不是ISR API。
+- 上下文、阻塞、结果与寿命：运行中的Thread让步，保存基础优先级、临时将基础值降到最低后恢复；其他任务能否运行取决于继承关系和就绪状态。仅限线程上下文。
 - 源码：[声明](../../RTOS/lib/third/CherryUSB/common/usb_osal.h)；[实现](../../RTOS/USB/rtos_usb_osal.c)；[底层完整契约](#api-rtos_usb_thread_schedule_other)。
 
 <a id="api-usb_osal_sem_create"></a>

@@ -493,10 +493,11 @@ void rtos_usb_thread_schedule_other(void)
     if (cur == NULL) {
         return;
     }
-    rtos_prio_t old_prio = rtos_task_get_priority(cur);
+    /* set_priority writes the base priority. Inheritance remains independent. */
+    const rtos_prio_t base_priority = cur->base_priority;
     rtos_task_set_priority(cur, RTOS_CONFIG_MAX_PRIORITIES - 1U);
     rtos_task_yield();
-    rtos_task_set_priority(cur, old_prio);
+    rtos_task_set_priority(cur, base_priority);
 }
 
 /* ============================== 定时器 ============================== */
