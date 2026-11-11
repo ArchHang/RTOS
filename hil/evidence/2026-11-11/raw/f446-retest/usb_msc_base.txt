@@ -1,0 +1,22 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+UMSC|CHECK|osal_initialized|PASS
+UMSC|CHECK|queue_slots_full|PASS
+[E/USB] usb_osal_mq_create failed
+[E/usbd_msc] No memory to alloc for g_usbd_msc[busid].usbd_msc_mq
+UMSC|CHECK|queue_full_returns_no_memory|FAIL
+UMSC|CHECK|queue_full_controller_untouched|FAIL
+UMSC|CHECK|queue_full_creates_no_worker|FAIL
+UMSC|CHECK|queue_contents_unchanged|PASS
+UMSC|CHECK|queue_failure_releases_sync|FAIL
+F4HIL|READY|entry=f446_usb_msc_resource_run|priority=4
+UMSC|DONE|pass=3|fail=4

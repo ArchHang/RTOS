@@ -1,0 +1,95 @@
+{
+  "f446": {
+    "status": "PASS",
+    "target": "STM32F446xx",
+    "partial_links": 19,
+    "production_inputs_stable": true,
+    "limits": [
+      "Compile and relocatable-link checks only; no executable firmware, no execution or hardware.",
+      "Partial links leave BSP, runtime and third-party symbols unresolved and do not prove final integration.",
+      "Overlay configurations are temporary copies, not production header changes."
+    ],
+    "profiles": [
+      "base_m0_a0_O0",
+      "base_m0_a0_O2",
+      "base_m0_a0_O3",
+      "base_m0_a1_O0",
+      "base_m0_a1_O2",
+      "base_m0_a1_O3",
+      "base_m1_a0_O0",
+      "base_m1_a0_O2",
+      "base_m1_a0_O3",
+      "base_m1_a1_O0",
+      "base_m1_a1_O2",
+      "base_m1_a1_O3",
+      "usb_off",
+      "perf_off",
+      "optional_off",
+      "hot_stats",
+      "dynamic_tasks",
+      "tick_100hz",
+      "usb_device_off"
+    ],
+    "summary_sha256": "694e648a287f17af0932baacd38dbb727dc8cc8df6e1983923b6ca31b5deb6e8"
+  },
+  "h743": {
+    "status": "PASS",
+    "target": "STM32H743xx",
+    "partial_links": 19,
+    "production_inputs_stable": true,
+    "limits": [
+      "Compile and relocatable-link checks only; no executable firmware, no execution or hardware.",
+      "Partial links leave BSP, runtime and third-party symbols unresolved and do not prove final integration.",
+      "Overlay configurations are temporary copies, not production header changes."
+    ],
+    "profiles": [
+      "base_m0_a0_O0",
+      "base_m0_a0_O2",
+      "base_m0_a0_O3",
+      "base_m0_a1_O0",
+      "base_m0_a1_O2",
+      "base_m0_a1_O3",
+      "base_m1_a0_O0",
+      "base_m1_a0_O2",
+      "base_m1_a0_O3",
+      "base_m1_a1_O0",
+      "base_m1_a1_O2",
+      "base_m1_a1_O3",
+      "usb_off",
+      "perf_off",
+      "optional_off",
+      "hot_stats",
+      "dynamic_tasks",
+      "tick_100hz",
+      "usb_device_off"
+    ],
+    "summary_sha256": "c06271f26d8ce23c510e71063c67c4083a01a64e1c6e88e2108ae21203866e09"
+  },
+  "comment_only_delta": [
+    "Core/Inc/rtos_task.h",
+    "Core/Inc/rtos_timer.h",
+    "Services/rtos_timer.c"
+  ],
+  "local_snapshots_verified": 6,
+  "compile_attempt_notes": [
+    "First sandboxed compiler launch failed with Windows DLL relocation error 623.",
+    "Retry compiled profiles but failed input-identity guard during header comment editing.",
+    "Final runs above used stable inputs and passed all 19 profiles on each target."
+  ],
+  "contracts": {
+    "status": "PASS",
+    "primary_headers": 16,
+    "primary_callables": 159,
+    "documented_records": 193
+  },
+  "handbook": {
+    "status": "PASS",
+    "blocks": 39,
+    "unique_functions": 34,
+    "whole_files": 1
+  },
+  "cleanup": {
+    "directories": 6,
+    "bytes": 300607643
+  }
+}

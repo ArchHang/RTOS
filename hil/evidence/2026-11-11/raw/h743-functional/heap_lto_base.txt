@@ -1,0 +1,5 @@
+H743|READY|entry=h743_heap_poll_regression_run|priority=4|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+H7MP|CASE|kind=0|before=0|observed=0|expected=1|irq=1|cycles=24000017|pass=0
+H7MP|CASE|kind=1|before=0|observed=0|expected=1|irq=1|cycles=24000013|pass=0
+H7MP|CASE|kind=2|before=0|observed=0|expected=32760|irq=1|cycles=24000011|pass=0
+H7MP|DONE|pass=1|fail=3

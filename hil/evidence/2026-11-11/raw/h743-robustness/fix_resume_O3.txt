@@ -1,0 +1,3 @@
+H743|READY|entry=h743_resume_regression_run|priority=4|tick_hz=1000|basepri=0|assert=0|systick_load=479999|vtor=08000000
+H7RESUME|RESULT|rounds=32|irq=32|valid=32|selected_high=32|high_first=32|low_first=0|clean=32
+H7RESUME|DONE|pass=4|fail=0

@@ -1,0 +1,22 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=h743_reap_regression_run|priority=9
+H7REAP|LOAD|created=35|completed=35|status=-2|idle_switches=0|initial_free=28496|free_before_idle=216
+H7REAP|CHECK|idle_never_dispatched_during_churn|PASS
+H7REAP|CHECK|all_created_tasks_exited|PASS
+H7REAP|CHECK|churn_survives_without_idle|FAIL
+H7REAP|CHECK|idle_recovers_entire_heap|PASS
+H7REAP|CHECK|tcb_exhaustion_preserves_output|PASS
+H7REAP|CHECK|tcb_exhaustion_preserves_heap|PASS
+H7REAP|CHECK|stack_exhaustion_preserves_output|PASS
+H7REAP|CHECK|stack_exhaustion_rolls_back_tcb|PASS
+H7REAP|DONE|pass=7|fail=1

@@ -6,7 +6,7 @@
 [rtos_design.md](../docs/rtos_design.md)。
 
 测试结论和归档范围按日期记录。本次交付所用验证入口、覆盖和结果见
-[工程交付报告](../docs/logs/2026-11-11.md#delivery-report)，长时间压力与加速回绕的
+[工程交付报告](../docs/logs/2026-11-11.md#hardening-release)，长时间压力与加速回绕的
 结果见 [F446 长时并发与回绕回归](../docs/logs/2026-11-11.md#long-soak)。
 本批保留的 [实测证据与复跑入口](evidence/2026-11-11/README.md) 集中记录 F446、H743 及宿主结果。
 
@@ -20,8 +20,13 @@ hil/
 ├── repro_all.ps1                     常用回归组合入口
 ├── run_scenarios.ps1 / repeat_run.ps1 场景及重复运行辅助入口
 ├── restore_project.ps1               恢复日常构建规则，可选择重建
+├── run_memory_host.py                内存边界、小堆配置与 LTO 可见性宿主验证
+├── run_usb_device_host.py            USB 资源回滚、协议入口及会话宿主验证
+├── run_uart_pipeline.py              真实串口业务流与独立模型结果核对
 ├── fw/                              权威测试源码，必须保留
 ├── templates/                       权威 make 模板，必须保留
+├── h743/                            Cortex-M7 隔离 BSP、构建与受保护烧录/恢复
+├── evidence/2026-11-11/              必要原始文字证据、身份清单与离线验收器
 ├── refactor_20261027/                当前布局的矩阵、编译与验收脚本
 ├── basepri_20261025/                 保留原字节的基础日志验收器
 ├── adversarial_20261025/             保留原字节的复杂并发日志验收器
@@ -35,6 +40,9 @@ hil/
 
 运行时生成 `hil/logs/`、`hil/fwsrc/` 和工程根目录的 `Debug/`。
 `hil/fw/` 保存测试源码，`hil/fwsrc/` 保存构建时复制的变体文件。
+`hil/logs/` 不入库，保留的 ELF 统一以 `images/<标签>/firmware.elf` 为准；本轮清除了两个
+批次根目录的相同 ELF 副本。旧的一次性归档脚本仅记录当时汇编证据的过程，复跑采用本文的
+现行构建/采集入口与 `evidence/` 中的验收器。
 
 ## 2. 选择入口
 
@@ -52,9 +60,27 @@ hil/
 | 单个镜像下载与串口采集 | `run_hil.ps1` | 是 |
 | 恢复日常构建规则 | `restore_project.ps1` | 否；重建需工具链，重新下载需板卡 |
 | STM32H743 Cortex-M7 实测、Flash 备份与恢复 | [h743](h743/README.md) | 是，ST-LINK V3 与 USART1 VCP |
+| 堆、固定池边界与 LTO 统计可见性 | [内存宿主复跑](#host-memory) | 否，需宿主 GCC |
+| USB 复合设备启动回滚、CDC/HID 回调与 MSC 介质边界 | `python -B hil/run_usb_device_host.py --opt O2` | 否，需本机 GCC |
 
 历史验收器按当时的字段和原始批次工作。当前实板复测应选择表中相应入口，使用新的
 输出目录，并保留源码身份、构建、固件、下载和原始日志。
+
+<a id="host-memory"></a>
+### 内存宿主复跑
+
+`run_memory_host.py` 对生产分配器运行边界夹具和对齐检查。`--heap-configurations` 另编译
+10 种 8～41 字节的小堆配置，检查未初始化、24 字节门槛、向下对齐、精确耗尽和重复初始化。
+Windows 上使用 `--lto-poll visible` 运行 O3+LTO 观察回归。负对照可用 `--source-root`
+指定仍包含旧版堆实现的源码树，并将期望设为 `stale`。仅当写方确认释放、读方超时才算
+复现成功。
+
+```powershell
+python -B hil/run_memory_host.py --opt O3 --heap-configurations --lto-poll visible
+```
+
+随机内存账本使用 [宿主模型复跑](evidence/2026-11-11/replay/README.md)。宿主验证用
+端口桩，真实 TIM6 中断见 [H743 夹具](h743/README.md)。
 
 ## 3. 执行环境与示例命令
 
@@ -111,6 +137,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File hil/run_hil.ps1 `
 | `daily` | 日常应用、故障演示和 USB | 按应用输出判读 |
 | `selftest` | 功能回归；真实 USART 中断需上位机回发 `X` | `ST\|SUMMARY` |
 | `boundary` | API 参数、上下文及边界契约 | `BT\|SUMMARY` |
+| `portable_fixture` | 用 F446 的审计任务运行一个共享 Cortex-M 定向夹具 | `F4HIL\|READY` 后按夹具结束标记验收 |
 | `audit` | IPC、内存、定时器、USB 包装及端口回归 | `AT\|DONE` |
 | `wrap_ipc_regression` | 12 个并发等待者跨过 Tick 0，真实 SysTick 与 NVIC EXTI1 验证摘链、交付和迟到通知 | `WRAP\|DONE\|pass=16\|fail=0` |
 | `usb_osal_priority_regression` | 让步期间保留基础优先级，持锁继承和解锁回退 | `UPR\|DONE\|pass=9\|fail=0` |
@@ -146,6 +173,133 @@ powershell -NoProfile -ExecutionPolicy Bypass -File hil/run_hil.ps1 `
 USB 控制请求替身、寄存器观察和生产函数调用不能证明物理 USB 总线互操作；
 销毁窗口测试使用仍可访问的对象存储，不能证明任意旧指针或提前释放内存安全。
 有限循环依赖通过真实超时解除，不表示内核实现了死锁检测。
+
+<a id="f446-portable-fixtures"></a>
+### 在 F446 上复跑共享夹具
+
+`portable_fixture` 使用现有审计任务启动指定入口。`-FixtureDefines` 和 `-FixtureWrap` 使用
+逗号分隔，前者传入测试宏，后者指定链接包装符号。`-UseVectorWrappers` 选择汇编向量包装，
+`-LinkTimeOptimization` 对共享夹具及 RTOS C 单元启用 LTO，裸汇编移植层单独编译。
+烧录前核对 ST-LINK 与 MCU 身份并保留完整备份。
+
+```powershell
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture `
+    -FixtureSource hil/h743/h743_heap_poll_regression.c -FixtureEntry f446_heap_poll_regression_run `
+    -FixturePriority 4 -Optimization O3 -LinkTimeOptimization
+pwsh -NoProfile -File hil/run_hil.ps1 -Elf Debug/f446_rtos.elf -Tag heap_lto `
+    -Probe '<ST-LINK serial>' -Terminator 'F4MP\|DONE\|pass=4\|fail=0' -Seconds 20
+```
+
+其他共享夹具入口及测试宏见 [H743 分模块复测](h743/README.md#h743-functional-reproduction)。
+F446 使用 `production_timer_target.h` 验证 APB1 与 TIM 输入频率。
+
+MSC 资源回归使用真实 F446 任务与 USB OSAL 对象池，通过链接包装控制器启停。成功结束行
+为 `UMSC|DONE|pass=24|fail=0`。
+
+```powershell
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture `
+    -FixtureSource hil/fw/Src/f446_usb_msc_resource.c -FixtureEntry f446_usb_msc_resource_run `
+    -FixturePriority 4 -FixtureDefines HIL_PORTABLE_BEFORE_START=f446_usb_msc_resource_prepare `
+    -FixtureWrap 'usb_dc_init,usb_dc_deinit'
+```
+
+[F446 实测矩阵](../docs/rtos_testing_report.md#f446-functional-retest)
+
+<a id="f446-interaction-fixtures"></a>
+### F446 跨功能与 IRQ 交错夹具
+
+以下六个夹具均通过 `portable_fixture` 运行。每次只选择一个构建命令，立即烧录、采集并
+核对本轮启动后的结束行，再构建下一项；不能连续构建后把最后的ELF当成全部用例。
+源码中的软件置 pending 触发真实NVIC异常，不要求外接EXTI引脚信号。除栈钩子夹具使用
+EXTI3外，其余使用EXTI2，运行前必须未被应用占用。
+
+| 夹具源码 | 场景与验收 |
+|---|---|
+| [f446_timer_command_order.c](fw/Src/f446_timer_command_order.c) | 回调真实阻塞期间，IRQ先投递START/STOP并填满16槽命令队列，回调随后同步STOP/START；核对FIFO、周期自停/重启、满队列拒绝及屏蔽恢复。默认16轮：`F4TI\|DONE\|status=0\|checks=227\|failures=0\|rounds=16\|stop_calls=16\|start_calls=32`。开启DELETE扩展后为234项，并须有 `F4TI\|DELETE\|calls=1\|command_status=-1`，其余结束计数相同 |
+| [f446_timer_irq_burst.c](fw/Src/f446_timer_irq_burst.c) | 32/96/128个活跃定时器，各8轮IRQ突发及一个真实阻塞发送者。每档须有irq=8、accepted=136、full=8、task_sends=8；核对发送者确已阻塞及后续命令已消费。结束为 `F4TB\|DONE\|status=0\|checks=33\|failures=0\|clock_hz=168000000` |
+| [f446_reap_irq_pressure.c](fw/Src/f446_reap_irq_pressure.c) | 动态任务退出积压、回收释放窗口被IRQ唤醒的高优任务打断，高优任务再次分配大栈；核对创建/删除成功及堆最大块、活跃分配数恢复。结束为 `REAPIRQ\|DONE\|pass=3\|fail=0`；created数量受配置影响，不硬编码为固定36个 |
+| [f446_cooperative_yield_irq.c](fw/Src/f446_cooperative_yield_irq.c) | 协作调度中显式yield已选好候选、PendSV尚未提交时，IRQ恢复更高优任务或挂起已选任务；核对真实交错窗口及首个实际执行任务。结束为 `COY\|DONE\|pass=2\|fail=0`，两项CASE均须window=1、irq=1且first=expected |
+| [f446_stack_hook_irq.c](fw/Src/f446_stack_hook_irq.c) | Idle报告栈哨兵损坏时，IRQ唤醒监督任务，删除并同址重建另一待报告任务；核对不向新代次投递旧报告、重建后的哨兵完好及资源回收。结束为 `SGIR\|DONE\|pass=1\|fail=0`，RESULT须stale=0、irq=1、new_guard=1、clean=1 |
+| [usb_rx_session_regression.c](fw/Src/usb_rx_session_regression.c) | CDC/HID多个读取者等待时，由真实IRQ注入RESET、断开、重配置并立即到新数据，以及检查连接后到登记等待前的会话切换；旧读取全部取消且不能偷取新会话数据。结束为 `URX\|DONE\|status=0\|failures=0\|setup=1`，四项CASE均pass=1，新数据阶段fresh=2、stolen=0 |
+
+构建参数如下；入口、优先级、宏和链接包装应成组使用。下面定时器顺序命令包含DELETE
+扩展；移除其 `-FixtureDefines` 参数即为默认227项。`F446_TIMER_ORDER_ROUNDS` 可配置为
+1～256，修改后检查总数随轮数变化，不能继续套用16轮的结束计数。
+
+```powershell
+# 定时器跨IRQ/回调顺序，含DELETE后同步命令返回值。
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_timer_command_order.c `
+    -FixtureEntry f446_timer_command_order_run -FixturePriority 4 `
+    -FixtureDefines F446_TIMER_ORDER_TEST_DELETE=1
+```
+
+```powershell
+# 定时器IRQ突发、等待发送者和屏蔽片段；测试钩子只在此镜像启用。
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_timer_irq_burst.c `
+    -FixtureEntry f446_timer_irq_burst_run -FixturePriority 4 `
+    -FixtureDefines RTOS_HIL_CRITICAL_TEST=1
+```
+
+```powershell
+# 回收窗口的IRQ与再次动态创建。
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_reap_irq_pressure.c `
+    -FixtureEntry f446_reap_irq_pressure_run -FixturePriority 9 -FixtureWrap rtos_heap_free
+```
+
+```powershell
+# 协作yield候选与PendSV提交间的IRQ。
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_cooperative_yield_irq.c `
+    -FixtureEntry f446_cooperative_yield_irq_run -FixturePriority 4 `
+    -FixtureDefines 'RTOS_CONFIG_USE_PREEMPTION=0,RTOS_CONFIG_USE_TIME_SLICING=0' `
+    -FixtureWrap rtos_port_context_switch
+```
+
+```powershell
+# Idle栈报告与同址重建；需要现有配置的栈检查模式2、性能登记和抢占调度。
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_stack_hook_irq.c `
+    -FixtureEntry f446_stack_hook_irq_run -FixturePriority 4 -FixtureWrap rtos_stack_overflow_hook
+```
+
+```powershell
+# USB会话代次/等待登记竞态；初始化钩子须在启动调度前运行。
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/usb_rx_session_regression.c -FixtureEntry usb_rx_session_run `
+    -FixturePriority 4 `
+    -FixtureDefines 'HIL_PORTABLE_BEFORE_START=usb_rx_session_prepare,RTOS_HIL_OBJECT_LIFETIME=1' `
+    -FixtureWrap 'usbd_initialize,usbd_ep_start_read'
+```
+
+每次构建后，采集命令按实际夹具替换Tag、结束前缀和新批次路径。例如第一项的DELETE
+扩展可这样执行；采集到DONE后仍须核对上表全部字段，而非仅确认串口有输出。
+
+```powershell
+pwsh -NoProfile -File hil/run_hil.ps1 -Elf Debug/f446_rtos.elf `
+    -Tag timer_order_delete_O2 -OutDir hil/logs/new_interaction_batch -Port COM3 -Seconds 20 `
+    -Terminator '(?m)^F4TI\|DONE\|'
+```
+
+顺序、回收及USB夹具还可用 `-Optimization O3 -CriticalMask primask -DisableAssertions`
+复测另一配置；协作夹具可用 `-Optimization O0 -UseVectorWrappers` 检查未优化异常路径。
+这些组合须分别重编译及烧录，不能由O2结果推定。栈钩子夹具会故意破坏静态任务的哨兵，
+由测试专用链接包装接管报告并清理；不向真实业务栈写越界数据，也不等价于MPU隔离验证。
+
+定时器burst的 `max_mask_cycles` 是DWT观察到的服务任务外层临界区最大片段，包含测试
+钩子开销；计时区无printf。它受活跃链长度、编译配置、主频及实际抢占影响，代表本轮
+样本最大值，不是全部负载的WCET承诺。命令批次不持有一个整批临界区，各条START及改
+周期的有序插链仍为O(N)。普通控制路径无测试钩子时的时间须另行隔离测量。
+`timer_dispatch_bench` 变体自动包装 `rtos_queue_recv`、`rtos_internal_queue_recv_until`
+和 `rtos_queue_get_count`，同时兼容旧版空接收探针与当前有界前缀路径；验收为两种等待
+模式各64样本、invalid=0及 `TDB|DONE|pass=6|fail=0`，时间字段单位为DWT周期。
+
+USB会话夹具包装控制器初始化和端点读提交，在板上运行真实RTOS及IRQ并注入USB协议事件；
+它不需要也不证明物理USB线枚举、主机驱动或真实总线数据传输。串口采集若在本轮
+`System init done` / `F4HIL|READY` 之前混入上次镜像的输出，必须按启动边界区分并保留
+原始日志，不能仅凭全文件FAIL关键字或删除旧行来判定本轮结果。
 
 ### 4.1 新增定向回归
 

@@ -1,0 +1,39 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+UMSC|CHECK|osal_initialized|PASS
+UMSC|CHECK|queue_slots_full|PASS
+[E/USB] usb_osal_mq_create failed
+UMSC|CHECK|queue_full_returns_no_memory|PASS
+UMSC|CHECK|queue_full_controller_untouched|PASS
+UMSC|CHECK|queue_full_creates_no_worker|PASS
+UMSC|CHECK|queue_contents_unchanged|PASS
+UMSC|CHECK|queue_failure_releases_sync|PASS
+UMSC|CHECK|thread_slots_full|PASS
+[E/USB] usb_osal_thread_create usbd_msc failed
+UMSC|CHECK|thread_full_returns_no_memory|PASS
+UMSC|CHECK|thread_full_controller_untouched|PASS
+UMSC|CHECK|thread_full_preserves_workers|PASS
+UMSC|CHECK|thread_failure_releases_queue|PASS
+UMSC|CHECK|thread_failure_releases_sync|PASS
+UMSC|CHECK|controller_failure_status|PASS
+UMSC|CHECK|controller_failure_calls|PASS
+UMSC|CHECK|controller_failure_removes_worker|PASS
+UMSC|CHECK|controller_failure_releases_queue|PASS
+UMSC|CHECK|controller_failure_releases_sync|PASS
+UMSC|CHECK|controller_failure_releases_threads|PASS
+UMSC|CHECK|retry_succeeds|PASS
+UMSC|CHECK|retry_starts_controller_once|PASS
+UMSC|CHECK|duplicate_init_rejected|PASS
+F4HIL|READY|entry=f446_usb_msc_resource_run|priority=4
+UMSC|CHECK|worker_blocks_on_real_queue|PASS
+UMSC|CHECK|scheduler_ticks_advance|PASS
+UMSC|DONE|pass=24|fail=0

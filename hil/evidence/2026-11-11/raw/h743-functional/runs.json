@@ -1,0 +1,465 @@
+{
+  "restoration": {
+    "restored": true,
+    "readback_bytes": 2097152
+  },
+  "frozen_git_base": "c11450f12db72987c96a743c893aa0d92b0c8f39",
+  "frozen_workspace_patch_sha256": "88e7f084c64a8710410417f96bba8369e82908803ccc984b639790445a01d583",
+  "priority_base": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.368367,
+    "image_sha256": "03546ac0df9d7f4cfcbe527175b79fb43bd9f08776eafca63dbf982599d95fcb",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_priority_noop_regression_run",
+      "entry_priority": 4,
+      "define": [
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "priority_fix_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.357712,
+    "image_sha256": "6908995dbec4778e374b29804a08da81438e4b0cdd65038b3178d05cec695856",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_priority_noop_regression_run",
+      "entry_priority": 4,
+      "define": [
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "priority_fix_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.358392,
+    "image_sha256": "608dc253afa697e9f1fdb870d6198444d125bbec8c86ca41a2a74148fb838b80",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_priority_noop_regression_run",
+      "entry_priority": 4,
+      "define": [
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "services_base": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.50158,
+    "image_sha256": "1d03ea4c35cb75caac8d29abc53af7594e02bc1166feb93130fbf377acc12baa",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_service_edges_run",
+      "entry_priority": 4,
+      "define": [
+        "RTOS_CONFIG_PERF_HOTPATH_STATS=1"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "fix_services_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.439335,
+    "image_sha256": "3a6fba16539df5039ea74b76f2ad8ed3c15dc062194113b63e4924e940d10963",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_service_edges_run",
+      "entry_priority": 4,
+      "define": [
+        "RTOS_CONFIG_PERF_HOTPATH_STATS=1"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "fix_services_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.488741,
+    "image_sha256": "f3d987d08588df4e167687a3d3a7f96458b0d7337b763aeb97af1ae0d84aa53c",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_service_edges_run",
+      "entry_priority": 4,
+      "define": [
+        "RTOS_CONFIG_PERF_HOTPATH_STATS=1"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "heap_lto_base": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.450369,
+    "image_sha256": "6603d5f8c65b55685e4acc3346b9b04e03482c31c380d33a5b4495332ee04f1b",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_heap_poll_regression_run",
+      "entry_priority": 4,
+      "define": [],
+      "wrap": [],
+      "lto": true,
+      "usb_osal": false
+    }
+  },
+  "heap_lto_release": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.31961,
+    "image_sha256": "d63d10dae4b36da9e21290f0a3dc83c9f24b73ec44762ea11f4ef2069facd4c9",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_heap_poll_regression_run",
+      "entry_priority": 4,
+      "define": [],
+      "wrap": [],
+      "lto": true,
+      "usb_osal": false
+    }
+  },
+  "startup_final_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.445691,
+    "image_sha256": "137bad3929a467ff4e920bc1ae3f005416ad4f5e2c7e46ae81b372a0cdebf684",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O0",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "wrapper",
+      "entry_name": "audit_regressions_task",
+      "entry_priority": 9,
+      "define": [
+        "H743_TEST_BEFORE_START=audit_pre_start",
+        "RTOS_CONFIG_TICK_RATE_HZ=100U"
+      ],
+      "wrap": [],
+      "lto": false,
+      "usb_osal": false
+    }
+  },
+  "boundary_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.63663,
+    "image_sha256": "bf8d5fbcd8262db3cd6addd87322835e232b6d86359fdf6f18fa3f1329896a9e",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "boundary_test_task",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "robustness_fix_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.196868,
+    "image_sha256": "b403dc1c01e051a42fc05aac8488f8f6964de5e0870870dd599e3c0dfc7f0192",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_robustness_run",
+      "entry_priority": 9,
+      "define": [
+        "audit_regressions_task=h743_robustness_run",
+        "RTOS_CONFIG_PERF_HOTPATH_STATS=1"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": true
+    }
+  },
+  "mutex_final_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.371505,
+    "image_sha256": "2dab968f33f4989d9981269f4b4ce13773d3510d517b0100cae2c0350e893e71",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_mutex_chain_run",
+      "entry_priority": 9,
+      "define": [
+        "audit_regressions_task=h743_mutex_chain_run"
+      ],
+      "wrap": [],
+      "lto": false,
+      "usb_osal": false
+    }
+  },
+  "mutex_boundary_run": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.43427,
+    "image_sha256": "41eae61fbcba454ada2a3c78054ef7f912203e2177366cfae1780fe7d646b716",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_mutex_boundary_run",
+      "entry_priority": 9,
+      "define": [
+        "audit_regressions_task=h743_mutex_boundary_run"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "mutex_registry_run": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.619709,
+    "image_sha256": "6bb16247d3f5c2adffb42ba0577c23e98d00a700c6b828af7e216fe2112a7e06",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_mutex_registry_run",
+      "entry_priority": 9,
+      "define": [
+        "audit_regressions_task=h743_mutex_registry_run"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "ipc_wait_final_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.696158,
+    "image_sha256": "9c0adace20d9864261cba71558358b86c3061324f03ead21777d2b631e253262",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_ipc_wait_run",
+      "entry_priority": 9,
+      "define": [
+        "audit_regressions_task=h743_ipc_wait_run",
+        "FIRMWARE_ADVERSARIAL_WAIT=1",
+        "FIRMWARE_AUDIT=1"
+      ],
+      "wrap": [],
+      "lto": false,
+      "usb_osal": false
+    }
+  },
+  "ipc_lifetime_run": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.568189,
+    "image_sha256": "d3111060617da106948c0b8df48ed3b5c45598123f10ebe1f234738a588178d2",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_ipc_lifetime_run",
+      "entry_priority": 9,
+      "define": [
+        "audit_regressions_task=h743_ipc_lifetime_run",
+        "FIRMWARE_ADVERSARIAL_LIFETIME=1",
+        "RTOS_HIL_OBJECT_LIFETIME=1"
+      ],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "queue_copy_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.428842,
+    "image_sha256": "2a9f349cfbe31f15a45cfa52c1732b6b98429919865652b2ed0ddcfdeb8f15c4",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O0",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "wrapper",
+      "entry_name": "audit_regressions_task",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "port_compat_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.614723,
+    "image_sha256": "a5078d69d12560badba2f11e4ceab4c18400d17b538005a22a05b923c8b33bbf",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O0",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "wrapper",
+      "entry_name": "h743_compat_run",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": [],
+      "lto": null,
+      "usb_osal": false
+    }
+  },
+  "compat_lto_final": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.499245,
+    "image_sha256": "3db1d929edf712ea5d0466b3d527d9087868a0a673e6a318086f3fb4847aa47e",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_compat_run",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": [],
+      "lto": true,
+      "usb_osal": false
+    }
+  },
+  "integration_pressure120": {
+    "outcome": "pass",
+    "elapsed_seconds": 121.684838,
+    "image_sha256": "13ffcb9584a925a1e1405067c4d69f5b71b2a1dd43cac766accc1acd938c020e",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "production_stress_task",
+      "entry_priority": 4,
+      "define": [
+        "FIRMWARE_PRODUCTION_STRESS=1",
+        "PRODUCTION_STRESS_SECONDS=120U",
+        "PRODUCTION_STRESS_SEED=1592594996U",
+        "PRODUCTION_STRESS_QUEUE_CAPACITY=1U"
+      ],
+      "wrap": [],
+      "lto": false,
+      "usb_osal": false
+    }
+  }
+}

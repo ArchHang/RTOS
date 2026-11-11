@@ -1,0 +1,45 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_timer_command_order_run|priority=4
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|CHECK|older_start_before_callback_stop|FAIL
+F4TI|CHECK|older_stop_before_callback_start|FAIL
+F4TI|DONE|status=1|checks=227|failures=32|rounds=16|stop_calls=32|start_calls=16

@@ -1,0 +1,8 @@
+H743|READY|entry=audit_regressions_task|priority=9|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+QCOPY|ring_wrap|PASS|size=1
+QCOPY|direct_receive|PASS|size=1
+QCOPY|reserved_sender|PASS|size=1
+QCOPY|ring_wrap|PASS|size=5
+QCOPY|direct_receive|PASS|size=5
+QCOPY|reserved_sender|PASS|size=5
+QCOPY|DONE|pass=6|fail=0

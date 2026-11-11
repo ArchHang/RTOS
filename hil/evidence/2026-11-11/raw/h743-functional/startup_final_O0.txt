@@ -1,0 +1,29 @@
+iorities=5..20 synthetic=1 inject=0
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=payload_matches_host_golden status=PASS
+STRESS|CHECK|name=checksum_matches_host_golden status=PASS
+STRESS|CHECK|name=initialize_sixteen_workers_and_ipc status=PASS
+STRESS|CHECK|name=start_two_hardware_interrupt_sources status=PASS
+STRESS|CHECK|name=phase_irq_snapshot_start status=PASS
+STRESS|PHASE|phase=1 ticks=40000
+H743|BOOT|cpu_hz=480000000|hclk_hz=240000000|pclk1_hz=120000000|pclk2_hz=120000000|timpre=0|baud=921600|cpuid=411fc271|idcode=20036450|flash_kib=2048
+H743|LAYOUT|kernel=24002800|task_stack=24000140|msp=2001ff78|ccr=00070200|actlr=00001000|icache=1|dcache=1|mpu_rbar=24000000|mpu_rasr=130b0025|grouping=3
+STARTUP|BEGIN|clock=480000000|tick_hz=100
+STARTUP|probe_create|PASS
+STARTUP|one_cycle|PASS
+STARTUP|zero_clock|PASS
+STARTUP|less_than_one_cycle|PASS
+STARTUP|reload_overflow|PASS
+STARTUP|probe_delete|PASS
+H743|READY|entry=audit_regressions_task|priority=9|tick_hz=100|basepri=1|assert=1|systick_load=4799999|vtor=08000000
+STARTUP|valid_start|PASS
+STARTUP|init_repeated|PASS
+STARTUP|start_repeated|PASS
+STARTUP|version|PASS
+STARTUP|valid_tick_progress|PASS
+STARTUP|DONE|pass=11|fail=0

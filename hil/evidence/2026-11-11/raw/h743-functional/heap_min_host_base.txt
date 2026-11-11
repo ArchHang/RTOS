@@ -1,0 +1,12 @@
+In function 'block_checked_size',
+    inlined from 'rtos_heap_free' at hil/logs/h743_functional_20261111_2103/baseline/RTOS/Memory/rtos_heap.c:260:26:
+hil/logs/h743_functional_20261111_2103/baseline/RTOS/Memory/rtos_heap.c:108:27: error: array subscript [3, 4] is outside array bounds of 'uint8_t[24]' {aka 'unsigned char[24]'} [-Werror=array-bounds=]
+  108 |     uint32_t size = header->size & RTOS_HEAP_SIZE_MASK;
+      |                     ~~~~~~^~~~~~
+hil/logs/h743_functional_20261111_2103/baseline/RTOS/Memory/rtos_heap.c: In function 'rtos_heap_free':
+hil/logs/h743_functional_20261111_2103/baseline/RTOS/Memory/rtos_heap.c:69:16: note: at offset [25, 32] into object 's_heap_buf' of size 24
+   69 | static uint8_t s_heap_buf[RTOS_CONFIG_HEAP_SIZE] __attribute__((aligned(RTOS_HEAP_ALIGN)));
+      |                ^~~~~~~~~~
+In function 'block_checked_size',
+    inlined from 'rtos_heap_free' at hil/logs/h743_functional_20261111_2103/baseline/RTOS/Memory/rtos_heap.c:260:26:
+hil/logs/h743_functional_20261111_2103/baseline/RTOS/Memory/rtos_heap.c:109:16: error: array subscript [3, 4] is outside array bounds of 'uint8_t[24]' {aka 'unsigned char[24]'} [-Werror=array-bounds=]

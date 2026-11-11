@@ -1,0 +1,155 @@
+{
+  "status": "pass",
+  "mode": "inference",
+  "baud": 921600,
+  "windows": [
+    1,
+    4
+  ],
+  "scenarios": [
+    {
+      "window": 1,
+      "requests": 36,
+      "responses": 36,
+      "duration_ns": 4789030600,
+      "requests_per_second": 7.517178946403057,
+      "request_payload_bytes": 73584,
+      "request_wire_bytes": 73980,
+      "response_wire_bytes": 1116,
+      "latency_ns": {
+        "min": 132677800,
+        "mean": 132956261,
+        "p50": 132929200,
+        "p95": 133157100,
+        "p99": 133862900,
+        "max": 133862900
+      },
+      "worst_logit_abs_error": 0.0,
+      "class_counts": [
+        35,
+        1,
+        0,
+        0
+      ],
+      "device_before": {
+        "rx_bytes": 92,
+        "rx_irq_cycles": 44410,
+        "rx_irq_peak": 494,
+        "rx_uart_errors": 0,
+        "rx_queue_drops": 0,
+        "bad_crc": 1,
+        "rejected": 1,
+        "transform_done": 2,
+        "infer_done": 0,
+        "model_cycles": 0,
+        "parser_cycles": 11267,
+        "tx_failures": 0,
+        "cycle_counter_bits": 64
+      },
+      "device_after": {
+        "rx_bytes": 74083,
+        "rx_irq_cycles": 35718013,
+        "rx_irq_peak": 496,
+        "rx_uart_errors": 0,
+        "rx_queue_drops": 0,
+        "bad_crc": 1,
+        "rejected": 1,
+        "transform_done": 2,
+        "infer_done": 36,
+        "model_cycles": 630937439,
+        "parser_cycles": 8543258,
+        "tx_failures": 0,
+        "cycle_counter_bits": 64
+      },
+      "device_delta": {
+        "rx_bytes": 73991,
+        "rx_irq_cycles": 35673603,
+        "rx_irq_peak": 496,
+        "rx_uart_errors": 0,
+        "rx_queue_drops": 0,
+        "bad_crc": 0,
+        "rejected": 0,
+        "transform_done": 0,
+        "infer_done": 36,
+        "model_cycles": 630937439,
+        "parser_cycles": 8531991,
+        "tx_failures": 0
+      }
+    },
+    {
+      "window": 4,
+      "requests": 36,
+      "responses": 36,
+      "duration_ns": 4553995600,
+      "requests_per_second": 7.90514597774315,
+      "request_payload_bytes": 73584,
+      "request_wire_bytes": 73980,
+      "response_wire_bytes": 1116,
+      "latency_ns": {
+        "min": 195876600,
+        "mean": 484026222,
+        "p50": 505096300,
+        "p95": 505980900,
+        "p99": 506184800,
+        "max": 506184800
+      },
+      "worst_logit_abs_error": 0.0,
+      "class_counts": [
+        35,
+        1,
+        0,
+        0
+      ],
+      "device_before": {
+        "rx_bytes": 74083,
+        "rx_irq_cycles": 35718013,
+        "rx_irq_peak": 496,
+        "rx_uart_errors": 0,
+        "rx_queue_drops": 0,
+        "bad_crc": 1,
+        "rejected": 1,
+        "transform_done": 2,
+        "infer_done": 36,
+        "model_cycles": 630937439,
+        "parser_cycles": 8543258,
+        "tx_failures": 0,
+        "cycle_counter_bits": 64
+      },
+      "device_after": {
+        "rx_bytes": 148074,
+        "rx_irq_cycles": 71725318,
+        "rx_irq_peak": 496,
+        "rx_uart_errors": 0,
+        "rx_queue_drops": 0,
+        "bad_crc": 1,
+        "rejected": 1,
+        "transform_done": 2,
+        "infer_done": 72,
+        "model_cycles": 1389063131,
+        "parser_cycles": 17129484,
+        "tx_failures": 0,
+        "cycle_counter_bits": 64
+      },
+      "device_delta": {
+        "rx_bytes": 73991,
+        "rx_irq_cycles": 36007305,
+        "rx_irq_peak": 496,
+        "rx_uart_errors": 0,
+        "rx_queue_drops": 0,
+        "bad_crc": 0,
+        "rejected": 0,
+        "transform_done": 0,
+        "infer_done": 36,
+        "model_cycles": 758125692,
+        "parser_cycles": 8586226,
+        "tx_failures": 0
+      }
+    }
+  ],
+  "business_valid_responses": 72,
+  "unique_valid_responses": 74,
+  "crc_recovery": true,
+  "header_recovery": true,
+  "elf_sha256": "4ea3a98f20dd1ce57475e72c116bf45bdda0cc018733e2ba26507a00075e8d83",
+  "model_sha256": "c7cd10f4b03e40c64a617ac01391c4e8ba100e49a934b36f8817e5bec82a6bc8"
+}

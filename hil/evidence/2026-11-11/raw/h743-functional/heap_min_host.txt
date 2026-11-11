@@ -1,0 +1,53 @@
+sha256=93ac0662f5c2cd64065e85eedfe31d07580dcdc947f95329447274abe5e75f58 E:\STM32_Project\CubeIDE\f446_rtos\hil\fw\Src\robustness_memory.c
+sha256=6ddf100f03473d222299b582b8dd4dd12160841580cd56e6040a87d9130f5b4f E:\STM32_Project\CubeIDE\f446_rtos\RTOS\Core\Inc\rtos_config.h
+sha256=8f7d3080273b30b12ac3b5b00525a7c0a0d544745ffbfe0a7f83650461c7526b E:\STM32_Project\CubeIDE\f446_rtos\RTOS\Memory\rtos_heap.c
+sha256=38eb21de10b0e9c20be2b7226cefe2f9d5defb1019da0d7c0d94cfd1dd62ac5f E:\STM32_Project\CubeIDE\f446_rtos\RTOS\Memory\rtos_mempool.c
+opt=O3 source_root=E:\STM32_Project\CubeIDE\f446_rtos
+x86_64-w64-mingw32-gcc.exe (conda-forge gcc 15.2.0-19) 15.2.0
+Copyright (C) 2025 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+x86_64-w64-mingw32
+pointer_bytes=8 pointer_alignment=8
+PASS memory.heap_rejections_preserve_statistics
+PASS memory.heap_16_byte_tail_is_absorbed
+PASS memory.heap_24_byte_tail_can_be_reused
+PASS memory.heap_exact_tail_accounting
+PASS memory.heap_free_setup
+PASS memory.heap_invalid_free_unchanged
+PASS memory.heap_double_free_unchanged
+PASS memory.heap_adjacent_setup
+PASS memory.heap_adjacent_capacity
+PASS memory.heap_live_separator_blocks_merge
+PASS memory.heap_adjacent_allocation
+PASS memory.heap_adjacent_preserves_live_payload
+PASS memory.heap_full_capacity_recovered
+PASS memory.heap_full_size_reallocation
+PASS memory.pool_odd_size_init
+PASS memory.pool_every_block_aligned
+PASS memory.pool_odd_size_exhausted
+PASS memory.pool_odd_size_restored
+PASS memory.pool_init_rejects_invalid_sizes_addresses_and_overlap
+PASS memory.pool_adjacent_storage_and_minimum_stride
+PASS memory.pool_exact_capacity
+PASS memory.pool_free_rejections_preserve_live_block
+PASS memory.pool_double_free_and_null_observers
+summary passed=23 failed=0
+fixture_exit=0
+heap_alignment_exit=0
+pool_alignment_exit=0
+heap_configured=8 usable=0 init=PARAM
+heap_configured=23 usable=0 init=PARAM
+heap_configured=24 usable=16 smallest_tail=0 init=OK
+heap_configured=25 usable=16 smallest_tail=0 init=OK
+heap_configured=31 usable=16 smallest_tail=0 init=OK
+heap_configured=32 usable=24 smallest_tail=0 init=OK
+heap_configured=33 usable=24 smallest_tail=0 init=OK
+heap_configured=39 usable=24 smallest_tail=0 init=OK
+heap_configured=40 usable=32 smallest_tail=16 init=OK
+heap_configured=41 usable=32 smallest_tail=16 init=OK
+capacity=32760
+writer_free=32760 writer_releases=1
+reader_free=32760 reader_releases=1
+lto_poll_observed=visible expected=visible writer_updated=True

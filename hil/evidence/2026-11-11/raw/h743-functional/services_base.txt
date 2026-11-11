@@ -1,0 +1,17 @@
+H743|READY|entry=h743_service_edges_run|priority=4|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+H7S|CHECK|timer_duplicate_init_and_start|PASS
+H7S|CHECK|timer_real_tick_rollover|PASS
+H7S|CHECK|timer_equal_deadline_fifo|PASS
+H7S|TIMER_WRAP|before=4294967280|after=3|equal=3
+H7S|CHECK|timer_period_change_does_not_start_stopped|PASS
+H7S|CHECK|timer_slow_callback_skips_two_missed_phases|PASS
+H7S|CHECK|timer_self_stop_blocks_future_callbacks|PASS
+H7S|TIMER_PERIODIC|count=2|first=21|second=45
+H7S|CHECK|timer_async_delete_consumed|PASS
+H7S|CYCLES|clock=480000000|native=1000000|fractional=1500000|sub_mhz=0|wrap=0|zero=0
+H7S|CHECK|perf_native_clock_and_zero_guard|PASS
+H7S|CHECK|perf_fractional_and_sub_mhz_clock|FAIL
+H7S|CHECK|perf_window_queries_and_cache|PASS
+H7S|CHECK|perf_array_bounds_and_null_arguments|PASS
+H7S|CHECK|perf_pool_registration_and_byte_ledger|PASS
+H7S|DONE|status=1|checks=12|failures=1

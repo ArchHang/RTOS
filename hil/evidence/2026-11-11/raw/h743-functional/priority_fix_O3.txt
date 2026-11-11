@@ -1,0 +1,4 @@
+H743|READY|entry=h743_priority_noop_regression_run|priority=4|tick_hz=1000|basepri=0|assert=0|systick_load=479999|vtor=08000000
+H7PRIO|TRACE|running=0|length=3|order=1230
+H7PRIO|TRACE|running=1|length=4|order=1423
+H7PRIO|DONE|status=0|ready=1|running=1

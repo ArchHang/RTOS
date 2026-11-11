@@ -1,0 +1,17 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_poll_regression_run|priority=4
+F4MP|BEGIN|core_hz=168000000|timer_hz=84000000|irq_priority=5
+F4MP|CASE|kind=0|before=2|observed=3|expected=3|irq=1|cycles=840434|pass=1
+F4MP|CASE|kind=1|before=0|observed=1|expected=1|irq=1|cycles=840390|pass=1
+F4MP|CASE|kind=2|before=0|observed=28496|expected=28496|irq=1|cycles=840338|pass=1
+F4MP|DONE|pass=4|fail=0

@@ -1,0 +1,4 @@
+H743|READY|entry=h743_boundary_stress_run|priority=9|tick_hz=1000|basepri=1|assert=1|systick_load=479999|vtor=08000000
+H7B|BEGIN|rounds=32
+H7B|PROGRESS|rounds=32|tick=3777
+H7B|DONE|status=0|checks=487|failures=0|rounds=32|irq=128|accepted=512|full=128|task_timeouts=32

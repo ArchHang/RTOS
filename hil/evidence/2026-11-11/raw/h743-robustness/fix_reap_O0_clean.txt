@@ -1,0 +1,11 @@
+H743|READY|entry=h743_reap_regression_run|priority=9|tick_hz=1000|basepri=0|assert=1|systick_load=479999|vtor=08000000
+H7REAP|LOAD|created=256|completed=256|status=0|idle_switches=0|initial_free=32760|free_before_idle=19824
+H7REAP|CHECK|idle_never_dispatched_during_churn|PASS
+H7REAP|CHECK|all_created_tasks_exited|PASS
+H7REAP|CHECK|churn_survives_without_idle|PASS
+H7REAP|CHECK|idle_recovers_entire_heap|PASS
+H7REAP|CHECK|tcb_exhaustion_preserves_output|PASS
+H7REAP|CHECK|tcb_exhaustion_preserves_heap|PASS
+H7REAP|CHECK|stack_exhaustion_preserves_output|PASS
+H7REAP|CHECK|stack_exhaustion_rolls_back_tcb|PASS
+H7REAP|DONE|pass=8|fail=0

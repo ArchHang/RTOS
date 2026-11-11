@@ -1,0 +1,343 @@
+{
+  "restoration": {
+    "restored": true,
+    "readback_bytes": 2097152
+  },
+  "base_pressure180": {
+    "outcome": "pass",
+    "elapsed_seconds": 181.694596,
+    "image_sha256": "aca3e69597ba7df6691f9f19a2ed34bb63052c1b03a1f5467f0419de41b0bb96",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "production_stress_task",
+      "entry_priority": 4,
+      "define": [
+        "FIRMWARE_PRODUCTION_STRESS=1",
+        "PRODUCTION_STRESS_SECONDS=180U",
+        "PRODUCTION_STRESS_SEED=3735928559U",
+        "PRODUCTION_STRESS_QUEUE_CAPACITY=8U"
+      ],
+      "wrap": []
+    }
+  },
+  "base_reap_exact": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.367374,
+    "image_sha256": "04fbcdd4e76b9859389ba0b3100b73752228efd9370d7b85f4737d66093a8555",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_reap_regression_run",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": []
+    }
+  },
+  "base_resume_exact": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.402607,
+    "image_sha256": "e8e6544c4b2def6b121d30a9986cdaccf89aa36a70b7b9e14d82e3727a88a1e7",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_resume_regression_run",
+      "entry_priority": 4,
+      "define": [],
+      "wrap": [
+        "rtos_port_context_switch"
+      ]
+    }
+  },
+  "base_noslice_exact": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.494633,
+    "image_sha256": "b53dd6dab100f1cd62f78770016e7e96de62185ecaf7779c2a4099f57c303728",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_boundary_stress_run",
+      "entry_priority": 9,
+      "define": [
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_reap_exact": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.353868,
+    "image_sha256": "927a82161574704c6aed830eed93a98bfdd08af5af8e56d86c729736c565c586",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_reap_regression_run",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": []
+    }
+  },
+  "fix_reap_O0_clean": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.444046,
+    "image_sha256": "6e573bccb6b396d7a63bb45cfc432c670efec6c70c5370967b4c7ccef3dd6882",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O0",
+      "critical_mask": "primask",
+      "disable_assertions": false,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "wrapper",
+      "entry_name": "h743_reap_regression_run",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": []
+    }
+  },
+  "fix_resume_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.396025,
+    "image_sha256": "6f37f792a099704fbd9aa3de9b5be5b4d392adb8659f5362458c9b954282ef8c",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_resume_regression_run",
+      "entry_priority": 4,
+      "define": [],
+      "wrap": [
+        "rtos_port_context_switch"
+      ]
+    }
+  },
+  "fix_resume_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.410965,
+    "image_sha256": "445dad0fa7f91a30c1ed64c501e0c4474bbf8f428cd443c9d195f1edf4d3495a",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_resume_regression_run",
+      "entry_priority": 4,
+      "define": [],
+      "wrap": [
+        "rtos_port_context_switch"
+      ]
+    }
+  },
+  "fix_noslice_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 5.176462,
+    "image_sha256": "ce7ffebddc74be4b4faebbf3f486d39b36a4403c7897d576efb617025732f14a",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_boundary_stress_run",
+      "entry_priority": 9,
+      "define": [
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_boundary_coop": {
+    "outcome": "pass",
+    "elapsed_seconds": 5.173262,
+    "image_sha256": "baea48b87b541db374e50736da85beb020c6fd9b80f731598ac59f5ef569008c",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_boundary_stress_run",
+      "entry_priority": 9,
+      "define": [
+        "RTOS_CONFIG_USE_PREEMPTION=0"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_boundary_O0_nocache": {
+    "outcome": "pass",
+    "elapsed_seconds": 16.478392,
+    "image_sha256": "1fa29b9cf348460e3eff162e484265ecfdf5b85c6cc82f8406e5243084d1530a",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O0",
+      "critical_mask": "primask",
+      "disable_assertions": false,
+      "data_memory": "dtcm",
+      "icache": "off",
+      "dcache": "off",
+      "vector": "wrapper",
+      "entry_name": "h743_boundary_stress_run",
+      "entry_priority": 9,
+      "define": [
+        "H743_BOUNDARY_ROUNDS=128U"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_fifo_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.360729,
+    "image_sha256": "1c1352d0f8deecc61a6504158b904be9ab47bc369fb31569334c3828a9c61b4d",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_idle_fifo_regression_run",
+      "entry_priority": 9,
+      "define": [],
+      "wrap": []
+    }
+  },
+  "fix_fifo_coop": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.368379,
+    "image_sha256": "ae85d128a0c6e290068338ef79fdc04270b3dea9e3a6df089e31183bb8166555",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_idle_fifo_regression_run",
+      "entry_priority": 9,
+      "define": [
+        "RTOS_CONFIG_USE_PREEMPTION=0",
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_pressure180_real": {
+    "outcome": "pass",
+    "elapsed_seconds": 181.687179,
+    "image_sha256": "6b552cf7907a0872c13aa42ff6e70ce5e662edba39ae2bd400d27b69e9cd12d9",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "production_stress_task",
+      "entry_priority": 4,
+      "define": [
+        "FIRMWARE_PRODUCTION_STRESS=1",
+        "PRODUCTION_STRESS_SECONDS=180U",
+        "PRODUCTION_STRESS_SEED=3735928559U",
+        "PRODUCTION_STRESS_QUEUE_CAPACITY=8U"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_lifecycle60": {
+    "outcome": "pass",
+    "elapsed_seconds": 61.448197,
+    "image_sha256": "7c9dfab2f79752cad78368612d1f6865784c92f073bad92c346eaefe5b643c8e",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O2",
+      "critical_mask": "basepri",
+      "disable_assertions": false,
+      "data_memory": "axi",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_lifecycle_stress_run",
+      "entry_priority": 4,
+      "define": [
+        "H743_LIFECYCLE_SECONDS=60U",
+        "H743_LIFECYCLE_SEED=3735928559U"
+      ],
+      "wrap": []
+    }
+  },
+  "fix_lifecycle45_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 46.446274,
+    "image_sha256": "fb8b22dacc3e9a40c7e1e23c9484e7063806100391202a88f0b15a4c693f69db",
+    "compiler": "arm-none-eabi-gcc.exe (GNU Tools for STM32 11.3.rel1.20230912-1600) 11.3.1 20220712",
+    "configuration": {
+      "opt": "O3",
+      "critical_mask": "primask",
+      "disable_assertions": true,
+      "data_memory": "dtcm",
+      "icache": "on",
+      "dcache": "on",
+      "vector": "direct",
+      "entry_name": "h743_lifecycle_stress_run",
+      "entry_priority": 4,
+      "define": [
+        "H743_LIFECYCLE_SECONDS=45U",
+        "H743_LIFECYCLE_SEED=1592594996U"
+      ],
+      "wrap": []
+    }
+  }
+}

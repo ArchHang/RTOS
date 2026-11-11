@@ -1,0 +1,675 @@
+{
+  "restoration": {
+    "restored": true,
+    "readback_bytes": 524288
+  },
+  "option_bytes_match": true,
+  "kernel_git_base": "c11450f12db72987c96a743c893aa0d92b0c8f39",
+  "kernel_patch_sha256": "e2f6615c6c541fbb67504d3021f67157d66d9667c008ddc2e254b11c15da3b5c",
+  "adc_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.307325,
+    "image_sha256": "9e741984bbef1af288ef5a5132b82b4e7e04c993a24a3b9ac9a081284a910238",
+    "build": {
+      "variant": "adc_capture",
+      "tag": "adc_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "audit_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 4.846325,
+    "image_sha256": "8ba13a548fd266fd71bb1d2dda123129010d9136ad8013cff787d9dde8e680b2",
+    "build": {
+      "variant": "audit",
+      "tag": "audit_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "base_heap_lto": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 2.226847,
+    "image_sha256": "36c66aaa9807a8571c7f64d6b3589aab77ba05180c7a679b4b19aea781d91192",
+    "build": {
+      "source": "h743_heap_poll_regression.c",
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-LinkTimeOptimization"
+      ],
+      "tag": "base_heap_lto",
+      "entry": "f446_heap_poll_regression_run",
+      "priority": 4,
+      "source_sha256": "629CC959D0412650C52BBC8B0A02E0A1EB3161B58920D408261ABA8C75D39E44",
+      "exit_code": 0,
+      "snapshot": "h743_functional_20261111_2103"
+    }
+  },
+  "base_noslice": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 2.051423,
+    "image_sha256": "28663c36456f8ef28ceaeebc6c6841128cfbe142f3b9c011492c4398d6928e0c",
+    "build": {
+      "source": "h743_boundary_stress.c",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_USE_TIME_SLICING=0,H743_BOUNDARY_ROUNDS=32U"
+      ],
+      "tag": "base_noslice",
+      "entry": "h743_boundary_stress_run",
+      "priority": 9,
+      "source_sha256": "169802FA8FF35D1ED244A7B8BE19DF47F7DA52A4A8F540439AF560D56D936C99",
+      "exit_code": 0,
+      "snapshot": "h743_robust_20261111_2014"
+    }
+  },
+  "base_priority": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.87763,
+    "image_sha256": "7cadfa0e93a345eb96f73e6323f087f5a26c029efc9d7a2e2c8c3a4717fd4410",
+    "build": {
+      "source": "h743_priority_noop_regression.c",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "tag": "base_priority",
+      "entry": "h743_priority_noop_regression_run",
+      "priority": 4,
+      "source_sha256": "7F7D158E4C4DE74E389473F74B8D49526E2490E7FF950C57C197D2277FBD301B",
+      "exit_code": 0,
+      "snapshot": "h743_functional_20261111_2103"
+    }
+  },
+  "base_reap": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 2.460686,
+    "image_sha256": "a300bf923a796837bf540ef74ed2a3f82f46912a6ff266641271f7a44b246bae",
+    "build": {
+      "source": "h743_reap_regression.c",
+      "flags": [
+        "-Optimization",
+        "O0",
+        "-CriticalMask",
+        "primask",
+        "-UseVectorWrappers"
+      ],
+      "tag": "base_reap",
+      "entry": "h743_reap_regression_run",
+      "priority": 9,
+      "source_sha256": "4CA63B22432423E3BEDE0DCD91657165B93CE519187F470B3426D4A1DA44D2FB",
+      "exit_code": 0,
+      "snapshot": "h743_robust_20261111_2014"
+    }
+  },
+  "base_resume": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 1.910123,
+    "image_sha256": "03709add2d3f17ad3f6c964333e12f4ef756bbbb313091d7bac878b1b8b4492b",
+    "build": {
+      "source": "h743_resume_regression.c",
+      "flags": [
+        "-FixtureWrap",
+        "rtos_port_context_switch"
+      ],
+      "tag": "base_resume",
+      "entry": "h743_resume_regression_run",
+      "priority": 4,
+      "source_sha256": "C3C1659CCF7095E39C6318CF40E269767B3E12E228B4859A7982D59A115ECB92",
+      "exit_code": 0,
+      "snapshot": "h743_robust_20261111_2014"
+    }
+  },
+  "base_services": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 2.114655,
+    "image_sha256": "e356f1c706cd7cc381f7dedfa6043323ba6939fc20a3939ec6cc4f0103979898",
+    "build": {
+      "source": "h743_service_edges.c",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_PERF_HOTPATH_STATS=1",
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ],
+      "tag": "base_services",
+      "entry": "h743_service_edges_run",
+      "priority": 4,
+      "source_sha256": "09731ED5A9636AFFAD43354C550E036971E92149B312B0B4DACE3F9AD2A79F5F",
+      "exit_code": 0,
+      "snapshot": "h743_functional_20261111_2103"
+    }
+  },
+  "boundary_noslice": {
+    "outcome": "pass",
+    "elapsed_seconds": 5.755624,
+    "image_sha256": "7b05d93950f08dc30f349f533979be77ea9bad0a3ec36bfa077963579cc8ccba",
+    "build": {
+      "source": "h743_boundary_stress.c",
+      "priority": 9,
+      "tag": "boundary_noslice",
+      "entry": "h743_boundary_stress_run",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_USE_TIME_SLICING=0,H743_BOUNDARY_ROUNDS=32U"
+      ],
+      "exit_code": 0,
+      "source_sha256": "169802FA8FF35D1ED244A7B8BE19DF47F7DA52A4A8F540439AF560D56D936C99"
+    }
+  },
+  "boundary_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.505586,
+    "image_sha256": "ab2b15031f75b0090b12e0a1df19a6f7eb06d5c4c062b1c2a3bd668ad0beb27b",
+    "build": {
+      "variant": "boundary",
+      "tag": "boundary_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "bus_recovery_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.903043,
+    "image_sha256": "b782dc840259204b76b5836a81a8c9ec2b87c833c57ffe63565b8f66e6150b1d",
+    "build": {
+      "variant": "bus_recovery",
+      "tag": "bus_recovery_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "compat_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.677743,
+    "image_sha256": "edd2851aa514ed797c3b6f3ef02b3b1f569fb484844d5b7bd70e1f0e2622b797",
+    "build": {
+      "source": "h743_compat.c",
+      "priority": 9,
+      "tag": "compat_O0",
+      "entry": "h743_compat_run",
+      "flags": [
+        "-Optimization",
+        "O0",
+        "-UseVectorWrappers"
+      ],
+      "exit_code": 0,
+      "source_sha256": "A224C46F8EC25BD558C3508B094E045F5398FBB944D4CEABEE31A1A22154C742"
+    }
+  },
+  "heap_lto": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.122991,
+    "image_sha256": "3a4b73839bb84300cfadf4cb85186180f1c8a113726789c10edf57ed8a46d891",
+    "build": {
+      "source": "h743_heap_poll_regression.c",
+      "priority": 4,
+      "tag": "heap_lto",
+      "entry": "f446_heap_poll_regression_run",
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-LinkTimeOptimization"
+      ],
+      "exit_code": 0,
+      "source_sha256": "629CC959D0412650C52BBC8B0A02E0A1EB3161B58920D408261ABA8C75D39E44"
+    }
+  },
+  "idle_fifo_coop": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.896427,
+    "image_sha256": "6dbef76617bf13f40feeec7238b9f6b87b5102536a219b1839f14c14a042dfbe",
+    "build": {
+      "source": "h743_idle_fifo_regression.c",
+      "priority": 9,
+      "tag": "idle_fifo_coop",
+      "entry": "h743_idle_fifo_regression_run",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_USE_PREEMPTION=0,RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "exit_code": 0,
+      "source_sha256": "4376C295252E6651E2C80090AFA9B0144ACC3C8475EE5DD935A11A0F53192C96"
+    }
+  },
+  "lifecycle60": {
+    "outcome": "pass",
+    "elapsed_seconds": 62.076,
+    "image_sha256": "9cee3cd235700e0066df7b6f7779ad72661c2db8c58bbc3fc11212a64aadeea0",
+    "build": {
+      "source": "h743_lifecycle_stress.c",
+      "priority": 4,
+      "tag": "lifecycle60",
+      "entry": "h743_lifecycle_stress_run",
+      "flags": [
+        "-FixtureDefines",
+        "H743_LIFECYCLE_SECONDS=60U,H743_LIFECYCLE_SEED=3735928559U"
+      ],
+      "exit_code": 0,
+      "source_sha256": "C08083BB5731612FC3BAD73E27E9D03F9CEAC3D97284EDA1A9A0008C2881A3FF"
+    }
+  },
+  "lifetime_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 3.452617,
+    "image_sha256": "0a8d7b18e1a89f8acf4ecc04fca6c741d316d81c1f26991c216f57ac666a28ef",
+    "build": {
+      "variant": "adversarial_lifetime",
+      "tag": "lifetime_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "msp_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.437043,
+    "image_sha256": "d1680586ed6278630570a5aa8ce4a2a1980aa14b123a10fc3ebece7026a8da3c",
+    "build": {
+      "variant": "robustness_msp",
+      "tag": "msp_O0",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O0",
+        "-UseVectorWrappers"
+      ]
+    }
+  },
+  "mutex_boundary_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 3.33218,
+    "image_sha256": "044c90375339de03d74898bf037ab40da02a29ce4c22c9834376dfba56814b06",
+    "build": {
+      "variant": "adversarial_mutex_boundary",
+      "tag": "mutex_boundary_O3",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ]
+    }
+  },
+  "mutex_chain_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 7.437919,
+    "image_sha256": "3955e3361c70b8980d10460597e939d1a527994a13d404602f49ddbba87ab203",
+    "build": {
+      "variant": "adversarial_mutex",
+      "tag": "mutex_chain_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "mutex_registry_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 3.606373,
+    "image_sha256": "0bc1114eca04587ef59baf48cb7941d8b91c37e1f31df0243cdc675cb5d62efc",
+    "build": {
+      "variant": "adversarial_registry",
+      "tag": "mutex_registry_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "priority_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.915283,
+    "image_sha256": "3a5707b21ca2e118982f10e4d2c8ede73b4a66c5f727d6cf4787153102737083",
+    "build": {
+      "source": "h743_priority_noop_regression.c",
+      "priority": 4,
+      "tag": "priority_O2",
+      "entry": "h743_priority_noop_regression_run",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_USE_TIME_SLICING=0"
+      ],
+      "exit_code": 0,
+      "source_sha256": "7F7D158E4C4DE74E389473F74B8D49526E2490E7FF950C57C197D2277FBD301B"
+    }
+  },
+  "priority_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.844228,
+    "image_sha256": "5b42a58c86fcf65b3dc6766a81f2d09544cbc8f372f475f57e80f0a1f927b725",
+    "build": {
+      "source": "h743_priority_noop_regression.c",
+      "priority": 4,
+      "tag": "priority_O3",
+      "entry": "h743_priority_noop_regression_run",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_USE_TIME_SLICING=0",
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ],
+      "exit_code": 0,
+      "source_sha256": "7F7D158E4C4DE74E389473F74B8D49526E2490E7FF950C57C197D2277FBD301B"
+    }
+  },
+  "production120": {
+    "outcome": "pass",
+    "elapsed_seconds": 124.295821,
+    "image_sha256": "d502512c3c73a33ad2664754463766f0b6f07702bdaf897e9848e1bc4bb6da0d",
+    "build": {
+      "variant": "production_stress",
+      "tag": "production120",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions",
+        "-StressSeconds",
+        "120",
+        "-StressSeed",
+        "1592594996",
+        "-StressQueueCapacity",
+        "1"
+      ]
+    }
+  },
+  "queue_copy_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.436563,
+    "image_sha256": "17239cbba8481458ac20528ac6af443b3eecf3d1cfe3e128e28311965f166d5e",
+    "build": {
+      "variant": "queue_copy",
+      "tag": "queue_copy_O0",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O0"
+      ]
+    }
+  },
+  "reap_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.496553,
+    "image_sha256": "35015a1cc02c68b4fe846b8d5d3d2d47882314c7beb5b643e44f4d944fbc110a",
+    "build": {
+      "source": "h743_reap_regression.c",
+      "priority": 9,
+      "tag": "reap_O0",
+      "entry": "h743_reap_regression_run",
+      "flags": [
+        "-Optimization",
+        "O0",
+        "-CriticalMask",
+        "primask",
+        "-UseVectorWrappers"
+      ],
+      "exit_code": 0,
+      "source_sha256": "4CA63B22432423E3BEDE0DCD91657165B93CE519187F470B3426D4A1DA44D2FB"
+    }
+  },
+  "resume_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.914424,
+    "image_sha256": "43ff3280100529c12d97e324f755a85a375dcd246f91a7b1da22792c3362fe61",
+    "build": {
+      "source": "h743_resume_regression.c",
+      "priority": 4,
+      "tag": "resume_O2",
+      "entry": "h743_resume_regression_run",
+      "flags": [
+        "-FixtureWrap",
+        "rtos_port_context_switch"
+      ],
+      "exit_code": 0,
+      "source_sha256": "C3C1659CCF7095E39C6318CF40E269767B3E12E228B4859A7982D59A115ECB92"
+    }
+  },
+  "robustness_coop_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 3.027335,
+    "image_sha256": "3e81542f65e8bb711c250cc2589f6acc92e9eb8c1a73bd254e19ab78da3967f7",
+    "build": {
+      "variant": "robustness",
+      "tag": "robustness_coop_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2",
+        "-Cooperative",
+        "-PerfHotpath"
+      ]
+    }
+  },
+  "selftest_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 16.276526,
+    "image_sha256": "7f44971abb3976c8635e0ae169c3a150d29cf3cc562e2e7d0157d50f733d1621",
+    "build": {
+      "variant": "selftest",
+      "tag": "selftest_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "services_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.14219,
+    "image_sha256": "938e133c4cd31ea8227da767effde56a1c9d226140f0b8346c83d28f37711d52",
+    "build": {
+      "source": "h743_service_edges.c",
+      "priority": 4,
+      "tag": "services_O3",
+      "entry": "h743_service_edges_run",
+      "flags": [
+        "-FixtureDefines",
+        "RTOS_CONFIG_PERF_HOTPATH_STATS=1",
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ],
+      "exit_code": 0,
+      "source_sha256": "09731ED5A9636AFFAD43354C550E036971E92149B312B0B4DACE3F9AD2A79F5F"
+    }
+  },
+  "startup_O0": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.42675,
+    "image_sha256": "d6afadbc788034c1a067a7e573df4c9185dcfed986ded646c73485c74da51c2d",
+    "build": {
+      "variant": "startup_clock",
+      "tag": "startup_O0",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O0"
+      ]
+    }
+  },
+  "timer_supervisor_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.116835,
+    "image_sha256": "826be66b446c01c08daa407cb609134704b2dedc827db55dcda6a2db8fdfd67e",
+    "build": {
+      "variant": "timer_supervisor",
+      "tag": "timer_supervisor_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "usb_cdc512_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.964875,
+    "image_sha256": "8bafd437097e044f1c4cccff7c49fae14f52edbc61430d5b08b1c530d6b573e3",
+    "build": {
+      "variant": "usb_cdc_cursor_regression",
+      "tag": "usb_cdc512_O3",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-CdcRxCapacity",
+        "512",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ]
+    }
+  },
+  "usb_cdc768_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.929952,
+    "image_sha256": "1840f3ec36f2a4647ee24763a1ebd23f1d911d4256b41bd60a5cfb84acc88f2c",
+    "build": {
+      "variant": "usb_cdc_cursor_regression",
+      "tag": "usb_cdc768_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2",
+        "-CdcRxCapacity",
+        "768"
+      ]
+    }
+  },
+  "usb_msc_base": {
+    "outcome": "expected_failure",
+    "elapsed_seconds": 2.497481,
+    "image_sha256": "7def551c0f14ff0f21831c0f0f68de474df9f4ad49ec1722eb9be9b590f357d8",
+    "build": {
+      "variant": "portable_fixture",
+      "flags": [
+        "-Variant",
+        "portable_fixture",
+        "-FixtureSource",
+        "f446_usb_msc_resource.c",
+        "-FixtureEntry",
+        "f446_usb_msc_resource_run",
+        "-FixturePriority",
+        "4",
+        "-FixtureDefines",
+        "HIL_PORTABLE_BEFORE_START=f446_usb_msc_resource_prepare",
+        "-FixtureWrap",
+        "usb_dc_init,usb_dc_deinit",
+        "-Optimization",
+        "O2"
+      ],
+      "tag": "usb_msc_base",
+      "source_sha256": "6F71587A07A6AA240FC66E6D8ADFE54E9AE3BB49D940BF961C8E256D01BBDF51",
+      "exit_code": 0,
+      "entry": "f446_usb_msc_resource_run"
+    }
+  },
+  "usb_msc_current": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.605662,
+    "image_sha256": "87e7aadbb0521ea74b60cf00d6437c6b52b5b616d5db319daf6e1b5eb0655b20",
+    "build": {
+      "exit_code": 0,
+      "variant": "portable_fixture",
+      "source_sha256": "6F71587A07A6AA240FC66E6D8ADFE54E9AE3BB49D940BF961C8E256D01BBDF51",
+      "tag": "usb_msc_current",
+      "entry": "f446_usb_msc_resource_run",
+      "flags": [
+        "-Variant",
+        "portable_fixture",
+        "-FixtureSource",
+        "f446_usb_msc_resource.c",
+        "-FixtureEntry",
+        "f446_usb_msc_resource_run",
+        "-FixturePriority",
+        "4",
+        "-FixtureDefines",
+        "HIL_PORTABLE_BEFORE_START=f446_usb_msc_resource_prepare",
+        "-FixtureWrap",
+        "usb_dc_init,usb_dc_deinit",
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "usb_priority_O2": {
+    "outcome": "pass",
+    "elapsed_seconds": 1.920197,
+    "image_sha256": "3168b323f22488eff4406df16560eefb128de9f02c925c297a2b352b909f7282",
+    "build": {
+      "variant": "usb_osal_priority_regression",
+      "tag": "usb_priority_O2",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O2"
+      ]
+    }
+  },
+  "wait_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.938155,
+    "image_sha256": "bf7d5d552f416558e767da7021b8153c924a5e319a33e5e8536b3d96f0cdaff5",
+    "build": {
+      "variant": "adversarial_wait",
+      "tag": "wait_O3",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ]
+    }
+  },
+  "wrap_O3": {
+    "outcome": "pass",
+    "elapsed_seconds": 2.657052,
+    "image_sha256": "b8f4c2bf31f0e37d4f7211234877c1cf9a275b3d75bfdcbe4802c92752d32fdd",
+    "build": {
+      "variant": "wrap_ipc_regression",
+      "tag": "wrap_O3",
+      "exit_code": 0,
+      "flags": [
+        "-Optimization",
+        "O3",
+        "-CriticalMask",
+        "primask",
+        "-DisableAssertions"
+      ]
+    }
+  }
+}

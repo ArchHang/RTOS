@@ -1,0 +1,84 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=h743_lifecycle_stress_run|priority=4
+H7L|START|seed=2779096485|seconds=60|heap=28496
+H7L|PRESSURE|phase=0|tasks=41|heap_min=616
+H7L|PROGRESS|ticks=1003|phase=0|rounds=303|irq=2506|irq_refused=6
+H7L|PROGRESS|ticks=2005|phase=0|rounds=586|irq=5011|irq_refused=16
+H7L|PROGRESS|ticks=3005|phase=0|rounds=878|irq=7511|irq_refused=26
+H7L|PROGRESS|ticks=4009|phase=0|rounds=1192|irq=10021|irq_refused=36
+H7L|PROGRESS|ticks=5010|phase=0|rounds=1502|irq=12524|irq_refused=47
+H7L|PROGRESS|ticks=6011|phase=0|rounds=1807|irq=15026|irq_refused=57
+H7L|PROGRESS|ticks=7011|phase=0|rounds=2124|irq=17526|irq_refused=68
+H7L|PROGRESS|ticks=8011|phase=0|rounds=2426|irq=20026|irq_refused=79
+H7L|PROGRESS|ticks=9016|phase=0|rounds=2733|irq=22539|irq_refused=90
+H7L|PROGRESS|ticks=10020|phase=0|rounds=3042|irq=25049|irq_refused=100
+H7L|PROGRESS|ticks=11021|phase=0|rounds=3362|irq=27551|irq_refused=111
+H7L|PROGRESS|ticks=12021|phase=0|rounds=3684|irq=30051|irq_refused=122
+H7L|PROGRESS|ticks=13022|phase=0|rounds=4004|irq=32554|irq_refused=133
+H7L|PROGRESS|ticks=14025|phase=0|rounds=4330|irq=35061|irq_refused=144
+H7L|PROGRESS|ticks=15027|phase=0|rounds=4653|irq=37566|irq_refused=155
+H7L|PROGRESS|ticks=16028|phase=0|rounds=4973|irq=40069|irq_refused=166
+H7L|PROGRESS|ticks=17029|phase=0|rounds=5268|irq=42571|irq_refused=177
+H7L|PROGRESS|ticks=18029|phase=0|rounds=5575|irq=45071|irq_refused=188
+H7L|PROGRESS|ticks=19029|phase=0|rounds=5897|irq=47571|irq_refused=199
+H7L|PHASE|phase=0|ticks=20000|irq=49999|max_gap_cycles=68432
+H7L|PRESSURE|phase=1|tasks=41|heap_min=616
+H7L|PROGRESS|ticks=20031|phase=1|rounds=6194|irq=50076|irq_refused=280
+H7L|PROGRESS|ticks=21035|phase=1|rounds=6488|irq=52586|irq_refused=2774
+H7L|PROGRESS|ticks=22036|phase=1|rounds=6793|irq=55089|irq_refused=5265
+H7L|PROGRESS|ticks=23036|phase=1|rounds=7100|irq=57589|irq_refused=7742
+H7L|PROGRESS|ticks=24036|phase=1|rounds=7412|irq=60089|irq_refused=10217
+H7L|PROGRESS|ticks=25037|phase=1|rounds=7722|irq=62591|irq_refused=12698
+H7L|PROGRESS|ticks=26037|phase=1|rounds=8029|irq=65091|irq_refused=15187
+H7L|PROGRESS|ticks=27038|phase=1|rounds=8309|irq=67594|irq_refused=17680
+H7L|PROGRESS|ticks=28038|phase=1|rounds=8611|irq=70094|irq_refused=20151
+H7L|PROGRESS|ticks=29043|phase=1|rounds=8923|irq=72606|irq_refused=22643
+H7L|PROGRESS|ticks=30044|phase=1|rounds=9218|irq=75109|irq_refused=25129
+H7L|PROGRESS|ticks=31044|phase=1|rounds=9515|irq=77609|irq_refused=27613
+H7L|PROGRESS|ticks=32045|phase=1|rounds=9800|irq=80111|irq_refused=30100
+H7L|PROGRESS|ticks=33047|phase=1|rounds=10103|irq=82616|irq_refused=32591
+H7L|PROGRESS|ticks=34049|phase=1|rounds=10393|irq=85121|irq_refused=35079
+H7L|PROGRESS|ticks=35050|phase=1|rounds=10700|irq=87624|irq_refused=37564
+H7L|PROGRESS|ticks=36051|phase=1|rounds=10982|irq=90126|irq_refused=40053
+H7L|PROGRESS|ticks=37056|phase=1|rounds=11281|irq=92639|irq_refused=42547
+H7L|PROGRESS|ticks=38061|phase=1|rounds=11585|irq=95151|irq_refused=45042
+H7L|PROGRESS|ticks=39062|phase=1|rounds=11887|irq=97654|irq_refused=47527
+H7L|PHASE|phase=1|ticks=19996|irq=49989|max_gap_cycles=68444
+H7L|PRESSURE|phase=2|tasks=41|heap_min=616
+H7L|PROGRESS|ticks=40062|phase=2|rounds=12195|irq=100154|irq_refused=49875
+H7L|PROGRESS|ticks=41062|phase=2|rounds=12509|irq=102654|irq_refused=49886
+H7L|PROGRESS|ticks=42063|phase=2|rounds=12831|irq=105156|irq_refused=49897
+H7L|PROGRESS|ticks=43064|phase=2|rounds=13158|irq=107659|irq_refused=49909
+H7L|PROGRESS|ticks=44069|phase=2|rounds=13462|irq=110171|irq_refused=49920
+H7L|PROGRESS|ticks=45070|phase=2|rounds=13764|irq=112674|irq_refused=49932
+H7L|PROGRESS|ticks=46075|phase=2|rounds=14068|irq=115186|irq_refused=49943
+H7L|PROGRESS|ticks=47076|phase=2|rounds=14390|irq=117689|irq_refused=49955
+H7L|PROGRESS|ticks=48077|phase=2|rounds=14697|irq=120191|irq_refused=49966
+H7L|PROGRESS|ticks=49078|phase=2|rounds=15014|irq=122694|irq_refused=49978
+H7L|PROGRESS|ticks=50081|phase=2|rounds=15307|irq=125201|irq_refused=49989
+H7L|PROGRESS|ticks=51082|phase=2|rounds=15619|irq=127704|irq_refused=50001
+H7L|PROGRESS|ticks=52083|phase=2|rounds=15926|irq=130206|irq_refused=50012
+H7L|PROGRESS|ticks=53083|phase=2|rounds=16245|irq=132706|irq_refused=50024
+H7L|PROGRESS|ticks=54083|phase=2|rounds=16539|irq=135206|irq_refused=50036
+H7L|PROGRESS|ticks=55086|phase=2|rounds=16852|irq=137714|irq_refused=50048
+H7L|PROGRESS|ticks=56090|phase=2|rounds=17158|irq=140224|irq_refused=50059
+H7L|PROGRESS|ticks=57090|phase=2|rounds=17462|irq=142724|irq_refused=50070
+H7L|PROGRESS|ticks=58090|phase=2|rounds=17781|irq=145224|irq_refused=50081
+H7L|PROGRESS|ticks=59090|phase=2|rounds=18085|irq=147724|irq_refused=50092
+H7L|PHASE|phase=2|ticks=19998|irq=49994|max_gap_cycles=68444
+H7L|SOURCE|id=0|accepted=23352|refused=4363|received=23352
+H7L|SOURCE|id=1|accepted=21589|refused=5539|received=21589
+H7L|SOURCE|id=2|accepted=20819|refused=6054|received=20819
+H7L|SOURCE|id=3|accepted=99912|refused=50110|received=99912
+H7L|TOTAL|rounds=18371|deliver=4653|reopen=4525|timeout=4570|drop_rounds=4623|tasks=147091|self_delete=64238|external_delete=82853|blocked_delete=18492|pressure_peak=41|heap_min=616|heap_raw_free=28352|heap_max_alloc=28496|heap_live=2|irq=150022|nested=18752|overload_refused=49634
+H7L|DONE|status=0
