@@ -67,3 +67,7 @@ Puppeteer JSON 配置必须通过 `executablePath` 指向已经存在的浏览�
 典型维护顺序为：修改图源与配套正文 → `-ValidateOnly` → 仅渲染受影响图片 → 打开图片复核 → 检查 Git 差异。图片链接和 Mermaid 图源应随同一文档变更一起提交，保持读者看到的图片与图源一致。
 
 2026-10-28已删除无正文引用的01/12/13号旧图、不再匹配现行完整端口流程的10号历史图，以及数据与历史表格不一致的性能图；旧测量值和失效口径见[性能参考](../rtos_performance_report.md)。当前不保留base64嵌图副本或专用分发转换脚本。
+
+2026-11-11 交付清理删除全工程已无引用的 `rtos_design_07.png`、`rtos_design_08.png`、
+`rtos_design_11.png` 和 `rtos_design_kernel_objects.png`，共 534,461 字节。
+现行机制图保留其正文配对图源或原生 Mermaid，不按旧编号保留孤立图片。

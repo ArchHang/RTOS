@@ -71,7 +71,10 @@ flowchart TB
 
 ## 工程迁移与兼容
 
-公共函数名、公共头文件名及 `Core/Inc/` 路径保持兼容，包括固定池仍使用 `#include "rtos_mem.h"`。本次仅改变源码归属，不借目录整理调整对象布局、TCB/汇编协议或临界区算法。
+2026-10-27 的目录重组保留公共函数名、公共头文件名及 `Core/Inc/` 路径，包括固定池仍使用
+`#include "rtos_mem.h"`。该次重组只调整源码归属。后续调度、存储与服务加固的行为和迁移约束
+以[当前设计手册](../docs/rtos_design.md)及[交付报告](../docs/logs/2026-11-11.md#hardening-release)为准，
+不能把历史重组的兼容说明扩展到全部后续修改。
 
 自行维护编译清单的工程必须同步源码新路径，并移除旧条目，避免缺失或重复链接。`Core/Src/rtos_mem.c` 对应新 `Memory/rtos_mempool.c`；原 USB 两个文件对应新 `USB/` 三文件；旧 `Port/GCC/ARM_CM7/port.c` 对应 `Port/GCC/ARM_CM4F_CM7F/port.c`。不能只收集 `Core/Src/` 就认为已经包含全部 RTOS 功能。
 

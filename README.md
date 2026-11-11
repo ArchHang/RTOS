@@ -7,6 +7,12 @@
 现行实现、调用约束与测试方法分别见[设计手册](docs/rtos_design.md)、[公共 API 契约](docs/ai/README.md)和[HIL 入口](hil/README.md)。
 更新、回归结果和归档范围按日期记录，见[文档导航](docs/README.md)。
 
+最近一轮加固覆盖任务回收与调度提交、堆统计可见性、定时器命令顺序和 USB 会话恢复。
+[交付报告](docs/logs/2026-11-11.md#hardening-release)汇总修复、迁移要求和清理范围，
+[测试矩阵](docs/rtos_testing_report.md#f446-interaction-hardening)区分真实板测、宿主替身及未测边界。
+本轮最后新增修复在 F446 完成定向和组合压力回归，H743 完成交叉编译；此前的 H743 板测结果
+对应其各自记录的源码快照。
+
 ```mermaid
 flowchart TB
     app["用户任务 / 公共 API：RTOS/Core/Inc"]
