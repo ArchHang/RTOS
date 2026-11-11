@@ -9,11 +9,11 @@
 
 - **生存期和同步**：控制块自然对齐、可访问，缓存实际容量充足，覆盖全部并发使用期；控制块与缓存不互相覆盖。IPC初始化标志不是地址有效性注册表，函数可能在进入临界区前读取它；不能用API探测已释放对象。应用不直接改等待链、计数或owner。
 - **ISR**：“合法ISR”指系统调用级中断。F446默认逻辑优先级5–15，编码门槛0x50；0–4及NMI/HardFault不属于允许范围。ISR优先级断言只在RTOS_CONFIG_ASSERT_ENABLED开启时检查；关闭断言不放宽契约，也不保证违约时返回错误。mutex take/give另有独立ISR拒绝，其他接口不能类推。
-- **阻塞与tick**：timeout单位tick，0为RTOS_NO_WAIT，1..0x7FFFFFFF为支持的有限等待，0xFFFFFFFF为RTOS_WAIT_FOREVER。当前调度器把0x80000000..0xFFFFFFFE也作为永久阻塞处理，而非有限长等待或参数错误。需阻塞时必须已有当前任务且调度器RTOS_SCHED_RUNNING。外层临界区或自行屏蔽PendSV/SysTick不一定被守卫识别，仍禁止在这些条件下阻塞。立即完成路径不因调度器暂停而自动失败。
+- **阻塞与tick**。timeout单位为tick，0为RTOS_NO_WAIT，1..0x7FFFFFFF为有限等待，0xFFFFFFFF为RTOS_WAIT_FOREVER。调度器也把0x80000000..0xFFFFFFFE作为永久阻塞处理。登记等待要求已有当前任务、调度器处于RTOS_SCHED_RUNNING，且退出API自身的临界区后PendSV能够响应。调用者持有外层临界区或中断屏蔽时，状态型API返回RTOS_ERR_SCHED，事件组返回0。已有资源可立即完成。
 - **初始化/销毁**：init允许未初始化存储，不代表deinit能接受垃圾字节。sem/queue/event通过任务登记状态阻止仍有等待者时重建；无等待者时允许重置，可能丢弃原状态。deinit不证明所有已开始调用和裸指针都已停止；先停止新访问并协调旧用户退出，才可释放或复用存储。
 - **观察查询**：无锁getter不预留资源，不验证初始化。任务/合法ISR中的返回值只是观察；额外上下文与并发释放安全不由getter保证。不能由“无锁”推导NMI/高优先级ISR可任意访问正在变化或销毁的对象。
 - **失败边界**：普通拒绝在合法对象状态下不转移资源归属；对象损坏、越界/重叠缓冲或并发释放等违约输入不具有必然报错或事务回滚保证。任务自身被删除后不会返回原阻塞调用。
-- **完成与取消的先后**：deinit或挂起的取消语义针对仍登记为等待中的调用。若give、队列直传或事件set已经授予资源/记录快照、任务已RTOS_TASK_READY，随后挂起它不自动撤销此前已经完成的结果；不能把“尚未返回到业务代码”一律等同于“仍在等待链上”。
+- **完成与取消的先后**：队列直传、信号量授予和事件快照在唤醒时已经完成。随后deinit或挂起会取消仍登记的等待，已完成的操作保留原结果。互斥锁的授权与对象寿命相连，deinit还会撤回已交接但尚未由take确认的所有权。
 - **配置**：这些函数没有TIMERS/USB那样的关闭存根。RTOS_CONFIG_MAX_SEMAPHORES/RTOS_CONFIG_MAX_QUEUES/RTOS_CONFIG_MAX_EVENT_GROUPS不是相应自备控制块init中的强制总量限制；RTOS_CONFIG_MAX_MUTEXES实际限制登记表。当前实现的task_create始终从heap申请TCB及栈，task_create_static始终使用调用方存储；RTOS_CONFIG_USE_STATIC_ALLOCATION不切换这两条路径，也不禁用heap。
 
 ## 数据结构及事件模式
@@ -76,7 +76,7 @@ rtos_status_t rtos_sem_give(rtos_sem_t *sem);
 - **上下文/阻塞**：启动、任务或合法ISR；不等待，有优先级断言；可能唤醒任务并请求切换。
 - **返回**：RTOS_OK；NULL为RTOS_ERR_NULL；未初始化为RTOS_ERR_PARAM；无等待者且count>=max_count为RTOS_ERR_OVERFLOW。
 - **状态/失败**：有等待者时授予最高优先级等待者，count不增；无等待者时count加一。溢出保持count。
-- **限制**：不验证give者曾take，不提供互斥所有权或继承。位图选择仍可扫描等待链，不保证完整操作固定周期。
+- **限制**：不验证give者曾take，不提供互斥所有权或继承。多等待者时先定位该优先级最早节点，再从原后继检查共享位；最坏仍可扫描整条等待链。
 
 <a id="api-rtos_sem_get_count"></a>
 
@@ -133,8 +133,8 @@ rtos_status_t rtos_mutex_take(rtos_mutex_t *mutex, rtos_tick_t timeout);
 
 - **参数**：mutex已初始化且有效；timeout为tick。
 - **上下文/阻塞**：仅实际已有当前TCB的任务。任何ISR即使RTOS_NO_WAIT也由运行时返回RTOS_ERR_ISR。启动阶段无当前任务时禁止取锁；实现没有对current_tcb==NULL的独立拒绝，空闲路径甚至可能返回RTOS_OK并留下owner=NULL，不能将禁止约束当作运行时报错保证。竞争且非零等待可阻塞。
-- **返回**：RTOS_OK；NULL为RTOS_ERR_NULL；未初始化为RTOS_ERR_PARAM；ISR为RTOS_ERR_ISR；递归数UINT32_MAX时再次take为RTOS_ERR_OVERFLOW；他人持锁且RTOS_NO_WAIT/超时为RTOS_ERR_TIMEOUT；需阻塞但条件不允许为RTOS_ERR_SCHED；等待被销毁/挂起中止为RTOS_ERR_DELETED。
-- **状态/失败**：空闲时owner设当前任务、递归数1；自身持有时递归数加一。竞争时登记依赖并求传递优先级继承。give先交接owner再唤醒，成功返回者已持锁。溢出保持原所有权/计数。
+- **返回**：RTOS_OK；NULL为RTOS_ERR_NULL；未初始化为RTOS_ERR_PARAM；ISR为RTOS_ERR_ISR；递归数UINT32_MAX时再次take为RTOS_ERR_OVERFLOW；他人持锁且RTOS_NO_WAIT/超时为RTOS_ERR_TIMEOUT；需阻塞但条件不允许为RTOS_ERR_SCHED；销毁撤销等待或未确认交接、挂起中止仍登记的等待时为RTOS_ERR_DELETED。
+- **状态/失败**：空闲时owner设当前任务、递归数1；自身持有时递归数加一。竞争时登记依赖并求传递优先级继承。give在唤醒的任务可运行前保留owner，阻塞的take恢复后在内核临界区确认交接。成功确认后任务可以访问受保护资源。溢出保持原所有权/计数。
 - **限制**：继承不解除锁顺序死锁。删除持有任务可触发锁转交，但不保证被保护业务数据已经恢复一致；需业务设计恢复协议。
 
 <a id="api-rtos_mutex_give"></a>
@@ -148,7 +148,7 @@ rtos_status_t rtos_mutex_give(rtos_mutex_t *mutex);
 - **参数**：mutex已初始化，当前任务是owner且递归数>0。
 - **上下文/阻塞**：仅实际任务；任何ISR运行时返回RTOS_ERR_ISR，不等待。
 - **返回**：RTOS_OK；NULL为RTOS_ERR_NULL；未初始化、非owner或递归数0为RTOS_ERR_PARAM；ISR为RTOS_ERR_ISR。
-- **状态/失败**：递归数减一；大于0继续持锁。归零时在同一临界区向最高优先级等待者转交owner、递归数1，或清owner，再重算优先级和调度。普通拒绝不改变锁。
+- **状态/失败**：递归数减一；大于0继续持锁。归零且无等待者时直接清除owner和交接标记，保持其他锁带来的继承。归零且有等待者时，在同一临界区转交owner、设递归数1、标记交接待确认，并重算继承及调度候选。普通拒绝不改变锁。
 - **限制**：最后一次give可使高优先级任务先运行；调用方不能把give之后的数据访问仍当作受该锁保护。
 
 <a id="api-rtos_mutex_deinit"></a>
@@ -162,8 +162,8 @@ rtos_status_t rtos_mutex_deinit(rtos_mutex_t *mutex);
 - **参数**：mutex曾成功init，结构完整、存储有效；销毁前协调持有者及其他用户。
 - **上下文/阻塞**：启动、任务或合法ISR；使用ISR优先级断言，与take/give的运行时ISR拒绝不同；不等待。
 - **返回**：NULL为RTOS_ERR_NULL，其余满足前置条件时RTOS_OK；不要求调用者为owner，无独立重复销毁错误码。
-- **状态**：清owner，以RTOS_ERR_DELETED唤醒所有等待者，清初始化标志、移除登记槽并重算旧owner优先级。保留recursion_count，不释放存储。
-- **寿命/限制**：可以撤销仍被持有的锁是当前实现行为，不是安全业务销毁流程；旧持有者随后give会因未初始化失败。不能对垃圾对象调用deinit。
+- **状态**：清owner，以RTOS_ERR_DELETED唤醒所有仍登记的等待者。若交接尚待确认，已就绪或被挂起的新owner也以RTOS_ERR_DELETED结束原take。同址重建后，已取消的take从原任务控制块读取结果。销毁清初始化标志和交接标志、移除登记槽并重算旧owner优先级，保留recursion_count和调用者提供的存储。
+- **寿命/限制**：应用仍需协调已经取得锁的持有者及所有对象用户，等他们停止访问后再销毁、重建或释放对象存储。传入对象须有有效的结构和生命周期。
 
 ## 消息队列
 
@@ -194,8 +194,8 @@ rtos_status_t rtos_queue_send(rtos_queue_t *queue, const void *item, rtos_tick_t
 - **参数**：queue已初始化且缓存有效；item至少有item_size可读字节，整个调用返回前有效、内容稳定，不与控制块、队列缓存或接收目标重叠；timeout为tick；to_front使用RTOS_FALSE尾插、RTOS_TRUE头插，不覆盖旧消息。
 - **上下文/阻塞**：任务；启动仅立即路径；合法ISR必须RTOS_NO_WAIT。高优先级ISR仍禁止，关断言不保证拒绝。满且非零等待时可能阻塞。
 - **返回**：RTOS_OK；NULL queue/item为RTOS_ERR_NULL；未初始化或检测到错误等待缓冲为RTOS_ERR_PARAM；ISR非零timeout为RTOS_ERR_ISR；RTOS_NO_WAIT且满/实际超时为RTOS_ERR_TIMEOUT；需阻塞但不允许为RTOS_ERR_SCHED；销毁/挂起中止等待为RTOS_ERR_DELETED。
-- **状态/所有权**：有接收等待者时直接memcpy到其缓冲并唤醒，否则复制进环形缓存。阻塞时保存item指针，接收者可能代为复制入队。RTOS_OK只表示已接纳，不代表消费业务完成。
-- **限制**：复制固定字节；发送指针只复制指针值，不管理所指内存。直传仍为一次memcpy。源码重试分支复用原timeout，不额外保证跨重试总预算；普通拒绝不构成指针消息的自动释放。
+- **状态/所有权**：有接收等待者时直接复制到其缓冲并唤醒，否则复制进环形缓存。阻塞时保存item指针，接收者可能代为复制入队。RTOS_OK表示已接纳，业务完成由应用另行确认。
+- **限制**：按固定字节数复制。直传执行一次复制，单字节通过字符读写完成，其余宽度使用 `memcpy`。指针消息只复制指针值，业务内存寿命由应用管理。源码重试分支复用原timeout，跨重试的等待可能超过该值。
 
 <a id="api-rtos_queue_recv"></a>
 
@@ -349,11 +349,11 @@ rtos_status_t rtos_event_deinit(rtos_event_t *event);
 rtos_status_t rtos_mempool_init(rtos_mempool_t *pool, void *base, uint32_t block_size, uint32_t block_count);
 ```
 
-- **参数**：pool可写；base为独立缓存起点，满足_Alignof(void*)，F446为4字节；block_size为单块字节数>0且<=UINT32_MAX-3；block_count为块数>0。实际缓存至少max(align4(block_size),sizeof(void*))*block_count字节。
+- **参数**：pool可写；base为独立缓存起点，按空闲节点所含指针自然对齐，F446为4字节；block_size为单块字节数>0；block_count为块数>0。实际缓存至少容纳block_count个舍入后的块。
 - **上下文/阻塞**：启动、任务或合法ISR；有优先级断言，不等待，但在临界区遍历并写入所有块。
-- **返回**：NULL、零参数、尺寸/乘积/地址范围溢出或起点未对齐为RTOS_ERR_PARAM；成功RTOS_OK。
-- **状态**：块长上调至4字节对齐且至少容纳指针，建立空闲链；不清所有payload。随后尝试登记性能表，登记满仍返回RTOS_OK。
-- **寿命/限制**：不验证实际容量或控制块/缓存重叠。活跃池重init无BUSY守卫，不安全。没有deinit/unregister；启用性能监视时，pool控制块须存活至相关登记已清除，例如受控重新初始化perf。不能在函数栈上临时创建后遗留登记。
+- **返回**：NULL、零参数、尺寸/乘积/地址范围溢出、起点未对齐、缓存实际写入范围与pool重叠为RTOS_ERR_PARAM；拒绝时不改写pool或缓存。成功RTOS_OK。
+- **状态**：先取block_size与节点大小的较大值，再向上舍入至节点对齐边界，确保每块均可写入空闲链指针。初始化建立空闲链，不清所有payload。随后尝试登记性能表，登记满仍返回RTOS_OK。
+- **寿命/限制**：不验证调用方实际提供的容量。可把描述符和缓存放在同一结构体的不同成员中，确保舍入后的写入范围不重叠。活跃池重init无BUSY守卫，不安全。没有deinit/unregister；启用性能监视时，pool控制块须存活至相关登记已清除，例如受控重新初始化perf。不能在函数栈上临时创建后遗留登记。
 
 <a id="api-rtos_mempool_alloc"></a>
 
@@ -409,8 +409,8 @@ rtos_status_t rtos_heap_init(void);
 ```
 
 - **参数/上下文**：无参数，仅受控启动阶段独占初始化，通常由rtos_init编排。无并发初始化或ISR守卫，不在运行中拿它重置堆。
-- **返回**：已初始化或首次构造成功为RTOS_OK；配置小于sizeof(header_t)+16字节时为RTOS_ERR_PARAM。
-- **状态**：首次在内部静态RTOS_CONFIG_HEAP_SIZE缓存建立首块，清分配/释放累计计数；再次调用直接RTOS_OK，不清现存分配或累计值。
+- **返回**：已初始化或首次构造成功为RTOS_OK；对齐后容量小于24字节或超出31位块长时为RTOS_ERR_PARAM。
+- **状态**：首次在内部静态RTOS_CONFIG_HEAP_SIZE缓存建立首块，容量向下对齐到8字节，清分配/释放累计计数；再次调用直接RTOS_OK，不清现存分配或累计值。
 - **配置/限制**：独立于C库malloc；RTOS_CONFIG_USE_STATIC_ALLOCATION=1不禁用heap，也不把task_create改为静态分配；静态任务存储须显式使用task_create_static。无销毁堆/收回所有分配的公共操作。
 
 <a id="api-rtos_heap_alloc"></a>
@@ -423,8 +423,8 @@ void *rtos_heap_alloc(uint32_t size);
 
 - **参数**：size为请求字节数>0；实现按8向上对齐，另加8字节header，最小总块16字节。
 - **上下文/阻塞**：已init后的启动/任务或合法ISR；有优先级断言，不作调度等待，但在临界区扫描，推荐任务上下文。
-- **返回**：未初始化、size=0、对齐及头部算术域超限、无足够连续块或扫描遇到已检测损坏时为NULL；成功为8字节对齐payload，容量至少size。
-- **状态/所有权**：first-fit扫描物理块，可能拆分尾块、更新空闲账本及分配计数；不清payload。应用负责使用及一次最终归还。
+- **返回**：未初始化、size=0、请求超过堆最大理论容量或找不到足够连续空间时为NULL；扫描遇到无效块头时停止。成功为8字节对齐payload，容量至少size。
+- **状态/所有权**：first-fit扫描物理块。单个空闲块不够时考察连续空闲段，找到足够空间后才合并，并按需拆分尾块。只有成功分配才更新布局、空闲账本及分配计数。应用负责使用及一次最终归还，分配不清payload。
 - **限制**：扫描包含已占用与空闲块，最坏随物理块总数增长。不阻塞不等于固定周期；heap不记录还有哪些任务读取这块数据，不能自动判定安全释放时间。
 
 <a id="api-rtos_heap_free"></a>
@@ -437,9 +437,9 @@ void rtos_heap_free(void *ptr);
 
 - **参数**：ptr为NULL，或本heap仍在占用的原始返回指针，全部用户已停止访问。不得传其他分配器地址、内部地址或过期别名。
 - **上下文/阻塞**：NULL直接返回；其余为启动/任务或合法ISR，有优先级断言；不等待。
-- **返回**：void；NULL、未初始化、范围外、魔数不符或当前已标空闲时静默返回，无错误码。
+- **返回**：void；NULL、未初始化、范围外、未对齐、块头不符或当前已标空闲时静默返回，无错误码。
 - **状态**：成功标空闲、记账、释放累计值加一；只尝试合并紧邻下一空闲块一次，清被合并header魔数，不清payload。
-- **限制**：不查找前驱，不保证所有相邻空闲块合并。仅原始有效指针是支持的输入，魔数检查不是任意指针探测器。相同地址重新分配后，旧指针可能误释放新分配。
+- **限制**：释放保持O(1)，更大的连续空闲段按需在分配时合并。应用必须传入原始有效指针。块头检查无法鉴别所有对齐的内部指针，也无法识别同一地址重新分配前留下的旧指针。
 
 <a id="api-rtos_heap_get_free"></a>
 
@@ -462,8 +462,8 @@ uint32_t rtos_heap_get_max_alloc(void);
 ```
 
 - **参数/上下文**：无参数；任务或合法ISR，有优先级断言。临界区扫描全部物理块，不等待，推荐非热路径任务调用。
-- **返回**：未初始化为0；正常时为最大单块空闲payload容量，扣header并向下对齐至8字节。已检测损坏使扫描提前停止，可能返回已见最大值，不证明堆健康。
-- **状态/限制**：不改块、不预留空间。查询与alloc是独立临界区，不能保证下一次申请成功；不能用空闲总和代替该上限。
+- **返回**：未初始化为0；正常时为最大连续空闲段合并后可用于payload的容量，该段只扣一个块头。已检测损坏使扫描提前停止，可能返回已见最大值。
+- **状态/限制**：不改块、不预留空间。查询与alloc是独立临界区，不能保证下一次申请成功。跨在用块的空闲空间不能合并，段内可回收的块头则计入该上限。
 
 <a id="api-rtos_heap_get_alloc_count"></a>
 
@@ -495,8 +495,8 @@ uint32_t rtos_heap_get_free_count(void);
 事件位、计数和指针返回不借用这套错误码。
 
 - 直传仍拷贝数据；完整queue调用还包含校验、复制、等待链及调度成本。
-- heap_free只合并下一块一次；本基线没有前向合并、完整相邻合并或自动碎片整理。
-- 固定池空闲块首部按指针节点读写。本契约适用32位F446 ABI，不能仅凭存在C源码推断任意64位宿主、对齐或别名模型都已适配。
+- heap_free最多合并紧邻的下一块。alloc只在需要时合并足够长的连续空闲段，在用块始终隔开其两侧空闲空间。
+- 固定池空闲块首部按指针节点读写。基址与步长均随目标节点对齐调整，应用须按目标ABI提供足够的存储。
 - 普通heap/mempool的范围及当前重复释放防护，不具备旧借用代次鉴别、多任务引用跟踪或任务删除自动释放。
 
 共用路径：[等待与唤醒](../../RTOS/Core/Src/rtos_wait.c)、[阻塞允许条件](../../RTOS/Core/Private/rtos_internal.h)、

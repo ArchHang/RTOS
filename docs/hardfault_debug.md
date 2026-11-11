@@ -5,9 +5,9 @@
 > **内存布局基准**（见 STM32F446RETX_FLASH.ld）：FLASH 0x08000000（512K）、RAM 0x20000000（128K，0x20000000~0x2001FFFF）
 > **控制台**：USART2 @ 115200-8-N-1（`_write` 经 HAL_UART_Transmit 重定向，本方案不依赖它）
 
-> **当前源码核对**：本页包含历史解释及可集成示例，不能整段覆盖现有异常处理。
-> 当前回退基线故障报告的栈用量显示存在旧算法误差；AI排障、有效现场与现有实现边界
-> 见[调试指南](ai/debugging.md#6-hardfault和异常返回)。本次仅校正文档，没有修改BSP或内核。
+> 第五至八章保留历史调试记录与示例。部署请以
+> [当前 F446 异常处理源码](../Core/Src/stm32f4xx_it.c)为准，现场字段释义见
+> [调试指南](ai/debugging.md#6-hardfault和异常返回)。
 
 ---
 
@@ -253,11 +253,19 @@ CFSR（0xE000ED28）低字节为存储器管理故障状态（MPU 违规 / XN �
 # 第四章 本项目上下文特记
 
 1. **栈使用约定**：所有任务运行于 **PSP**（EXC_RETURN=0xFFFFFFFD/ED）；所有中断与启动阶段运行于 **MSP**（0xFFFFFFF1/F9）。诊断代码本身在 Handler 模式、用 MSP。
-2. **栈溢出判定的陷阱**：`RTOS_CONFIG_PERF_STACK_WATERMARK=1` 时，任务创建流程会先用 `0xDEADBEEF` 写栈底、随后被 0xA5A5A5A5 水印填充**覆盖**（见 rtos_task.c 注释）。因此**不能**通过读 `*(uint32_t*)stack_base` 判断溢出；应检查 **TCB 字段 `tcb->stack_magic`**（永不被覆盖）或直接比较 SP 与 `stack_base`。
-3. **任务栈元数据**：`rtos_tcb_t` 中 `stack_base`（栈底=低地址）、`stack_size`（**单位：字，×4 才是字节**）、`task_id`、`name[16]`、`priority` 均可直接打印；`rtos_kernel.current_tcb` 全局可访问。
+2. **栈用量**。任务使用向下增长的栈，`Stack usage` 为栈高地址减 `Frame SP`，
+   包含异常压栈。`Stack free` 为 `Frame SP` 减栈低地址。异常帧落在栈外时报告
+   越界方向。
+3. **任务归因**。异常从 Thread/PSP 进入时才查当前任务。报告对 TCB 及栈做 SRAM
+   范围和对齐检查，任务名读取限制在字段内。`stack_size` 在 TCB 中以字计，串口
+   输出以字节计。
 4. **调度已冻结**：HardFault 期间 SysTick/PendSV（优先级 0xFF）无法抢占，`current_tcb` 稳定可读。
-5. **输出经弱函数 fault_output（默认寄存器直写）**：诊断模块所有文本经唯一的弱函数 `fault_output` 送出（7.2 节）。默认实现是 **USART2 寄存器轮询直写**——故障上下文中唯一安全的输出方式（printf/HAL 在故障处理内可能引发级联故障，见 5.1 节实战案例）。用户可在任意 .c 定义同名强符号覆盖为 ITM/SWO、其他 UART 或 RAM 黑匣子等通道。
-6. **SP 合法区间**：本链接脚本 RAM 为 0x20000000~0x2001FFFF。CCM（0x10000000，64K）当前未用；若日后任务栈放入 CCM，需扩展 7.2 节 `fault_sp_valid` 的区间表。
+5. **输出通道**。`fault_output` 默认有界轮询 USART2 的发送寄存器，发送等待超时
+   时丢弃该字节。应用可用适合异常上下文的同名强符号覆盖。
+6. **可读 SRAM 范围**。F446 诊断使用设备头的 `SRAM_BASE` 和本工程链接脚本的
+   `_estack` 确定范围。若 BSP 使用多个不连续 RAM 区，应按其布局改造范围检查。
+7. **屏蔽现场**。`FAULT|MASK` 的 `basepri`、`primask`、`faultmask` 是报告开始
+   时的寄存器快照，`crit_depth` 是当时 RTOS 临界区深度。四个字段也保存在 `g_fault`。
 
 ---
 
@@ -356,7 +364,7 @@ str.w  r2, [sp, #10]     ; SP 4对齐 +10 → 地址恒为 2 mod 4, 非对齐整
 
 ### 5.3 最终方案: printf 默认 + 三层防护
 
-两轮事故后确立的架构（当前实现）：
+以下为 2026-08 历史实现。当前默认输出和字段见第四章。
 
 | 层 | 机制 | 防护对象 |
 |----|------|----------|

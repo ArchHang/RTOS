@@ -184,7 +184,7 @@ void rtos_timer_service_task(void *arg);
 - 分类：internal-task-entry。
 - 参数：arg：忽略，可NULL。
 - 上下文：仅由timer_init创建的唯一服务任务入口，不供应用再建第二个服务任务。
-- 阻塞：无限循环，等待命令或下次到期；回调在临界区外同一服务任务执行，回调阻塞会延后其他定时器与命令。
+- 阻塞：无活跃定时器时无限等待命令；否则用链首的绝对到期 tick 等待命令或超时。队列为空时在登记阻塞的同一临界区计算剩余 tick，服务任务在登记前被抢占不会延长原到期时间。回调在临界区外的同一服务任务执行，回调阻塞会延后其他定时器与命令。
 - 返回/副作用：无返回；到期节点逐个摘链、回调、周期重插，每次回调后消费控制命令。周期按原到期相位递推，跳过已错过周期。
 - 生命周期/边界：不得手工调用/删除服务TCB或修改内部活跃链；callback及arg必须在实际执行期间有效。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_timer.h)；[实现](../../RTOS/Services/rtos_timer.c)。
@@ -233,7 +233,7 @@ void rtos_perf_reset(void);
 - 参数：无参数。
 - 上下文：公共契约为Thread；入口RTOS_ASSERT_ISR_OK仅检查允许的ISR优先级，未强制拒绝所有ISR。
 - 阻塞：不等待，持临界区遍历已注册任务。
-- 返回/副作用：void；将窗口基准移到当前累计值，不清任务累计run_cycles/switch_count，不重置DWT计数，不立即更新快速查询缓存。
+- 返回/副作用：void；按同一采样时刻更新系统和已注册任务的窗口基准，热统计开启时包含当前运行片段。保留累计值、DWT计数和快速查询缓存。
 - 生命周期/边界：与查询共享窗口，多个诊断调用者需协调测量周期；不能把reset理解为重新初始化注册表。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_perf.h)；[实现](../../RTOS/Services/rtos_perf.c)。
 
@@ -249,7 +249,7 @@ rtos_status_t rtos_perf_get_system(rtos_perf_system_t *stats);
 - 参数：stats：外部可写rtos_perf_system_t，非NULL，避免与内部对象别名。
 - 上下文：Thread；入口只有syscall优先级断言，不提供ISR错误码。
 - 阻塞：不等待，但临界区内计算并遍历任务注册表推进窗口。
-- 返回/副作用：NULL返回NULL错误且不写输出；成功填满快照并返回OK，更新快速CPU/切换率缓存和整个测量窗口，包括每任务窗口基准。
+- 返回/副作用：NULL返回NULL错误且不写输出；成功填满快照并返回OK，更新快速CPU/切换率缓存和整个测量窗口。开启热统计时，当前空闲片段和已注册任务基准都按本次采样时刻计算。
 - 生命周期/边界：uptime_ticks为32位tick；uptime_ms由其换算，不是64位长运行计时。latency_max来自累计最大值，平均/count来自窗口；详见字段表。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_perf.h)；[实现](../../RTOS/Services/rtos_perf.c)。
 
@@ -281,7 +281,7 @@ rtos_status_t rtos_perf_get_task(rtos_tcb_t *tcb, rtos_perf_task_t *stats);
 - 参数：tcb：有效存活TCB，NULL选当前任务；stats：可写输出，非NULL。
 - 上下文：Thread；syscall优先级断言。
 - 阻塞：不等待；临界区读TCB并可能线性扫描栈水印。
-- 返回/副作用：stats=NULL返回NULL错误；解析后tcb=NULL返回PARAM，均不写输出；其他有效对象成功写满并OK。非NULL tcb没有注册/代次/地址合法性校验。
+- 返回/副作用：stats=NULL返回NULL错误；解析后tcb=NULL返回PARAM，均不写输出；其他有效对象成功写满并OK。开启热统计时，CPU占比、run_cycles及run_time_us包含当前任务截至查询采样点的运行片段。非NULL tcb没有注册/代次/地址合法性校验。
 - 生命周期/边界：调用方保证TCB、栈寿命，不能传已删除指针。运行任务top_of_stack是保存现场位置，不保证等于正在变化的PSP。累计周期/微秒为32位，不能当无限累计时长。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_perf.h)；[实现](../../RTOS/Services/rtos_perf.c)。
 
@@ -328,8 +328,8 @@ rtos_status_t rtos_perf_get_all_tasks(rtos_perf_task_t *stats_array, uint32_t ma
 - 分类：application。
 - 参数：stats_array：可写数组，至少max_count项；max_count：>0容量；actual_count：可NULL，否则可写uint32_t输出。
 - 上下文：Thread；syscall优先级断言。
-- 阻塞：不等待；整个遍历持临界区，并嵌套执行每任务栈扫描。
-- 返回/副作用：array=NULL返回NULL错误；max_count=0返回PARAM，失败不写array/count。成功最多写min(登记数,max_count)项，actual_count可选，返回OK；单项查询失败则该项清零，未写尾部保持原值。
+- 阻塞：不等待；一次外层临界区覆盖整个遍历和栈扫描。每条记录独立读取时间，不保证所有记录共享同一采样时刻。
+- 返回/副作用：array=NULL返回NULL错误；max_count=0返回PARAM，失败不写array/count。成功最多写min(登记数,max_count)项，actual_count可选，返回OK；空槽清零，未写尾部保持原值。
 - 生命周期/边界：max_count仅限制输出容量，调用方保证真实数组大小。截断不报错，也不返回所需总容量；注册表删除会swap-with-last，索引顺序不稳定。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_perf.h)；[实现](../../RTOS/Services/rtos_perf.c)。
 
@@ -873,10 +873,10 @@ rtos_status_t rtos_usb_init(void);
 
 - 分类：application。
 - 参数：无参数；调用前已完成rtos_init。
-- 上下文：仅启动阶段、rtos_start之前一次调用；实现没有重复初始化守卫或Thread运行时拒绝。
-- 阻塞：不等待；清所有对象池、ISR映射并初始化小/大块池。
-- 返回/副作用：返回mempool_init实际状态，成功OK；先前池清理不是事务回滚。
-- 生命周期/边界：运行中重复调用会抹掉活跃句柄/映射，禁止这样使用；不创建USB协议任务，不代表设备枚举成功。
+- 上下文：Thread；建议在启动调度器和启用USB中断之前初始化。ISR返回ISR错误。
+- 阻塞：不等待；首次调用在临界区内清理对象池和ISR映射，并初始化小/大块池。
+- 返回/副作用：首次成功返回OK，内存池初始化错误按原状态返回。成功后再次调用返回ALREADY，保留既有句柄、分配和IRQ映射。
+- 生命周期/边界：初始化成功后才可发布USB对象、启动协议和启用对应IRQ。初始化不创建协议任务，也不代表设备枚举成功。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_osal.c)。
 
 <a id="api-rtos_usb_register_isr"></a>
@@ -892,7 +892,7 @@ rtos_status_t rtos_usb_register_isr(uint32_t irqn, rtos_usb_isr_handler_t handle
 - 上下文：启动/Thread或合法syscall ISR；断言守卫。
 - 阻塞：不等待，临界区扫描固定表。
 - 返回/副作用：handler=NULL为NULL错误；同irqn替换handler/arg为OK；新键有槽OK、表满NO_MEM，不改NVIC。
-- 生命周期/边界：handler/arg在映射使用期间有效。应用自己配置并使能NVIC，不能将编码阈值0x50当HAL逻辑优先级参数。
+- 生命周期/边界：handler/arg在映射使用期间及已取快照的分发结束前有效。应用自己配置并使能NVIC，不能将编码阈值0x50当HAL逻辑优先级参数。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_osal.c)。
 
 <a id="api-rtos_usb_irq_dispatch"></a>
@@ -906,8 +906,8 @@ void rtos_usb_irq_dispatch(uint32_t irqn);
 - 分类：application。
 - 参数：irqn：与register_isr相同映射键。
 - 上下文：用于合法syscall USB IRQ入口，断言守卫；不在高优先级IRQ/NMI/HardFault调用。
-- 阻塞：不等待，本身不取临界区，handler也须满足IRQ语义。
-- 返回/副作用：找到第一匹配项则调用handler(arg)，未注册为空操作。
+- 阻塞：不等待。在短临界区扫描固定表并读取同一条记录的handler/arg，恢复进入前的中断屏蔽后执行回调。
+- 返回/副作用：找到匹配项则调用快照中的handler(arg)，未注册为空操作；更高优先级的合法ISR可替换下一次分发使用的映射。
 - 生命周期/边界：映射无公共注销API；运行期更新须和实际IRQ调用协调，不能让arg先销毁。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_osal.c)。
 
@@ -972,7 +972,7 @@ rtos_status_t rtos_usb_cdc_init(uint8_t busid, uintptr_t reg_base);
 - 上下文：启动Thread，usb_init之后、rtos_start之前；不是纯软件构造，初始化可能立即触发USB IRQ。
 - 阻塞：不等待业务数据；调用CherryUSB初始化并可创建MSC等服务资源。
 - 返回/副作用：busid越界PARAM；已初始化ALREADY；同步对象不足NO_MEM并回收本轮部分资源；usbd_initialize失败会deinitialize并回收后返回PARAM；成功OK。reg_base有效性不由本函数证明。
-- 生命周期/边界：默认CDC+MSC+HID消耗4个sem、2个mutex，另有MSC线程/mq资源。无对称公共cdc_deinit；外设供电、时钟、GPIO、NVIC由板级完成。
+- 生命周期/边界：默认CDC+MSC+HID消耗4个sem、2个mutex，另有MSC线程和消息队列。MSC初始化回调只记录资源分配错误，CDC初始化仍可能返回OK。队列分配失败但线程创建成功时，MSC线程会反复收到立即返回的错误。外设供电、时钟、GPIO、NVIC由板级完成。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_device.c)。
 
 <a id="api-rtos_usb_cdc_isr"></a>
@@ -1019,7 +1019,7 @@ int rtos_usb_cdc_write(uint8_t busid, const uint8_t *data, uint32_t len, uint32_
 - 参数：busid：已初始化总线；data：len字节稳定只读输入；len：>0字节数，实际范围建议<=INT_MAX以匹配int结果；timeout_ms：毫秒，0不等待、0xffffffff永久。
 - 上下文：仅Thread；运行时检测ISR并返回0。
 - 阻塞：一个总tick预算覆盖TX互斥锁、旧传输完成和全部分块；0预算仍可启动一次空闲传输，但不能保证同步完成。
-- 返回/副作用：越界/NULL/len0/ISR/未连接为0；其他返回已完成块的总字节数，可短写；0合并超时、断连、底层失败，不给细分错误。
+- 返回/副作用：越界/NULL/len0/ISR/未连接为0；其他返回已完成块的总字节数，可短写。驱动拒绝补发ZLP时，写任务立即结束当前块的等待，仅统计此前已完成的块。
 - 生命周期/边界：每块先复制进独立内部TX缓存，返回后不会继续读取用户data；超时已提交的当前块可能仍发送，且不计入返回的已完成字节，重试须考虑业务去重。RESET/重配会更换session终止旧操作。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_device.c)。
 
@@ -1036,7 +1036,7 @@ int rtos_usb_cdc_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
 - 上下文：公共使用契约为Thread；实现仅断言检查syscall优先级，没有统一ISR拒绝，不能据偶然有数据路径推断可在ISR等待。
 - 阻塞：RX为空且连接时等待信号量，使用总预算；临界区内最多两次memcpy读取环形数据。
 - 返回/副作用：非法busid/NULL/len0为0；有数据立即返回<=len字节，不保证填满；无数据且未连接/超时/sem错误为0。0不改buf，有效读会消费环形数据。
-- 生命周期/边界：先尝试读取缓冲，再检查connected，断连后尚存数据也可能返回。多读者由临界区竞争消费，不是广播；输出长度须以返回值为准。
+- 生命周期/边界：先尝试读取缓冲，再检查connected，断连后尚存数据也可能返回。多个读者竞争消费数据。断连或RESET各发一次RX信号量，其他永久等待读者可能继续阻塞。输出长度以返回值为准。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_device.c)。
 
 <a id="api-rtos_usb_cdc_available"></a>
@@ -1116,7 +1116,7 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
 - 上下文：公共使用契约为Thread；实现为syscall优先级断言，不保证一律拒绝ISR。
 - 阻塞：无报告且连接时按总预算等待；有报告时临界区复制。
 - 返回/副作用：非法输入/无数据未连接/等待失败为0；成功返回min(报告长,len)，随后整份报告槽清空，未复制尾部丢弃；HID关闭固定0且buf不改。
-- 生命周期/边界：单报告槽，新报告在旧报告待读期间会丢弃；不提供可靠无损流式队列，业务须按报告协议处理。
+- 生命周期/边界：单报告槽，新报告在旧报告待读期间会丢弃。断连或RESET各发一次RX信号量，多个永久等待读者中其余任务可能继续阻塞。
 - 源码：[声明](../../RTOS/Core/Inc/rtos_usb.h)；[实现](../../RTOS/USB/rtos_usb_device.c)。
 
 
@@ -1129,7 +1129,7 @@ int rtos_usb_hid_read(uint8_t busid, uint8_t *buf, uint32_t len, uint32_t timeou
 |---|---|
 | USB_OSAL_WAITING_FOREVER | 0xffffffff，CherryUSB等待参数的永久值，单位体系为毫秒 |
 | RTOS_CONFIG_USB_VID / RTOS_CONFIG_USB_PID | 0x0483 / 0x5740，设备描述符标识，不保证主机驱动安装 |
-| RTOS_CONFIG_USB_CDC_RX_BUF_SIZE | 512字节环形RX，至少EP_OUT缓冲大小；支持非2次幂路径 |
+| RTOS_CONFIG_USB_CDC_RX_BUF_SIZE | 默认512字节，至少为EP_OUT缓冲大小。非二次幂分支用取模索引，32位计数回绕时索引可能跳变 |
 | RTOS_CONFIG_USB_CDC_EP_OUT_BUF_SIZE | 64字节端点OUT缓存，调用者移植须与控制器/MPS匹配 |
 | RTOS_CONFIG_USB_CDC_TX_BUF_SIZE | 512字节内部TX分块缓存；目标需正值且适配端点，头部仅对RX/OUT大小关系执行#error |
 | CONFIG_USB_DBG_LEVEL | USB_DBG_INFO，CherryUSB日志级别，由其日志头解释 |

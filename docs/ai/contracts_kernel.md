@@ -1,7 +1,7 @@
 # 内核、任务、调度与移植层公共契约
 
-基准：`87bfbe4a6efc50f9b828128c713a1b5af2900ef8`。逐项核对公共头及实际实现，
-描述该版本的行为和调用者约束；没有修改生产源码，不把注释意图自动当作实现保证。
+初始基准：`87bfbe4a6efc50f9b828128c713a1b5af2900ef8`。本页随当前源码维护，
+按公共头和实际实现记录行为与调用者约束。
 公共头既有应用API，也有内核/移植导出，“可见”不等于应用可直接调用。
 
 ## 检索与共用前提
@@ -17,8 +17,8 @@
 - 存活TCB地址登记可拒绝未登记/构造中对象，不能识别旧指针是否指向同址重建的新任务。
 - 任务优先级数值越小越高，栈容量为32位字，timeout/delay单位是RTOS tick。
   有限等待使用1..0x7fffffff；调度器对更大值执行永久阻塞，不是报PARAM或截到最大有限值。
-- 实际阻塞要求运行任务、调度RUNNING，且外层没有阻止PendSV执行的屏蔽/临界区。
-  当前block_permitted只检查RUNNING/current，不完整检查外层临界区误用。
+- 实际阻塞要求运行任务、调度RUNNING，并且退出API自身的临界区后PendSV可响应。
+  调用者已经持有外层临界区或保留中断屏蔽时，等待路径会拒绝，立即完成路径仍可执行。
 
 ## 应用入口、任务与钩子
 
@@ -65,7 +65,9 @@ rtos_status_t rtos_start(void);
 - 参数：无参数；已init成功、ready集合和BSP异常配置有效。
 - 上下文：启动Thread。
 - 行为/阻塞：调用sched_start，经SVC进入首个任务；成功不再返回。
-- 返回/失败：ISR返回ISR；状态非NOT_STARTED返回ALREADY；ready位图无合法任务返回SCHED；正常不返回。
+- 返回/失败：ISR 返回 `RTOS_ERR_ISR`，状态非 NOT_STARTED 返回 `RTOS_ERR_ALREADY`，
+  缺少首任务返回 `RTOS_ERR_SCHED`。无效时钟周期返回 `RTOS_ERR_PARAM`，修正
+  `SystemCoreClock` 或 Tick 配置后可重试。成功不再返回。
 - 寿命/所有权：成功后使用任务各自PSP，不再继续普通启动调用流程。
 
 <a id="api-rtos_task_create"></a>
@@ -85,7 +87,7 @@ rtos_status_t rtos_task_create(rtos_tcb_t **tcb_out,
 - 参数：tcb_out：非NULL可写指针输出；stack_size：32位栈字数，至少96；entry：非NULL入口；arg：可NULL借用参数；priority：0..MAX_PRIORITIES-1；name：可NULL，否则调用期间稳定的NUL结尾字符串。
 - 上下文：Thread，启动前或运行中；ISR明确拒绝。
 - 行为/阻塞：heap分配TCB和栈，构造并登记为READY。更高优先级任务可能在API返回前运行。无任务等待。
-- 返回/失败：ISR、NULL、PARAM(优先级/最小栈/请求超过当前heap最大单块)、NO_MEM(实际分配失败)、ALREADY(地址已保留)、OK。失败回滚本次分配，不发布tcb_out。
+- 返回/失败：ISR、NULL、PARAM（优先级非法、栈少于96字或超过配置堆扣除TCB裸大小后的上界）、NO_MEM（实际堆分配失败）、ALREADY（地址已保留）、OK。分配失败时回收本次已分配空间，保留原tcb_out。
 - 寿命/所有权：成功后TCB/栈归任务生命周期；arg内容不复制，name截断复制；删除后不得使用句柄。
 - 边界：USE_STATIC_ALLOCATION=1不把此路径改成静态任务池；MAX_TASKS不是创建硬上限。预检最大块不是并发下分配成功承诺。
 
@@ -106,8 +108,8 @@ rtos_status_t rtos_task_create_static(rtos_tcb_t *tcb,
 
 - 参数：tcb：自然对齐控制块；stack_buf：调用方栈；stack_size：栈字数96..0x7fffffff/sizeof(rtos_stack_t)；entry非NULL；arg可NULL；priority合法；name可NULL否则有效字符串。
 - 上下文：仅Thread。
-- 行为/阻塞：保留TCB地址，初始化字段/栈后加入READY；无heap分配，运行中可能抢占。
-- 返回/失败：ISR、NULL、PARAM(自然对齐/栈长/优先级)、ALREADY(地址构造中或存活)、OK。不要把所有失败分支都概括成完全不写存储。
+- 行为/阻塞：在同一临界区保留TCB与栈范围，初始化后加入READY；无heap分配，抢占模式下可能立即调度。
+- 返回/失败：ISR、NULL、PARAM(自然对齐、栈长、优先级、地址范围越界或与自身／另一存活任务重叠)、ALREADY(同一TCB构造中或存活)、OK。参数或登记检查失败时保留原存储。
 - 寿命/所有权：调用方保证完整TCB/栈真实容量、互不重叠、栈8字节对齐；存储保持到任务实际切出和所有内核引用结束。
 - 边界：实现仅检查stack_buf对齐到_Alignof(rtos_stack_t)，不能声称4字节对齐一定被拒绝；port会向下8字节对齐栈顶。
 
@@ -138,10 +140,10 @@ void rtos_task_yield(void);
 
 - 参数：无参数。
 - 上下文：Thread；ISR实际直接return。
-- 行为/阻塞：运行且current=RUNNING、同优先级多人就绪时轮转并pend切换；否则无操作。
+- 行为/阻塞：运行且current=RUNNING时把当前任务放到同级队尾，再选择最高优先级就绪任务；有不同候选时挂起PendSV。
 - 返回/失败：void，无等待/错误码。
 - 寿命/所有权：不转移资源。
-- 边界：头注释称ISR标记切换，当前实现却为ISR空操作；不要把它用作ISR唤醒接口。
+- 边界：合作模式下可主动把CPU交给已就绪的高优先级任务。调度暂停时无操作，且不会为更低优先级任务让路。
 
 <a id="api-rtos_task_delay"></a>
 ### `rtos_task_delay`
@@ -153,7 +155,7 @@ void rtos_task_delay(rtos_tick_t ticks);
 ```
 
 - 参数：ticks：tick数量；0等价yield；有限使用1..0x7fffffff；更大值包括WAIT_FOREVER会永久BLOCKED。
-- 上下文：运行Thread；ISR空操作。非零值在调度未运行/挂起/无当前时直接返回。
+- 上下文：运行Thread；ISR空操作。非零值在调度未运行、挂起、无当前或调用者已有外层临界区／中断屏蔽时直接返回。
 - 行为/阻塞：离开READY并在有限到期时重回READY；可能阻塞。
 - 返回/失败：void；无错误码，返回不证明真正延时过。
 - 寿命/所有权：不清理业务资源；持有他人需要的锁时延时会影响业务。
@@ -282,7 +284,7 @@ rtos_status_t rtos_task_notify_wait(rtos_tick_t timeout, uint32_t *recv_value);
 ```
 
 - 参数：timeout：tick等待，0不等，有限1..0x7fffffff，更大按永久；recv_value：可NULL或有效uint32_t输出。
-- 上下文：仅Thread，ISR明确ISR。必须有current；已有PENDING可直接消费，只有真正要阻塞时要求RUNNING。
+- 上下文：仅Thread，ISR明确ISR。必须有current；已有PENDING可直接消费，真正阻塞要求调度RUNNING且PendSV可响应。
 - 行为/阻塞：已有通知则取出清状态；无通知且0立即返回，否则阻塞。
 - 返回/失败：ISR、SCHED(无current/不允许阻塞)、TIMEOUT、DELETED(挂起中止)、OK。无等待失败不写输出；实际阻塞恢复后错误也会写当时notify_value。
 - 寿命/所有权：输出全调用有效；仅result=OK清通知。超时后才到达的PENDING保留给下次调用。
@@ -334,7 +336,7 @@ void rtos_stack_overflow_hook(rtos_tcb_t *tcb);
 - 行为/阻塞：默认弱定义无限循环，可覆盖受控诊断/复位。
 - 返回/失败：void，默认不返回。
 - 寿命/所有权：不可释放或长期保留tcb；现场可能已损坏，不能依赖完整正常业务。
-- 边界：依据TCB.stack_magic或保存sp低于stack_base，保存sp对运行任务并非实时PSP；不提供全面越界隔离。
+- 边界：方法1检查TCB.stack_magic和保存SP是否低于栈底，方法2还检查实际栈首字。保存SP对运行任务并非实时PSP，巡检不提供全面越界隔离。
 
 <a id="api-rtos_task_delete_hook"></a>
 ### `rtos_task_delete_hook`
@@ -397,8 +399,10 @@ rtos_status_t rtos_sched_start(void);
 
 - 参数：无参数，初始化与异常/时钟配置正确。
 - 上下文：仅启动Thread；ISR明确拒绝。
-- 行为/阻塞：临时加强BASEPRI，选最高ready，置RUNNING/current，建立FPU/SysTick并SVC进入首任务。
-- 返回/失败：ISR、ALREADY(非NOT_STARTED)、SCHED(无ready，恢复状态/原BASEPRI)；正常不返回。
+- 行为/阻塞：临时加强 BASEPRI，选择首任务，校验并配置 FPU/SysTick，发布当前任务与
+  RUNNING 状态，经 SVC 进入首任务。
+- 返回/失败：ISR、ALREADY（非 NOT_STARTED）、SCHED（缺少首任务）或 PARAM（时钟
+  周期无效）。失败时保留调度状态及原 BASEPRI，时钟校验失败时端口状态也保持原值。
 - 寿命/所有权：当前任务与栈必须有效，不能重复启动第二个内核。
 - 边界：即使普通临界区USE_BASEPRI=0，启动仍用BASEPRI保护PSP安装。
 
@@ -512,7 +516,7 @@ void rtos_sched_tick(void);
 - 行为/阻塞：仅RUNNING递增32位tick、唤醒到期及选择最高ready/时间片，可能pend切换。
 - 返回/失败：void；其他状态直接返回，无丢失tick补偿。
 - 寿命/所有权：不要应用手工调用补tick；影响全部任务超时。
-- 边界：USE_PREEMPTION=0不关闭此函数的其他ready选择路径。
+- 边界：USE_PREEMPTION=0仍处理到期；运行中的应用任务继续执行，空闲任务可被已就绪任务替换。该模式关闭Tick时间片。
 
 <a id="api-rtos_sched_suspend"></a>
 ### `rtos_sched_suspend`
@@ -734,10 +738,12 @@ void rtos_port_start_first_task(void) __attribute__((noreturn));
 void rtos_port_start_scheduler(void);
 ```
 
-- 参数：无参数；SystemCoreClock>0且tick频率、除法和SysTick 24位重载范围合法。
+- 参数：无参数。`SystemCoreClock / RTOS_CONFIG_TICK_RATE_HZ` 的整数商须在
+  `[2, 0x01000000]` 范围内，对应 SysTick LOAD 的 `[1, 0x00FFFFFF]`。
 - 上下文：仅受启动保护的Thread。
 - 行为/阻塞：使能FPU ASPEN/LSPEN、清临界区计数/保存槽、写SysTick LOAD/VAL/CTRL。
-- 返回/失败：void；只ASSERT检查时钟>0，不全面校验除法为0/余数/24位上界。
+- 返回/失败：void。周期无效时端口配置保持原值，启用断言时触发断言。调度器通过
+  内部可返回状态的入口传播错误，应用可检查 `rtos_start()` 的返回值。
 - 寿命/所有权：不配BSP时钟树或异常优先级，不可运行中重调。
 - 边界：当前port编译要求ARMv7E-M；PRIMASK宏选项不证明支持M0/M3。
 
@@ -1107,8 +1113,8 @@ sched_state/tick_count、switch_count、suspend_depth及perf字段均归内核�
 |---|---|
 | TICK_RATE_HZ | 1000；不是通用ms单位；BSP须验证时钟除法及SysTick重载范围 |
 | MAX_PRIORITIES | 32；单32位位图，配置必须适合1..32，不提供扩成>32的实现 |
-| USE_TIME_SLICING | 1；控制tick同优先级轮转；显式yield有独立轮转逻辑 |
-| USE_PREEMPTION | 1；影响sched_schedule部分分支；当前tick仍选择其他ready任务，不可据0声称完整协作式 |
+| USE_TIME_SLICING | 1；抢占模式下控制Tick同级轮转；显式yield独立执行 |
+| USE_PREEMPTION | 1；0为合作模式，运行中的应用任务主动让出或阻塞才切换，idle仍可被唤醒任务替换 |
 | MINIMAL_STACK_SIZE | 128字；建议值，task_create/static的实际硬校验最小96字 |
 | IDLE_TASK_STACK_SIZE | 128字；idle静态栈，须满足真实调用需求 |
 | USE_IDLE_HOOK / USE_DELETE_HOOK | 1/0；控制调用点，不删除可覆盖弱符号本身 |
@@ -1119,7 +1125,7 @@ sched_state/tick_count、switch_count、suspend_depth及perf字段均归内核�
 | USE_TIMERS | 1；rtos_init建立timer服务；关闭存根/错误见服务契约 |
 | TIMER_TASK_STACK_SIZE / TIMER_TASK_PRIORITY | 256字/30；回调在服务任务执行，长耗时会影响其他软件定时器 |
 | GENERATE_RUN_TIME_STATS | 1；控制TCB/kernel统计字段，不等于所有运行时长都在测量 |
-| CHECK_FOR_STACK_OVERFLOW | 2；当前按非零启用TCB魔数和idle巡检，没有注释所暗示的方法1/2完整分支差异 |
+| CHECK_FOR_STACK_OVERFLOW | 2；0关闭，1巡检TCB魔数及保存SP下界，2同时检查实际栈首字 |
 | ASSERT_ENABLED | 1；0使条件不求值，优先级违约不再由此捕获，调用限制仍有效 |
 | USE_PERF_MONITOR / PERF_USE_DWT | 1/1；性能结构/实现及DWT选择；见性能契约，不能从注释中的M0回退推断port支持M0 |
 | PERF_TASK_REGISTRY_SIZE / PERF_POOL_REGISTRY_SIZE | MAX_TASKS+2=18 / 8；观察登记容量，不是任务构造统一上限 |
@@ -1137,10 +1143,8 @@ sched_state/tick_count、switch_count、suspend_depth及perf字段均归内核�
 
 ## 当前实现的核对重点
 
-- yield的ISR路径、静态栈对齐守卫、USE_STATIC_ALLOCATION、方法1/2栈检查、USE_PREEMPTION=0等，
-  注释与实际行为存在差别，应用应使用上面的逐项契约。
-- block_permitted不检查外层临界区深度，应用仍必须遵守“不在临界区实际阻塞”。
-  PendSV被外层屏蔽时，不能因守卫存在就假设误用会安全报错。
+- 静态栈对齐守卫、USE_STATIC_ALLOCATION等存在实现边界，应用应使用上面的逐项契约。
+- 需要登记等待时，block_permitted同时要求调度运行、API占有最外层临界区和调用前的中断屏蔽允许PendSV。已有资源可走立即成功路径。调用方仍应在等待前主动退出临界区。
 - ID及多项统计不饱和、会回绕；裸TCB地址不提供跨同址重建的代次句柄。
 - 某翻译单元独立改配置会造成ABI不一致；核对全部编译输入，而非只看当前头。
 - 本页为静态源码契约核对，不宣称新增实板覆盖；示例编译结果由AI总入口记录。

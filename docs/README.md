@@ -11,6 +11,7 @@
 | 定位运行错误、IRQ屏蔽与等待问题 | [AI调试指南](ai/debugging.md)、[HardFault手册](hardfault_debug.md) |
 | 查看测试覆盖、判据和测量局限 | [测试参考](rtos_testing_report.md)、[性能参考](rtos_performance_report.md) |
 | 执行验证或编译示例 | [HIL方法与夹具](../hil/README.md)、[资料/示例静态验证](../hil/ai_docs/README.md) |
+| 查本次发布范围和归档决策 | [工程交付报告](logs/2026-11-11.md#delivery-report) |
 | 学习编译与其他内核设计 | [编译链接原理](compilation_pipeline.md)、[FreeRTOS分析](freertos_design.md) |
 | 更新设计插图 | [图片维护说明](images/README.md)、[图源校验/渲染脚本](gen_diagrams.ps1) |
 
@@ -29,7 +30,7 @@
 | [2026-10-27](logs/2026-10-27.md) | 源码职责重组、构建迁移与历史验收 |
 | [2026-10-28](logs/2026-10-28.md) | AI资料、编译验证、目录清理及[工程交付报告](logs/2026-10-28.md#delivery-report) |
 | [2026-10-29](logs/2026-10-29.md) | 设计手册重写、设计细节/API样例扩充及实际ARM编译验证 |
+| [2026-11-11](logs/2026-11-11.md) | 异常入口、项目验证、并发压力、热点隔离对照及[工程交付](logs/2026-11-11.md#delivery-report) |
 
-2026-10-28按用户要求删除了过时的HIL工作副本和结果，保留现用测试源码、必要工具及
-最新资料验证证据。历史日志的测试数字来自原报告，本次整理没有重新上板；已删除
-批次不能在当前目录直接复核。曾提交的原文可由Git历史查找，未入库资产不保证恢复。
+版本库保留现行夹具、复测工具和叙述性记录。HIL 串口日志、固件与编译明细按批次留在本机；
+历史归档的删减范围、可复验条件和取回方式见[工程交付报告](logs/2026-11-11.md#delivery-report)。

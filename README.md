@@ -2,12 +2,10 @@
 
 一个从零设计、配有[设计文档](docs/rtos_design.md)的可移植抢占式 RTOS：`RTOS/Core/` 提供内核机制，`RTOS/IPC/`、`Memory/`、`Services/` 和 `USB/` 按职责组织功能，`RTOS/Port/` 提供处理器移植层；应用侧附带 USB 设备栈（CDC 虚拟串口 + MSC U 盘 + HID 三合一复合设备）、端侧 AI 推理（int8 量化 CNN 说话人识别）与 HardFault 诊断示例，并配有 FreeRTOS V10.4.6 的[对照分析](docs/freertos_design.md)。
 
-**当前验证平台**：STM32F446RET6（Cortex-M4F @ 168MHz，STM32CubeIDE + GCC）。内核代码不含任何 ST 头文件引用；换一颗 Cortex-M3/M4/M7 芯片只需替换移植层与目标 SDK 工程，见[移植指南](#移植到其他芯片)。
+**实板验证平台**为 NUCLEO-F446RE，搭载 STM32F446RET6（Cortex-M4F，168 MHz）。仓库提供 GCC 的 Cortex-M4F/M7F 移植层，并用实际 STM32H743 CMSIS 头完成过交叉编译和部分链接。其他目标需要按芯片核对端口、启动配置和外设集成。见[移植指南](#移植到其他芯片)。
 
-当前功能与边界以[设计手册](docs/rtos_design.md)、[公共API契约](docs/ai/README.md)及源码为准。
-[文档导航](docs/README.md)按用途区分现行手册、参考资料和每日日志；历史修复与测试结论统一放在
-`docs/logs/YYYY-MM-DD.md`。旧测试工程、构建副本和大批历史结果已清理，保留权威夹具及复测工具，
-见[HIL入口](hil/README.md)。历史实测不等于本轮重新验证，物理USB传输仍须单独验证。
+现行实现、调用约束与测试方法分别见[设计手册](docs/rtos_design.md)、[公共 API 契约](docs/ai/README.md)和[HIL 入口](hil/README.md)。
+更新、回归结果和归档范围按日期记录，见[文档导航](docs/README.md)。
 
 ```mermaid
 flowchart TB
@@ -34,7 +32,7 @@ flowchart TB
 - **同优先级时间片轮转**：tick 驱动，可配置关闭；
 - **1kHz tick**（可配），`delay` / `delay_until`（周期任务防漂移）两种延时语义；
 - **延时管理**：当前使用一条按唤醒 tick 排序的双向链，表头缓存表尾；摘除 O(1)，追加命中快路径时 O(1)，中间插入 O(n)。tick 比较采用带符号差值，有限等待范围见[当前边界](#当前边界与已知限制)；
-- **决策/执行分离**：调度决策收口在 `rtos_sched.c`，切换执行统一由 PendSV 完成——决策在临界区内、切换在临界区外，天然合并多次切换请求。
+- **决策/执行分离**。调度决策在内核保护区内发布候选，PendSV 在异常上下文重新核对候选并提交切换。连续请求可合并，端口保护提交到安装 PSP 的区间。
 - **挂起与切换保护**：调度挂起支持嵌套，挂起期间冻结内核 tick 并拒绝新阻塞；PendSV 提交切换前重新检查候选任务的状态。
 - **临界区事务保护**：默认 BASEPRI 配置下，BASEPRI 屏蔽 syscall 域中断，PRIMASK 仅在进出事务中保护共享元数据；调用者更强的 BASEPRI 及原 PRIMASK 状态得到保留。出口 ISB 同步解屏蔽与后续执行，避免阻塞结果被提前读取。NMI/HardFault 不得调用临界区原语或操作内核对象；详见[设计手册第 4.5 节](docs/rtos_design.md#45-临界区-进出与屏障)。
 
@@ -42,8 +40,8 @@ flowchart TB
 
 | 机制 | 文件 | 语义要点 |
 |---|---|---|
-| 信号量 | `rtos_sem.c` | 二值/计数；存在等待者时计数为零，give 优先把令牌交给等待者，避免重复计数 |
-| 互斥锁 | `rtos_mutex.c` | 有界求解锁依赖图，传播并撤销继承；递归溢出返回错误，删除持锁任务时移交；ISR 禁用，循环死锁仍需应用避免 |
+| 信号量 | `rtos_sem.c` | 二值/计数，给出时优先交付最高优先级等待者，同级按入链顺序 |
+| 互斥锁 | `rtos_mutex.c` | 竞争时重算优先级继承，无等待者时直接释放，支持递归上限检查和未确认交接撤销 |
 | 消息队列 | `rtos_queue.c` | 环形缓冲 + 拷贝传递；ISR 投递非阻塞 |
 | 事件组 | `rtos_event.c` | ANY/ALL 等待 + CLEAR_ON_EXIT + 满足位回传（信箱模式） |
 | 任务通知 | `rtos_task.c` | 通知值内嵌 TCB，无需独立 IPC 对象或对象等待链；有限超时仍使用内核延时链 |
@@ -53,12 +51,12 @@ flowchart TB
 ### 内存
 
 - **静态资源与动态任务共存**：`rtos_task_create_static` 使用调用方提供的 TCB 和栈，`rtos_task_create` 从通用堆分配 TCB 和栈；IPC 对象及队列存储由调用方提供，USB OSAL 使用固定对象池；
-- 双档固定块 USB 堆（小块 64B / 大块 512B）：分配 O(1)，释放为检测重复归还而做有界扫描，最坏 O(n)；通用堆使用 first-fit 和相邻高地址块合并。
+- 双档固定块 USB 池使用 64 B 和 512 B 的块。分配 O(1)，释放通过有界扫描拒绝重复归还。通用堆采用 first-fit，分配时可合并一段连续空闲块。
 
 ### 可观测性（调试即功能）
 
-- **性能监视器**（`rtos_perf.c`，DWT 周期级精度）：CPU 占用率、每任务运行时间、切换频率、调度延迟、栈高水位（0xA5 染料法）；
-- **栈溢出双检测**：栈底 magic 字 + 边界检查两档；
+- **性能监视器**（`rtos_perf.c`）默认保留注册表、周期读取和栈水印。启用 `RTOS_CONFIG_PERF_HOTPATH_STATS` 后采集运行时间、CPU 占用、切换与调度延迟。
+- **栈溢出检查**。空闲任务巡检保存的栈指针，默认配置还读取栈底染色字。
 - **HardFault 诊断与九类故障示例**：保留 BusFault、INVSTATE、UNDEFINSTR、DIVBYZERO、非对齐、栈边界及 ISR 故障示例；当前 `task_uart` 中的命令派发被注释，需启用 `ft_dispatch` 后按菜单触发，见 [hardfault_debug.md](docs/hardfault_debug.md)。
 
 ## USB 子系统
@@ -66,9 +64,9 @@ flowchart TB
 基于 **CherryUSB 裁剪版**（仅保留 CDC/MSC/HID 设备栈 + DWC2 端口，共 6 个 `.c`），通过 [rtos_usb_osal.c](RTOS/USB/rtos_usb_osal.c) 的 26 函数 OSAL 契约对接自研内核：
 
 - **三合一复合设备**：单 USB 口同时枚举出虚拟串口（CDC ACM）+ 32KB RAM 盘 U 盘（MSC）+ 自定义 HID（64B IN/OUT 报告）；
-- **静态对象池 OSAL**：信号量/互斥锁/队列/线程/定时器全部池化，无堆分配；
+- **OSAL 静态存储**。信号量、互斥锁、队列、线程和定时器使用固定槽位，CherryUSB 定时器包装及 `usb_osal_malloc` 使用固定块池。
 - **DWC2 自定义 FIFO**：适配 F446 OTG_FS 的 320 字 FIFO 与 6 端点限制（三类功能共需 4 个 IN 端点，靠同端点号不同方向复用解决）；
-- MSC 后端三个回调（`get_cap/sector_read/sector_write`）即存储介质抽象——当前是 RAM 盘，换 SPI Flash / SD 卡只改这三个函数。
+- MSC 使用 `get_cap/sector_read/sector_write` 接入 RAM 盘。接入其他介质时，后端负责实现对应读写、容量及错误处理。
 
 完整移植步骤（OSAL 契约、胶水层、换芯片 IP 的 DCD 契约）见 [rtos_design.md 第十三章](docs/rtos_design.md)。
 
@@ -76,7 +74,7 @@ flowchart TB
 
 一条从训练到 MCU 推理的完整 TinyML 流水线，演示"RTOS 事件驱动 + 端侧推理"的组合：
 
-下图描述应用预留的数据路径。当前 `main.c` 中音频攒帧与事件置位代码被注释，默认固件的 `algo_task` 等待事件，不会仅因串口收到 2048 字节就自动运行推理。
+下图描述应用预留的数据路径。默认固件的 `algo_task` 等待音频事件，示例中的攒帧与置位代码需由应用接入。需要复测模型和实际 USART2 收发时可使用 `uart_pipeline` 变体，它的推理输入为 2044 字节。见[串口项目复测方法](hil/README.md#43-串口遥测与-cnn-项目)。
 
 ```
 训练侧(PC)                                部署侧(MCU)
@@ -197,9 +195,10 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 | [源码导览](RTOS/README.md) | 目录职责、阅读顺序和手工构建集成 |
 | [故障诊断](docs/hardfault_debug.md) | 异常寄存器、栈帧与现有故障示例 |
 | [HIL说明](hil/README.md) | 当前夹具、编译/采集入口及验证限制 |
-| [测试方法与教训](docs/rtos_testing_report.md) / [历史性能参考](docs/rtos_performance_report.md) | 旧测量的适用范围、失效结论和测试器教训 |
+| [回归报告](docs/rtos_testing_report.md) / [性能报告](docs/rtos_performance_report.md) | 实板配置、前后对照、压力结果与测量边界 |
 | [FreeRTOS设计参考](docs/freertos_design.md) / [编译原理](docs/compilation_pipeline.md) | 专题学习资料 |
 | [每日日志](docs/README.md#daily-logs) | 按日期汇总修复、结果、失败和清理记录 |
+| [本次交付报告](docs/logs/2026-11-11.md#delivery-report) | 本次源码、文档和工程归档的验收范围 |
 
 ## 当前边界与已知限制
 
@@ -207,7 +206,7 @@ USART2 音频字节流 ─▶ uart2_rx_queue ─▶ task_uart 攒满 2048 字节
 - **tick 回绕与有限范围是两个问题**：当前采用有符号差值比较来处理限定范围内的跨回绕等待；不能据此声称支持任意 32 位有限延时；
 - **延时链中间插入为 O(n)**，表尾快路径需新唤醒点不早于当前表尾，周期任务并非必然命中；
 - **继承不提供死锁检测**：当前会沿锁依赖传递及撤销捐赠；循环锁依赖仍须采用统一加锁顺序或有限超时，图重算成本随锁和等待者数量增长；
-- **通用堆释放时仅尝试合并紧邻的高地址空闲块**，不会向低地址查找或循环合并整段连续空闲块，长期分配仍需关注碎片。
+- **通用堆**在释放时合并紧邻的高地址空闲块，在分配时可合并满足请求的一段连续空闲块。活跃块隔开的空间须分别计入连续容量。
 
 完整债务清单与 FreeRTOS 逐项对照见 [freertos_design.md 第十二章](docs/freertos_design.md)。
 

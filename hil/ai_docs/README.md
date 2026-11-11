@@ -1,44 +1,50 @@
 # AI 文档和示例验证
 
-本目录仅校验开发资料、接口覆盖和独立C示例，不烧录、不打开串口、不调用调试探针，
-不修改生产配置、旧HIL脚本、模板、main.c或日常固件。规范与阅读入口见
+本目录提供接口覆盖、设计手册摘录和独立 C 示例的校验工具。F446 整机验证使用
+[HIL 入口](../README.md)。规范与阅读入口见
 [AGENTS.md](../../AGENTS.md)、[AI指南](../../docs/ai/README.md)。
 
 ## 1. 公共API资料检查
 
-在工程根目录，用Python3.9或更新版本运行：
+在工程根目录使用 Python 3.9 或更新版本。每次执行选用新的本地批次目录。
 
 ```powershell
-python -B hil/ai_docs/check_contracts.py --write-index
-python -B hil/ai_docs/check_contracts.py
+$batch = 'hil/logs/docs_20261111_01'
+python -B hil/ai_docs/check_contracts.py --out-dir "$batch/contracts"
 ```
 
-第一个命令明确重新生成`docs/ai/api_index.json`，第二个只检查当前索引是否一致。
+索引需要更新时，向命令加 `--write-index`，并为该次执行指定新的输出目录。
 脚本独立扫描16个公共头的全部条件分支，核对函数声明、头内联、函数式宏及公开extern
 变量，并对照三份人工审核元数据、逐符号锚点和文档原型。源扫描不以元数据名单为
 过滤器，因此遗漏项目会导致失败。桥接补充单列，不宣称覆盖第三方全部API。
 
-同时检查工程自有Markdown（根入口、docs、HIL、源码导览）的本地链接、旧设计手册锚点，
-以及生产源码、权威测试夹具、模板和保留脚本与基线Git blob是否相同。已明确退役的旧HIL
-脚本单列，要求退役路径确实不存在；不是把现行生产或测试代码变化排除为正常。
+同时检查工程自有Markdown的本地链接、旧设计手册锚点，以及源码和权威测试输入在
+扫描前后是否一致。报告列出相对于首次审核Git基线的新增、删除和变化。仅修改文档时，
+可用`--require-unchanged-source`附加历史基线字节一致的检查。退役路径仍须不存在。
+生成的`hil/logs/`与`hil/fwsrc/`不参与权威源码及资料扫描。
 3种内存内篡改控制要求缺记录、错误原型、缺锚点均被拒绝；它们不修改原文件，也不是
 RTOS运行测试。自然语言语义不能由token匹配证明，仍依赖逐项源码核对和交叉审查。
 
-输出到新的`evidence/docs_时间戳/summary.json`，已有目录不覆盖。JSON记录当前HEAD、
-源及文档身份、覆盖、错误、控制结果与Python版本。未实现或未执行的检查不写成PASS。
+输出目录的 `summary.json` 记录当前 HEAD、源码和文档身份、覆盖、错误、
+控制结果与 Python 版本。脚本拒绝覆盖已有目录。
 
 ## 2. 实际ARM编译和部分链接
 
-`compile_examples.py`要求明确提供真实ARM GCC路径，使用同目录的ARM nm。以下是本机
-已使用的命令；其他机器应先找到自身编译器，替换该实参，不套用本机工具路径。
+`compile_examples.py` 需要 ARM GCC 的完整路径，使用同目录的 ARM nm。
+以下示例从已配置的 PATH 获取编译器。若使用 CubeIDE 内置工具链，也可直接指定其路径。
 
 ```powershell
-E:/ProgramData/Anaconda3/python.exe -B hil/ai_docs/compile_examples.py --compiler E:/ST/STM32CubeIDE_1.13.2/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235/tools/bin/arm-none-eabi-gcc.exe
+$compiler = (Get-Command arm-none-eabi-gcc -ErrorAction Stop).Source
+python -B hil/ai_docs/compile_examples.py --compiler $compiler --output "$batch/compile_f446"
 ```
 
 编译目标为Cortex-M4、Thumb、FPv4-SP-D16、hard-float、GNU C11，使用F446 BSP包含路径。
-全部正向项启用`-Wall -Wextra -Werror`；六个示例另启用`-Wconversion -Wshadow
--Wmissing-prototypes`。这是独立编译，不经项目make，因而不触发旧make的清理问题。
+可选 `--h743-cmsis <STM32H743 工程的 Drivers/CMSIS>` 使用实际 H743 芯片头、
+Cortex-M7、FPv5-D16 和 `-mno-unaligned-access` 重跑同一矩阵。工具检查目标 NVIC
+优先级位数，记录外部 CMSIS 头的身份。该路径验证 C 对象和可重定位链接，不能代替
+H743 的启动向量、链接布局、Cache、外设或实板验证。
+全部正向项启用 `-Wall -Wextra -Werror`，七个示例另启用
+`-Wconversion -Wshadow -Wmissing-prototypes`。脚本直接调用编译器。
 
 | 范围 | 内容 |
 |---|---|
@@ -60,43 +66,26 @@ E:/ProgramData/Anaconda3/python.exe -B hil/ai_docs/compile_examples.py --compile
 Debug或对象清单。批次存续期间保留失败尝试，不覆盖或拼成通过；用户授权清理时在
 每日日志说明删除范围和复核限制。
 
-## 3. 当前确认结果及限制
+## 3. 结果与归档
 
-[2026-10-28首次完整编译](evidence/compile_20261028_121211_010144/summary.json)完成当时6个C文件的19项配置：
-114个示例对象、304个生产支持对象、19次部分链接、17项头文件正向检查，另2项指定
-编译拒绝符合预期。编译器为GNU Tools for STM32 GCC11.3.1，输入前后稳定。
-正常编译均无warning。六示例定义23个独立演示函数，未增加RTOS公共符号。
+部分链接检查示例与内核对象的符号关系，记录尚未解析的 HAL、C 运行库及
+CherryUSB 等外部依赖。启动向量、最终内存布局和板上时序由项目构建及对应 HIL 用例验证。
 
-初次两批在检查有效宏时因验证工具处理空宏/CRLF行的问题中断；实际GCC已输出正确
-宏值，尚未开始示例对象编译。随后修正解析器，用实际输出及行尾控制核对后重跑。
-两次失败事实保留于当日日志；其原始文件及重复文档检查输出已按本轮清理要求删除。
-这些属于工具失败，不能归为内核错误或计入正向编译覆盖。
-
-**部分链接不是完整固件链接。** 结果允许并列出HAL、CMSIS环境、C运行库和CherryUSB
-协议栈等外部未解析符号；没有启动向量、最终内存布局、可运行入口或硬件初始化。
-本次不能由编译/部分链接声称示例时序、IRQ合法性、USB收发或业务压力已验证。
-没有进行板卡运行，现有日常固件和main.c保持不变。
-
-接口完整性与文档最终检查查[当日记录](../../docs/logs/2026-10-28.md)，不要把旧HIL通过数
-直接算作这批资料的验证。该检查程序的输出也不能证明所有自然语言描述或未知BUG已排除。
+当次验证的配置、结果及本地路径见[工程交付报告](../../docs/logs/2026-11-11.md#delivery-report)。
+2026-10-28 和 2026-10-29 的汇总保留在[每日日志](../../docs/README.md#daily-logs)。
+旧版提交 `446d724091bacd7db4fc619e9742e56642f61df4` 含当时的
+`hil/ai_docs/evidence/` 归档。
 
 ## 4. 设计手册内嵌样例同步
 
 手册使用`example-function`/`example-file`标记绑定到实际示例源。只读检查：
 
 ```powershell
-python -B hil/ai_docs/check_handbook_examples.py
+python -B hil/ai_docs/check_handbook_examples.py --output "$batch/handbook_examples.json"
 ```
 
 明确需要更新正文摘录时才加`--sync`，它只替换标记的C块，不修改示例或生产代码。
 函数摘录的完整编译单元/静态依赖由链接给出，未标记的机制摘要/结构/汇编不声称参与编译。
 此检查比较文本，不代替真实ARM编译，也不能证明样例运行时业务正确。
 
-[2026-10-29重写阶段编译](evidence/compile_20261029_handbook/summary.json)包含新增handbook.c，
-19配置共133个示例对象、304个支持对象、19次部分链接、17头正例及2个指定拒绝，均符合预期。
-当前共有31个公开演示函数；本次未连接板卡，细节见[当日日志](../../docs/logs/2026-10-29.md)。
-
-发布复核修正两个布尔变量命名后，已[重新执行相同19配置](evidence/compile_20261029_release/summary.json)，
-133/304对象、19部分链接、17头正例及2指定拒绝均符合预期。当前发布输入身份以这个新批次为准；
-原批次保持原始字节，不能沿用命名修正前的输入摘要。最终资料/摘录核对见
-[发布校验目录](evidence/docs_20261029_release/)，范围与限制见[交付报告](../../docs/logs/2026-10-29.md#delivery-report)。
+2026-10-29 的手册重写和示例验证见[当日交付记录](../../docs/logs/2026-10-29.md#delivery-report)。
