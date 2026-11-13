@@ -1,0 +1,44 @@
+HILIRQ|BG|case=burst|p=6|n=3771|min=8|max=1106|sum=229702|lost=0|mask_n=5496|mask_max=2292|PASS
+HIB|STAT|case=burst|op=alloc|n=2352|sum=1669885|min=260|max=2611|ticks=9
+HIB|STAT|case=burst|op=free|n=2352|sum=586075|min=218|max=483|ticks=4
+HIB|STAT|case=burst|op=miss|n=744|sum=930421|min=296|max=2595|ticks=2
+HIB|CASE|case=burst|completed=2304|retried=688|peak=30784|miss_live=0|initial=32760|restored=32760|input=48324885|line=0|PASS
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_industry_run|priority=4
+HIB|START|backend=zephyr|hz=168000000|budget=32768|cases=5
+HILIRQ|BG|case=fixed|p=6|n=637|min=10|max=283|sum=18225|lost=0|mask_n=810|mask_max=485|PASS
+HIB|STAT|case=fixed|op=alloc|n=384|sum=219399|min=429|max=834|ticks=1
+HIB|STAT|case=fixed|op=free|n=384|sum=133557|min=242|max=671|ticks=1
+HIB|STAT|case=fixed|op=miss|n=0|sum=0|min=0|max=0|ticks=0
+HIB|CASE|case=fixed|completed=384|retried=0|peak=16384|miss_live=0|initial=32672|restored=32672|input=21896bc5|line=0|PASS
+HILIRQ|BG|case=telemetry|p=6|n=3543|min=10|max=299|sum=121156|lost=0|mask_n=4746|mask_max=525|PASS
+HIB|STAT|case=telemetry|op=alloc|n=2352|sum=1414688|min=429|max=1008|ticks=12
+HIB|STAT|case=telemetry|op=free|n=2352|sum=1147067|min=242|max=809|ticks=7
+HIB|STAT|case=telemetry|op=miss|n=0|sum=0|min=0|max=0|ticks=0
+HIB|CASE|case=telemetry|completed=2304|retried=0|peak=10816|miss_live=0|initial=32672|restored=32672|input=48324885|line=0|PASS
+HILIRQ|BG|case=burst|p=6|n=3615|min=10|max=297|sum=108864|lost=0|mask_n=5498|mask_max=502|PASS
+HIB|STAT|case=burst|op=alloc|n=2352|sum=1321521|min=426|max=837|ticks=6
+HIB|STAT|case=burst|op=free|n=2352|sum=924437|min=242|max=914|ticks=7
+HIB|STAT|case=burst|op=miss|n=752|sum=249709|min=282|max=507|ticks=2
+HIB|CASE|case=burst|completed=2304|retried=688|peak=30784|miss_live=0|initial=32672|restored=32672|input=48324885|line=0|PASS
+HILIRQ|BG|case=sessions|p=6|n=4588|min=10|max=316|sum=170994|lost=0|mask_n=6242|mask_max=557|PASS
+HIB|STAT|case=sessions|op=alloc|n=3100|sum=1909040|min=429|max=1012|ticks=9
+HIB|STAT|case=sessions|op=free|n=3100|sum=1565131|min=268|max=926|ticks=11
+HIB|STAT|case=sessions|op=miss|n=0|sum=0|min=0|max=0|ticks=0
+HIB|CASE|case=sessions|completed=1536|retried=0|peak=22400|miss_live=0|initial=32672|restored=32672|input=7d04edc5|line=0|PASS
+HILIRQ|BG|case=fragment|p=6|n=546|min=10|max=287|sum=15589|lost=0|mask_n=751|mask_max=508|PASS
+HIB|STAT|case=fragment|op=alloc|n=1|sum=594|min=594|max=594|ticks=0
+HIB|STAT|case=fragment|op=free|n=2|sum=1114|min=515|max=599|ticks=0
+HIB|STAT|case=fragment|op=miss|n=65|sum=17070|min=253|max=422|ticks=0
+HIB|CASE|case=fragment|completed=1|retried=0|peak=30112|miss_live=25504|initial=32672|restored=32672|input=9e4aaf0d|line=0|PASS
+HIB|DONE|status=0|checks=5|failures=0

@@ -1,0 +1,566 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-13",
+  "target": "NUCLEO-F446RE",
+  "cpu_hz": 168000000,
+  "timer_hz": 84000000,
+  "optimization": "O2",
+  "critical_mask": "BASEPRI",
+  "uart_baud": 115200,
+  "current_heap": {
+    "file": "RTOS/Memory/rtos_heap.c",
+    "lf_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f"
+  },
+  "zephyr_sources": {
+    "tag": "v4.2.0",
+    "heap.c": "2a939f2544eeafbe4cf3d77b756cb602917a3fd3cfc5aa5ec29e85561ee4644e",
+    "heap.h": "ac025cc83f60b2a6859bf0c1ad5f63a10e5428f38b3625517dcca70cb0244bb9"
+  },
+  "fixture_sources": {
+    "irq": [
+      {
+        "file": "hil/fw/Src/f446_heap_irq_latency.c",
+        "lf_sha256": "91e6e8b17e46866b4ff4908343308d8d54670f968ef14e349d3994d5d4850f95"
+      }
+    ],
+    "irq_direct": [
+      {
+        "file": "hil/fw/Src/f446_heap_irq_latency.c",
+        "lf_sha256": "91e6e8b17e46866b4ff4908343308d8d54670f968ef14e349d3994d5d4850f95"
+      }
+    ],
+    "periodic": [
+      {
+        "file": "hil/fw/Src/f446_heap_irq_latency.c",
+        "lf_sha256": "91e6e8b17e46866b4ff4908343308d8d54670f968ef14e349d3994d5d4850f95"
+      },
+      {
+        "file": "hil/fw/Src/f446_heap_industry.c",
+        "lf_sha256": "1623c7b695800b8fa60472bc8a79b4b561e82dba83dc0929a2b5f482494f64af"
+      }
+    ],
+    "periodic_direct": [
+      {
+        "file": "hil/fw/Src/f446_heap_irq_latency.c",
+        "lf_sha256": "91e6e8b17e46866b4ff4908343308d8d54670f968ef14e349d3994d5d4850f95"
+      },
+      {
+        "file": "hil/fw/Src/f446_heap_industry.c",
+        "lf_sha256": "1623c7b695800b8fa60472bc8a79b4b561e82dba83dc0929a2b5f482494f64af"
+      }
+    ],
+    "industry": [
+      {
+        "file": "hil/fw/Src/f446_heap_industry.c",
+        "lf_sha256": "1623c7b695800b8fa60472bc8a79b4b561e82dba83dc0929a2b5f482494f64af"
+      }
+    ],
+    "failure": [
+      {
+        "file": "hil/fw/Src/f446_heap_failure.c",
+        "lf_sha256": "f529ce311a20dca5c4ee8b8734c963b6966dca42e5c55a57beddaaaecdd3e905"
+      }
+    ],
+    "weighted": [
+      {
+        "file": "hil/fw/Src/f446_heap_weighted.c",
+        "lf_sha256": "3a983cb6a72a79fc58a0360e74ab188dffd4e2d8f8635b601495a332d71ce122"
+      }
+    ],
+    "boundary": [
+      {
+        "file": "hil/fw/Src/f446_heap_boundary.c",
+        "lf_sha256": "1684ceb9c711780d5c432608423849cd756bbecda243b377890ca4cd9f69927a"
+      }
+    ],
+    "mixed": [
+      {
+        "file": "hil/fw/Src/f446_heap_checkpoint_mixed.c",
+        "lf_sha256": "1dc6697bc468a367f1258bf4d25490c94c60a13860a53913700c97e2cf46b81a"
+      }
+    ],
+    "stress": [
+      {
+        "file": "hil/fw/Src/f446_heap_irq_stress.c",
+        "lf_sha256": "aaf1c5f3325689521edb28a69956f72fa2aafebf3ae3e64a1b326b28af7cf2f8"
+      }
+    ]
+  },
+  "runs_by_firmware": {
+    "irq_accepted_O2": {
+      "phase": "irq",
+      "backend": "accepted",
+      "prefix": "HILIRQ",
+      "fixture_sha256": "cfcc3c26dfe83ebc6464caf916b57bae50c30b3522452210919c3e21dceb878e",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_irq_accepted_O2_r1.txt",
+          "uart_sha256": "f5d4b877fb3d23c497d2ef6c9a010318515a8f46792daa79f34df8a0432da6c3",
+          "recorded_firmware_sha256": "1f0b49ccce9a8ab1e5ccd960f2a51dce22f2dd6b8435944009cab5b94de902ab"
+        },
+        {
+          "file": "log_irq_accepted_O2_r2.txt",
+          "uart_sha256": "f5d4b877fb3d23c497d2ef6c9a010318515a8f46792daa79f34df8a0432da6c3",
+          "recorded_firmware_sha256": "1f0b49ccce9a8ab1e5ccd960f2a51dce22f2dd6b8435944009cab5b94de902ab"
+        }
+      ]
+    },
+    "irq_current_O2": {
+      "phase": "irq",
+      "backend": "current",
+      "prefix": "HILIRQ",
+      "fixture_sha256": "cfcc3c26dfe83ebc6464caf916b57bae50c30b3522452210919c3e21dceb878e",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_irq_current_O2_r1.txt",
+          "uart_sha256": "6bd468ff43d701348f4a2499cadae875dc196a8b74c5bf035a6637059ab9c359",
+          "recorded_firmware_sha256": "346b415dde73371bb3390ca40fb33e8d7d3127428b60ca2ee595a0ce8ed93f05"
+        },
+        {
+          "file": "log_irq_current_O2_r2.txt",
+          "uart_sha256": "6bd468ff43d701348f4a2499cadae875dc196a8b74c5bf035a6637059ab9c359",
+          "recorded_firmware_sha256": "346b415dde73371bb3390ca40fb33e8d7d3127428b60ca2ee595a0ce8ed93f05"
+        }
+      ]
+    },
+    "irq_zephyr_O2": {
+      "phase": "irq",
+      "backend": "zephyr",
+      "prefix": "HILIRQ",
+      "fixture_sha256": "cfcc3c26dfe83ebc6464caf916b57bae50c30b3522452210919c3e21dceb878e",
+      "heap_sha256": null,
+      "runs": [
+        {
+          "file": "log_irq_zephyr_O2_r1.txt",
+          "uart_sha256": "e790292ddc5c79ee97abe302cdcb4c0ce3ff343a2f42fa8417d42e567396f8db",
+          "recorded_firmware_sha256": "261c192b2caf0ef21c925d626d40ddebd6ea0f1fabc8027935d822424418391b"
+        },
+        {
+          "file": "log_irq_zephyr_O2_r2.txt",
+          "uart_sha256": "e790292ddc5c79ee97abe302cdcb4c0ce3ff343a2f42fa8417d42e567396f8db",
+          "recorded_firmware_sha256": "261c192b2caf0ef21c925d626d40ddebd6ea0f1fabc8027935d822424418391b"
+        }
+      ]
+    },
+    "irq_direct_accepted_O2": {
+      "phase": "irq_direct",
+      "backend": "accepted",
+      "prefix": "HILIRQ",
+      "fixture_sha256": "cfcc3c26dfe83ebc6464caf916b57bae50c30b3522452210919c3e21dceb878e",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_irq_direct_accepted_O2_r1.txt",
+          "uart_sha256": "9c8a76fbda028a8ba12fdc97676de8638f1c5b84bc0f4a2c768c8f2c364d4592",
+          "recorded_firmware_sha256": "fe54a7d9b516c37a299f9eb5f4709ab88747aad58526fc803df60d6ad1be1720"
+        },
+        {
+          "file": "log_irq_direct_accepted_O2_r2.txt",
+          "uart_sha256": "9c8a76fbda028a8ba12fdc97676de8638f1c5b84bc0f4a2c768c8f2c364d4592",
+          "recorded_firmware_sha256": "fe54a7d9b516c37a299f9eb5f4709ab88747aad58526fc803df60d6ad1be1720"
+        }
+      ]
+    },
+    "irq_direct_current_O2": {
+      "phase": "irq_direct",
+      "backend": "current",
+      "prefix": "HILIRQ",
+      "fixture_sha256": "cfcc3c26dfe83ebc6464caf916b57bae50c30b3522452210919c3e21dceb878e",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_irq_direct_current_O2_r1.txt",
+          "uart_sha256": "e042101929dc6d5e6de50c2a871427c72bcd7b7a80ccc0a510ce8dfce625911f",
+          "recorded_firmware_sha256": "881a0063df17c19be20c30a3b5d04dd1dce8961bc587d90c4f9a7b490313ad1b"
+        },
+        {
+          "file": "log_irq_direct_current_O2_r2.txt",
+          "uart_sha256": "e042101929dc6d5e6de50c2a871427c72bcd7b7a80ccc0a510ce8dfce625911f",
+          "recorded_firmware_sha256": "881a0063df17c19be20c30a3b5d04dd1dce8961bc587d90c4f9a7b490313ad1b"
+        }
+      ]
+    },
+    "irq_direct_zephyr_O2": {
+      "phase": "irq_direct",
+      "backend": "zephyr",
+      "prefix": "HILIRQ",
+      "fixture_sha256": "cfcc3c26dfe83ebc6464caf916b57bae50c30b3522452210919c3e21dceb878e",
+      "heap_sha256": null,
+      "runs": [
+        {
+          "file": "log_irq_direct_zephyr_O2_r1.txt",
+          "uart_sha256": "2f47538b2103385af85065160146af8779d1b781abf3013ff865e94a2d964aca",
+          "recorded_firmware_sha256": "a81244634bafbbdc3e3b92e905ea4d1824a27aaaa3d17b7dcc7c1aac34172203"
+        },
+        {
+          "file": "log_irq_direct_zephyr_O2_r2.txt",
+          "uart_sha256": "2f47538b2103385af85065160146af8779d1b781abf3013ff865e94a2d964aca",
+          "recorded_firmware_sha256": "a81244634bafbbdc3e3b92e905ea4d1824a27aaaa3d17b7dcc7c1aac34172203"
+        }
+      ]
+    },
+    "periodic_accepted_O2": {
+      "phase": "periodic",
+      "backend": "accepted",
+      "prefix": "HIB",
+      "fixture_sha256": "388dc5395370463f9d160623f3dab4f2b224fe51ad60ddc62bf7d483d64a959b",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_periodic_accepted_O2_r1.txt",
+          "uart_sha256": "665d7d3bdb17671c76c8b4a147330f4b913c8887c7b98630a08f9710ac479472",
+          "recorded_firmware_sha256": "e462f84be41978cdebe820b7859cf8c81ab4acd7e12773b7a769a7a49f96c00d"
+        },
+        {
+          "file": "log_periodic_accepted_O2_r2.txt",
+          "uart_sha256": "665d7d3bdb17671c76c8b4a147330f4b913c8887c7b98630a08f9710ac479472",
+          "recorded_firmware_sha256": "e462f84be41978cdebe820b7859cf8c81ab4acd7e12773b7a769a7a49f96c00d"
+        }
+      ]
+    },
+    "periodic_current_O2": {
+      "phase": "periodic",
+      "backend": "current",
+      "prefix": "HIB",
+      "fixture_sha256": "388dc5395370463f9d160623f3dab4f2b224fe51ad60ddc62bf7d483d64a959b",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_periodic_current_O2_r1.txt",
+          "uart_sha256": "919d51a6da750de2793d1c22aa652d82bf209e80a4517fad02a21343fb453881",
+          "recorded_firmware_sha256": "f2c4f1d2dd3eb5c28fded793086838b75cf3625269436e908f81ec09cba9abd4"
+        },
+        {
+          "file": "log_periodic_current_O2_r2.txt",
+          "uart_sha256": "919d51a6da750de2793d1c22aa652d82bf209e80a4517fad02a21343fb453881",
+          "recorded_firmware_sha256": "f2c4f1d2dd3eb5c28fded793086838b75cf3625269436e908f81ec09cba9abd4"
+        }
+      ]
+    },
+    "periodic_zephyr_O2": {
+      "phase": "periodic",
+      "backend": "zephyr",
+      "prefix": "HIB",
+      "fixture_sha256": "388dc5395370463f9d160623f3dab4f2b224fe51ad60ddc62bf7d483d64a959b",
+      "heap_sha256": null,
+      "runs": [
+        {
+          "file": "log_periodic_zephyr_O2_r1.txt",
+          "uart_sha256": "7d47eaf7e1e9afe8e36629b4420c2f52900fb468e94f4a41381914037861c9f7",
+          "recorded_firmware_sha256": "82d4ab5ef31a623c478507b238e6b41564d542a1e586729a3a643d471fcd8983"
+        },
+        {
+          "file": "log_periodic_zephyr_O2_r2.txt",
+          "uart_sha256": "6c18585ba01a49ef5637f54928738d01ecaab2b7a72e75fa8d7a99e2a5cf65aa",
+          "recorded_firmware_sha256": "82d4ab5ef31a623c478507b238e6b41564d542a1e586729a3a643d471fcd8983"
+        }
+      ]
+    },
+    "periodic_direct_accepted_O2": {
+      "phase": "periodic_direct",
+      "backend": "accepted",
+      "prefix": "HIB",
+      "fixture_sha256": "388dc5395370463f9d160623f3dab4f2b224fe51ad60ddc62bf7d483d64a959b",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_periodic_direct_accepted_O2_r1.txt",
+          "uart_sha256": "f0fe5bc0d0b206c8835d4954f2382455dd4d4176f53b188f71a17699ec53fb6b",
+          "recorded_firmware_sha256": "56da1272c81bccc4566a8164948e46acb5852adb4c98145e07c3fa54b6de4d13"
+        },
+        {
+          "file": "log_periodic_direct_accepted_O2_r2.txt",
+          "uart_sha256": "c67d040434ad09a6b857c9c11efa4972984565285bf4b564e3c8b052c29f1aa0",
+          "recorded_firmware_sha256": "56da1272c81bccc4566a8164948e46acb5852adb4c98145e07c3fa54b6de4d13"
+        }
+      ]
+    },
+    "periodic_direct_current_O2": {
+      "phase": "periodic_direct",
+      "backend": "current",
+      "prefix": "HIB",
+      "fixture_sha256": "388dc5395370463f9d160623f3dab4f2b224fe51ad60ddc62bf7d483d64a959b",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_periodic_direct_current_O2_r1.txt",
+          "uart_sha256": "f6f64bafc69e5866861ffa798618283eb0cefc546dcf4acd55eab2b4543b2c45",
+          "recorded_firmware_sha256": "a71c38bb0bd1534648189715416650c69c390df16cb80ed7d76e2dae12e36d5d"
+        },
+        {
+          "file": "log_periodic_direct_current_O2_r2.txt",
+          "uart_sha256": "68225b4f2feb753331fc2d31820f42310eab46180102b02c493d65a7601f008c",
+          "recorded_firmware_sha256": "a71c38bb0bd1534648189715416650c69c390df16cb80ed7d76e2dae12e36d5d"
+        }
+      ]
+    },
+    "periodic_direct_zephyr_O2": {
+      "phase": "periodic_direct",
+      "backend": "zephyr",
+      "prefix": "HIB",
+      "fixture_sha256": "388dc5395370463f9d160623f3dab4f2b224fe51ad60ddc62bf7d483d64a959b",
+      "heap_sha256": null,
+      "runs": [
+        {
+          "file": "log_periodic_direct_zephyr_O2_r1.txt",
+          "uart_sha256": "d62f1d1c5aa2a53e5f9da03b00ffca58b39e11f36a5d46378da808d66d762b5f",
+          "recorded_firmware_sha256": "e547db9467939b62220da8ed9f3188fe949ed288a0eeceb4ecb56260e699417b"
+        },
+        {
+          "file": "log_periodic_direct_zephyr_O2_r2.txt",
+          "uart_sha256": "d62f1d1c5aa2a53e5f9da03b00ffca58b39e11f36a5d46378da808d66d762b5f",
+          "recorded_firmware_sha256": "e547db9467939b62220da8ed9f3188fe949ed288a0eeceb4ecb56260e699417b"
+        }
+      ]
+    },
+    "industry_accepted_O2": {
+      "phase": "industry",
+      "backend": "accepted",
+      "prefix": "HIB",
+      "fixture_sha256": "2cb3b215801e302faa780e5a36dc0cb04ed08dcb84d1943d2b94f7a256ba3fc4",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_industry_accepted_O2_r1.txt",
+          "uart_sha256": "499550ee145bc28f291d15629ef3fa60372a67e2553fa87d13184216c94f1447",
+          "recorded_firmware_sha256": "e1be99521bf935d61cd118888323ecedc2853055af5779fc9899599723ac3ca3"
+        },
+        {
+          "file": "log_industry_accepted_O2_r2.txt",
+          "uart_sha256": "835ffc70025223b1d6d34a3250f3e3c2cb76ba8ab0120a4d0df16821a87b2c25",
+          "recorded_firmware_sha256": "e1be99521bf935d61cd118888323ecedc2853055af5779fc9899599723ac3ca3"
+        }
+      ]
+    },
+    "industry_current_O2": {
+      "phase": "industry",
+      "backend": "current",
+      "prefix": "HIB",
+      "fixture_sha256": "fa43709cfcbfac65c6d0c4d223df738abbc35c3b0baafe4fcf64b8d89cf7ca15",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_industry_current_O2_r1.txt",
+          "uart_sha256": "f805dc18b9643e36f4de6d115c0f77b2d18cdb1ef47c93c4ff44d85353dfdd43",
+          "recorded_firmware_sha256": "64777ca8cc40b437cf241a63e1ce2ba5c53571bbc5b00e780864593e3e839715"
+        },
+        {
+          "file": "log_industry_current_O2_r2.txt",
+          "uart_sha256": "f805dc18b9643e36f4de6d115c0f77b2d18cdb1ef47c93c4ff44d85353dfdd43",
+          "recorded_firmware_sha256": "64777ca8cc40b437cf241a63e1ce2ba5c53571bbc5b00e780864593e3e839715"
+        }
+      ]
+    },
+    "industry_zephyr_O2": {
+      "phase": "industry",
+      "backend": "zephyr",
+      "prefix": "HIB",
+      "fixture_sha256": "fa43709cfcbfac65c6d0c4d223df738abbc35c3b0baafe4fcf64b8d89cf7ca15",
+      "heap_sha256": null,
+      "runs": [
+        {
+          "file": "log_industry_zephyr_O2_r1.txt",
+          "uart_sha256": "ad92fd620e7864afea140a1575241b0e9e92279762340495a71c9754041f31f9",
+          "recorded_firmware_sha256": "8f92847d272d1a3a315abe37e362b75a0890623f906b3f7dcfa27eb477b5b286"
+        },
+        {
+          "file": "log_industry_zephyr_O2_r2.txt",
+          "uart_sha256": "451e09451c9fd22ef0bb40445d621b56fb05ef828d6dbf29295c8065f8d6aaa9",
+          "recorded_firmware_sha256": "8f92847d272d1a3a315abe37e362b75a0890623f906b3f7dcfa27eb477b5b286"
+        }
+      ]
+    },
+    "failure_accepted_O2": {
+      "phase": "failure",
+      "backend": "accepted",
+      "prefix": "HFL",
+      "fixture_sha256": "f529ce311a20dca5c4ee8b8734c963b6966dca42e5c55a57beddaaaecdd3e905",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_failure_accepted_O2_r1.txt",
+          "uart_sha256": "b5699521969278c7e403d18520467c6c1500982d1a33349357847b60fa7bff85",
+          "recorded_firmware_sha256": "e14cee8bdce9b346b91731cd1e610d53a4fc8a19d4f323e11a387bfcaa6c6be9"
+        },
+        {
+          "file": "log_failure_accepted_O2_r2.txt",
+          "uart_sha256": "0e464bcb6ae61b38b26cae5e3fb9307d2be3d15905bcc10760741e4b82104d91",
+          "recorded_firmware_sha256": "e14cee8bdce9b346b91731cd1e610d53a4fc8a19d4f323e11a387bfcaa6c6be9"
+        }
+      ]
+    },
+    "failure_current_O2": {
+      "phase": "failure",
+      "backend": "current",
+      "prefix": "HFL",
+      "fixture_sha256": "f529ce311a20dca5c4ee8b8734c963b6966dca42e5c55a57beddaaaecdd3e905",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_failure_current_O2_r1.txt",
+          "uart_sha256": "d84f481ed1ebd07a16b945204ffee48508ce21d59d5e4391f68c096ce3790a18",
+          "recorded_firmware_sha256": "b61128f09361bf15fed7dbfc2ab928bfd14023e9a15b3793ec04fc703e97b705"
+        },
+        {
+          "file": "log_failure_current_O2_r2.txt",
+          "uart_sha256": "d84f481ed1ebd07a16b945204ffee48508ce21d59d5e4391f68c096ce3790a18",
+          "recorded_firmware_sha256": "b61128f09361bf15fed7dbfc2ab928bfd14023e9a15b3793ec04fc703e97b705"
+        }
+      ]
+    },
+    "failure_candidate_O2": {
+      "phase": "failure",
+      "backend": "candidate",
+      "prefix": "HFL",
+      "fixture_sha256": "f529ce311a20dca5c4ee8b8734c963b6966dca42e5c55a57beddaaaecdd3e905",
+      "heap_sha256": "cdd7b0c0c854db16982d4c670d7e0c0214813001cd1143beb5aaa2d4a2998124",
+      "runs": [
+        {
+          "file": "log_failure_candidate_O2_r1.txt",
+          "uart_sha256": "7d6946b5a10b98e0b232469a9df8a44b0f0ffe494bd89d0a4fa0bc2d6a88abba",
+          "recorded_firmware_sha256": "2d31cc3b3d973ce711975dfe179e719bbc993072295b291038401d65894ad362"
+        },
+        {
+          "file": "log_failure_candidate_O2_r2.txt",
+          "uart_sha256": "7d6946b5a10b98e0b232469a9df8a44b0f0ffe494bd89d0a4fa0bc2d6a88abba",
+          "recorded_firmware_sha256": "2d31cc3b3d973ce711975dfe179e719bbc993072295b291038401d65894ad362"
+        }
+      ]
+    },
+    "failure_isolated_max_O2": {
+      "phase": "failure",
+      "backend": "isolated_max",
+      "prefix": "HFL",
+      "fixture_sha256": "f529ce311a20dca5c4ee8b8734c963b6966dca42e5c55a57beddaaaecdd3e905",
+      "heap_sha256": "351df46e7fc18d0fb67fca7fc75249bd91e4b88220893c0697ab1bf860dad7b9",
+      "runs": [
+        {
+          "file": "log_failure_isolated_max_O2_r1.txt",
+          "uart_sha256": "81dfece92d07bc49054d0a4f564f11bf33f2a93ecd6e794ca51fb886cba76560",
+          "recorded_firmware_sha256": "3efb7a019cfce5ca511414c44fb54b1028469aa9160df57bd7f7294fa97fe73d"
+        },
+        {
+          "file": "log_failure_isolated_max_O2_r2.txt",
+          "uart_sha256": "f1fb9be84b00b69a308845e44a282be4e06d840326867c94defd0a5e648cd7f8",
+          "recorded_firmware_sha256": "3efb7a019cfce5ca511414c44fb54b1028469aa9160df57bd7f7294fa97fe73d"
+        }
+      ]
+    },
+    "weighted_accepted_O2": {
+      "phase": "weighted",
+      "backend": "accepted",
+      "prefix": "HWB",
+      "fixture_sha256": "3a983cb6a72a79fc58a0360e74ab188dffd4e2d8f8635b601495a332d71ce122",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_weighted_accepted_O2_r1.txt",
+          "uart_sha256": "c5a2f14c62f67054ff62db7672db9923d68ce782e3ce468e49f5ed2ff652739a",
+          "recorded_firmware_sha256": "ec07a90d26127dafcf36c085d72f2a6daa06babda7d646ec2f97ea313dfd5f32"
+        },
+        {
+          "file": "log_weighted_accepted_O2_r2.txt",
+          "uart_sha256": "c5a2f14c62f67054ff62db7672db9923d68ce782e3ce468e49f5ed2ff652739a",
+          "recorded_firmware_sha256": "ec07a90d26127dafcf36c085d72f2a6daa06babda7d646ec2f97ea313dfd5f32"
+        }
+      ]
+    },
+    "weighted_current_O2": {
+      "phase": "weighted",
+      "backend": "current",
+      "prefix": "HWB",
+      "fixture_sha256": "3a983cb6a72a79fc58a0360e74ab188dffd4e2d8f8635b601495a332d71ce122",
+      "heap_sha256": "88e19d494e18c8800c433508771f6cc66a33b81b227d826df3c566e3630f8b5a",
+      "runs": [
+        {
+          "file": "log_weighted_current_O2_r1.txt",
+          "uart_sha256": "d82464df8b1297aa007be84489c00e40ba00b224cf14a5cbec588f3330beecf4",
+          "recorded_firmware_sha256": "d804f57835453332064d333bc4840d8f2ffd00b535219d7ecbbecf5ef692de65"
+        },
+        {
+          "file": "log_weighted_current_O2_r2.txt",
+          "uart_sha256": "d82464df8b1297aa007be84489c00e40ba00b224cf14a5cbec588f3330beecf4",
+          "recorded_firmware_sha256": "d804f57835453332064d333bc4840d8f2ffd00b535219d7ecbbecf5ef692de65"
+        }
+      ]
+    },
+    "weighted_isolated_max_O2": {
+      "phase": "weighted",
+      "backend": "isolated_max",
+      "prefix": "HWB",
+      "fixture_sha256": "3a983cb6a72a79fc58a0360e74ab188dffd4e2d8f8635b601495a332d71ce122",
+      "heap_sha256": "351df46e7fc18d0fb67fca7fc75249bd91e4b88220893c0697ab1bf860dad7b9",
+      "runs": [
+        {
+          "file": "log_weighted_isolated_max_O2_r1.txt",
+          "uart_sha256": "0f747b7a7382824f18b30ef6906920faba49c923df17d81e79d399c5a422c8f1",
+          "recorded_firmware_sha256": "39c784db0c8e7cfcb7811b500a5525d903945832c9faa82e2c0e31cb9631dd7d"
+        },
+        {
+          "file": "log_weighted_isolated_max_O2_r2.txt",
+          "uart_sha256": "0f747b7a7382824f18b30ef6906920faba49c923df17d81e79d399c5a422c8f1",
+          "recorded_firmware_sha256": "39c784db0c8e7cfcb7811b500a5525d903945832c9faa82e2c0e31cb9631dd7d"
+        }
+      ]
+    },
+    "boundary_accepted_O2": {
+      "phase": "boundary",
+      "backend": "accepted",
+      "prefix": "HBN",
+      "fixture_sha256": "1684ceb9c711780d5c432608423849cd756bbecda243b377890ca4cd9f69927a",
+      "heap_sha256": "bc597f42df806ef46b30777c9c228a91bee5f96f7a7a8f72a6056ab96e6f0d5f",
+      "runs": [
+        {
+          "file": "log_boundary_accepted_O2_r1.txt",
+          "uart_sha256": "877b2fdcc66c393f20577f2b401f73fbbcea89acdb69d57b6e5547ffb106faf9",
+          "recorded_firmware_sha256": "8e8efecedf6f3c7d57b911c8d6c4677358ab634a87f6c2b262a15b8a62547b44"
+        },
+        {
+          "file": "log_boundary_accepted_O2_r2.txt",
+          "uart_sha256": "877b2fdcc66c393f20577f2b401f73fbbcea89acdb69d57b6e5547ffb106faf9",
+          "recorded_firmware_sha256": "8e8efecedf6f3c7d57b911c8d6c4677358ab634a87f6c2b262a15b8a62547b44"
+        }
+      ]
+    },
+    "mixed_layout_O2": {
+      "phase": "mixed",
+      "backend": "layout",
+      "prefix": "HCPM",
+      "fixture_sha256": "1dc6697bc468a367f1258bf4d25490c94c60a13860a53913700c97e2cf46b81a",
+      "heap_sha256": "5841d01b067c618b2338ab27467e268a4d486a4d559a6fd0a7080be65d7fbe34",
+      "runs": [
+        {
+          "file": "log_mixed_layout_O2_r1.txt",
+          "uart_sha256": "0be90e4536b5a4fab22ec3979d65383026f059b54015e9ca91ba0038791c0134",
+          "recorded_firmware_sha256": "b4235fc448b22118f41d4a4a345b9bfd32f1cb19cf37fb1578df096ff2d3a813"
+        },
+        {
+          "file": "log_mixed_layout_O2_r2.txt",
+          "uart_sha256": "0be90e4536b5a4fab22ec3979d65383026f059b54015e9ca91ba0038791c0134",
+          "recorded_firmware_sha256": "b4235fc448b22118f41d4a4a345b9bfd32f1cb19cf37fb1578df096ff2d3a813"
+        }
+      ]
+    },
+    "stress_layout_O2": {
+      "phase": "stress",
+      "backend": "layout",
+      "prefix": "HBIRQ",
+      "fixture_sha256": "aaf1c5f3325689521edb28a69956f72fa2aafebf3ae3e64a1b326b28af7cf2f8",
+      "heap_sha256": "5841d01b067c618b2338ab27467e268a4d486a4d559a6fd0a7080be65d7fbe34",
+      "runs": [
+        {
+          "file": "log_stress_layout_O2_r1.txt",
+          "uart_sha256": "20371183a3640c15f06353cac33b2c4f297df7a8d7c2cfd0e219537542fccf8c",
+          "recorded_firmware_sha256": "b8c475501118a81a1eac72d503bb873d66ef19d493609c7caf79fe6eb1d8ae9d"
+        },
+        {
+          "file": "log_stress_layout_O2_r2.txt",
+          "uart_sha256": "fac4b1edf66f468ac6b242b81331325eec403072c90a0026977f8a633c684382",
+          "recorded_firmware_sha256": "b8c475501118a81a1eac72d503bb873d66ef19d493609c7caf79fe6eb1d8ae9d"
+        }
+      ]
+    }
+  }
+}

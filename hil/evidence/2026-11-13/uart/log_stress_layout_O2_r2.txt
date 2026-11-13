@@ -1,0 +1,24 @@
+HWB|STAT|case=normal|op=alloc_ok|n=3120|sum_hi=0|sum_lo=2003557|min=238|max=2039|tick_crossings=10|invalid=0
+HWB|STAT|case=normal|op=alloc_fail|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|STAT|case=normal|op=free|n=3120|sum_hi=0|sum_lo=507648|min=143|max=410|tick_crossings=1|invalid=0
+HWB|STAT|case=normal|op=query|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|SUBSTAT|case=normal|op=initial_ok|n=3072|sum_hi=0|sum_lo=1991897|min=238|max=2039|tick_crossings=?System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_irq_stress_run|priority=4
+HBIRQ|START|seconds=20|capacity=28496|tasks=4|basepri=1|irq_period_us=1000
+HBIRQ|PHASE|load=1|ticks=2000
+HBIRQ|SOURCE|id=0|attempts=319984|accepted=103986|no_memory=91918|queue_full=124080|received=103986
+HBIRQ|SOURCE|id=1|attempts=160000|accepted=16000|no_memory=62040|queue_full=81960|received=16000
+HBIRQ|SOURCE|id=2|attempts=20007|accepted=2011|no_memory=7447|queue_full=10549|received=2011
+HBIRQ|SOURCE|id=3|attempts=2500|accepted=251|no_memory=809|queue_full=1440|received=251
+HBIRQ|TOTAL|accepted=122248|no_memory=162214|queue_full=218029|irq=20007|nested=2500|pressure_holds=3600|pressure_refused=0|probes=1875|load_phase=1|alloc_delta=345159|free_delta=345159|raw_free=28376|max_alloc=28496|final_free=28496
+HBIRQ|DONE|status=0|failure=0

@@ -1,0 +1,27 @@
+|sum=671848|min=80|max=2773|ticks=1
+HIB|CASE|case=burst|completed=2304|retried=688|peak=30784|miss_live=0|initial=32760|restored=32760|input=48324885|line=0|PASS
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_failure_run|priority=4
+HFL|START|capacity=28496|holes=128|raw_fragmented=4608|max_fragmented=48
+HFL|CASE|case=layout|PASS
+HFL|STAT|op=exhausted|n=1|sum=105|min=105|max=105|tick_crossings=0
+HFL|CASE|case=exhausted|PASS
+HFL|STAT|op=first_miss|n=1|sum=105|min=105|max=105|tick_crossings=0
+HFL|STAT|op=same_miss|n=32|sum=2856|min=89|max=97|tick_crossings=0
+HFL|STAT|op=larger_miss|n=32|sum=2848|min=89|max=89|tick_crossings=0
+HFL|STAT|op=max_after_miss|n=1|sum=94|min=94|max=94|tick_crossings=0
+HFL|STAT|op=max_after_query|n=1|sum=85|min=85|max=85|tick_crossings=0
+HFL|CASE|case=fragmented|PASS
+HFL|CASE|case=recovery|PASS
+HFL|CASE|case=capacity|PASS
+HFL|DONE|status=0|checks=5|failures=0

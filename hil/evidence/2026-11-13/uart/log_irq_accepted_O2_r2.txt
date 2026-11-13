@@ -1,0 +1,50 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_irq_latency_run|priority=4
+HILIRQ|START|backend=accepted|instrumented=0|cpu_hz=168000000|tim_hz=84000000
+HILIRQ|RSP|case=idle|p=6|n=96|min=12|max=18|sum=1330
+HILIRQ|TIME|case=idle|p=6|api_max=139|mask_n=0|mask_max=0
+HILIRQ|CASE|case=idle|p=6|in_api=33|in_api_max=18|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=empty|p=6|n=96|min=13|max=31|sum=1816
+HILIRQ|TIME|case=empty|p=6|api_max=209|mask_n=0|mask_max=0
+HILIRQ|CASE|case=empty|p=6|in_api=86|in_api_max=31|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=known|p=6|n=96|min=13|max=455|sum=34640
+HILIRQ|TIME|case=known|p=6|api_max=1265|mask_n=0|mask_max=0
+HILIRQ|CASE|case=known|p=6|in_api=96|in_api_max=455|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=cold|p=6|n=96|min=14|max=3842|sum=191648
+HILIRQ|TIME|case=cold|p=6|api_max=8095|mask_n=0|mask_max=0
+HILIRQ|CASE|case=cold|p=6|in_api=88|in_api_max=3842|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=cached|p=6|n=96|min=13|max=44|sum=1804
+HILIRQ|TIME|case=cached|p=6|api_max=253|mask_n=0|mask_max=0
+HILIRQ|CASE|case=cached|p=6|in_api=48|in_api_max=44|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=telemetry|p=6|n=384|min=13|max=861|sum=33738
+HILIRQ|TIME|case=telemetry|p=6|api_max=2059|mask_n=0|mask_max=0
+HILIRQ|CASE|case=telemetry|p=6|in_api=383|in_api_max=861|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=idle|p=4|n=96|min=12|max=18|sum=1330
+HILIRQ|TIME|case=idle|p=4|api_max=139|mask_n=0|mask_max=0
+HILIRQ|CASE|case=idle|p=4|in_api=33|in_api_max=18|isr_masked=0|line=0|PASS
+HILIRQ|RSP|case=empty|p=4|n=96|min=13|max=18|sum=1366
+HILIRQ|TIME|case=empty|p=4|api_max=209|mask_n=0|mask_max=0
+HILIRQ|CASE|case=empty|p=4|in_api=86|in_api_max=18|isr_masked=44|line=0|PASS
+HILIRQ|RSP|case=known|p=4|n=96|min=13|max=18|sum=1334
+HILIRQ|TIME|case=known|p=4|api_max=1062|mask_n=0|mask_max=0
+HILIRQ|CASE|case=known|p=4|in_api=96|in_api_max=18|isr_masked=78|line=0|PASS
+HILIRQ|RSP|case=cold|p=4|n=96|min=16|max=20|sum=1568
+HILIRQ|TIME|case=cold|p=4|api_max=8224|mask_n=0|mask_max=0
+HILIRQ|CASE|case=cold|p=4|in_api=88|in_api_max=20|isr_masked=70|line=0|PASS
+HILIRQ|RSP|case=cached|p=4|n=96|min=13|max=18|sum=1346
+HILIRQ|TIME|case=cached|p=4|api_max=253|mask_n=0|mask_max=0
+HILIRQ|CASE|case=cached|p=4|in_api=48|in_api_max=18|isr_masked=28|line=0|PASS
+HILIRQ|RSP|case=telemetry|p=4|n=384|min=13|max=19|sum=5418
+HILIRQ|TIME|case=telemetry|p=4|api_max=2001|mask_n=0|mask_max=0
+HILIRQ|CASE|case=telemetry|p=4|in_api=384|in_api_max=19|isr_masked=120|line=0|PASS
+HILIRQ|DONE|status=0|checks=12|failures=0

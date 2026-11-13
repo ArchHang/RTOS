@@ -1,0 +1,39 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_industry_run|priority=4
+HIB|START|backend=accepted|hz=168000000|budget=32768|cases=5
+HILIRQ|BG|case=fixed|p=6|n=569|min=10|max=82|sum=7389|lost=0|mask_n=0|mask_max=0|PASS
+HIB|STAT|case=fixed|op=alloc|n=384|sum=76408|min=166|max=333|ticks=0
+HIB|STAT|case=fixed|op=free|n=384|sum=51224|min=127|max=264|ticks=0
+HIB|STAT|case=fixed|op=miss|n=0|sum=0|min=0|max=0|ticks=0
+HIB|CASE|case=fixed|completed=384|retried=0|peak=16384|miss_live=0|initial=32760|restored=32760|input=21896bc5|line=0|PASS
+HILIRQ|BG|case=telemetry|p=6|n=3443|min=10|max=836|sum=191146|lost=0|mask_n=0|mask_max=0|PASS
+HIB|STAT|case=telemetry|op=alloc|n=2352|sum=2006814|min=171|max=2156|ticks=15
+HIB|STAT|case=telemetry|op=free|n=2352|sum=373472|min=127|max=525|ticks=3
+HIB|STAT|case=telemetry|op=miss|n=0|sum=0|min=0|max=0|ticks=0
+HIB|CASE|case=telemetry|completed=2304|retried=0|peak=10816|miss_live=0|initial=32760|restored=32760|input=48324885|line=0|PASS
+HILIRQ|BG|case=burst|p=6|n=3589|min=9|max=1076|sum=204307|lost=0|mask_n=0|mask_max=0|PASS
+HIB|STAT|case=burst|op=alloc|n=2352|sum=1385522|min=171|max=2509|ticks=8
+HIB|STAT|case=burst|op=free|n=2352|sum=343179|min=112|max=340|ticks=1
+HIB|STAT|case=burst|op=miss|n=744|sum=851278|min=202|max=2634|ticks=8
+HIB|CASE|case=burst|completed=2304|retried=688|peak=30784|miss_live=0|initial=32760|restored=32760|input=48324885|line=0|PASS
+HILIRQ|BG|case=sessions|p=6|n=4084|min=10|max=463|sum=85038|lost=0|mask_n=0|mask_max=0|PASS
+HIB|STAT|case=sessions|op=alloc|n=3100|sum=1260845|min=171|max=1379|ticks=12
+HIB|STAT|case=sessions|op=free|n=3100|sum=481210|min=127|max=546|ticks=3
+HIB|STAT|case=sessions|op=miss|n=0|sum=0|min=0|max=0|ticks=0
+HIB|CASE|case=sessions|completed=1536|retried=0|peak=22400|miss_live=0|initial=32760|restored=32760|input=7d04edc5|line=0|PASS
+HILIRQ|BG|case=fragment|p=6|n=476|min=10|max=2381|sum=9215|lost=1|mask_n=0|mask_max=0|PASS
+HIB|STAT|case=fragment|op=alloc|n=1|sum=244|min=244|max=244|ticks=0
+HIB|STAT|case=fragment|op=free|n=2|sum=321|min=160|max=161|ticks=0
+HIB|STAT|case=fragment|op=miss|n=65|sum=15627|min=112|max=8182|ticks=0
+HIB|CASE|case=fragment|completed=1|retried=0|peak=30208|miss_live=25600|initial=32760|restored=32760|input=9e4aaf0d|line=0|PASS
+HIB|DONE|status=0|checks=5|failures=0

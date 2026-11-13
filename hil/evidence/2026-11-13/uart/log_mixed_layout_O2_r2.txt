@@ -1,0 +1,27 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_checkpoint_mixed_run|priority=4
+HCPM|START|capacity=28496|few=128|mixed=192|slots=24
+HCPM|CASE|case=setup|PASS
+HCPM|TRACE|case=few|rounds=128|intended_invalidations=128
+HCPM|STAT|case=few|op=alloc|n=512|sum=132607|min=238|max=299|tick_crossings=0|invalid=0
+HCPM|STAT|case=few|op=cold_alloc|n=128|sum=38272|min=299|max=299|tick_crossings=0|invalid=0
+HCPM|STAT|case=few|op=free|n=512|sum=81508|min=157|max=164|tick_crossings=0|invalid=0
+HCPM|STAT|case=few|op=prefix_free|n=128|sum=20224|min=158|max=158|tick_crossings=0|invalid=0
+HCPM|CASE|case=few|PASS
+HCPM|TRACE|case=mixed|rounds=192|intended_invalidations=192
+HCPM|STAT|case=mixed|op=alloc|n=576|sum=304350|min=238|max=1102|tick_crossings=3|invalid=0
+HCPM|STAT|case=mixed|op=cold_alloc|n=192|sum=98274|min=238|max=994|tick_crossings=3|invalid=0
+HCPM|STAT|case=mixed|op=free|n=576|sum=91652|min=158|max=165|tick_crossings=0|invalid=0
+HCPM|STAT|case=mixed|op=prefix_free|n=192|sum=30336|min=158|max=158|tick_crossings=0|invalid=0
+HCPM|CASE|case=mixed|PASS
+HCPM|DONE|status=0|checks=3|failures=0

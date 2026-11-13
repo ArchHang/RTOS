@@ -1,0 +1,47 @@
+System init done
+[FAULT-TEST] send '1'..'9' via USART2 (each test halts, reset between):
+  1: BusFault    precise read  @0x20020000
+  2: INVSTATE    call non-Thumb address
+  3: DIVBYZERO   (DIV_0_TRP enabled)
+  4: stack demo  (margin + magic + BusFault)
+  5: UNDEFINSTR  execute UDF halfword
+  6: UNALIGNED ldrd misaligned (always faults)
+  7: BusFault    write @0x20020000 (imprecise expected)
+  8: real stack overflow (SP below base)
+  9: fault inside USART2 ISR (send '9', then any byte)
+F4HIL|READY|entry=f446_heap_weighted_run|priority=4
+HWB|START|clock_hz=168000000|capacity=28496|rounds=32|frames_per_round=96|anchors=48|basepri=1
+HWB|STAT|case=normal|op=alloc_ok|n=3120|sum_hi=0|sum_lo=2085398|min=243|max=2077|tick_crossings=11|invalid=0
+HWB|STAT|case=normal|op=alloc_fail|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|STAT|case=normal|op=free|n=3120|sum_hi=0|sum_lo=504901|min=151|max=400|tick_crossings=4|invalid=0
+HWB|STAT|case=normal|op=query|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|SUBSTAT|case=normal|op=initial_ok|n=3072|sum_hi=0|sum_lo=2073116|min=243|max=2077|tick_crossings=11|invalid=0
+HWB|SUBSTAT|case=normal|op=retry_ok|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|SUBSTAT|case=normal|op=first_fail|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|SUBSTAT|case=normal|op=repeat_fail|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|RETRY|case=normal|requests=3072|retried=0|fail_attempts=0|retry_success=0|alloc_chain_hi=0|alloc_chain_lo=0|recovery_frees=0|recovery_free_hi=0|recovery_free_lo=0|recovery_queries=0|recovery_query_hi=0|recovery_query_lo=0
+HWB|TOTAL|case=normal|frames=3072|anchor_allocations=48|allocations=3120|frees=3120|calls=6240|cycles_hi=0|cycles_lo=2590299|hash=1416058069|raw_free=28192|max_alloc=28496|restored_free=28496|setup_calls=3|verify_calls=3
+HWB|CASE|case=normal|PASS
+HWB|STAT|case=burst|op=alloc_ok|n=3120|sum_hi=0|sum_lo=1824552|min=243|max=2290|tick_crossings=13|invalid=0
+HWB|STAT|case=burst|op=alloc_fail|n=1247|sum_hi=0|sum_lo=1126393|min=253|max=2346|tick_crossings=4|invalid=0
+HWB|STAT|case=burst|op=free|n=3120|sum_hi=0|sum_lo=493643|min=151|max=398|tick_crossings=2|invalid=0
+HWB|STAT|case=burst|op=query|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|SUBSTAT|case=burst|op=initial_ok|n=2285|sum_hi=0|sum_lo=1348938|min=243|max=2264|tick_crossings=12|invalid=0
+HWB|SUBSTAT|case=burst|op=retry_ok|n=787|sum_hi=0|sum_lo=463333|min=258|max=2290|tick_crossings=1|invalid=0
+HWB|SUBSTAT|case=burst|op=first_fail|n=787|sum_hi=0|sum_lo=562053|min=253|max=2306|tick_crossings=4|invalid=0
+HWB|SUBSTAT|case=burst|op=repeat_fail|n=460|sum_hi=0|sum_lo=564340|min=338|max=2346|tick_crossings=0|invalid=0
+HWB|RETRY|case=burst|requests=3072|retried=787|fail_attempts=1247|retry_success=787|alloc_chain_hi=0|alloc_chain_lo=1589726|recovery_frees=1247|recovery_free_hi=0|recovery_free_lo=204127|recovery_queries=0|recovery_query_hi=0|recovery_query_lo=0
+HWB|TOTAL|case=burst|frames=3072|anchor_allocations=48|allocations=3120|frees=3120|calls=7487|cycles_hi=0|cycles_lo=3444588|hash=3756184500|raw_free=27984|max_alloc=28496|restored_free=28496|setup_calls=3|verify_calls=3
+HWB|CASE|case=burst|PASS
+HWB|STAT|case=diagnosed|op=alloc_ok|n=3120|sum_hi=0|sum_lo=1825506|min=243|max=2242|tick_crossings=16|invalid=0
+HWB|STAT|case=diagnosed|op=alloc_fail|n=787|sum_hi=0|sum_lo=561822|min=253|max=2306|tick_crossings=3|invalid=0
+HWB|STAT|case=diagnosed|op=free|n=3120|sum_hi=0|sum_lo=493381|min=150|max=382|tick_crossings=1|invalid=0
+HWB|STAT|case=diagnosed|op=query|n=2034|sum_hi=0|sum_lo=2000147|min=109|max=2724|tick_crossings=11|invalid=0
+HWB|SUBSTAT|case=diagnosed|op=initial_ok|n=2285|sum_hi=0|sum_lo=1348702|min=243|max=2242|tick_crossings=11|invalid=0
+HWB|SUBSTAT|case=diagnosed|op=retry_ok|n=787|sum_hi=0|sum_lo=464523|min=258|max=2200|tick_crossings=5|invalid=0
+HWB|SUBSTAT|case=diagnosed|op=first_fail|n=787|sum_hi=0|sum_lo=561822|min=253|max=2306|tick_crossings=3|invalid=0
+HWB|SUBSTAT|case=diagnosed|op=repeat_fail|n=0|sum_hi=0|sum_lo=0|min=0|max=0|tick_crossings=0|invalid=0
+HWB|RETRY|case=diagnosed|requests=3072|retried=787|fail_attempts=787|retry_success=787|alloc_chain_hi=0|alloc_chain_lo=1026345|recovery_frees=1247|recovery_free_hi=0|recovery_free_lo=203892|recovery_queries=2034|recovery_query_hi=0|recovery_query_lo=2000147
+HWB|TOTAL|case=diagnosed|frames=3072|anchor_allocations=48|allocations=3120|frees=3120|calls=9061|cycles_hi=0|cycles_lo=4880856|hash=700988257|raw_free=27984|max_alloc=28496|restored_free=28496|setup_calls=3|verify_calls=3
+HWB|CASE|case=diagnosed|PASS
+HWB|DONE|status=0|checks=3|failures=0
