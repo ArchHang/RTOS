@@ -354,6 +354,24 @@
       "signature": "static inline void rtos_port_exit_critical(void);"
     },
     {
+      "name": "rtos_port_enter_local_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_enter_local_critical",
+      "classification": "port_internal",
+      "kind": "inline",
+      "signature": "static inline uint32_t rtos_port_enter_local_critical(void);"
+    },
+    {
+      "name": "rtos_port_exit_local_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_exit_local_critical",
+      "classification": "port_internal",
+      "kind": "inline",
+      "signature": "static inline void rtos_port_exit_local_critical(uint32_t mask);"
+    },
+    {
       "name": "rtos_port_in_isr",
       "header": "RTOS/Core/Inc/rtos_port.h",
       "implementation": "RTOS/Core/Inc/rtos_port.h",
@@ -523,6 +541,24 @@
       "classification": "macro",
       "kind": "macro",
       "signature": "RTOS_PORT_EXIT_CRITICAL()"
+    },
+    {
+      "name": "RTOS_PORT_ENTER_LOCAL_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_ENTER_LOCAL_CRITICAL",
+      "classification": "port_internal",
+      "kind": "macro",
+      "signature": "RTOS_PORT_ENTER_LOCAL_CRITICAL()"
+    },
+    {
+      "name": "RTOS_PORT_EXIT_LOCAL_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_EXIT_LOCAL_CRITICAL",
+      "classification": "port_internal",
+      "kind": "macro",
+      "signature": "RTOS_PORT_EXIT_LOCAL_CRITICAL(mask)"
     },
     {
       "name": "RTOS_PORT_IN_ISR",

@@ -1180,6 +1180,26 @@
       ]
     },
     {
+      "name": "RTOS_PORT_ENTER_LOCAL_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_ENTER_LOCAL_CRITICAL",
+      "classification": "port_internal",
+      "kind": "macro",
+      "signature": "RTOS_PORT_ENTER_LOCAL_CRITICAL()",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_ENTER_LOCAL_CRITICAL",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_ENTER_LOCAL_CRITICAL() rtos_port_enter_local_critical()",
+          "parameters": ""
+        }
+      ]
+    },
+    {
       "name": "RTOS_PORT_EXIT_CRITICAL",
       "header": "RTOS/Core/Inc/rtos_port.h",
       "implementation": "RTOS/Core/Inc/rtos_port.h",
@@ -1196,6 +1216,26 @@
           "kind": "macro",
           "signature": "#define RTOS_PORT_EXIT_CRITICAL() rtos_port_exit_critical()",
           "parameters": ""
+        }
+      ]
+    },
+    {
+      "name": "RTOS_PORT_EXIT_LOCAL_CRITICAL",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-RTOS_PORT_EXIT_LOCAL_CRITICAL",
+      "classification": "port_internal",
+      "kind": "macro",
+      "signature": "RTOS_PORT_EXIT_LOCAL_CRITICAL(mask)",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "RTOS_PORT_EXIT_LOCAL_CRITICAL",
+          "kind": "macro",
+          "signature": "#define RTOS_PORT_EXIT_LOCAL_CRITICAL(mask) rtos_port_exit_local_critical(mask)",
+          "parameters": "mask"
         }
       ]
     },
@@ -1380,6 +1420,26 @@
       ]
     },
     {
+      "name": "rtos_port_enter_local_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_enter_local_critical",
+      "classification": "port_internal",
+      "kind": "inline",
+      "signature": "static inline uint32_t rtos_port_enter_local_critical(void);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_enter_local_critical",
+          "kind": "inline",
+          "signature": "static inline uint32_t rtos_port_enter_local_critical(void)",
+          "parameters": "void"
+        }
+      ]
+    },
+    {
       "name": "rtos_port_exit_critical",
       "header": "RTOS/Core/Inc/rtos_port.h",
       "implementation": "RTOS/Core/Inc/rtos_port.h",
@@ -1396,6 +1456,26 @@
           "kind": "inline",
           "signature": "static inline void rtos_port_exit_critical(void)",
           "parameters": "void"
+        }
+      ]
+    },
+    {
+      "name": "rtos_port_exit_local_critical",
+      "header": "RTOS/Core/Inc/rtos_port.h",
+      "implementation": "RTOS/Core/Inc/rtos_port.h",
+      "anchor": "api-rtos_port_exit_local_critical",
+      "classification": "port_internal",
+      "kind": "inline",
+      "signature": "static inline void rtos_port_exit_local_critical(uint32_t mask);",
+      "document": "docs/ai/contracts_kernel.md",
+      "metadata": "docs/ai/metadata_kernel.json",
+      "scope": "primary-header",
+      "source_forms": [
+        {
+          "name": "rtos_port_exit_local_critical",
+          "kind": "inline",
+          "signature": "static inline void rtos_port_exit_local_critical(uint32_t mask)",
+          "parameters": "uint32_t mask"
         }
       ]
     },

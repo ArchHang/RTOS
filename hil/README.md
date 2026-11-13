@@ -61,6 +61,7 @@ hil/
 | 恢复日常构建规则 | `restore_project.ps1` | 否；重建需工具链，重新下载需板卡 |
 | STM32H743 Cortex-M7 实测、Flash 备份与恢复 | [h743](h743/README.md) | 是，ST-LINK V3 与 USART1 VCP |
 | 堆、固定池边界与 LTO 统计可见性 | [内存宿主复跑](#host-memory) | 否，需宿主 GCC |
+| 通用堆的时延、连续容量和检查点 | [F446 堆夹具](#f446-heap-latency) | 是 |
 | USB 复合设备启动回滚、CDC/HID 回调与 MSC 介质边界 | `python -B hil/run_usb_device_host.py --opt O2` | 否，需本机 GCC |
 
 历史验收器按当时的字段和原始批次工作。当前实板复测应选择表中相应入口，使用新的
@@ -204,6 +205,204 @@ pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture `
 ```
 
 [F446 实测矩阵](../docs/rtos_testing_report.md#f446-functional-retest)
+
+<a id="f446-heap-latency"></a>
+### F446 通用堆时延与容量
+
+`f446_heap_latency_run` 在审计任务内测量线性堆的时延并检查容量和数据完整性。对照不同
+源码快照时，保持夹具、板卡、优化级、中断屏蔽、断言及堆配置一致，分别保存构建参数、
+ELF、映射和串口记录。
+
+在隔离工程副本中执行以下命令。烧录前按共享夹具流程确认板卡身份并保存原固件，运行结束
+恢复原固件。将 ST-LINK 序列号、串口和批次目录替换为本次实际值。
+
+```powershell
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_heap_latency.c -FixtureEntry f446_heap_latency_run `
+    -FixturePriority 4
+pwsh -NoProfile -File hil/run_hil.ps1 -Elf Debug/f446_rtos.elf -Tag heap_first_fit_o2 `
+    -Probe '<ST-LINK serial>' -Port COM3 -OutDir hil/logs/new_heap_batch -Seconds 20 `
+    -Terminator '(?m)^HLAT\|DONE\|'
+```
+
+从 `F4HIL|READY|entry=f446_heap_latency_run|priority=4` 起核对六项 `HLAT|CASE`。
+
+| 判据 | 核对内容 |
+|---|---|
+| `setup` | DWT 计数器推进，任务入口屏蔽状态正常，初始最大连续块可申请并归还 |
+| `few` | 4 个 96 字节块形成 2 个小孔，160 字节请求取自护栏后的空闲段 |
+| `fragmented` | 256 个 32 字节块形成 128 个小孔，1024 字节请求取自护栏后的空闲段 |
+| `task` | 4 组任务大小的 TCB/栈块反复替换，栈请求轮换 128、192、256、320 字，存活块哨兵完整 |
+| `wide_bucket` | 物理 128、152 字节块之间保留活块，尾部耗尽。145 字节请求被拒绝且账目不变，144 字节请求命中大孔，余下最大块为 120 字节。释放中间活块后可申请 304 字节 |
+| `recovery` | 最大可分配容量及活跃分配数恢复到入口值，最大块实分配和归还成功，屏蔽状态恢复 |
+
+`few` 和 `fragmented` 的 `HLAT|LAYOUT` 须为 `verified=1`。基本配置有八条
+`HLAT|STAT`。少块和碎片用例各两条，TCB 和栈各有分配、归还两条。每条要求
+`n=256`、`invalid=0`、`0 <= tick_crossings <= n`、`min <= mean <= max`，
+以及 `mean == sum / n` 的整数商。
+每种负载另有 8 次预热。DWT 时间段只包围堆 API，保留正常中断处理，`tick_crossings`
+报告采样附近跨 Tick 的次数。周期极值随采样条件变化。
+
+不相邻空闲段的容量用例在三组负载完成计时后执行。验收值为
+`HLAT|BUCKET|layout=1|holes_max=144|rejected=1|deep_fit=1|remaining_max=120|joined_max=304|joined_fit=1|guards=1`。
+`HLAT|RECOVERY` 中 `exact_probe=1`，三个最大块字段及三个活跃分配数字段分别一致。
+相邻空闲块可能保留额外块头，`initial_free` 和 `restored_free` 用于观察该账目变化。
+基本配置的成功结束行为 `HLAT|DONE|status=0|checks=6|failures=0`。
+
+在构建命令中加入 `-FixtureDefines 'HEAP_LATENCY_SIZE_CASES=1'`，可测量
+等长块复用与大块拆分。使用新 Tag 采集。两项尺寸用例都从一个 32 字节小孔、一个活护栏
+和一段连续大尾块开始，在计时外核对申请落点、拆分账目、护栏及归还后的状态。
+
+| 新增判据 | `HLAT|SIZE` 中的 `request` | `allocated_max` | 核对内容 |
+|---|---:|---:|---|
+| `exact32` | 32 | 等于 `tail_max` | 每次申请命中指定小孔，尾块容量保持 |
+| `split4096` | 4096 | 等于 `tail_max - 4104` | 每次申请取自护栏后的尾块，拆分计入 8 字节块头，归还恢复尾块 |
+
+两条 `HLAT|SIZE` 都应满足 `hole_size=32`、`layout=1`、`probe=1`、
+`layout_restored=1` 和 `heap_restored=1`。每项尺寸用例各增加一条 `alloc` 和一条
+`free` 的 `HLAT|STAT`，每条仍采 256 个样本并沿用上述统计判据。开启时应有十二条
+`HLAT|STAT`、八项 `HLAT|CASE` 通过，以及 `HLAT|DONE|status=0|checks=8|failures=0`。
+
+<a id="f446-heap-hybrid"></a>
+历史自适应堆的工作负载与原始结果见[实测报告](../docs/rtos_performance_report.md#f446-heap-hybrid)。
+
+<a id="f446-heap-failure"></a>
+#### 线性堆分配失败与恢复
+
+```powershell
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_heap_failure.c -FixtureEntry f446_heap_failure_run `
+    -FixturePriority 4
+pwsh -NoProfile -File hil/run_hil.ps1 -Elf Debug/f446_rtos.elf -Tag heap_failure `
+    -Probe '<ST-LINK serial>' -Port COM3 -OutDir hil/logs/new_heap_batch -Seconds 30 `
+    -Terminator '(?m)^HFL\|DONE\|'
+```
+
+夹具先耗尽堆，再释放 128 个由活块分隔的空闲段。最大载荷为 48 字节，56 和 80 字节
+申请均应失败，失败前后的空闲载荷与计数应一致。验证较小请求命中低地址首块，释放隔离块
+后 80 字节申请恢复，并检查活块哨兵和最终容量。
+
+从 `HFL|STAT` 读取耗尽失败、首次碎片失败、紧接的首次最大块查询（`max_after_miss`）、
+重复同尺寸和较大尺寸失败，以及重复失败后的最大块查询（`max_after_query`）。
+重复失败两组各 32 次，其余各一次。DWT 计时只包围堆 API。验收五个
+`HFL|CASE` 通过及 `HFL|DONE|status=0|checks=5|failures=0`。
+
+<a id="f446-heap-checkpoint-mixed"></a>
+#### 线性堆检查点混合负载
+
+```powershell
+pwsh -NoProfile -File hil/build_fw.ps1 -Variant portable_fixture -Optimization O2 `
+    -FixtureSource hil/fw/Src/f446_heap_checkpoint_mixed.c `
+    -FixtureEntry f446_heap_checkpoint_mixed_run -FixturePriority 4
+pwsh -NoProfile -File hil/run_hil.ps1 -Elf Debug/f446_rtos.elf -Tag heap_checkpoint_mixed `
+    -Probe '<ST-LINK serial>' -Port COM3 -OutDir hil/logs/new_heap_batch -Seconds 45 `
+    -Terminator '(?m)^HCPM\|DONE\|'
+```
+
+少块负载 128 轮，交错负载 192 轮，后者维持 24 个常驻分配并
+轮换请求尺寸。每轮安排一次较低地址释放，令相应检查点失效。统计全量申请和释放，
+另记录失效释放及失效后首次申请。独立有序模型逐次核对返回地址、空闲载荷、最大连续
+载荷、分配释放计数与在用数据。计时区间只包围堆 API。
+验收标记为 `HCPM|DONE|status=0|checks=3|failures=0`。
+
+<a id="f446-heap-boundary"></a>
+#### 当前堆的边界和所有权压力
+
+两个夹具均通过 `portable_fixture` 选择，入口优先级为 4。使用独立构建目录，并按
+本节的构建、采集和恢复流程操作。F446 实测配置与原始证据见
+[边界验证报告](../docs/rtos_testing_report.md#f446-heap-boundary-regression)。
+
+| 夹具 | 入口 | 验收 |
+|---|---|---|
+| [f446_heap_boundary.c](fw/Src/f446_heap_boundary.c) | `f446_heap_boundary_run` | 七组边界全部 PASS，结束行为 `HBN\|DONE\|status=0\|checks=7\|failures=0` |
+| [f446_heap_irq_stress.c](fw/Src/f446_heap_irq_stress.c) | `f446_heap_irq_stress_run` | 四个来源接纳数与接收数逐项相等且均大于零，结束行为 `HBIRQ\|DONE\|status=0\|failure=0` |
+
+边界夹具覆盖请求上下限和对齐边界、92 种普通尺寸、实际容量附近逐字节请求、24 B 拆分门槛、
+最小块耗尽、碎片失败与容量恢复。独立物理块模型检查账目，受损块头在修复后重试。
+失败、坏头中止、零容量缓存和无效释放还组合两层临界区与既有严格屏蔽值验证。
+
+压力夹具包含两个任务生产者、一个消费者、一个耗尽压力任务。TIM2 以 1 kHz 产生
+合法 IRQ，每八次通过 NVIC 置 pending 触发更高优先级的合法 EXTI4 嵌套 IRQ。数据载荷为 8..513 B，
+实际包申请包含 16 B 头，因此为 24..529 B。成功发送转交指针所有权，接收者逐字节
+检查后归还。发送失败由发送者归还。另有 33 B 临界区探针和最大连续块压力申请。
+
+默认运行 20 秒，`HIRQ_SECONDS` 可配置为 5..120。前两秒消费者即时处理，压力任务
+等待，以覆盖各来源的成功路径。随后开启消费背压与连续块占用，覆盖队列满、申请失败、
+中断嵌套和释放。运行前 TIM2 与 EXTI4 应空闲，TIM2 使用本工程 168 MHz 板级时钟配置。
+采集超时可设为 `HIRQ_SECONDS + 15` 秒。采集须从本轮 `F4HIL|READY` 起核对完整
+结束状态、分源账本、阶段及恢复容量。
+
+[复跑与证据核对](../docs/logs/2026-11-13.md#heap-boundary)
+
+<a id="f446-heap-weighted"></a>
+#### 业务频次与平均堆操作成本
+
+[f446_heap_weighted.c](fw/Src/f446_heap_weighted.c) 的入口为
+`f446_heap_weighted_run`，使用 `portable_fixture` 和优先级 4。常规流量、
+突发积压、突发诊断各运行 32 轮，每轮 96 个变长报文。长期对象初始化、全部有效
+归还、失败申请和重试分别计时，结束时所有业务对象均已释放。
+
+主统计 `HWB|STAT` 的 `alloc_ok/alloc_fail/free/query` 相互排斥，
+`HWB|SUBSTAT` 与 `HWB|RETRY` 表达其中的重试子集。周期总和由
+`sum_hi/sum_lo` 两个 32 位字段还原为 64 位值。总体平均用所有主分类的
+原始周期总和除以实际调用次数。窗口外校准和验证调用数量由 TOTAL 显式输出。
+
+每场景成功申请和释放各 3,120 次。常规负载失败与查询均为零，突发负载失败
+1,247 次，诊断负载失败 787 次、查询 2,034 次。还须核对三个场景的 trace hash、
+全部类的 invalid=0、容量恢复和 `HWB|DONE|status=0|checks=3|failures=0`。
+构建后一次采集仅代表该次实际 ELF，推荐采集超时 90 秒。
+
+[实际加权公式与数据](../docs/rtos_performance_report.md#f446-heap-weighted) ·
+[编译、复跑和证据校验](../docs/logs/2026-11-13.md#heap-weighted)
+
+<a id="f446-heap-equal-protection"></a>
+#### 等保护和堆状态消融
+
+用 `portable_fixture`、优先级 4、`-O2` 和 BASEPRI 构建
+[f446_heap_compare.c](fw/Src/f446_heap_compare.c)，入口为 `f446_heap_compare_run`。
+传入 `-FixtureWrap _sbrk`。默认使用等保护，`HCB_PROTECTED=0` 用于空锁对照，
+`HCB_LIBC_FIRST=1` 交换回放顺序，`HCB_FAILURE_ONLY=1` 独立运行失败轨迹。
+多条定义以逗号分隔。默认应有六组成功轨迹，失败镜像应有两组，均检查
+`HCB|DONE|status=0` 及 `failures=0`。等保护镜像还须有 `HCB|MASK|checked=1|valid=1`。
+
+[f446_heap_state_probe.c](fw/Src/f446_heap_state_probe.c) 的入口为
+`f446_heap_state_probe_run`，无需链接包装，结束行为
+`HSP|DONE|status=0|checks=5|failures=0`。逐项消融用
+[prepare_heap_ablation.py](prepare_heap_ablation.py) 从当前生产文件生成构建输入，
+空闲链表使用 [候选实现](fw/variants/rtos_heap_free_list.c)。两者均在独立工程副本
+中替换堆实现。空闲链表与消融成功和失败对照可用 `HCB_RTOS_ONLY=1`。
+
+[实测结果](../docs/rtos_performance_report.md#f446-heap-equal-protection) ·
+[每日日志](../docs/logs/2026-11-13.md#heap-equal-protection)
+
+<a id="f446-heap-industry"></a>
+#### 不同分配器的业务回放
+
+[f446_heap_industry.c](fw/Src/f446_heap_industry.c) 在 F446 的独立 32 KiB
+试验区重放固定帧、常规遥测、积压遥测、会话换新和隔离孔恢复。
+入口为 `f446_heap_industry_run`。本地批次脚本将后端适配器编译进隔离构建树。
+解析器按同一次启动的 `HIB|START` 和 `HIB|DONE` 取数据，核对完成数量、
+输入哈希及容量恢复。固定块池只跑固定帧。回压后端可触发不同次数的重试，
+对比业务成本时以每项完成工作所需的全部计时调用为分子。
+
+[F446 结果](../docs/rtos_performance_report.md#f446-heap-industry) ·
+[历史批次说明](../docs/logs/2026-11-13.md#heap-industry) ·
+[当前 RTOS 堆与 Zephyr 的复跑入口](heap_study/README.md)
+
+<a id="f446-heap-timer-latency"></a>
+#### 堆首次失败与真实 TIM5 响应
+
+[f446_heap_irq_latency.c](fw/Src/f446_heap_irq_latency.c) 的入口为
+`f446_heap_irq_latency_run`。测试镜像提供独立 32 KiB 的 `industry_heap_*` 后端。
+相位扫描使用 TIM5 CCR1、P6 和 P4，结束行是
+`HILIRQ|DONE|status=0|checks=12|failures=0`。定向布局把 128 个小孔隔离，
+每次冷样本前撤销上一轮缓存。使用独立插桩镜像测量屏蔽内部窗口时，
+只在测试后端局部锁进出调用 DWT 探针，并定义 `HEAP_IRQ_INSTRUMENTED=1`。
+
+用原业务夹具加 `HEAP_IRQ_BACKGROUND=1` 和同一计时器代码，可统计完整业务
+及其准备、收尾期间的 P6 延迟和跳过的比较槽。原始和插桩样本分别统计。
+[配置与测量结果](../docs/logs/2026-11-13.md#heap-timer-latency) ·
+[复跑入口](heap_study/README.md) · [UART 原始证据](evidence/2026-11-13/README.md)
 
 <a id="f446-interaction-fixtures"></a>
 ### F446 跨功能与 IRQ 交错夹具

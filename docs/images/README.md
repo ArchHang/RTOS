@@ -7,7 +7,7 @@
 需要导出 PNG 的 Mermaid 代码块前必须紧邻一个独立的 Markdown 图片链接，中间可留空行，也可加入一行 `<details><summary>图形源码（mermaid）</summary>`。例如：
 
 ````markdown
-![中断到任务唤醒路径](images/rtos_design_irq_wakeup.png)
+![中断到任务唤醒路径](rtos_design_irq_wakeup.png)
 
 <details><summary>图形源码（mermaid）</summary>
 

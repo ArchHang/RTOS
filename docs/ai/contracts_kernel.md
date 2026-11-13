@@ -662,6 +662,30 @@ static inline void rtos_port_exit_critical(void);
 - 寿命/所有权：共享状态必须在exit前发布，退出后不得读可能已销毁对象来形成返回结果。
 - 边界：恢复原值，不是一律BASEPRI=0；值0也不说明其他屏蔽条件消失。
 
+<a id="api-rtos_port_enter_local_critical"></a>
+### `rtos_port_enter_local_critical`
+
+```c
+static inline uint32_t rtos_port_enter_local_critical(void);
+```
+
+- 内部同步叶子操作使用。调用上下文为任务或允许调用内核的 IRQ。
+- BASEPRI 配置用 `BASEPRI_MAX` 保留调用方更严格的屏蔽，短 PRIMASK 事务只覆盖
+  寄存器写入。PRIMASK 配置保存旧 PRIMASK 并屏蔽可配置异常。
+- 返回值保存本次调用进入前的屏蔽状态。保护区内只做同步操作，禁止阻塞、
+  调度或执行回调。全局临界区深度与保存槽保持原值。
+- 由同一执行流持有返回值并按反序交给对应出口。
+
+<a id="api-rtos_port_exit_local_critical"></a>
+### `rtos_port_exit_local_critical`
+
+```c
+static inline void rtos_port_exit_local_critical(uint32_t mask);
+```
+
+- `mask` 由同一次局部进入返回。出口恢复该值并执行 ISB。
+- 调用前发布受保护数据。外层屏蔽或嵌套仍由对应的进入和退出原语负责。
+
 <a id="api-rtos_port_in_isr"></a>
 ### `rtos_port_in_isr`
 
@@ -957,6 +981,24 @@ RTOS_PORT_EXIT_CRITICAL()
 - 参数与展开：展开rtos_port_exit_critical，无参数。
 - 上下文/失败：完整继承inline契约；最外层退出可能立即切换任务。
 - 所有权：不取得业务存储所有权，保护范围和副作用由上述展开决定。
+
+<a id="api-RTOS_PORT_ENTER_LOCAL_CRITICAL"></a>
+### `RTOS_PORT_ENTER_LOCAL_CRITICAL`
+
+```text
+RTOS_PORT_ENTER_LOCAL_CRITICAL()
+```
+
+- 展开到 `rtos_port_enter_local_critical()`，继承同步叶子操作及调用上下文契约。
+
+<a id="api-RTOS_PORT_EXIT_LOCAL_CRITICAL"></a>
+### `RTOS_PORT_EXIT_LOCAL_CRITICAL`
+
+```text
+RTOS_PORT_EXIT_LOCAL_CRITICAL(mask)
+```
+
+- 展开到 `rtos_port_exit_local_critical(mask)`，配对恢复同次进入保存的屏蔽值。
 
 <a id="api-RTOS_PORT_IN_ISR"></a>
 ### `RTOS_PORT_IN_ISR`
