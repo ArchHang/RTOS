@@ -172,6 +172,48 @@ static inline rtos_bool_t rtos_port_in_isr(void)
 /** @brief 退出临界区(宏形式, 兼容既有调用)。 */
 #define RTOS_PORT_EXIT_CRITICAL() rtos_port_exit_critical()
 
+/* For synchronous leaf operations that never call the scheduler or a callback.
+ * The saved state belongs to this invocation and does not use shared nesting. */
+static inline uint32_t rtos_port_enter_local_critical(void)
+{
+    uint32_t mask;
+#if RTOS_CONFIG_USE_BASEPRI
+    uint32_t primask;
+    __asm volatile("mrs %0, primask\n"
+                   "cpsid i\n"
+                   "mrs %1, basepri\n"
+                   "msr basepri_max, %2\n"
+                   "isb\n"
+                   "msr primask, %0\n"
+                   : "=&r"(primask), "=&r"(mask)
+                   : "r"(RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY)
+                   : "memory");
+#else
+    __asm volatile("mrs %0, primask\n"
+                   "cpsid i\n" : "=r"(mask) :: "memory");
+#endif
+    return mask;
+}
+
+static inline void rtos_port_exit_local_critical(uint32_t mask)
+{
+#if RTOS_CONFIG_USE_BASEPRI
+    uint32_t primask;
+    __asm volatile("mrs %0, primask\n"
+                   "cpsid i\n"
+                   "msr basepri, %1\n"
+                   "msr primask, %0\n"
+                   "isb\n"
+                   : "=&r"(primask) : "r"(mask) : "memory");
+#else
+    __asm volatile("msr primask, %0\n"
+                   "isb\n" :: "r"(mask) : "memory");
+#endif
+}
+
+#define RTOS_PORT_ENTER_LOCAL_CRITICAL() rtos_port_enter_local_critical()
+#define RTOS_PORT_EXIT_LOCAL_CRITICAL(mask) rtos_port_exit_local_critical(mask)
+
 /** @brief 中断上下文判断(宏形式, 兼容既有调用)。 */
 #define RTOS_PORT_IN_ISR() rtos_port_in_isr()
 

@@ -72,7 +72,7 @@
 /** @brief 静态任务池容量(最大任务数)。 */
 #define RTOS_CONFIG_MAX_TASKS (16U)
 
-/** @brief 动态内存堆大小(字节)，仅当 USE_STATIC_ALLOCATION=0 时生效。 */
+/** @brief 通用堆静态缓冲区大小，单位为字节。 */
 #define RTOS_CONFIG_HEAP_SIZE (32U * 1024U)
 
 /* ============================== 通信机制配置 ============================== */

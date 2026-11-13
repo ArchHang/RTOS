@@ -3,13 +3,12 @@
  * @brief   动态堆内存分配器接口
  *
  * @details 提供线程安全的通用堆分配器, 用于动态创建任务 TCB 与栈
- *          等场景。分配器采用 first-fit 策略 + 块合并,
- *          分配最坏 O(n)，n 为物理块总数，释放 O(1)。
+ *          等场景。使用按地址 first-fit 和前向释放合并。
  *
  *          堆内存在 rtos_init() 阶段一次性初始化, 使用静态缓冲区
  *          RTOS_CONFIG_HEAP_SIZE 字节, 不依赖 C 标准库 malloc。
  *
- *          线程安全: 内部使用临界区(BASEPRI)保护空闲链表,
+ *          线程安全: 内部使用移植层临界区保护堆布局和扫描状态,
  *          分配、释放及最大单块查询仅允许任务上下文或系统调用级中断调用。
  *          BASEPRI 配置下, 中断优先级数值必须 >=
  *          RTOS_CONFIG_MAX_SYSCALL_INTERRUPT_PRIORITY(默认 NVIC 优先级 5~15)。
@@ -18,7 +17,7 @@
  *
  *          块布局(已对齐):
  *            ┌──────────┐
- *            │ block hdr│  size + magic(0xA5A5A5A5)
+ *            │ block hdr│  长度、空闲状态和校验信息
  *            ├──────────┤
  *            │ user data│  返回给用户的指针指向此处
  *            │ ...      │
@@ -51,20 +50,22 @@ rtos_status_t rtos_heap_init(void);
  * @return 成功返回 8 字节对齐的指针，无法满足请求或 size=0 时返回 NULL。
  *
  * @note 线程安全, ISR 调用须满足本模块的系统调用优先级约束。
- *       临界区包含 O(n) 遍历，需要时合并连续空闲块，建议在任务上下文调用。
+ *       临界区内按地址扫描物理块。完整失败扫描可缓存最大连续容量，供后续查询使用。
+ *       建议优先在任务上下文调用。
  */
 void *rtos_heap_alloc(uint32_t size);
 
 /**
  * @brief 释放 rtos_heap_alloc 返回的指针。
  * @param ptr 之前分配的指针, NULL 时无操作。
- * @note O(1)，最多合并紧邻的下一块。调用方必须传入仍有效的原始分配地址或 NULL。
+ * @note 只合并紧邻的下一块，释放为 O(1)。
+ *       调用方必须传入仍有效的原始分配地址或 NULL。
  *       ISR 调用须满足本模块的系统调用优先级约束。
  */
 void rtos_heap_free(void *ptr);
 
 /**
- * @brief 查询堆空闲字节数(粗略, 不含 header 开销)。
+ * @brief 查询当前空闲载荷总字节数，不含现存块头。
  */
 uint32_t rtos_heap_get_free(void);
 
@@ -76,9 +77,10 @@ uint32_t rtos_heap_get_free(void);
  * @details 对连续空闲段只扣一个块头。rtos_heap_get_free 汇总现有空闲块的用户容量，
  *          排除所有现存块头。本查询不修改块布局，也不保留分配空间。
  *
- * @note 本函数在临界区内遍历块链，复杂度 O(物理块总数)，与 rtos_heap_alloc
- *       同级; 仅供创建/校验等非热路径使用。ISR 调用须满足本模块的
- *       系统调用优先级约束, 关闭断言不放宽该约束。
+ * @note 可复用完整失败扫描或先前查询的缓存，任意成功释放都会使该缓存失效。
+ *       有效内部检查点允许从该位置续扫并复用已知的前缀最大值。
+ *       供诊断、创建与校验等路径使用。
+ *       ISR 调用须满足系统调用优先级约束，关闭断言不放宽该约束。
  */
 uint32_t rtos_heap_get_max_alloc(void);
 
